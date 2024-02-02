@@ -1,0 +1,31 @@
+language: python
+python:
+  - "3.11"
+install:
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+  - wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
+  - conda activate test-environment
+  - pip install -U -r requirements.txt
+  - pip install -U -r requirements-dev.txt
+
+jobs:
+  include:
+  - stage: Lint with pylint and pycodestyle
+    script:
+      - python setup.py build_ext --inplace
+      - pylint -rn fulqrum_tophat
+      - pycodestyle --max-line-length=100 fulqrum_tophat
+
+  - stage: Run tests with pytest   
+    script:
+      - conda install pytest
+      - pip install .
+      - pytest -p no:warnings --pyargs fulqrum_tophat/test
