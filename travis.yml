@@ -18,13 +18,13 @@ install:
 
 jobs:
   include:
-  - stage: Lint with pylint and pycodestyle
+  - stage: "Lint with pylint and pycodestyle"
     script:
       - python setup.py build_ext --inplace
       - pylint -rn fulqrum_tophat
       - pycodestyle --max-line-length=100 fulqrum_tophat
 
-  - stage: Run tests with pytest   
+  - stage: "Run tests with pytest"  
     script:
       - conda install pytest
       - pip install .
