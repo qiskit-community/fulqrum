@@ -26,6 +26,11 @@ jobs:
 
   - stage: "Run tests with pytest"  
     script:
-      - conda install pytest
       - pip install .
       - pytest -p no:warnings --pyargs fulqrum_tophat/test
+
+  - stage: "Build docs"
+    script:  
+      - conda install pandoc
+      - cd docs
+      - make html

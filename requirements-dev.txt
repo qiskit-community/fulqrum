@@ -4,3 +4,9 @@ pycodestyle
 qiskit>=0.45
 qiskit-nature>=0.7.1
 openfermion>=1.6.0
+Sphinx<6
+pydata_sphinx_theme
+matplotlib
+pylatexenc
+jupyter-sphinx
+nbsphinx
