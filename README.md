@@ -2,3 +2,5 @@
 
 # tophat
 A sophisticated take on quantum operators.
+
+This is very much a work in progress, and not suitable for human or animal consumption.
