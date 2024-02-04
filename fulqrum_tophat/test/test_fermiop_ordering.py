@@ -168,8 +168,7 @@ def test_normal_index_combo():
 
 
 def test_index_combine_empty():
-    """Index combine on a empty operator works
-    """
+    """Index combine on a empty operator works"""
     fo = FermionicOperator(3)
     combined_fo = fo.combine_repeated_indices()
     assert combined_fo.num_terms == 0
@@ -177,8 +176,7 @@ def test_index_combine_empty():
 
 
 def test_index_combine_identity():
-    """Index combine on a idenity operator works
-    """
+    """Index combine on a idenity operator works"""
     fo = FermionicOperator(3, [])
     combined_fo = fo.combine_repeated_indices()
     assert combined_fo.num_terms == 1
@@ -186,88 +184,81 @@ def test_index_combine_identity():
 
 
 def test_index_combine_single():
-    """Index combine on a single term and operator
-    """
-    fo = FermionicOperator(3, [('+', 2)])
+    """Index combine on a single term and operator"""
+    fo = FermionicOperator(3, [("+", 2)])
     combined_fo = fo.combine_repeated_indices()
-    assert combined_fo.operators == [('+', 2)]
+    assert combined_fo.operators == [("+", 2)]
 
 
 def test_index_combine_single_coeff():
-    """Index combine on a single term and operator with coeff
-    """
-    fo = FermionicOperator(3, [('+', 2)], coeff=1-3j)
+    """Index combine on a single term and operator with coeff"""
+    fo = FermionicOperator(3, [("+", 2)], coeff=1 - 3j)
     combined_fo = fo.combine_repeated_indices()
-    assert combined_fo.operators == [('+', 2)]
-    assert combined_fo.coeff == 1-3j
+    assert combined_fo.operators == [("+", 2)]
+    assert combined_fo.coeff == 1 - 3j
 
 
 def test_index_combine_single2():
-    """Index combine on a single term and two operators on different indices
-    """
-    fo = FermionicOperator(3, [('+', 2), ('-', 1)])
+    """Index combine on a single term and two operators on different indices"""
+    fo = FermionicOperator(3, [("+", 2), ("-", 1)])
     combined_fo = fo.combine_repeated_indices()
-    assert combined_fo.operators == [('-', 2), ('+', 1)]
+    assert combined_fo.operators == [("-", 2), ("+", 1)]
 
 
 def test_index_combine_single3():
-    """Index combine on a single term and two operators on same index
-    """
-    fo = FermionicOperator(3, [('-', 1), ('+', 1)])
+    """Index combine on a single term and two operators on same index"""
+    fo = FermionicOperator(3, [("-", 1), ("+", 1)])
     combined_fo = fo.combine_repeated_indices()
     assert combined_fo.num_terms == 1
-    assert combined_fo.operators == [('0', 1)]
+    assert combined_fo.operators == [("0", 1)]
 
 
 def test_index_combine_single4():
-    """Index combine on a single term and two operators on same index
-    """
-    fo = FermionicOperator(3, [('+', 1), ('-', 1)])
+    """Index combine on a single term and two operators on same index"""
+    fo = FermionicOperator(3, [("+", 1), ("-", 1)])
     combined_fo = fo.combine_repeated_indices()
     assert combined_fo.num_terms == 1
-    assert combined_fo.operators == [('1', 1)]
+    assert combined_fo.operators == [("1", 1)]
 
 
 def test_index_combine_single5():
-    """Index combine where term in middle on different index is blocking
-    """
-    fo = FermionicOperator(3, [('+', 2), ('-', 1), ('-', 2)])
+    """Index combine where term in middle on different index is blocking"""
+    fo = FermionicOperator(3, [("+", 2), ("-", 1), ("-", 2)])
     combined_fo = fo.combine_repeated_indices()
     assert combined_fo.num_terms == 1
-    assert combined_fo.operators == [('+', 2), ('-', 1), ('-', 2)]
+    assert combined_fo.operators == [("+", 2), ("-", 1), ("-", 2)]
 
 
 def test_index_combine_null_terms():
-    """Validate all combinations of null terms work
-    """
-    fo = FermionicOperator(1, [('-', 0), ('-', 0)])
+    """Validate all combinations of null terms work"""
+    fo = FermionicOperator(1, [("-", 0), ("-", 0)])
     combined_fo = fo.combine_repeated_indices()
     assert combined_fo.num_terms == 0
 
-    fo = FermionicOperator(1, [('-', 0), ('0', 0)])
+    fo = FermionicOperator(1, [("-", 0), ("0", 0)])
     combined_fo = fo.combine_repeated_indices()
     assert combined_fo.num_terms == 0
 
-    fo = FermionicOperator(1, [('+', 0), ('+', 0)])
+    fo = FermionicOperator(1, [("+", 0), ("+", 0)])
     combined_fo = fo.combine_repeated_indices()
     assert combined_fo.num_terms == 0
 
-    fo = FermionicOperator(1, [('+', 0), ('1', 0)])
+    fo = FermionicOperator(1, [("+", 0), ("1", 0)])
     combined_fo = fo.combine_repeated_indices()
     assert combined_fo.num_terms == 0
 
-    fo = FermionicOperator(1, [('0', 0), ('1', 0)])
+    fo = FermionicOperator(1, [("0", 0), ("1", 0)])
     combined_fo = fo.combine_repeated_indices()
     assert combined_fo.num_terms == 0
 
-    fo = FermionicOperator(1, [('0', 0), ('+', 0)])
+    fo = FermionicOperator(1, [("0", 0), ("+", 0)])
     combined_fo = fo.combine_repeated_indices()
     assert combined_fo.num_terms == 0
 
-    fo = FermionicOperator(1, [('1', 0), ('-', 0)])
+    fo = FermionicOperator(1, [("1", 0), ("-", 0)])
     combined_fo = fo.combine_repeated_indices()
     assert combined_fo.num_terms == 0
 
-    fo = FermionicOperator(1, [('1', 0), ('0', 0)])
+    fo = FermionicOperator(1, [("1", 0), ("0", 0)])
     combined_fo = fo.combine_repeated_indices()
     assert combined_fo.num_terms == 0
