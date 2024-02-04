@@ -4,6 +4,7 @@
 cimport cython
 from libcpp.vector cimport vector
 from libcpp.string cimport string
+from libcpp.pair cimport pair
 from libcpp cimport bool
 from libcpp.unordered_map cimport unordered_map
 from fulqrum_tophat.exceptions import FulqrumError
@@ -13,9 +14,29 @@ import numbers
 import numpy as np
 cimport numpy as np
 
+ctypedef pair[uchar, bool] uchar_bool_pair
+
 cdef unordered_map[string, size_t] STR_TO_IND = {'-': 0, '+': 1, '0': 2, '1': 3}
 
 cdef unordered_map[size_t, string] IND_TO_STR = {0: '-', 1: '+', 2: '0', 3: '1'}
+
+cdef uchar_bool_pair[16] COLLECTOR_VEC = [uchar_bool_pair(0, False), # - - null
+                                          uchar_bool_pair(2, True),  # - +
+                                          uchar_bool_pair(0, False), # - 0 null
+                                          uchar_bool_pair(0, True), # - 1
+                                          uchar_bool_pair(3, True), # + -
+                                          uchar_bool_pair(1, False), # + + null
+                                          uchar_bool_pair(1, True), # + 0
+                                          uchar_bool_pair(1, False), # + 1 null
+                                          uchar_bool_pair(0, True), # 0 -
+                                          uchar_bool_pair(2, False), # 0 + null
+                                          uchar_bool_pair(2, True), # 0 0
+                                          uchar_bool_pair(2, False), # 0 1 null
+                                          uchar_bool_pair(3, False), # 1 - null
+                                          uchar_bool_pair(1, True), # 1 +
+                                          uchar_bool_pair(3, False), # 1 0 null
+                                          uchar_bool_pair(3, True), # 1 1
+                                         ]
 
 
 cdef const OperatorTerm EmptyOperatorTerm
@@ -200,6 +221,15 @@ cdef class FermionicOperator():
             index_order_term(self.terms[kk], &out.terms)
         return out
 
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    def combine_repeated_indices(self):
+        cdef size_t kk
+        cdef FermionicOperator out = FermionicOperator(self.width)
+        for kk in range(self.terms.size()):
+            single_term_index_combine(self.terms[kk], &out.terms)
+        return out
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -292,4 +322,39 @@ cdef void normal_order_term(OperatorTerm term, vector[OperatorTerm] * out_terms)
                 break
         term.operators[mm+1] = temp_pair
     if attach_term:
+        out_terms.push_back(term)
+
+
+@cython.boundscheck(False)
+cdef void single_term_index_combine(OperatorTerm term, vector[OperatorTerm] * out_terms) noexcept:
+    cdef size_t kk, jj
+    cdef bool append_term
+    cdef uchar_bool_pair new_op_pair
+    append_term = True
+    # Look only if more than one operator in the term
+    if term.operators.size() > 1:
+        for jj in range(term.operators.size()-1):
+            # If terms operate on same index then combine
+            if term.operators[jj].first == term.operators[jj+1].first:
+                new_op_pair = COLLECTOR_VEC[4*term.operators[jj].second + term.operators[jj+1].second]
+                # The result is not a NULL term we need to process
+                if new_op_pair.second:
+                    new_term = EmptyOperatorTerm
+                    new_term.coeff = term.coeff
+                    for mm in range(jj):
+                        new_term.operators.push_back(term.operators[mm])
+                    # Add new combined term
+                    new_term.operators.push_back(size_uchar_pair(term.operators[jj].first,
+                                                 new_op_pair.first))
+                    for mm in range(jj+2, term.operators.size()):
+                        new_term.operators.push_back(term.operators[mm])
+                    # Run it through routine again looking for more repeat indices
+                    single_term_index_combine(new_term, out_terms)
+                    append_term = False
+                    break
+                # We have a null op, so terminate
+                else:
+                    append_term = False
+                    break
+    if append_term:
         out_terms.push_back(term)
