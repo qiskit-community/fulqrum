@@ -202,7 +202,7 @@ def test_index_combine_single2():
     """Index combine on a single term and two operators on different indices"""
     fo = FermionicOperator(3, [("+", 2), ("-", 1)])
     combined_fo = fo.combine_repeated_indices()
-    assert combined_fo.operators == [("-", 2), ("+", 1)]
+    assert combined_fo.operators == [("+", 2), ("-", 1)]
 
 
 def test_index_combine_single3():
