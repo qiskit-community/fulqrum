@@ -147,6 +147,9 @@ cdef class FermionicOperator():
     @property
     def operators(self):
         """Return the operators for a single term or empty operator
+
+        Returns:
+            list or None : List of operator index tuples, if any, else None
         """
         cdef size_t kk, jj
         cdef OperatorTerm * term
@@ -154,7 +157,7 @@ cdef class FermionicOperator():
         if self.num_terms > 1:
             raise FulqrumError('Can only grab operators from operators with < 2 terms')
         elif self.num_terms == 0:
-            return out
+            return None
         else:
             for kk in range(self.terms.size()):
                 term = &self.terms[kk]
