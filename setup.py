@@ -30,12 +30,14 @@ this_dir = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_dir, "README.md"), encoding="utf-8") as readme:
     LONG_DESCRIPTION = readme.read()
 
-CYTHON_EXTS = ["base", "qubit_operator", "fermi_operator", "matrix_elements", "qiskit"]
+CYTHON_EXTS = ["base", "qubit_operator", "fermi_operator", "matrix_elements", 
+               "qiskit", "openfermion"]
 CYTHON_MODULES = [
     "fulqrum_tophat.core",
     "fulqrum_tophat.core",
     "fulqrum_tophat.core",
     "fulqrum_tophat.core",
+    "fulqrum_tophat.convert",
     "fulqrum_tophat.convert",
 ]
 CYTHON_SOURCE_DIRS = [
@@ -43,6 +45,7 @@ CYTHON_SOURCE_DIRS = [
     "fulqrum_tophat/core",
     "fulqrum_tophat/core",
     "fulqrum_tophat/core",
+    "fulqrum_tophat/convert",
     "fulqrum_tophat/convert",
 ]
 
