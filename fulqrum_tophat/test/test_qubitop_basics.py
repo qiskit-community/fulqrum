@@ -128,7 +128,7 @@ def test_operator_identity_removal():
     for kk, oper in enumerate(diag_ops):
         op += QubitOperator(N, [(oper, 0)], coeff=1 / (N + kk))
 
-    assert op.identity_terms_value() == 0.16666666666666666
+    assert abs(op.identity_terms_sum() - 0.16666666666666666) < 1e-15
     new_op = op.remove_identity_terms()
     assert new_op.num_terms == 5
-    assert new_op.identity_terms_value() == 0
+    assert new_op.identity_terms_sum() == 0
