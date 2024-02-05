@@ -3,6 +3,7 @@
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 
 cimport cython
+from cython.operator cimport dereference
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libcpp cimport bool
@@ -305,6 +306,48 @@ cdef class QubitOperator():
         if operator != 'I':
             self.terms[0].operators.push_back(size_uchar_pair(qubit, STR_TO_IND[operator]))
         self.sorted = False
+
+    @cython.boundscheck(False)
+    cpdef double complex identity_terms_sum(self):
+        """Sum of identity terms coefficients.
+
+        Returns:
+            double complex: Sum of identities
+        """
+        cdef size_t kk
+        cdef OperatorTerm * term_ptr
+        cdef double complex out = 0
+        for kk in range(self.terms.size()):
+            term_ptr = &self.terms[kk]
+            if term_ptr.operators.size() == 0:
+                out += term_ptr.coeff
+        return out
+
+    @cython.boundscheck(False)
+    def remove_identity_terms(self, bool return_value=False):
+        """Remove identity terms from operator, optionally
+        returning the sum of the coefficients
+
+        Parameters:
+            return_value (bool): Return the sum of identity coefficients
+        
+        Returns:
+            QubitOperator: Operator with no identity terms
+            complex: Sum of identity coefficients, if `return_value=True`
+        """
+        cdef size_t kk
+        cdef OperatorTerm * term_ptr
+        cdef double complex val = 0
+        cdef QubitOperator out = QubitOperator(self.width)
+        for kk in range(self.terms.size()):
+            term_ptr = &self.terms[kk]
+            if term_ptr.operators.size() != 0:
+                out.terms.push_back(dereference(term_ptr))
+            else:
+                val += term_ptr.coeff
+        if return_value:
+            return out, val
+        return out
         
     @classmethod
     def from_dicts(self, unsigned int num_qubits, object terms=[]):

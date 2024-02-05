@@ -34,3 +34,4 @@ cdef class QubitOperator:
 
     cpdef void append(self, QubitOperator other)
     cpdef bool is_diagonal(self)
+    cpdef double complex identity_terms_sum(self)
