@@ -155,7 +155,7 @@ def test_operator_multiplication():
     """Test multiplication of QubitOperators by numbers"""
     N = 5
     qo = QubitOperator(N, (("X", kk) for kk in range(N - 1, -1, -1)), coeff=-1j)
-    new_qo = 5*qo
+    new_qo = 5 * qo
     assert new_qo.operators == [("X", 4), ("X", 3), ("X", 2), ("X", 1), ("X", 0)]
     assert new_qo.coeff == -5j
     assert qo.coeff == -1j
