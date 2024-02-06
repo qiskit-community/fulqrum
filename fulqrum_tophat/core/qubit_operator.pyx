@@ -168,6 +168,14 @@ cdef class QubitOperator():
         """
         self.append(other)
         return self
+    
+    def __imul__(self, double complex other):
+        """Inplace multiplication of QubitOperators
+        """
+        cdef size_t kk
+        for kk in range(self.terms.size()):
+            self.terms[kk].coeff *= other
+        return self
 
     def __add__(self, QubitOperator other):
         """Addition of QubitOperators with copy
@@ -177,6 +185,26 @@ cdef class QubitOperator():
         out.terms = self.terms
         for kk in range(other.terms.size()):
             out.terms.push_back(other.terms[kk])
+        return out
+
+    def __mul__(self, double complex other):
+        """Multiplication of QubitOperators on left with copy
+        """
+        cdef size_t kk
+        cdef QubitOperator out = QubitOperator(self.width)
+        out.terms = self.terms
+        for kk in range(out.terms.size()):
+            out.terms[kk].coeff *= other
+        return out
+
+    def __rmul__(self, double complex other):
+        """Multiplication of QubitOperators on right with copy
+        """
+        cdef size_t kk
+        cdef QubitOperator out = QubitOperator(self.width)
+        out.terms = self.terms
+        for kk in range(out.terms.size()):
+            out.terms[kk].coeff *= other
         return out
 
     @cython.boundscheck(False)
