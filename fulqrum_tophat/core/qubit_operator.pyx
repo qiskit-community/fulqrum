@@ -8,6 +8,7 @@ from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libcpp cimport bool
 from libcpp.unordered_map cimport unordered_map
+from libcpp.algorithm cimport sort as stdsort
 from cython.operator cimport dereference, preincrement
 from fulqrum_tophat.exceptions import FulqrumError
 from fulqrum_tophat.core.base cimport OperatorTerm, size_uchar_pair, diagonal_term
@@ -347,6 +348,33 @@ cdef class QubitOperator():
                 val += term_ptr.coeff
         if return_value:
             return out, val
+        return out
+
+    @cython.boundscheck(False)
+    cpdef void sort_indices(self):
+        """Inplace sorting of term indices
+        """
+        cdef size_t kk
+        cdef OperatorTerm * term_ptr
+        for kk in range(self.terms.size()):
+            term_ptr = &self.terms[kk]
+            stdsort(term_ptr.operators.begin(), term_ptr.operators.end())
+
+    @cython.boundscheck(False)
+    cpdef QubitOperator sorted_indices(self):
+        """Return a copy of the operator with sorted term indices
+
+        Returns:
+            QubitOperator: Operator with sorted term indices
+        """
+        cdef size_t kk
+        cdef OperatorTerm term
+        cdef QubitOperator out = QubitOperator(self.width)
+        for kk in range(self.terms.size()):
+            #make a copy of the term
+            term = self.terms[kk]
+            stdsort(term.operators.begin(), term.operators.end())
+            out.terms.push_back(term)
         return out
         
     @classmethod

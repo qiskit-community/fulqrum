@@ -132,3 +132,20 @@ def test_operator_identity_removal():
     new_op = op.remove_identity_terms()
     assert new_op.num_terms == 5
     assert new_op.identity_terms_sum() == 0
+
+
+def test_operator_inplace_sort():
+    """Test sorting of indices inplace"""
+    N = 5
+    qo = QubitOperator(N, (("X", kk) for kk in range(N - 1, -1, -1)))
+    qo.sort_indices()
+    assert qo.operators == [("X", 0), ("X", 1), ("X", 2), ("X", 3), ("X", 4)]
+
+
+def test_operator_copied_sort():
+    """Test sorting of indices returning a copy"""
+    N = 5
+    qo = QubitOperator(N, (("X", kk) for kk in range(N - 1, -1, -1)))
+    sorted_qo = qo.sorted_indices()
+    assert sorted_qo.operators == [("X", 0), ("X", 1), ("X", 2), ("X", 3), ("X", 4)]
+    assert qo.operators == [("X", 4), ("X", 3), ("X", 2), ("X", 1), ("X", 0)]
