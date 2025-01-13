@@ -2,7 +2,7 @@
 # Copyright (C) 2024, IBM
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 from libcpp cimport bool
-from fulqrum_tophat.core.base cimport OperatorTerm
+from fulqrum.core.base cimport OperatorTerm
 cimport cython
 
 @cython.boundscheck(False)
@@ -14,7 +14,7 @@ cdef bool diagonal_term(OperatorTerm * term):
         bool: True if diagonal
     """
     cdef size_t kk
-    for kk in range(term.operators.size()):
-        if term.operators[kk].second > 2:
+    for kk in range(term.values.size()):
+        if term.values[kk] > 2:
             return False
     return True

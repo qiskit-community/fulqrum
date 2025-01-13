@@ -21,13 +21,13 @@ jobs:
   - stage: "Lint with pylint and pycodestyle"
     script:
       - python setup.py build_ext --inplace
-      - pylint -rn fulqrum_tophat
-      - pycodestyle --max-line-length=100 fulqrum_tophat
+      - pylint -rn fulqrum
+      - pycodestyle --max-line-length=100 fulqrum
 
   - stage: "Run tests with pytest"  
     script:
       - pip install .
-      - pytest -p no:warnings --pyargs fulqrum_tophat/test
+      - pytest -p no:warnings --pyargs fulqrum/test
 
   - stage: "Build docs"
     script:  

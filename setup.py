@@ -1,7 +1,7 @@
-# Fulqrum - Top Hat
+# Fulqrum
 # Copyright (C) 2024, IBM
 
-"""Fulqrum - Top Hat: A sophisticated take on quantum operators
+"""Fulqrum : A sophisticated take on quantum operators
 """
 
 import os
@@ -22,7 +22,7 @@ with open("requirements.txt") as f:
 
 PACKAGES = setuptools.find_packages()
 PACKAGE_DATA = {
-    "fulqrum_tophat": ["*.pxd"],
+    "fulqrum": ["*.pxd"],
 }
 DOCLINES = __doc__.split("\n")
 DESCRIPTION = DOCLINES[0]
@@ -30,23 +30,14 @@ this_dir = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_dir, "README.md"), encoding="utf-8") as readme:
     LONG_DESCRIPTION = readme.read()
 
-CYTHON_EXTS = ["base", "qubit_operator", "fermi_operator", "matrix_elements", 
-               "qiskit", "openfermion"]
+CYTHON_EXTS = ["base", "qubit_operator"]
 CYTHON_MODULES = [
-    "fulqrum_tophat.core",
-    "fulqrum_tophat.core",
-    "fulqrum_tophat.core",
-    "fulqrum_tophat.core",
-    "fulqrum_tophat.convert",
-    "fulqrum_tophat.convert",
+    "fulqrum.core",
+    "fulqrum.core",
 ]
 CYTHON_SOURCE_DIRS = [
-    "fulqrum_tophat/core",
-    "fulqrum_tophat/core",
-    "fulqrum_tophat/core",
-    "fulqrum_tophat/core",
-    "fulqrum_tophat/convert",
-    "fulqrum_tophat/convert",
+    "fulqrum/core",
+    "fulqrum/core",
 ]
 
 # Add openmp flags
@@ -58,7 +49,7 @@ for _arg in sys.argv:
         WITH_OMP = True
         sys.argv.remove(_arg)
         break
-if WITH_OMP or os.getenv("TOPHAT_OPENMP", False):
+if WITH_OMP or os.getenv("FULQRUM_OPENMP", False):
     WITH_OMP = True
     if sys.platform == "win32":
         OPTIONAL_FLAGS = ["/openmp"]
@@ -105,9 +96,9 @@ def git_short_hash():
 FULLVERSION = VERSION
 
 
-def write_version_py(filename="/fulqrum_tophat/version.py"):
+def write_version_py(filename="/fulqrum/version.py"):
     cnt = """\
-# THIS FILE IS GENERATED FROM FULQRUM TOPHAT SETUP.PY
+# THIS FILE IS GENERATED FROM FULQRUM SETUP.PY
 # pylint: disable=missing-module-docstring
 short_version = '%(version)s'
 version = '%(fullversion)s'
@@ -130,17 +121,17 @@ openmp = %(with_omp)s
 local_path = os.path.dirname(os.path.abspath(sys.argv[0]))
 os.chdir(local_path)
 sys.path.insert(0, local_path)
-sys.path.insert(0, os.path.join(local_path, "fulqrum_tophat"))  # to retrive _version
+sys.path.insert(0, os.path.join(local_path, "fulqrum"))  # to retrive _version
 
 # always rewrite _version
-if os.path.exists(os.path.dirname(__file__) + "/fulqrum_tophat/version.py"):
-    os.remove(os.path.dirname(__file__) + "/fulqrum_tophat/version.py")
+if os.path.exists(os.path.dirname(__file__) + "/fulqrum/version.py"):
+    os.remove(os.path.dirname(__file__) + "/fulqrum/version.py")
 
 write_version_py()
 
 
 setuptools.setup(
-    name="fulqrum_tophat",
+    name="fulqrum",
     version=VERSION,
     python_requires=">=3.10",
     packages=PACKAGES,
