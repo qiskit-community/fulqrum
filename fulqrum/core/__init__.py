@@ -4,4 +4,3 @@
 """Fulqrum Top Hat core module"""
 
 from .qubit_operator import QubitOperator
-from .fermi_operator import FermionicOperator

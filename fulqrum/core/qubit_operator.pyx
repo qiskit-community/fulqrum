@@ -1,4 +1,4 @@
-# Fulqrum - Top Hat
+# Fulqrum
 # Copyright (C) 2024, IBM
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 
@@ -8,11 +8,14 @@ from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libcpp cimport bool
 from libcpp.unordered_map cimport unordered_map
+from libcpp.map cimport map
 from libcpp.algorithm cimport sort as stdsort
 from cython.operator cimport dereference, preincrement
-from fulqrum_tophat.exceptions import FulqrumError
-from fulqrum_tophat.core.base cimport OperatorTerm, size_uchar_pair, diagonal_term
+from fulqrum.exceptions import FulqrumError
+from fulqrum.core.base cimport OperatorTerm, diagonal_term
 
+
+from collections.abc import Iterable
 import numbers
 import numpy as np
 cimport numpy as np
@@ -23,11 +26,11 @@ cdef char[6] diag_oper_elems = [1, -1,   # Z
                                 0, 1     # 1
                                 ]
 
-cdef unordered_map[string, size_t] STR_TO_IND = {'Z': 0, '0': 1, '1': 2, 'X': 3, 'Y': 4,
-                                                 'D': 5, 'U': 6}
+cdef unordered_map[char, char] STR_TO_IND = {90: 0, 48: 1, 49: 2, 88: 3,
+                                               89: 4, 45: 5, 43: 6}
 
-cdef unordered_map[size_t, string] IND_TO_STR = {0: 'Z', 1: '0', 2: '1', 3: 'X', 4: 'Y',
-                                                 5: 'D', 6: 'U'}
+cdef unordered_map[char, string] IND_TO_STR = {0: 'Z', 1: '0', 2: '1', 3: 'X', 
+                                               4: 'Y',5: '-', 6: '+'}
 
 
 cdef const OperatorTerm EmptyOperatorTerm
@@ -44,28 +47,59 @@ cdef class QubitOperator():
     operators,projection operators, and ladder operators
     """
     #public size_t width
-    #public size_t num_qubits
     #vector[QubitTerm] terms
     #public bool sorted
     
     def __cinit__(self, size_t num_qubits,
-                  object operators=None,
-                  double complex coeff=1.0):
+                  object operators=None):
         self.width = num_qubits
-        self.num_qubits = num_qubits
         self.sorted = False
         cdef object item
         cdef OperatorTerm term
+        cdef string op_str
+        cdef double complex coeff
+        cdef object inds
+        cdef size_t kk
+        cdef char op
         if operators is not None:
-            term = EmptyOperatorTerm
-            term.coeff = coeff
             for item in operators:
+                term = EmptyOperatorTerm
                 if any(item):
-                    if item[0] != 'I':
-                        if item[1] > self.width - 1:
-                            raise FulqrumError(f'Index {item[1]} is out of range for width={self.width}')
-                        term.operators.push_back(size_uchar_pair(item[1], STR_TO_IND[item[0]]))
-            self.terms.push_back(term)
+                    if len(item) == 1:
+                        term.coeff = item[0]
+                    else:
+                        op_str = (<string>item[0]).c_str()
+                        inds = item[1] if isinstance(item[1], Iterable) else [item[1]] 
+                        coeff = item[2]
+                        for kk in range(len(item[0])):
+                            if inds[kk] > self.width - 1:
+                                raise FulqrumError(f'Index {item[1]} is out of range for width={self.width}')
+                            if op_str[kk] != 73:
+                                term.indices.push_back(inds[kk])
+                                term.values.push_back(STR_TO_IND[op_str[kk]])
+                        term.coeff = coeff
+                else:
+                    term.coeff = 1
+                self.terms.push_back(term)
+
+    @classmethod
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    def from_label(self, string label, double complex coeff = 1.0):
+        cdef size_t num_qubits = label.size()
+        cdef OperatorTerm term
+        cdef QubitOperator out = QubitOperator(num_qubits)
+        cdef size_t kk
+        cdef const char * labels = label.c_str()
+        cdef char s
+        for kk in range(num_qubits):
+            s = labels[num_qubits-kk-1]
+            if s != 73:
+                term.indices.push_back(kk)
+                term.values.push_back(STR_TO_IND[s])
+        term.coeff = coeff
+        out.terms.push_back(term)
+        return out
 
     def __len__(self):
         return self.terms.size()
@@ -117,6 +151,10 @@ cdef class QubitOperator():
 
         Returns:
             list or None : List of operator index tuples, if any, else None
+
+        Notes:
+            This returns a list of tuples to allow for multiple indices in
+            Fermionic operators
         """
         cdef size_t kk, jj
         cdef OperatorTerm * term
@@ -128,9 +166,8 @@ cdef class QubitOperator():
         else:
             for kk in range(self.terms.size()):
                 term = &self.terms[kk]
-                for jj in range(term.operators.size()):
-                    out.append((IND_TO_STR[term.operators[jj].second], 
-                                term.operators[jj].first))
+                for jj in range(term.indices.size()):
+                    out.append((IND_TO_STR[term.values[jj]], term.indices[jj]))
             return out
 
     @cython.boundscheck(False)
@@ -145,7 +182,7 @@ cdef class QubitOperator():
             QubitOperator: Indexed terms
         """
         cdef size_t kk
-        cdef QubitOperator out = QubitOperator(self.num_qubits)
+        cdef QubitOperator out = QubitOperator(self.width)
         if isinstance(key, numbers.Integral):
             kk = <size_t>key
             if kk > self.terms.size() - 1:
@@ -217,27 +254,27 @@ cdef class QubitOperator():
         for idx in range(self.terms.size()):
             temp_str = ''
             term = self.terms[idx]
-            for kk in range(term.operators.size()):
+            for kk in range(term.indices.size()):
                 if kk:
                     temp_str += ' '
-                temp_str += IND_TO_STR[term.operators[kk].second]
-                temp_str += str(term.operators[kk].first)
-            out.append([temp_str, term.coeff])
+                temp_str += IND_TO_STR[term.values[kk]] + ':'
+                temp_str += str(term.indices[kk])
+            out.append((temp_str, term.coeff))
 
         out_strs = ', '.join(str(kk) for kk in out)
-        return f"QubitOperator<[{out_strs}], num_qubits={self.num_qubits}>"
+        return f"<QubitOperator[{out_strs}], width={self.width}>"
     
     @cython.boundscheck(False)
     @cython.wraparound(False)
     cpdef void append(self, QubitOperator other):
         cdef size_t kk
-        if self.num_qubits != other.num_qubits:
+        if self.width != other.width:
             raise FulqrumError('Appending number of qubits does not match current number')
         for kk in range(other.terms.size()):
             self.terms.push_back(other.terms[kk])
 
     @cython.boundscheck(False)
-    def weight(self):
+    def weights(self):
         """Weight of each term in the operator
 
         Returns:
@@ -246,7 +283,7 @@ cdef class QubitOperator():
         cdef size_t[::1] out = np.zeros(self.terms.size(), dtype=np.uint64)
         cdef size_t kk
         for kk in range(self.terms.size()):
-            out[kk] = self.terms[kk].operators.size()
+            out[kk] = self.terms[kk].values.size()
         return np.asarray(out)
 
     @cython.boundscheck(False)
@@ -259,8 +296,8 @@ cdef class QubitOperator():
         """
         cdef size_t kk, jj
         for kk in range(self.terms.size()):
-            for jj in range(self.terms[kk].operators.size()):
-                if self.terms[kk].operators[jj].second > 2:
+            for jj in range(self.terms[kk].values.size()):
+                if self.terms[kk].values[jj] > 2:
                     return False
         return True
         
@@ -307,8 +344,8 @@ cdef class QubitOperator():
                 while it != end:
                     temp_str = dereference(it).first.c_str()
                     prod = 1
-                    for jj in range(term.operators.size()):
-                        prod *= diag_oper_elems[2*term.operators[jj].second+(<size_t>temp_str[self.num_qubits-term.operators[jj].first-1]-48)]
+                    for jj in range(term.indices.size()):
+                        prod *= diag_oper_elems[2*term.values[jj]+(<size_t>temp_str[self.width-term.indices[jj]-1]-48)]
                     temp_sum += prod * dereference(it).second
                     preincrement(it)
                 out += term.coeff * temp_sum / shots
@@ -325,19 +362,20 @@ cdef class QubitOperator():
             self.terms.push_back(temp_term)
         if self.terms.size() > 1:
             raise FulqrumError('Can only add operators to single-term QubitOperators.')
-        if qubit >= self.num_qubits:
+        if qubit >= self.width:
             raise FulqrumError(f"qubit number {qubit} out of range")
         # Check if element already exists if overwrite=False
         if not overwrite:
-            for kk in range(self.terms[0].operators.size()):
-                if self.terms[0].operators[kk].first == qubit:
-                    raise FulqrumError(f"Operator {IND_TO_STR[self.terms[0].operators[kk].second]} already exists at qubit {qubit}")
+            for kk in range(self.terms[0].indices.size()):
+                if self.terms[0].indices[kk] == qubit:
+                    raise FulqrumError(f"Operator {IND_TO_STR[self.terms[0].indices[kk]]} already exists at qubit {qubit}")
         if operator != 'I':
-            self.terms[0].operators.push_back(size_uchar_pair(qubit, STR_TO_IND[operator]))
+            self.terms[0].indices.push_back(qubit)
+            self.terms[0].values.push_back(STR_TO_IND[operator])
         self.sorted = False
 
     @cython.boundscheck(False)
-    cpdef double complex identity_terms_sum(self):
+    cpdef double complex sum_identity_terms(self):
         """Sum of identity terms coefficients.
 
         Returns:
@@ -348,7 +386,7 @@ cdef class QubitOperator():
         cdef double complex out = 0
         for kk in range(self.terms.size()):
             term_ptr = &self.terms[kk]
-            if term_ptr.operators.size() == 0:
+            if term_ptr.indices.size() == 0:
                 out += term_ptr.coeff
         return out
 
@@ -370,7 +408,7 @@ cdef class QubitOperator():
         cdef QubitOperator out = QubitOperator(self.width)
         for kk in range(self.terms.size()):
             term_ptr = &self.terms[kk]
-            if term_ptr.operators.size() != 0:
+            if term_ptr.indices.size() != 0:
                 out.terms.push_back(dereference(term_ptr))
             else:
                 val += term_ptr.coeff
@@ -378,92 +416,3 @@ cdef class QubitOperator():
             return out, val
         return out
 
-    @cython.boundscheck(False)
-    cpdef void sort_indices(self):
-        """Inplace sorting of term indices
-        """
-        cdef size_t kk
-        cdef OperatorTerm * term_ptr
-        for kk in range(self.terms.size()):
-            term_ptr = &self.terms[kk]
-            stdsort(term_ptr.operators.begin(), term_ptr.operators.end())
-
-    @cython.boundscheck(False)
-    cpdef QubitOperator sorted_indices(self):
-        """Return a copy of the operator with sorted term indices
-
-        Returns:
-            QubitOperator: Operator with sorted term indices
-        """
-        cdef size_t kk
-        cdef OperatorTerm term
-        cdef QubitOperator out = QubitOperator(self.width)
-        for kk in range(self.terms.size()):
-            #make a copy of the term
-            term = self.terms[kk]
-            stdsort(term.operators.begin(), term.operators.end())
-            out.terms.push_back(term)
-        return out
-        
-    @classmethod
-    def from_dicts(self, unsigned int num_qubits, object terms=[]):
-        cdef double complex coeff
-        cdef list item
-        cdef unsigned int key
-        cdef dict dic
-        cdef OperatorTerm term
-        cdef QubitOperator out = QubitOperator(num_qubits)
-        for item in terms: 
-            dic = item[0]
-            coeff = item[1]
-            term = EmptyOperatorTerm
-            term.coeff = coeff
-            for key, val in dic.items():
-                if val != 'I':
-                    term.operators.push_back(size_uchar_pair(key, STR_TO_IND[val]))
-            out.terms.push_back(term)
-        return out
-    
-    
-    @classmethod
-    def from_lists(self, unsigned int num_qubits, object terms=[]):
-        cdef object item
-        cdef object indices, opers
-        cdef size_t ind
-        cdef OperatorTerm term
-        cdef QubitOperator out = QubitOperator(num_qubits)
-        for item in terms:
-            term = EmptyOperatorTerm
-            term.coeff = 1.0
-            if len(item):
-                tuples = item[0]
-                if len(item) > 1:
-                    term.coeff = item[1] 
-                for tup in tuples:
-                    if tup[0] != 'I':
-                        term.operators.push_back(size_uchar_pair(tup[1], STR_TO_IND[tup[0]]))
-            out.terms.push_back(term)
-        return out
-    
-    
-    @classmethod
-    def from_strings(self, unsigned int num_qubits, object terms=[]):
-        cdef double complex coeff
-        cdef list item
-        cdef size_t idx
-        cdef str string, s
-        cdef unsigned int key
-        cdef OperatorTerm term
-        cdef QubitOperator out = QubitOperator(num_qubits)
-        for item in terms:
-            string = item[0]
-            coeff = item[1] 
-            term = EmptyOperatorTerm
-            term.coeff = coeff
-            idx = 0
-            for s in string[::-1]:
-                if s != 'I':
-                    term.operators.push_back(size_uchar_pair(idx, STR_TO_IND[s]))
-                idx += 1
-            out.terms.push_back(term)
-        return out

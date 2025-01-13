@@ -12,4 +12,3 @@ except ImportError:
     openmp = False
 
 from .core.qubit_operator import QubitOperator
-from .core.fermi_operator import FermionicOperator
