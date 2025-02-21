@@ -18,7 +18,7 @@ where you can add any number of additional env flags such as `FULQRUM_OPENMP=1`.
 
 ## Installing
 
-To enable OpenMP one must have an OpenMP 4.0+ enabled compiler and install with:
+To enable OpenMP one must have an OpenMP 3.0+ enabled compiler and install with:
 
 ```bash
 FULQRUM_OPENMP=1 pip install .
