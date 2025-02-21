@@ -22,7 +22,8 @@ with open("requirements.txt") as f:
 
 PACKAGES = setuptools.find_packages()
 PACKAGE_DATA = {
-    "fulqrum": ["*.pxd"],
+    "fulqrum/core": ["*.pxd"],
+    "fulqrum/core/src": ["*.hpp"],
 }
 DOCLINES = __doc__.split("\n")
 DESCRIPTION = DOCLINES[0]
@@ -30,14 +31,18 @@ this_dir = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_dir, "README.md"), encoding="utf-8") as readme:
     LONG_DESCRIPTION = readme.read()
 
-CYTHON_EXTS = ["base", "qubit_operator"]
+CYTHON_EXTS = ["qubit_operator", "subspace", "spmv", "string_funcs"]
 CYTHON_MODULES = [
     "fulqrum.core",
     "fulqrum.core",
+    "fulqrum.core",
+    "fulqrum.test",
 ]
 CYTHON_SOURCE_DIRS = [
     "fulqrum/core",
     "fulqrum/core",
+    "fulqrum/core",
+    "fulqrum/test",
 ]
 
 # Add openmp flags
@@ -45,27 +50,30 @@ OPTIONAL_FLAGS = []
 OPTIONAL_ARGS = []
 WITH_OMP = False
 for _arg in sys.argv:
-    if _arg == "--openmp" or _arg == "--with-openmp":
+    if _arg == "--openmp":
         WITH_OMP = True
         sys.argv.remove(_arg)
         break
 if WITH_OMP or os.getenv("FULQRUM_OPENMP", False):
     WITH_OMP = True
     if sys.platform == "win32":
-        OPTIONAL_FLAGS = ["/openmp"]
+        OPTIONAL_FLAGS = ["/openmp:llvm"]
     else:
         OPTIONAL_FLAGS = ["-fopenmp"]
-    OPTIONAL_ARGS = OPTIONAL_FLAGS
+        OPTIONAL_ARGS.append("-fopenmp")
+
+if os.getenv("FULQRUM_ARCH", False) and sys.platform != "win32":
+    OPTIONAL_FLAGS.append("-march=" + os.getenv("FULQRUM_ARCH"))
 
 INCLUDE_DIRS = [np.get_include()]
 # Extra link args
 LINK_FLAGS = []
 # If on Win and not in MSYS2 (i.e. Visual studio compile)
 if sys.platform == "win32" and os.environ.get("MSYSTEM", None) is None:
-    COMPILER_FLAGS = ["/O3"]
+    COMPILER_FLAGS = ["/O2", "/std:c++17"]
 # Everything else
 else:
-    COMPILER_FLAGS = ["-O3", "-std=c++17"]
+    COMPILER_FLAGS = ["-O3", "-std=c++17", "-ffast-math"]
 
 EXT_MODULES = []
 # Add Cython Extensions

@@ -1,4 +1,6 @@
 include LICENSE.txt
 include README.md
 include requirements.txt
-recursive-include fulqrum *.pxd
+recursive-include fulqrum/core/includes *.pxi
+recursive-include fulqrum/core *.pxd
+recursive-include fulqrum/core/src *.hpp

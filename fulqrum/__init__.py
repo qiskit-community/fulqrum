@@ -11,4 +11,4 @@ except ImportError:
     __version__ = "0.0.0"
     openmp = False
 
-from .core.qubit_operator import QubitOperator
+from .core import QubitOperator, Subspace, SubspaceHamiltonian

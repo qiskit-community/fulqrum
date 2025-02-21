@@ -83,7 +83,7 @@ def test_simple_diagonal():
     for kk in range(20):
         op += QubitOperator(N, [(diag_ops[kk % len(diag_ops)], kk, 1 / (N + kk))])
 
-    assert op.is_diagonal() is True
+    assert op.is_diagonal() == True
 
 
 def test_simple_diagonal2():
@@ -99,7 +99,7 @@ def test_simple_diagonal2():
         else:
             op += QubitOperator(N, [("X", kk, 1 / (N + kk))])
 
-    assert op.is_diagonal() is False
+    assert op.is_diagonal() == False
 
 
 def test_operator_diagonal_splitting():
@@ -136,8 +136,34 @@ def test_operator_multiplication():
     N = 5
     qo = QubitOperator(N, [("X" * 5, range(N - 1, -1, -1), -1j)])
     new_qo = 5 * qo
-    assert new_qo.operators == [("X", 4), ("X", 3), ("X", 2), ("X", 1), ("X", 0)]
+    # operator ordering is switched due to internal sort
+    assert new_qo.operators == [("X", 0), ("X", 1), ("X", 2), ("X", 3), ("X", 4)]
     assert new_qo.coeff == -5j
     assert qo.coeff == -1j
     qo *= 5
     assert qo.coeff == -5j
+
+
+def test_operator_sorting1():
+    """Test simple operator sorting"""
+    N = 5
+    qo = QubitOperator(N, [("Z0+XY", [4, 0, 3, 1, 2], 1.0)])
+    # operator ordering is switched due to internal sort
+    assert qo.operators == [("0", 0), ("X", 1), ("Y", 2), ("+", 3), ("Z", 4)]
+
+
+def test_operator_sorting2():
+    """Test operator sorting with identity terms"""
+    N = 5
+    qo = QubitOperator(N, [("ZIIXY", [4, 0, 3, 1, 2], 1.0)])
+    # operator ordering is switched due to internal sort
+    assert qo.operators == [("X", 1), ("Y", 2), ("Z", 4)]
+
+
+def test_operator_subtraction():
+    """Test operator subtraction"""
+    N = 2
+    H = QubitOperator.from_label("ZZ")
+    G = QubitOperator.from_label("XX", 5)
+    qo = H - G
+    assert qo[1].coeff == -5.0

@@ -12,28 +12,40 @@ from libcpp.map cimport map
 from libcpp.algorithm cimport sort as stdsort
 from cython.operator cimport dereference, preincrement
 from fulqrum.exceptions import FulqrumError
-from fulqrum.core.base cimport OperatorTerm, diagonal_term
-
 
 from collections.abc import Iterable
 import numbers
 import numpy as np
 cimport numpy as np
 
+include "includes/base_header.pxi"
+include "includes/elements_header.pxi"
+include "includes/strings_header.pxi"
+include "includes/bitstrings_header.pxi"
+include "includes/converters.pxi"
+include "includes/utils.pxi"
 
 cdef char[6] diag_oper_elems = [1, -1,   # Z
                                 1, 0,    # 0
                                 0, 1     # 1
                                 ]
 
-cdef unordered_map[char, char] STR_TO_IND = {90: 0, 48: 1, 49: 2, 88: 3,
-                                               89: 4, 45: 5, 43: 6}
 
-cdef unordered_map[char, string] IND_TO_STR = {0: 'Z', 1: '0', 2: '1', 3: 'X', 
-                                               4: 'Y',5: '-', 6: '+'}
+cdef const OperatorTerm_t EmptyOperatorTerm
 
 
-cdef const OperatorTerm EmptyOperatorTerm
+@cython.boundscheck(False)
+cdef int diagonal_term(OperatorTerm_t * term):
+    """Check if term is diagonal in computational basis
+
+    Returns:
+        bool: True if diagonal
+    """
+    cdef size_t kk
+    for kk in range(term.values.size()):
+        if term.values[kk] > 2:
+            return 0
+    return 1
 
 
 cdef inline unsigned int int_min(unsigned int x, unsigned int y) nogil:
@@ -46,24 +58,23 @@ cdef class QubitOperator():
     """Operator class for qubit terms consisting of Pauli
     operators,projection operators, and ladder operators
     """
-    #public size_t width
-    #vector[QubitTerm] terms
-    #public bool sorted
-    
+    #QubitOperator oper
+
     def __cinit__(self, size_t num_qubits,
                   object operators=None):
-        self.width = num_qubits
-        self.sorted = False
+        self.oper.width = num_qubits
+        self.oper.sorted = False
         cdef object item
-        cdef OperatorTerm term
+        cdef OperatorTerm_t term
         cdef string op_str
         cdef double complex coeff
         cdef object inds
         cdef size_t kk
-        cdef char op
+        cdef char op, ind
         if operators is not None:
             for item in operators:
                 term = EmptyOperatorTerm
+                term.offdiag_weight = 0
                 if any(item):
                     if len(item) == 1:
                         term.coeff = item[0]
@@ -71,38 +82,44 @@ cdef class QubitOperator():
                         op_str = (<string>item[0]).c_str()
                         inds = item[1] if isinstance(item[1], Iterable) else [item[1]] 
                         coeff = item[2]
-                        for kk in range(len(item[0])):
-                            if inds[kk] > self.width - 1:
-                                raise FulqrumError(f'Index {item[1]} is out of range for width={self.width}')
+                        for kk in range(<size_t>len(item[0])):
+                            if inds[kk] > <size_t>(self.oper.width - 1):
+                                raise FulqrumError(f'Index {item[1]} is out of range for width={self.oper.width}')
                             if op_str[kk] != 73:
                                 term.indices.push_back(inds[kk])
-                                term.values.push_back(STR_TO_IND[op_str[kk]])
+                                ind = STR_TO_IND[op_str[kk]]
+                                term.values.push_back(ind)
+                                term.offdiag_weight += (ind > 2)
                         term.coeff = coeff
                 else:
                     term.coeff = 1
-                self.terms.push_back(term)
+                sort_term_data(term.indices, term.values)
+                self.oper.terms.push_back(term)
 
     @classmethod
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def from_label(self, string label, double complex coeff = 1.0):
         cdef size_t num_qubits = label.size()
-        cdef OperatorTerm term
+        cdef OperatorTerm_t term = EmptyOperatorTerm
         cdef QubitOperator out = QubitOperator(num_qubits)
         cdef size_t kk
         cdef const char * labels = label.c_str()
-        cdef char s
+        cdef char s, ind
         for kk in range(num_qubits):
             s = labels[num_qubits-kk-1]
             if s != 73:
                 term.indices.push_back(kk)
-                term.values.push_back(STR_TO_IND[s])
+                ind = STR_TO_IND[s]
+                term.values.push_back(ind)
+                term.offdiag_weight += (ind > 2)
         term.coeff = coeff
-        out.terms.push_back(term)
+        sort_term_data(term.indices, term.values)
+        out.oper.terms.push_back(term)
         return out
 
     def __len__(self):
-        return self.terms.size()
+        return self.oper.terms.size()
 
     @property
     def num_terms(self):
@@ -111,7 +128,11 @@ cdef class QubitOperator():
         Returns:
             int: Number of terms in operator
         """
-        return self.terms.size()
+        return self.oper.terms.size()
+    
+    @property
+    def width(self):
+        return self.oper.width
     
     @cython.boundscheck(False)
     def split_diagonal(self):
@@ -121,15 +142,15 @@ cdef class QubitOperator():
             tuple: QubitOperators for diagonal and non-diagonal parts
         """
         cdef size_t kk
-        cdef QubitOperator diag = QubitOperator(self.width)
-        cdef QubitOperator offdiag = QubitOperator(self.width)
-        cdef OperatorTerm term
-        for kk in range(self.terms.size()):
-            term = self.terms[kk]
+        cdef QubitOperator diag = QubitOperator(self.oper.width)
+        cdef QubitOperator offdiag = QubitOperator(self.oper.width)
+        cdef OperatorTerm_t term
+        for kk in range(self.oper.terms.size()):
+            term = self.oper.terms[kk]
             if diagonal_term(&term):
-                diag.terms.push_back(term)
+                diag.oper.terms.push_back(term)
             else:
-                offdiag.terms.push_back(term)
+                offdiag.oper.terms.push_back(term)
         return diag, offdiag
 
     @property
@@ -137,13 +158,13 @@ cdef class QubitOperator():
         """Return the coeff for a single term or empty operator
         """
         cdef size_t kk, jj
-        cdef OperatorTerm * term
+        cdef OperatorTerm_t * term
         cdef list out = []
         if self.num_terms > 2:
             raise FulqrumError('Can only grab coeff from operators with < 2 terms')
         elif self.num_terms == 0:
             return 0+0j
-        return self.terms[0].coeff
+        return self.oper.terms[0].coeff
 
     @property
     def operators(self):
@@ -157,15 +178,15 @@ cdef class QubitOperator():
             Fermionic operators
         """
         cdef size_t kk, jj
-        cdef OperatorTerm * term
+        cdef OperatorTerm_t * term
         cdef list out = []
         if self.num_terms > 1:
             raise FulqrumError('Can only grab operators from operators with < 2 terms')
         elif self.num_terms == 0:
             return None
         else:
-            for kk in range(self.terms.size()):
-                term = &self.terms[kk]
+            for kk in range(self.oper.terms.size()):
+                term = &self.oper.terms[kk]
                 for jj in range(term.indices.size()):
                     out.append((IND_TO_STR[term.values[jj]], term.indices[jj]))
             return out
@@ -182,20 +203,20 @@ cdef class QubitOperator():
             QubitOperator: Indexed terms
         """
         cdef size_t kk
-        cdef QubitOperator out = QubitOperator(self.width)
+        cdef QubitOperator out = QubitOperator(self.oper.width)
         if isinstance(key, numbers.Integral):
             kk = <size_t>key
-            if kk > self.terms.size() - 1:
+            if kk > self.oper.terms.size() - 1:
                 raise FulqrumError(f"Index {kk} is out of range for operator"
-                                   f" of length {self.terms.size()}")
-            out.terms.push_back(self.terms[kk])
+                                   f" of length {self.oper.terms.size()}")
+            out.oper.terms.push_back(self.oper.terms[kk])
         elif isinstance(key, slice):
-            for kk in range(*key.indices(self.terms.size())):
-                out.terms.push_back(self.terms[kk])
+            for kk in range(*key.indices(self.oper.terms.size())):
+                out.oper.terms.push_back(self.oper.terms[kk])
         elif isinstance(key, (list, tuple)):
             for idx in key:
                 kk = <size_t>idx
-                out.terms.push_back(self.terms[kk])
+                out.oper.terms.push_back(self.oper.terms[kk])
         else:
             raise FulqrumError(f"Cannot get operator terms using {type(key)}")
         return out
@@ -206,54 +227,72 @@ cdef class QubitOperator():
         self.append(other)
         return self
     
+    @cython.boundscheck(False)
     def __imul__(self, double complex other):
         """Inplace multiplication of QubitOperators
         """
         cdef size_t kk
-        for kk in range(self.terms.size()):
-            self.terms[kk].coeff *= other
+        for kk in range(self.oper.terms.size()):
+            self.oper.terms[kk].coeff *= other
         return self
 
+    @cython.boundscheck(False)
     def __add__(self, QubitOperator other):
-        """Addition of QubitOperators with copy
+        """Addition of QubitOperators withcopy
         """
         cdef size_t kk
-        cdef QubitOperator out = QubitOperator(self.width)
-        out.terms = self.terms
-        for kk in range(other.terms.size()):
-            out.terms.push_back(other.terms[kk])
+        cdef QubitOperator out = QubitOperator(self.oper.width)
+        out.oper.terms = self.oper.terms
+        for kk in range(other.oper.terms.size()):
+            out.oper.terms.push_back(other.oper.terms[kk])
         return out
 
+    @cython.boundscheck(False)
+    def __sub__(self, QubitOperator other):
+        """Subtraction of QubitOperators with copy
+        """
+        cdef size_t kk
+        cdef QubitOperator out = QubitOperator(self.oper.width)
+        cdef OperatorTerm_t term
+        out.oper.terms = self.oper.terms
+        for kk in range(other.oper.terms.size()):
+            term = other.oper.terms[kk]
+            term.coeff *= -1
+            out.oper.terms.push_back(term)
+        return out
+    
+    @cython.boundscheck(False)
     def __mul__(self, double complex other):
         """Multiplication of QubitOperators on left with copy
         """
         cdef size_t kk
-        cdef QubitOperator out = QubitOperator(self.width)
-        out.terms = self.terms
-        for kk in range(out.terms.size()):
-            out.terms[kk].coeff *= other
+        cdef QubitOperator out = QubitOperator(self.oper.width)
+        out.oper.terms = self.oper.terms
+        for kk in range(out.oper.terms.size()):
+            out.oper.terms[kk].coeff *= other
         return out
 
+    @cython.boundscheck(False)
     def __rmul__(self, double complex other):
         """Multiplication of QubitOperators on right with copy
         """
         cdef size_t kk
-        cdef QubitOperator out = QubitOperator(self.width)
-        out.terms = self.terms
-        for kk in range(out.terms.size()):
-            out.terms[kk].coeff *= other
+        cdef QubitOperator out = QubitOperator(self.oper.width)
+        out.oper.terms = self.oper.terms
+        for kk in range(out.oper.terms.size()):
+            out.oper.terms[kk].coeff *= other
         return out
 
     @cython.boundscheck(False)
     def __repr__(self):
-        cdef unsigned int idx 
+        cdef size_t idx 
         cdef list out = []
         cdef str temp_str
-        cdef OperatorTerm term
+        cdef OperatorTerm_t term
         cdef size_t kk
-        for idx in range(self.terms.size()):
+        for idx in range(self.oper.terms.size()):
             temp_str = ''
-            term = self.terms[idx]
+            term = self.oper.terms[idx]
             for kk in range(term.indices.size()):
                 if kk:
                     temp_str += ' '
@@ -262,16 +301,15 @@ cdef class QubitOperator():
             out.append((temp_str, term.coeff))
 
         out_strs = ', '.join(str(kk) for kk in out)
-        return f"<QubitOperator[{out_strs}], width={self.width}>"
+        return f"<QubitOperator[{out_strs}], width={self.oper.width}>"
     
     @cython.boundscheck(False)
-    @cython.wraparound(False)
     cpdef void append(self, QubitOperator other):
         cdef size_t kk
-        if self.width != other.width:
+        if self.oper.width != other.oper.width:
             raise FulqrumError('Appending number of qubits does not match current number')
-        for kk in range(other.terms.size()):
-            self.terms.push_back(other.terms[kk])
+        for kk in range(other.oper.terms.size()):
+            self.oper.terms.push_back(other.oper.terms[kk])
 
     @cython.boundscheck(False)
     def weights(self):
@@ -280,26 +318,39 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of operator weights
         """
-        cdef size_t[::1] out = np.zeros(self.terms.size(), dtype=np.uint64)
+        cdef size_t[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uintp)
         cdef size_t kk
-        for kk in range(self.terms.size()):
-            out[kk] = self.terms[kk].values.size()
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].values.size()
+        return np.asarray(out)
+
+    @cython.boundscheck(False)
+    def offdiag_weights(self):
+        """Off-diagonal weight of each term in the operator
+
+        Returns:
+            ndarray: Array of operator off-diagonal weights
+        """
+        cdef size_t[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uintp)
+        cdef size_t kk
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].offdiag_weight
         return np.asarray(out)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef bool is_diagonal(self):
+    cpdef int is_diagonal(self):
         """Check if operator is diagonal in computational basis
 
         Returns:
-            bool: True if diagonal, False otherwise
+            int: True if diagonal, False otherwise
         """
         cdef size_t kk, jj
-        for kk in range(self.terms.size()):
-            for jj in range(self.terms[kk].values.size()):
-                if self.terms[kk].values[jj] > 2:
-                    return False
-        return True
+        for kk in range(self.oper.terms.size()):
+            for jj in range(self.oper.terms[kk].values.size()):
+                if self.oper.terms[kk].values[jj] > 2:
+                    return 0
+        return 1
         
 
     @cython.boundscheck(False)
@@ -326,7 +377,7 @@ cdef class QubitOperator():
         cdef double temp_sum
         cdef double complex out = 0
         cdef size_t kk, jj,
-        cdef OperatorTerm * term
+        cdef OperatorTerm_t * term
         cdef const char * temp_str
         cdef char prod
 
@@ -337,15 +388,15 @@ cdef class QubitOperator():
                 shots += dereference(it).second
                 preincrement(it)
             
-            for kk in range(self.terms.size()):
+            for kk in range(self.oper.terms.size()):
                 it = dist_map.begin()
-                term = &self.terms[kk]
+                term = &self.oper.terms[kk]
                 temp_sum = 0
                 while it != end:
                     temp_str = dereference(it).first.c_str()
                     prod = 1
                     for jj in range(term.indices.size()):
-                        prod *= diag_oper_elems[2*term.values[jj]+(<size_t>temp_str[self.width-term.indices[jj]-1]-48)]
+                        prod *= diag_oper_elems[2*term.values[jj]+(<size_t>temp_str[self.oper.width-term.indices[jj]-1]-48)]
                     temp_sum += prod * dereference(it).second
                     preincrement(it)
                 out += term.coeff * temp_sum / shots
@@ -355,23 +406,23 @@ cdef class QubitOperator():
     @cython.wraparound(False)
     def add_operator(self, size_t qubit, str operator, bool overwrite=False):
         cdef size_t kk
-        cdef OperatorTerm temp_term 
-        if self.terms.size() == 0:
+        cdef OperatorTerm_t temp_term 
+        if self.oper.terms.size() == 0:
             temp_term = EmptyOperatorTerm
             temp_term.coeff = 1.0
-            self.terms.push_back(temp_term)
-        if self.terms.size() > 1:
+            self.oper.terms.push_back(temp_term)
+        if self.oper.terms.size() > 1:
             raise FulqrumError('Can only add operators to single-term QubitOperators.')
-        if qubit >= self.width:
+        if qubit >= self.oper.width:
             raise FulqrumError(f"qubit number {qubit} out of range")
         # Check if element already exists if overwrite=False
         if not overwrite:
-            for kk in range(self.terms[0].indices.size()):
-                if self.terms[0].indices[kk] == qubit:
-                    raise FulqrumError(f"Operator {IND_TO_STR[self.terms[0].indices[kk]]} already exists at qubit {qubit}")
+            for kk in range(self.oper.terms[0].indices.size()):
+                if self.oper.terms[0].indices[kk] == qubit:
+                    raise FulqrumError(f"Operator {IND_TO_STR[self.oper.terms[0].indices[kk]]} already exists at qubit {qubit}")
         if operator != 'I':
-            self.terms[0].indices.push_back(qubit)
-            self.terms[0].values.push_back(STR_TO_IND[operator])
+            self.oper.terms[0].indices.push_back(qubit)
+            self.oper.terms[0].values.push_back(STR_TO_IND[operator])
         self.sorted = False
 
     @cython.boundscheck(False)
@@ -382,10 +433,10 @@ cdef class QubitOperator():
             double complex: Sum of identities
         """
         cdef size_t kk
-        cdef OperatorTerm * term_ptr
+        cdef OperatorTerm_t * term_ptr
         cdef double complex out = 0
-        for kk in range(self.terms.size()):
-            term_ptr = &self.terms[kk]
+        for kk in range(self.oper.terms.size()):
+            term_ptr = &self.oper.terms[kk]
             if term_ptr.indices.size() == 0:
                 out += term_ptr.coeff
         return out
@@ -403,16 +454,79 @@ cdef class QubitOperator():
             complex: Sum of identity coefficients, if `return_value=True`
         """
         cdef size_t kk
-        cdef OperatorTerm * term_ptr
+        cdef OperatorTerm_t * term_ptr
         cdef double complex val = 0
-        cdef QubitOperator out = QubitOperator(self.width)
-        for kk in range(self.terms.size()):
-            term_ptr = &self.terms[kk]
+        cdef QubitOperator out = QubitOperator(self.oper.width)
+        for kk in range(self.oper.terms.size()):
+            term_ptr = &self.oper.terms[kk]
             if term_ptr.indices.size() != 0:
-                out.terms.push_back(dereference(term_ptr))
+                out.oper.terms.push_back(dereference(term_ptr))
             else:
                 val += term_ptr.coeff
         if return_value:
             return out, val
         return out
+    
+    @cython.boundscheck(False)
+    def matrix_element(self, object row, object col):
+        """Compute matrix element value at given row and column
 
+        Parameters:
+            row (str or int): Row index
+            col (str or int): Column index
+
+        Returns:
+            complex: Element value at H[row, col]
+        """
+        cdef string row_str, col_str
+        cdef vector[unsigned char] row_vec, col_vec, nonzero_vec
+        if isinstance(row, numbers.Integral):
+            row_str = bin(row)[2:].zfill(self.oper.width)
+        elif isinstance(row, str):
+            row_str = row
+        else:
+            raise Exception('bad row input')
+        if isinstance(col, numbers.Integral):
+            col_str = bin(col)[2:].zfill(self.oper.width)
+        elif isinstance(col, str):
+            col_str = col
+        else:
+            raise Exception('bad col input')
+        if row_str.size() != col_str.size():
+            raise Exception('String lengths differ')
+        cdef size_t bit_len = row_str.size()
+
+        # resize vectors (DO NOT use reserve)
+        row_vec.resize(bit_len)
+        col_vec.resize(bit_len)
+        nonzero_vec.resize(bit_len)
+
+        # convert strings to bit arrays
+        string_to_vec(row_str.c_str(), &row_vec[0], bit_len)
+        string_to_vec(col_str.c_str(), &col_vec[0], bit_len)
+
+        if bit_len != self.oper.width:
+            raise Exception('Operator width does not match string length')
+        cdef size_t num_terms = self.oper.terms.size()
+        cdef size_t kk, weight
+        cdef double complex out = 0.0
+        cdef OperatorTerm_t * term
+        for kk in range(num_terms):
+            term = &self.oper.terms[kk]
+            weight = term.indices.size()
+            nonzero_vec = row_vec #copy row vec into nonzero vec
+            get_column_vec(&row_vec[0],
+                           &nonzero_vec[0],
+                           bit_len,
+                           &term.indices[0],
+                           &term.values[0],
+                           weight)
+            # Input col string matches that of nonzero column
+            if col_vec == nonzero_vec:
+                out += compute_element_vec(&row_vec[0], 
+                                           &nonzero_vec[0], 
+                                           bit_len,
+                                           &term.indices[0],
+                                           &term.values[0],
+                                           term.coeff, weight)
+        return out

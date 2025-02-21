@@ -10,3 +10,4 @@ matplotlib
 pylatexenc
 jupyter-sphinx
 nbsphinx
+black
