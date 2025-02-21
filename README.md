@@ -61,9 +61,9 @@ num_qubits = cmap.size()
 # Generate Hamiltonian
 H = fq.QubitOperator(num_qubits, [])
 touched_edges = set({})
+coeffs = [1/2, 1/2, 1]
 for edge in cmap.get_edges():
     if edge[::-1] not in touched_edges:
-        coeffs = np.random.random(size=3)
         H += fq.QubitOperator(num_qubits, [("XX", edge, coeffs[0]), 
                                            ("YY", edge, coeffs[1]), 
                                            ("ZZ", edge, coeffs[2])])
