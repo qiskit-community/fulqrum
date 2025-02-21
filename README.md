@@ -15,6 +15,9 @@ python setup.py build_ext --inplace
 ```
 where you can add any number of additional env flags such as `FULQRUM_OPENMP=1`.
 
+> [!IMPORTANT]
+> For some reason GCC gives markedly better performance than clang or its derivatives.
+
 
 ## Installing
 
