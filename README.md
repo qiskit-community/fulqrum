@@ -41,6 +41,13 @@ Then installation with openmp can be accomplished using a call like:
 FULQRUM_OPENMP=1 CC=gcc-14 CXX=g++14 pip install .
 ```
 
+### OpenMP on Windows
+
+I have no idea how to set env vars on Windows, so I just do:
+
+```bash
+python setup.py install --openmp
+```
 
 ## Example: 1541 qubit spin-lattice
 
