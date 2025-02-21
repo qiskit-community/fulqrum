@@ -75,7 +75,6 @@ for kk in range(int(1e6)):
     counts[bin(kk)[2:].zfill(num_qubits)] = 1
 
 # Solve eigenproblem (can substitute scipy.sparse.linalg.eigsh)
-st = time.perf_counter()
 S = fq.Subspace(counts)
 Hsub = fq.SubspaceHamiltonian(H, S)
 evals, _ = primme.eigsh(Hsub, k=1, which='SA', method='PRIMME_DEFAULT_MIN_MATVECS')
