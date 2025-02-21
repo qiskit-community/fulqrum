@@ -18,13 +18,14 @@ install:
 
 jobs:
   include:
-  - stage: Black"
+  - stage: "Black"
     script:
       - python setup.py build_ext --inplace --openmp
       - black --check fulqrum
 
   - stage: "Run tests"  
     script:
+      - python setup.py build_ext --inplace --openmp
       - pytest -p no:warnings fulqrum/test
 
   - stage: "Build docs"
