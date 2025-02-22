@@ -85,12 +85,6 @@ def test_subspace_bin_counts5():
     assert np.allclose(V.bin_sizes(), res)
 
 
-def test_subspace_shots():
-    temp_dic = {"01010": 10, "10101": 5, "111111": 1, "11100": 55}
-    V = Subspace(temp_dic)
-    assert V.shots == 71
-
-
 def test_subspace_auto_binwidth():
     temp_dic = {"010010": 10, "100101": 5, "1110111": 1, "101100": 55}
     V = Subspace(temp_dic)

@@ -29,7 +29,6 @@ cdef class Subspace():
                                           key=lambda item: int(item[0][-bin_width:], 2))}
         self.num_qubits = len(next(iter(counts)))
         self.size = len(counts)
-        self.shots = 0
         if bin_width == 0:
             bin_width = intmin(self.num_qubits, MAX_BIN_WIDTH)
         elif bin_width > self.num_qubits:
@@ -40,7 +39,6 @@ cdef class Subspace():
         self.bin_width = bin_width
         self.num_bins = pow(2, bin_width)
         self.subspace.reserve(self.num_qubits*self.size)
-        self.counts.reserve(self.size)
 
         cdef size_t kk
         cdef string key
@@ -61,8 +59,6 @@ cdef class Subspace():
                 self.subspace.push_back(temp_vec[kk])
             temp_idx = bin_width_to_int(&temp_vec[0], self.num_qubits, self.bin_width)
             self.bin_counts[temp_idx] += 1
-            self.counts.push_back(val)
-            self.shots += val
 
         # Do cumsum to get bin starts and stops
         self.bin_ranges[0] = 0
@@ -74,7 +70,6 @@ cdef class Subspace():
     def __dealloc__(self):
         # Clear vectors upon deallocation of class
         self.subspace = vector[UCHAR]()
-        self.counts = vector[size_t]()
     
     @cython.boundscheck(False)
     def __getitem__(self, size_t index):
@@ -158,11 +153,10 @@ cdef class Subspace():
         cdef string temp
         cdef dict out = {}
         cdef unsigned char * sub = &self.subspace[0]
-        cdef size_t * counts = &self.counts[0]
         temp.resize(self.num_qubits)
 
         for kk in range(self.size):
             for idx in range(self.num_qubits):
                 temp[idx] = sub[kk*self.num_qubits+idx] + 48
-            out[temp] = counts[kk]
+            out[temp] = None
         return out
