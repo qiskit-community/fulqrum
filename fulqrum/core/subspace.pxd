@@ -7,11 +7,9 @@ from libcpp.vector cimport vector
 
 cdef class Subspace():
     cdef vector[unsigned char] subspace
-    cdef vector[size_t] counts
     cdef vector[size_t] bin_counts
     cdef vector[size_t] bin_ranges
     cdef size_t num_qubits
     cdef public size_t num_bins
     cdef public bin_width
     cdef public size_t size
-    cdef public size_t shots
