@@ -11,5 +11,5 @@ cdef class Subspace():
     cdef vector[size_t] bin_ranges
     cdef size_t num_qubits
     cdef public size_t num_bins
-    cdef public bin_width
+    cdef public size_t bin_width
     cdef public size_t size

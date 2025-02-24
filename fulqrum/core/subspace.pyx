@@ -5,6 +5,7 @@ from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libc.string cimport memcmp
 
+import math
 cimport cython
 import numpy as np
 cimport numpy as np
@@ -15,7 +16,7 @@ include "fulqrum/core/includes/bitstrings_header.pxi"
 cdef size_t intmin(size_t a, size_t b):
     return (b-a)*(b < a) + a
 
-cdef size_t MAX_BIN_WIDTH = 20
+cdef size_t MAX_BIN_WIDTH = 26
 #Need below to get around Cython issue
 ctypedef unsigned char UCHAR
 
@@ -25,12 +26,10 @@ from fulqrum.core.subspace cimport Subspace
 cdef class Subspace():
     @cython.boundscheck(False)
     def __cinit__(self, dict counts, size_t bin_width=0):
-        counts = {k: v for k, v in sorted(counts.items(),
-                                          key=lambda item: int(item[0][-bin_width:], 2))}
         self.num_qubits = len(next(iter(counts)))
         self.size = len(counts)
         if bin_width == 0:
-            bin_width = intmin(self.num_qubits, MAX_BIN_WIDTH)
+            bin_width = intmin(<size_t>math.ceil(math.log2(self.size)), MAX_BIN_WIDTH)
         elif bin_width > self.num_qubits:
             raise Exception(f'bin_width ({bin_width}) must be <= num_qubits ({self.num_qubits})')
         elif bin_width > MAX_BIN_WIDTH:
@@ -39,6 +38,10 @@ cdef class Subspace():
         self.bin_width = bin_width
         self.num_bins = pow(2, bin_width)
         self.subspace.reserve(self.num_qubits*self.size)
+
+        # Sort counts according to bin-width
+        counts = {k: v for k, v in sorted(counts.items(),
+                                          key=lambda item: int(item[0][-bin_width:], 2))}
 
         cdef size_t kk
         cdef string key

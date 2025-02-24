@@ -61,16 +61,19 @@ def test_subspace_vector_order5():
 
 
 def test_subspace_bin_counts1():
+    """"""
     V = Subspace(dic2, bin_width=1)
     assert np.allclose(V.bin_sizes(), np.array([3, 4], dtype=np.uintp))
 
 
 def test_subspace_bin_counts2():
+    """Test that the bin sizes are correct"""
     V = Subspace(dic2, bin_width=2)
     assert np.allclose(V.bin_sizes(), np.array([2, 1, 1, 3], dtype=np.uintp))
 
 
 def test_subspace_bin_counts3():
+    """Test that the counts per bin are correct"""
     V = Subspace(dic2, bin_width=3)
     assert np.allclose(
         V.bin_sizes(), np.array([0, 0, 1, 0, 2, 1, 0, 3], dtype=np.uintp)
@@ -78,6 +81,7 @@ def test_subspace_bin_counts3():
 
 
 def test_subspace_bin_counts5():
+    """Test that bin sizes are correct"""
     V = Subspace(dic2, bin_width=5)
     int_values = [int(kk, 2) for kk in dic2.keys()]
     res = np.zeros(2**5, dtype=np.uintp)
@@ -86,6 +90,7 @@ def test_subspace_bin_counts5():
 
 
 def test_subspace_auto_binwidth():
+    """Test that bandwidth auto covers the dim"""
     temp_dic = {"010010": 10, "100101": 5, "1110111": 1, "101100": 55}
     V = Subspace(temp_dic)
-    assert V.bin_width == 6
+    assert V.bin_width == 2
