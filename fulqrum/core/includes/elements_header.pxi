@@ -7,6 +7,6 @@ cdef extern from "../src/elements.hpp":
                                        const unsigned char * col,
                                        size_t bit_len,
                                        const size_t * pos,
-                                       const char * val,
+                                       const unsigned char * val,
                                        double complex coeff,
                                        size_t N) nogil

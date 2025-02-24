@@ -11,12 +11,12 @@ This is very much a work in progress, and not suitable for human or animal consu
 In order to run the unittests locally, it is necessary to build the Cython files inplace:
 
 ```bash
-python setup.py build_ext --inplace
+python setup.py build_ext --inplace --openmp
 ```
 where you can add any number of additional env flags such as `FULQRUM_OPENMP=1`.
 
 > [!IMPORTANT]
-> For some reason GCC gives markedly better performance than clang or its derivatives.
+> For some reason clang gives markedly better performance than gcc. Vendor specific compilers also give added performance, if available.
 
 
 ## Installing
@@ -29,16 +29,16 @@ FULQRUM_OPENMP=1 pip install .
 
 ### OpenMP on OSX
 
-On OSX one must install GCC using homebrew:
+On OSX should install llvm using homebrew:
 
 ```bash
-brew install gcc
+brew install llvm
 ```
 
-Then installation with openmp can be accomplished using a call like:
+Then installation of Fulqrum with openmp can be accomplished using a call like:
 
 ```bash
-FULQRUM_OPENMP=1 CC=gcc-14 CXX=g++14 pip install .
+FULQRUM_OPENMP=1 CC=clang CXX=clang++ pip install .
 ```
 
 ### OpenMP on Windows

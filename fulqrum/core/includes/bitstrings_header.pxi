@@ -23,7 +23,7 @@ cdef extern from "../src/bitstrings.hpp":
                         unsigned char * col,
                         size_t bit_len,
                         const size_t * pos,
-                        const char * val,
+                        const unsigned char * val,
                         size_t N) nogil
 
     const size_t MAX_SIZE_T

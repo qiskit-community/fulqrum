@@ -7,5 +7,5 @@ cdef extern from "../src/strings.hpp":
     string get_column_str(const char * row,
                           size_t bit_len,
                           const size_t * pos,
-                          const char * val,
+                          const unsigned char * val,
                           size_t N) nogil

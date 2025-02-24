@@ -22,7 +22,7 @@
 inline std::string get_column_str(const char * __restrict row,
                                   std::size_t bit_len,
                                   const std::size_t * __restrict pos,
-                                  const char * __restrict val,
+                                  const unsigned char * __restrict val,
                                   std::size_t N)
         {
             std::string column(row, bit_len);
