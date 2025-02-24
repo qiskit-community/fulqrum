@@ -7,7 +7,7 @@ cdef extern from "../src/base.hpp":
     ctypedef struct OperatorTerm_t:
         double complex coeff
         vector[size_t] indices
-        vector[char] values
+        vector[unsigned char] values
         size_t offdiag_weight
     
     ctypedef struct QubitOperator_t:

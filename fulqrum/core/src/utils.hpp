@@ -14,7 +14,7 @@
  * @param inds The term indices (qubits) array
  * @param vals The term values (operators) array
  */
-void sort_term_data(std::vector<std::size_t>& inds, std::vector<char>& vals) {
+void sort_term_data(std::vector<std::size_t>& inds, std::vector<unsigned char>& vals) {
     std::size_t n = inds.size();
     for (std::size_t i = 1; i < n; i++) {
         std::size_t key = inds[i];

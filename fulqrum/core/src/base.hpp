@@ -19,7 +19,7 @@
 typedef struct OperatorTerm{
     std::complex<double> coeff;
     std::vector<std::size_t> indices;
-    std::vector<char> values;
+    std::vector<unsigned char> values;
     std::size_t offdiag_weight {0};
 } OperatorTerm_t;
 
