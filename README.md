@@ -5,19 +5,21 @@ Operator methods for quantum subpspace eigenproblems
 
 This is very much a work in progress, and not suitable for human or animal consumption.
 
+> [!WARNING]
+> This package more or less requires OpenMP 3.0+ to be useful at the scales where matrix-free matters.
+
 
 ## Building files locally
+
+> [!IMPORTANT]
+> For some reason clang gives markedly better performance than gcc. Vendor specific compilers also give added performance, if available.
 
 In order to run the unittests locally, it is necessary to build the Cython files inplace:
 
 ```bash
 python setup.py build_ext --inplace --openmp
 ```
-where you can add any number of additional env flags such as `FULQRUM_OPENMP=1`.
-
-> [!IMPORTANT]
-> For some reason clang gives markedly better performance than gcc. Vendor specific compilers also give added performance, if available.
-
+you can add also use env flags such as `FULQRUM_OPENMP=1` (in place of `--openmp`) or `FULQRUM_ARCH=znver4` (or whatever you arch is) if you like.
 
 ## Installing
 
@@ -51,17 +53,15 @@ python setup.py install --openmp
 
 ## Example: 1541 qubit spin-lattice
 
-This takes six minutes on my desktop:
+| Processor | Platform    | Time (sec)  |
+| :-------: | :---------: | :---------: |
+| AMD 7900  | Linux       | 354         |
+| M1 Pro    | OSX         | 1170        |
 
 ```python
-
 import time
-import numpy as np
-from qiskit.transpiler import CouplingMap
-
-import scipy.sparse.linalg as spla
 import primme
-
+from qiskit.transpiler import CouplingMap
 import fulqrum as fq
 
 # Build 1541-qubit coupling map
