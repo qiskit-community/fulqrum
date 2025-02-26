@@ -23,7 +23,7 @@ include "includes/elements_header.pxi"
 include "includes/strings_header.pxi"
 include "includes/bitstrings_header.pxi"
 include "includes/converters.pxi"
-include "includes/utils.pxi"
+include "includes/operators_header.pxi"
 
 cdef char[6] diag_oper_elems = [1, -1,   # Z
                                 1, 0,    # 0

@@ -21,6 +21,8 @@ typedef struct OperatorTerm{
     std::vector<std::size_t> indices;
     std::vector<unsigned char> values;
     std::size_t offdiag_weight {0};
+    int extended {0};
+    int group {-1}; // -1 means unset here
 } OperatorTerm_t;
 
 
