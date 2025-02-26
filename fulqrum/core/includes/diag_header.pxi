@@ -9,4 +9,4 @@ cdef extern from "../src/diag.hpp":
                              double complex * diag_vec,
                              QubitOperator_t& diag_oper,
                              size_t width,
-                             size_t subspace_dim)
+                             size_t subspace_dim) nogil
