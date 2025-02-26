@@ -23,7 +23,7 @@ include "includes/elements_header.pxi"
 include "includes/strings_header.pxi"
 include "includes/bitstrings_header.pxi"
 include "includes/converters.pxi"
-include "includes/utils.pxi"
+include "includes/operators_header.pxi"
 
 cdef char[6] diag_oper_elems = [1, -1,   # Z
                                 1, 0,    # 0
@@ -46,12 +46,6 @@ cdef int diagonal_term(OperatorTerm_t * term):
         if term.values[kk] > 2:
             return 0
     return 1
-
-
-cdef inline unsigned int int_min(unsigned int x, unsigned int y) nogil:
-    if x < y:
-        return x
-    return y
 
 
 cdef class QubitOperator():
@@ -205,6 +199,8 @@ cdef class QubitOperator():
         cdef size_t kk
         cdef QubitOperator out = QubitOperator(self.oper.width)
         if isinstance(key, numbers.Integral):
+            if key < 0:
+                 key = self.oper.terms.size() + key 
             kk = <size_t>key
             if kk > self.oper.terms.size() - 1:
                 raise FulqrumError(f"Index {kk} is out of range for operator"
@@ -290,7 +286,8 @@ cdef class QubitOperator():
         cdef str temp_str
         cdef OperatorTerm_t term
         cdef size_t kk
-        for idx in range(self.oper.terms.size()):
+        cdef size_t num_terms = self.oper.terms.size()
+        for idx in range(num_terms):
             temp_str = ''
             term = self.oper.terms[idx]
             for kk in range(term.indices.size()):
@@ -301,7 +298,10 @@ cdef class QubitOperator():
             out.append((temp_str, term.coeff))
 
         out_strs = ', '.join(str(kk) for kk in out)
-        return f"<QubitOperator[{out_strs}], width={self.oper.width}>"
+        add_str = ''
+        if num_terms == 1:
+            add_str = f", extended={self.oper.terms[0].extended}, group={self.oper.terms[0].group}"
+        return f"<QubitOperator[{out_strs}], width={self.oper.width}{add_str}>"
     
     @cython.boundscheck(False)
     cpdef void append(self, QubitOperator other):
@@ -530,3 +530,22 @@ cdef class QubitOperator():
                                            &term.values[0],
                                            term.coeff, weight)
         return out
+
+
+    def groups(self):
+        cdef size_t kk
+        cdef int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.int32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].group
+        return np.asarray(out)
+
+
+    def offdiag_term_grouping(self, int overwrite=False):
+        """Inplace sorting of operator terms according to off-diagonal
+        structure.
+
+        Parameters:
+            overwrite (int): Overwrite existing sort, if present.
+        """
+        offdiag_term_sort(self.oper)
+        self.oper.sorted = 1

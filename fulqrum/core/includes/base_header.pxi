@@ -9,7 +9,10 @@ cdef extern from "../src/base.hpp":
         vector[size_t] indices
         vector[unsigned char] values
         size_t offdiag_weight
-    
+        int extended
+        int group
+
+
     ctypedef struct QubitOperator_t:
         size_t width
         vector[OperatorTerm_t] terms
