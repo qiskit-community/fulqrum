@@ -87,12 +87,14 @@ void offdiag_term_sort(QubitOperator_t& oper){
                 for(idx=0; idx<ind_size; idx++){
                     // found off-diag term at idx
                     if(term->values[idx] > 2){
+                        // Tell me if the index is alsco found in term2
                         inds_it = std::find(term2->indices.begin(),
                                        term2->indices.end(), term->indices[idx]);
                         if(inds_it == term2->indices.end()){
                             match = 0;
                             break;
                         }
+                        // if the index is in term2, find out its location and check for off-diag there
                         else{
                             dist = std::distance(term2->indices.begin(), inds_it);
                             if(not (term2->values[dist] > 2)){
