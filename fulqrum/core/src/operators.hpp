@@ -54,6 +54,7 @@ void offdiag_term_sort(QubitOperator_t& oper){
     OperatorTerm_t * term2;
     std::size_t kk, ll, idx;
     std::size_t ind_size;
+    std::vector<std::size_t>::iterator inds_it;
     int match;
 
     // Reset all groupings
@@ -68,6 +69,7 @@ void offdiag_term_sort(QubitOperator_t& oper){
         }
     } // end for-loop
 
+    std::ptrdiff_t dist;
     int group_idx = 0;
     for(kk=0; kk < oper.terms.size(); kk++){
         term = &oper.terms[kk];
@@ -79,20 +81,26 @@ void offdiag_term_sort(QubitOperator_t& oper){
         // Loop over all terms from kk+1 on up
         for(ll=kk+1; ll<oper.terms.size(); ll++){
             term2 = &oper.terms[ll];
-            // term2 is not matched and number of non-id operators match
-            if((term2->group < 0) && (ind_size == term2->indices.size())){
+            // term2 is not matched and number of off-diag ops is equal
+            if((term2->group < 0) && (term2->offdiag_weight == term->offdiag_weight)){
                 match = 1;
                 for(idx=0; idx<ind_size; idx++){
-                    // mis-match between indices
-                    if(term->indices[idx] != term2->indices[idx]){
-                        match = 0;
-                        break;
-                    }
-                    // mismatch between off-diag structures
-                    if((term->values[idx] > 2) != (term2->values[idx] > 2)){
-                        match = 0;
-                        break;
-                    }
+                    // found off-diag term at idx
+                    if(term->values[idx] > 2){
+                        inds_it = std::find(term2->indices.begin(),
+                                       term2->indices.end(), term->indices[idx]);
+                        if(inds_it == term2->indices.end()){
+                            match = 0;
+                            break;
+                        }
+                        else{
+                            dist = std::distance(term2->indices.begin(), inds_it);
+                            if(not (term2->values[dist] > 2)){
+                                match = 0;
+                                break;
+                            }
+                        }
+                    } // end found off-diag term
                 } // end idx for-loop
                 if(match){ // If match
                     term2->group = group_idx;
@@ -102,5 +110,5 @@ void offdiag_term_sort(QubitOperator_t& oper){
     } // end kk for-loop
 
     // sort by group index
-    sort(oper.terms.begin(), oper.terms.end(), group_comp);
+    std::sort(oper.terms.begin(), oper.terms.end(), group_comp);
 }
