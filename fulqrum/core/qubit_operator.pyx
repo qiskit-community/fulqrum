@@ -547,7 +547,5 @@ cdef class QubitOperator():
         Parameters:
             overwrite (int): Overwrite existing sort, if present.
         """
-        if self.oper.sorted and not overwrite:
-            raise Exception("Operator is already sorted, set overwrite=True")
         offdiag_term_sort(self.oper)
         self.oper.sorted = 1
