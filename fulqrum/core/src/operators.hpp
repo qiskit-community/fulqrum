@@ -8,6 +8,10 @@
 #include <algorithm>
 #include "base.hpp"
 
+// Z, 0, 1, X, Y, -, +
+const int REV_EXT_MASK[7] = {1, 0, 0, 1, 1, 0, 0};
+
+
 /**
  * Sorting of indices and values for Operator term data
  *
@@ -113,4 +117,20 @@ void offdiag_term_sort(QubitOperator_t& oper){
 
     // sort by group index
     std::sort(oper.terms.begin(), oper.terms.end(), group_comp);
+}
+
+
+/**
+ * In-place marks a term as extended or not
+ *
+ * @param term Hamiltonian term
+ * 
+ */
+void set_extended_flag(OperatorTerm_t& term){
+    std::size_t kk;
+    int out = 1;
+    for(kk=0; kk < term.values.size(); kk++){
+        out *= REV_EXT_MASK[term.values[kk]];
+    }
+    term.extended = (not out);
 }
