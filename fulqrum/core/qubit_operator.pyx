@@ -91,6 +91,7 @@ cdef class QubitOperator():
                 set_extended_flag(term)
                 self.oper.terms.push_back(term)
 
+
     @classmethod
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -312,6 +313,7 @@ cdef class QubitOperator():
             raise FulqrumError('Appending number of qubits does not match current number')
         for kk in range(other.oper.terms.size()):
             self.oper.terms.push_back(other.oper.terms[kk])
+        self.oper.sorted = 0
 
     @cython.boundscheck(False)
     def weights(self):
@@ -540,7 +542,13 @@ cdef class QubitOperator():
         for kk in range(self.oper.terms.size()):
             out[kk] = self.oper.terms[kk].group
         return np.asarray(out)
-
+    
+    def extended(self):
+        cdef size_t kk
+        cdef int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.int32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].extended
+        return np.asarray(out)
 
     def offdiag_term_grouping(self, int overwrite=False):
         """Inplace sorting of operator terms according to off-diagonal
