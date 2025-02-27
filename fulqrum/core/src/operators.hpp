@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "base.hpp"
 
+// Reverse mask for marking terms as extended or not
 // Z, 0, 1, X, Y, -, +
 const int REV_EXT_MASK[7] = {1, 0, 0, 1, 1, 0, 0};
 
