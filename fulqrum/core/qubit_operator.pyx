@@ -20,7 +20,6 @@ cimport numpy as np
 
 include "includes/base_header.pxi"
 include "includes/elements_header.pxi"
-include "includes/strings_header.pxi"
 include "includes/bitstrings_header.pxi"
 include "includes/converters.pxi"
 include "includes/operators_header.pxi"

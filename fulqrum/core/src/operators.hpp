@@ -106,7 +106,7 @@ void offdiag_term_sort(QubitOperator_t& oper){
                         // if the index is in term2, find out its location and check for off-diag there
                         else{
                             dist = std::distance(term2->indices.begin(), inds_it);
-                            if(not (term2->values[dist] > 2)){
+                            if(!(term2->values[dist] > 2)){
                                 match = 0;
                                 break;
                             }
@@ -137,7 +137,7 @@ void set_extended_flag(OperatorTerm_t& term){
     for(kk=0; kk < term.values.size(); kk++){
         out *= REV_EXT_MASK[term.values[kk]];
     }
-    term.extended = (not out);
+    term.extended = (!out);
 }
 
 
