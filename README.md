@@ -1,4 +1,5 @@
 
+![fulqrum](https://github.ibm.com/ibm-q-research/fulqrum/assets/152294/37fa23d5-4cad-4dde-bb0b-aa5f13c7fa56)
 
 # fulqrum
 Operator methods for quantum subpspace eigenproblems
