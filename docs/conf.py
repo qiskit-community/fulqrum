@@ -24,8 +24,8 @@ Sphinx documentation builder
 """
 
 # -- Project information -----------------------------------------------------
-project = 'Fulqrum - Top Hat'
-copyright = '2024, Fulqrum Team'  # pylint: disable=redefined-builtin
+project = 'Fulqrum'
+copyright = '2024, IBM Quantum'  # pylint: disable=redefined-builtin
 author = 'Fulqrum Development Team'
 # -- General configuration ---------------------------------------------------
 
@@ -92,7 +92,7 @@ add_module_names = False
 # (e.g., if this is set to ['foo.'], then foo.bar is shown under B, not F).
 # This can be handy if you document a project that consists of a single
 # package. Works only for the HTML builder currently.
-modindex_common_prefix = ['fulqrum_tophat.']
+modindex_common_prefix = ['fulqrum.']
 
 # -- Configuration for extlinks extension ------------------------------------
 # Refer to https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
