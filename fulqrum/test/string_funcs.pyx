@@ -12,7 +12,6 @@ import numpy as np
 cimport numpy as np
 
 include "../core/includes/base_header.pxi"
-include "../core/includes/strings_header.pxi"
 include "../core/includes/bitstrings_header.pxi"
 
 
