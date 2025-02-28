@@ -2,7 +2,11 @@
 ![fulqrum](https://github.ibm.com/ibm-q-research/fulqrum/assets/152294/37fa23d5-4cad-4dde-bb0b-aa5f13c7fa56)
 
 # fulqrum
-Operator methods for quantum subpspace eigenproblems
+Operator methods for quantum subpspace eigenproblems.
+
+Fulqrum is a set of tools for enabling the solution to large-scale Hamiltonian subpspace eigenproblems over extended alphabets for those of us without access to high-performance computing (HPC) resources.  To accomplish this, Fulqrum utilizes a novel matrix-free method for performing the matrix-vector computation that is at the core of all sparse eigensolving methods.
+
+Working over extended (i.e. non-Pauli) alphabets allows Fulqrum to work for both Bosonic and Fermionic problems.  Fermionic problems can be cast into Bosonic ones in a one-to-one manner using an extended Jordan-Wigner transformation, and the properties of extended operators can be used to further reduce the computational costs.
 
 This is very much a work in progress, and not suitable for human or animal consumption.
 
@@ -10,29 +14,31 @@ This is very much a work in progress, and not suitable for human or animal consu
 > This package more or less requires OpenMP 3.0+ to be useful at the scales where matrix-free matters.
 
 
-## Building files locally
+## Installation
 
 > [!IMPORTANT]
 > For some reason clang gives markedly better performance than gcc. Vendor specific compilers also give added performance, if available.
 
-In order to run the unittests locally, it is necessary to build the Cython files inplace:
+### Building files locally
+
+In order to run the unittests locally, it is only necessary to build the Cython files inplace:
 
 ```bash
 python setup.py build_ext --inplace --openmp
 ```
 you can add also use env flags such as `FULQRUM_OPENMP=1` (in place of `--openmp`) or `FULQRUM_ARCH=znver4` (or whatever you arch is) if you like.
 
-## Installing
+## Installation on Linux
 
-To enable OpenMP one must have an OpenMP 3.0+ enabled compiler and install with:
+Installation on Linux is simple:
 
 ```bash
 FULQRUM_OPENMP=1 pip install .
 ```
 
-### OpenMP on OSX
+### Installation on OSX
 
-On OSX should install llvm using homebrew:
+On OSX, to get OpenMP, one should install llvm using homebrew:
 
 ```bash
 brew install llvm
@@ -44,7 +50,7 @@ Then installation of Fulqrum with openmp can be accomplished using a call like:
 FULQRUM_OPENMP=1 CC=clang CXX=clang++ pip install .
 ```
 
-### OpenMP on Windows
+### Installation on Windows
 
 I have no idea how to set env vars on Windows, so I just do:
 
@@ -52,7 +58,9 @@ I have no idea how to set env vars on Windows, so I just do:
 python setup.py install --openmp
 ```
 
-## Example: 1541 qubit spin-lattice
+## Examples
+
+### 1541 qubit spin-lattice
 
 | Processor  | Platform    | Time (sec)  |
 | :--------: | :---------: | :---------: |
