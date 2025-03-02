@@ -16,6 +16,7 @@ from .core import QubitOperator, Subspace, SubspaceHamiltonian
 
 def about():
     """About Fulqrum"""
+    print("")
     print("███████ ██    ██ ██       ██████  ██████  ██    ██   ████    ████")
     print("██      ██    ██ ██      ██    ██ ██   ██ ██    ██  ██  ██  ██  ██")
     print("█████   ██    ██ ██      ██    ██ ██████  ██    ██ ██    ████    ██")
