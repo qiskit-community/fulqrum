@@ -12,3 +12,18 @@ except ImportError:
     openmp = False
 
 from .core import QubitOperator, Subspace, SubspaceHamiltonian
+
+
+def about():
+    """About Fulqrum"""
+    print("")
+    print("███████ ██    ██ ██       ██████  ██████  ██    ██   ████    ████")
+    print("██      ██    ██ ██      ██    ██ ██   ██ ██    ██  ██  ██  ██  ██")
+    print("█████   ██    ██ ██      ██    ██ ██████  ██    ██ ██    ████    ██")
+    print("██      ██    ██ ██      ██ ▄▄ ██ ██   ██ ██    ██ ██    ████    ██")
+    print("██       ██████  ███████  ██████  ██   ██  ██████  ██    ████    ██")
+    print("")
+    print("Copyright (C) 2024, IBM Quantum")
+    print("Paul D. Nation and Hwajung Kang")
+    print(f"Fulqrum version: {__version__}")
+    print(f"OpenMP enabled: {openmp}")
