@@ -24,4 +24,5 @@ def about():
     print("")
     print("Copyright (C) 2024, IBM Quantum")
     print("Paul D. Nation and Hwajung Kang")
-    print("")
+    print(f"Fulqrum version: {__version__}")
+    print(f"OpenMP enabled: {openmp}")
