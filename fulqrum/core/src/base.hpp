@@ -50,7 +50,7 @@ typedef struct QubitOperator{
  * @var bin_width The bin_width used in the partial sorting
  * @var size Dimenion / number of bit-strings in the subpsace
  */
- typedef struct Subpspace{
+ typedef struct Subspace{
     std::vector<unsigned char> bitstrings;
     std::vector<std::size_t> bin_counts;
     std::vector<std::size_t> bin_ranges;
