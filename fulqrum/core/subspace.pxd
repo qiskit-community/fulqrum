@@ -1,15 +1,9 @@
-# Fulqrum - Top Hat
+# Fulqrum
 # Copyright (C) 2024, IBM
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 
-from libcpp.vector cimport vector
+include "includes/base_header.pxi"
 
 
 cdef class Subspace():
-    cdef vector[unsigned char] subspace
-    cdef vector[size_t] bin_counts
-    cdef vector[size_t] bin_ranges
-    cdef size_t num_qubits
-    cdef public size_t num_bins
-    cdef public size_t bin_width
-    cdef public size_t size
+    cdef Subspace_t subspace

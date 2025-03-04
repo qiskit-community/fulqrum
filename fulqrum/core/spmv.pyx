@@ -41,12 +41,12 @@ cdef class FulqrumSpMV():
         self.diag_oper = diag_hamiltonian.oper
         self.oper = hamiltonian.oper
         self.subspace = subspace
-        self.bin_width = subspace.bin_width
+        self.bin_width = self.subspace.subspace.bin_width
         self.width = self.oper.width
-        self.subspace_dim = self.subspace.subspace.size() // self.width
+        self.subspace_dim = self.subspace.subspace.bitstrings.size() // self.width
         self.num_terms = self.oper.terms.size()
         self.num_diag_terms = self.diag_oper.terms.size()
-        self.bin_ranges = &subspace.bin_ranges[0]
+        self.bin_ranges = &self.subspace.subspace.bin_ranges[0]
         if self.diag_oper.terms.size() > 0:
             self.has_nonzero_diag = 1
              # Init diagonal memoryview to None because
@@ -66,7 +66,7 @@ cdef class FulqrumSpMV():
 
     @cython.boundscheck(False)
     cdef void compute_diag_vector(self):
-        cdef const unsigned char * data = &self.subspace.subspace.data()[0]
+        cdef const unsigned char * data = &self.subspace.subspace.bitstrings.data()[0]
         self.diag_vec = np.empty(self.subspace_dim, dtype=complex)
         compute_diag_vector(data,
                             &self.diag_vec[0],
@@ -90,7 +90,7 @@ cdef class FulqrumSpMV():
             self.compute_diag_vector()
         cdef double complex[::1] out = np.zeros(x.shape[0], dtype=complex)
         omp_matvec(self.oper,
-                   self.subspace.subspace,
+                   self.subspace.subspace.bitstrings,
                    &self.diag_vec[0],
                    self.width,
                    self.subspace_dim,

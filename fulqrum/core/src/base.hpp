@@ -8,13 +8,12 @@
 #include <complex>
 
 
-/**
- * Data structure for each operator term, i.e. 'word' in the operator
+/** @brief Data structure for each operator term, i.e. 'word' in the operator
  *
- * Indices are the qubits (locations) where non-idenity term operators are
- * Values are the char representations of the operators
- * coeff is the complex coeffcient multiplying the term
- * offdiag_weight is the number of non-diagonal operators in the term
+ * @var indices the qubits (locations) where non-idenity term operators are
+ * @var values are the char representations of the operators
+ * @var coeff is the complex coeffcient multiplying the term
+ * @var offdiag_weight is the number of non-diagonal operators in the term
  */
 typedef struct OperatorTerm{
     std::complex<double> coeff;
@@ -26,12 +25,12 @@ typedef struct OperatorTerm{
 } OperatorTerm_t;
 
 
-/**
- * Data structure for each a qubit operator, i.e. a collection of 'words'
+/** @struct QubitOperator
+ * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
  *
- * width is the number of qubits
- * terms is a vector of OperatorTerms that make up the operator
- * sorted is a flag that indicates the term is sorted (NOT USED AT PRESENT)
+ * @var width is the number of qubits
+ * @var terms is a vector of OperatorTerms that make up the operator
+ * @var sorted is a flag that indicates the term is sorted (NOT USED AT PRESENT)
  */
 typedef struct QubitOperator{
     std::size_t width;
@@ -39,3 +38,24 @@ typedef struct QubitOperator{
     int sorted {0};
 } QubitOperator_t;
 
+
+/** @struct subspace
+ * @brief Datastructure for subspace defined by counts
+ *
+ * @var bitstrings The subspace bit-strings sorted by bin_width 
+ * @var bin_counts number of bit-strings in each bin
+ * @var bin_ranges The range (indices) over which each bin is defined
+ * @var num_qubits The number of qubits, i.e length of bitstrings
+ * @var num_bins The number of bins
+ * @var bin_width The bin_width used in the partial sorting
+ * @var size Dimenion / number of bit-strings in the subpsace
+ */
+ typedef struct Subpspace{
+    std::vector<unsigned char> bitstrings;
+    std::vector<std::size_t> bin_counts;
+    std::vector<std::size_t> bin_ranges;
+    std::size_t num_qubits;
+    std::size_t num_bins;
+    std::size_t bin_width;
+    std::size_t size;
+} Subspace_t;
