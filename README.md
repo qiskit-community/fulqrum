@@ -64,8 +64,9 @@ python setup.py install --openmp
 
 | Processor  | Platform    | Time (sec)  |
 | :--------: | :---------: | :---------: |
-| AMD 7900   | Linux       | 354         |
+| AMD 7900   | Linux       | 335         |
 | Intel 256v | WSL         | 937         |
+| M1         | OSX         | 1569        |
 | M1 Pro     | OSX         | 1170        |
 
 ```python
