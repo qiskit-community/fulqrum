@@ -19,6 +19,8 @@ class SubspaceHamiltonian(LinearOperator):
 
     def __init__(self, hamiltonian, subspace):
         diag_H, off_H = hamiltonian.split_diagonal()
+        if not off_H.sorted:
+            off_H.offdiag_term_grouping()
         self.spmv = FulqrumSpMV(diag_H, off_H, subspace)
         self._matvec = self.matvec
         self.shape = (len(subspace),) * 2

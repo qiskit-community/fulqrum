@@ -129,6 +129,12 @@ cdef class QubitOperator():
     @property
     def width(self):
         return self.oper.width
+
+    @property
+    def sorted(self):
+        """Is the operator sorted by off-diagonal structure
+        """
+        return self.oper.sorted
     
     @cython.boundscheck(False)
     def split_diagonal(self):
@@ -147,6 +153,9 @@ cdef class QubitOperator():
                 diag.oper.terms.push_back(term)
             else:
                 offdiag.oper.terms.push_back(term)
+        # set sorted flag
+        diag.oper.sorted = self.oper.sorted
+        offdiag.oper.sorted = self.oper.sorted
         return diag, offdiag
 
     @property

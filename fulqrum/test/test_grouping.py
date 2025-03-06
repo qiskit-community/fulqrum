@@ -44,3 +44,16 @@ def test_grouping3():
     H.offdiag_term_grouping()
     ans = np.ones(4, dtype=np.int32)
     assert np.allclose(ans, H.groups())
+
+
+def test_grouping_split():
+    """Test sorting is passes onto operators that are split into diag/offdiag"""
+    H = QubitOperator(4, [])
+    for item in ["XIII", "ZYII", "ZIZI", "01+Z", "IIII", "+Z00"]:
+        H += QubitOperator.from_label(item)
+    H.offdiag_term_grouping()
+    diag, offdiag = H.split_diagonal()
+    diag_ans = np.zeros(len(diag))
+    offdiag_ans = np.array([1, 1, 2, 3])
+    assert np.allclose(diag.groups(), diag_ans)
+    assert np.allclose(offdiag.groups(), offdiag_ans)
