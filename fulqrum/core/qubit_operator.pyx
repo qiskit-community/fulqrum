@@ -147,6 +147,9 @@ cdef class QubitOperator():
                 diag.oper.terms.push_back(term)
             else:
                 offdiag.oper.terms.push_back(term)
+        # set sorted flag
+        diag.oper.sorted = self.oper.sorted
+        offdiag.oper.sorted = self.oper.sorted
         return diag, offdiag
 
     @property
