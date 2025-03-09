@@ -34,6 +34,13 @@ def test_coeff():
     assert qo.coeff == 1 + 2j
 
 
+def test_coeff2():
+    """Test constant helper routiner"""
+    N = 5
+    qo2 = QubitOperator.from_constant(N, 1 + 2j)
+    assert qo2.coeff == 1 + 2j
+
+
 def test_simple_multi_operators():
     """Test simple operator with non-identity weight"""
     N = 5
