@@ -114,6 +114,21 @@ cdef class QubitOperator():
         out.oper.terms.push_back(term)
         return out
 
+    @classmethod
+    def from_constant(self, size_t width, double complex coeff):
+        """Generate a constant Hamiltonian term
+
+        Parameters:
+            width (size_t): Width of operator
+            coeff (complex): Operator coefficient
+        
+        Returns:
+            QubitOperator: Constant operator
+        """
+        cdef QubitOperator out = QubitOperator(width, [()])
+        out.oper.terms[0].coeff = coeff
+        return out
+
     def __len__(self):
         return self.oper.terms.size()
 
