@@ -23,18 +23,6 @@ include "includes/diag_header.pxi"
 include "includes/matvec_header.pxi"
 
 cdef class FulqrumSpMV():
-    cdef QubitOperator_t oper
-    cdef QubitOperator_t diag_oper
-    cdef public Subspace subspace
-    cdef public size_t subspace_dim
-    cdef int num_threads
-    cdef public size_t width
-    cdef public size_t num_diag_terms
-    cdef public size_t num_terms
-    cdef public size_t bin_width
-    cdef int has_nonzero_diag
-    cdef double complex[::1] diag_vec
-    cdef size_t * bin_ranges
     def __cinit__(self, QubitOperator diag_hamiltonian,
                   QubitOperator hamiltonian, Subspace subspace):
         cdef size_t kk
