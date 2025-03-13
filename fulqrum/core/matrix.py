@@ -18,7 +18,8 @@ class FulqrumCSR(csr_array, LinearOperator):
         if len(x.shape) == 2:
             col_vec = True
             x = x.view().reshape(x.shape[0])
-        matvec(self.data, self.indices, self.indptr, x, out, dim)
+        if self.indptr[dim] != 0:  # only do if matrix is not empty (all zeros)
+            matvec(self.data, self.indices, self.indptr, x, out, dim)
         if col_vec:
             out = out.view().reshape(dim, 1)
         return out
