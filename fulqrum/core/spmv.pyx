@@ -9,7 +9,7 @@ from libc.string cimport memcpy
 
 from fulqrum.core.qubit_operator cimport QubitOperator
 from fulqrum.core.subspace cimport Subspace
-from fulqrum.core.csr import FulqrumCSR
+from fulqrum.core.matrix import FulqrumCSR
 
 from cython.parallel cimport prange, parallel
 
