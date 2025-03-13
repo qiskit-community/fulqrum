@@ -10,6 +10,7 @@
 #include "base.hpp"
 #include "bitstrings.hpp"
 #include "elements.hpp"
+#include "operators.hpp"
 
 
 /**
