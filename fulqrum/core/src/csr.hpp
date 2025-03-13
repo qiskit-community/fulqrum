@@ -75,7 +75,7 @@ template <typename T> void csr_builder(QubitOperator_t& ham, std::vector<unsigne
     std::size_t num_terms = ham.terms.size();
     OperatorTerm_t * terms = &ham.terms[0];
 
-    #pragma omp parallel if(nrows > 128)
+    #pragma omp parallel if(subspace_dim > 128)
     for(kk=0; kk < subspace_dim; kk++) //do this loop in openmp
     {
         // Define local variables for openmp
