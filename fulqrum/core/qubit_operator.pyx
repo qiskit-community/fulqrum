@@ -91,6 +91,10 @@ cdef class QubitOperator():
                 self.oper.terms.push_back(term)
 
 
+    def __dealloc__(self):
+        # Clear vectors upon deallocation of class
+        self.oper.terms = vector[OperatorTerm_t]()
+    
     @classmethod
     @cython.boundscheck(False)
     @cython.wraparound(False)
