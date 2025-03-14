@@ -10,6 +10,7 @@ cimport cython
 import numpy as np
 cimport numpy as np
 
+
 include "fulqrum/core/includes/bitstrings_header.pxi"
 
 

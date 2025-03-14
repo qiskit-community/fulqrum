@@ -9,6 +9,7 @@ from libc.string cimport memcpy
 
 from fulqrum.core.qubit_operator cimport QubitOperator
 from fulqrum.core.subspace cimport Subspace
+from fulqrum.core.matrix import FulqrumCSR
 
 from cython.parallel cimport prange, parallel
 
@@ -21,20 +22,10 @@ include "includes/elements_header.pxi"
 include "includes/bitstrings_header.pxi"
 include "includes/diag_header.pxi"
 include "includes/matvec_header.pxi"
+include "includes/csr_header.pxi"
+
 
 cdef class FulqrumSpMV():
-    cdef QubitOperator_t oper
-    cdef QubitOperator_t diag_oper
-    cdef public Subspace subspace
-    cdef public size_t subspace_dim
-    cdef int num_threads
-    cdef public size_t width
-    cdef public size_t num_diag_terms
-    cdef public size_t num_terms
-    cdef public size_t bin_width
-    cdef int has_nonzero_diag
-    cdef double complex[::1] diag_vec
-    cdef size_t * bin_ranges
     def __cinit__(self, QubitOperator diag_hamiltonian,
                   QubitOperator hamiltonian, Subspace subspace):
         cdef size_t kk
@@ -100,3 +91,76 @@ cdef class FulqrumSpMV():
                    &x[0],
                    &out[0])
         return np.asarray(out)
+
+    def to_csr(self):
+        cdef size_t max_int = np.iinfo(np.int32).max
+        cdef object out
+        cdef size_t num_terms = self.oper.terms.size()
+        cdef int inds_64 = 0
+        if (self.subspace_dim > max_int):
+            inds_64 = 1
+        if num_terms:
+            if (self.subspace_dim*self.oper.terms[num_terms-1].group > max_int):
+                inds_64 = 1
+        cdef int[::1] indptr32
+        cdef int[::1] indices32
+        cdef long long[::1] indptr64
+        cdef long long[::1] indices64
+
+        if inds_64:
+            indptr64 = np.zeros(self.subspace_dim+1, dtype=np.int64)
+            indices64 = np.zeros(1, dtype=np.int64)
+        else:
+            indptr32 = np.zeros(self.subspace_dim+1, dtype=np.int32)
+            indices32 = np.zeros(1, dtype=np.int32)
+        
+        cdef double complex[::1] data = np.zeros(1, dtype=complex)
+        cdef int compute_values = 0
+        
+        if self.diag_vec.shape[0] == 0 and self.has_nonzero_diag:
+                self.compute_diag_vector()
+        if inds_64:
+            csr_builder[int64](self.oper, self.subspace.subspace.bitstrings, &self.diag_vec[0],
+                            self.width, self.subspace_dim, self.has_nonzero_diag,
+                            self.bin_width, self.bin_ranges,
+                            &indptr64[0], &indices64[0], &data[0],
+                            compute_values)
+            if not indptr64[self.subspace_dim]:
+                return FulqrumCSR(([], [[],[]]), shape=(self.subspace_dim,)*2, dtype=complex)
+            indices64 = np.zeros(indptr64[self.subspace_dim], dtype=np.int64)
+            data = np.zeros(indptr64[self.subspace_dim], dtype=complex)
+        else:
+            csr_builder[int](self.oper, self.subspace.subspace.bitstrings, &self.diag_vec[0],
+                            self.width, self.subspace_dim, self.has_nonzero_diag,
+                            self.bin_width, self.bin_ranges,
+                            &indptr32[0], &indices32[0], &data[0],
+                            compute_values)
+            if not indptr32[self.subspace_dim]:
+                return FulqrumCSR(([], [[],[]]), shape=(self.subspace_dim,)*2, dtype=complex)
+            indices32 = np.zeros(indptr32[self.subspace_dim], dtype=np.int32)
+            data = np.zeros(indptr32[self.subspace_dim], dtype=complex)
+
+        compute_values = 1
+        if inds_64:
+            csr_builder[int64](self.oper, self.subspace.subspace.bitstrings, &self.diag_vec[0],
+                            self.width, self.subspace_dim, self.has_nonzero_diag,
+                            self.bin_width, self.bin_ranges,
+                            &indptr64[0], &indices64[0], &data[0],
+                            compute_values)
+        else:
+            csr_builder[int](self.oper, self.subspace.subspace.bitstrings, &self.diag_vec[0],
+                            self.width, self.subspace_dim, self.has_nonzero_diag,
+                            self.bin_width, self.bin_ranges,
+                            &indptr32[0], &indices32[0], &data[0],
+                            compute_values)
+        
+        if inds_64:
+            out = FulqrumCSR((np.asarray(data), np.asarray(indices64), np.asarray(indptr64)),
+                            shape=(self.subspace_dim,)*2, dtype=complex)
+        else:
+            out = FulqrumCSR((np.asarray(data), np.asarray(indices32), np.asarray(indptr32)),
+                            shape=(self.subspace_dim,)*2, dtype=complex)
+        # Indices need not be in order, so sort here
+        out.sort_indices()
+        return out
+
