@@ -11,6 +11,7 @@
 #include "base.hpp"
 #include "bitstrings.hpp"
 #include "elements.hpp"
+#include "operators.hpp"
 
 
 void omp_matvec(QubitOperator_t& ham,
@@ -49,8 +50,17 @@ void omp_matvec(QubitOperator_t& ham,
         col_vec.resize(width);
         // Loop over all off-diagonal terms in operator
         for(idx=0; idx < num_terms; idx++){
-            memcpy(&col_vec[0], row_start, width);
             term = &ham.terms[idx];
+            // break early if term is extended and zero
+            if(term->extended)
+            {
+                // extended term is zero so move on to next term
+                if(!nonzero_extended_value(term, row_start, width))
+                {
+                    continue;
+                }
+            } // end extended term check
+            memcpy(&col_vec[0], row_start, width);
             weight = term->indices.size();
             get_column_vec(row_start, &col_vec[0], width, &term->indices[0], &term->values[0], weight);
             bin_num = bin_width_to_int(&col_vec[0], width, bin_width);
