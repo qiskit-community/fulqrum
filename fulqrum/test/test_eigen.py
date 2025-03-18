@@ -20,7 +20,7 @@ def grab_subspace(A, rows):
 
 def test_eigen1():
     """Test simple eigen"""
-    obs = ["ZXIZ", "YIIZ", "XI-X",  "XI+X"]
+    obs = ["ZXIZ", "YIIZ", "XI-X", "XI+X"]
     weights = [1, -2, 7, 7]
     rows = [0, 3, 4, 7, 11, 12, 14, 15]
 
