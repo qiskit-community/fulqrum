@@ -43,8 +43,18 @@ def test_eigen1():
     for bin_width in range(width):
         S = Subspace(subspace_dict, bin_width=bin_width)
         Hsub = SubspaceHamiltonian(H, S)
-        evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
+        evals, _ = spla.eigsh(Hsub, k=2, which="SA")
         assert np.allclose(ans_evals, evals)
+
+    # validate eigenvectors with full binning
+    S = Subspace(subspace_dict, width)
+    Hsub = SubspaceHamiltonian(H, S)
+    evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
+    for kk in range(2):
+        assert (
+            np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
 
 
 def test_eigen2():
@@ -75,6 +85,16 @@ def test_eigen2():
         evals, _ = spla.eigsh(Hsub, k=2, which="SA")
         assert np.allclose(ans_evals, evals)
 
+    # validate eigenvectors with full binning
+    S = Subspace(subspace_dict, width)
+    Hsub = SubspaceHamiltonian(H, S)
+    evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
+    for kk in range(2):
+        assert (
+            np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
+
 
 def test_eigen3():
     """Test simple off-diag only"""
@@ -103,3 +123,52 @@ def test_eigen3():
         Hsub = SubspaceHamiltonian(H, S)
         evals, _ = spla.eigsh(Hsub, k=3, which="SA")
         assert np.allclose(ans_evals, evals)
+
+    # validate eigenvectors with full binning
+    S = Subspace(subspace_dict, width)
+    Hsub = SubspaceHamiltonian(H, S)
+    evals, evecs = spla.eigsh(Hsub, k=3, which="SA")
+    for kk in range(3):
+        assert (
+            np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
+
+
+def test_eigen4():
+    """Test bunch of operators"""
+    num_qubits = 5
+    obs = ["ZI+IZ", "ZI-IZ", "IYYIZ", "XXIZ0", "III-+", "III+-"]
+    weights = [5j + 4, -5j + 4, -2, -5, 3.283j, -3.283j]
+    rows = [kk for kk in range(2**num_qubits - 5)]
+
+    A = 0
+    for op, weight in zip(obs, weights):
+        A += weight * kron_str(op)
+    assert np.allclose(A, A.conj().T)
+
+    v0 = np.ones(len(rows), dtype=complex)
+    B = grab_subspace(A, rows)
+    ans_evals, ans_evecs = spla.eigsh(B, k=3, which="SA", v0=v0)
+
+    width = len(obs[0])
+    H = QubitOperator(width)
+    for op, weight in zip(obs, weights):
+        H += weight * QubitOperator.from_label(op)
+
+    subspace_dict = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
+    for bin_width in range(width):
+        S = Subspace(subspace_dict)
+        Hsub = SubspaceHamiltonian(H, S)
+        evals, evecs = spla.eigsh(Hsub, k=3, which="SA", v0=v0)
+        assert np.allclose(ans_evals, evals)
+
+    # validate eigenvectors with full binning
+    S = Subspace(subspace_dict, width)
+    Hsub = SubspaceHamiltonian(H, S)
+    evals, evecs = spla.eigsh(Hsub, k=3, which="SA", v0=v0)
+    for kk in range(3):
+        assert (
+            np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
