@@ -29,9 +29,10 @@ def test_eigen1():
     for op, weight in zip(obs, weights):
         H += weight * QubitOperator.from_label(op)
 
-    A = np.zeros((2**width, 2**width), dtype=complex)
+    A = 0
     for op, weight in zip(obs, weights):
         A += weight * kron_str(op)
+    assert np.allclose(A, A.conj().T)
 
     B = grab_subspace(A, rows)
 
@@ -42,7 +43,7 @@ def test_eigen1():
     for bin_width in range(width):
         S = Subspace(subspace_dict, bin_width=bin_width)
         Hsub = SubspaceHamiltonian(H, S)
-        evals, _ = spla.eigsh(Hsub, k=2, which="SA")
+        evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
         assert np.allclose(ans_evals, evals)
 
 
@@ -57,9 +58,10 @@ def test_eigen2():
     for op, weight in zip(obs, weights):
         H += weight * QubitOperator.from_label(op)
 
-    A = np.zeros((2**width, 2**width), dtype=complex)
+    A = 0
     for op, weight in zip(obs, weights):
         A += weight * kron_str(op)
+    assert np.allclose(A, A.conj().T)
 
     B = grab_subspace(A, rows)
 
@@ -85,9 +87,10 @@ def test_eigen3():
     for op, weight in zip(obs, weights):
         H += weight * QubitOperator.from_label(op)
 
-    A = np.zeros((2**width, 2**width), dtype=complex)
+    A = 0
     for op, weight in zip(obs, weights):
         A += weight * kron_str(op)
+    assert np.allclose(A, A.conj().T)
 
     B = grab_subspace(A, rows)
 
