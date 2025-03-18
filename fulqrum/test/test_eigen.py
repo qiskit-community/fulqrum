@@ -20,8 +20,8 @@ def grab_subspace(A, rows):
 
 def test_eigen1():
     """Test simple eigen"""
-    obs = ["ZXIZ", "YIIZ", "XI-X"]
-    weights = [1, -2, 7]
+    obs = ["ZXIZ", "YIIZ", "XI-X",  "XI+X"]
+    weights = [1, -2, 7, 7]
     rows = [0, 3, 4, 7, 11, 12, 14, 15]
 
     width = len(obs[0])
@@ -76,8 +76,8 @@ def test_eigen2():
 
 def test_eigen3():
     """Test simple off-diag only"""
-    obs = ["ZI+IZ", "IYYIZ", "XXIZ0", "III-+"]
-    weights = [1, -2, -5, 3.283j]
+    obs = ["ZI+IZ", "ZI-IZ", "IYYIZ", "XXIZ0", "III-+", "III+-"]
+    weights = [1, 1, -2, -5, 3.283j, -3.283j]
     rows = [0, 3, 4, 12, 14, 16, 17, 25, 31]
 
     width = len(obs[0])
