@@ -172,3 +172,93 @@ def test_eigen4():
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
             < 1e-13
         )
+
+
+def test_eigen5():
+    """Diagonal terms only"""
+    num_qubits = 5
+    num_evals = 3
+    obs = ["01011", "IIIII", "ZZIZZ"]
+    weights = [(-1) ** kk * 3.14159 / (kk + 1) for kk in range(len(obs))]
+
+    rows = [kk for kk in range(10, 2**num_qubits, 2)]
+
+    A = 0
+    for op, weight in zip(obs, weights):
+        A += weight * kron_str(op)
+    assert np.allclose(A, A.conj().T)
+
+    v0 = np.ones(len(rows), dtype=complex)
+    B = grab_subspace(A, rows)
+    ans_evals, ans_evecs = spla.eigsh(B, k=num_evals, which="SA", v0=v0)
+
+    width = len(obs[0])
+    H = QubitOperator(width)
+    for op, weight in zip(obs, weights):
+        H += weight * QubitOperator.from_label(op)
+
+    subspace_dict = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
+    for bin_width in range(width):
+        S = Subspace(subspace_dict)
+        Hsub = SubspaceHamiltonian(H, S)
+        evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
+        assert np.allclose(ans_evals, evals)
+
+    S = Subspace(subspace_dict, width)
+    Hsub = SubspaceHamiltonian(H, S)
+    evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
+    for kk in range(num_evals):
+        assert (
+            np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
+
+
+def test_eigen6():
+    """Random stuff"""
+    num_qubits = 5
+    num_evals = 3
+    obs = [
+        "XIXII",
+        "+1IZI",
+        "-1IZI",
+        "0101I",
+        "II0II",
+        "XYIYX",
+        "III-+",
+        "III+-",
+        "ZZZZZ",
+    ]
+    weights = [1, 1 - 2j, 1 + 2j, -3, 1.25, -1, 2, 2, 4]
+
+    rows = [kk for kk in range(2, 2**num_qubits, 3)]
+
+    A = 0
+    for op, weight in zip(obs, weights):
+        A += weight * kron_str(op)
+    assert np.allclose(A, A.conj().T)
+
+    v0 = np.ones(len(rows), dtype=complex)
+    B = grab_subspace(A, rows)
+    ans_evals, ans_evecs = spla.eigsh(B, k=num_evals, which="SA", v0=v0)
+
+    width = len(obs[0])
+    H = QubitOperator(width)
+    for op, weight in zip(obs, weights):
+        H += weight * QubitOperator.from_label(op)
+
+    subspace_dict = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
+    for bin_width in range(width):
+        S = Subspace(subspace_dict)
+        Hsub = SubspaceHamiltonian(H, S)
+        evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
+        assert np.allclose(ans_evals, evals)
+
+    S = Subspace(subspace_dict, width)
+    Hsub = SubspaceHamiltonian(H, S)
+    evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
+    for kk in range(num_evals):
+        assert (
+            np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
