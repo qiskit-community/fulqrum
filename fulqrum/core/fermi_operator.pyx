@@ -274,7 +274,10 @@ cdef void insertion_sort_term(FermionicTerm_t * term):
         while ll >= 0 and temp_index < term.indices[ll]:
             term.indices[ll + 1] = term.indices[ll]
             term.values[ll + 1] = term.values[ll]
-            prefactor *= -1
+            # Only add a minus sign if both operators (values)
+            # are not projectors (ie. > 4 since '-'=5 and '+'=6)
+            if (temp_value > 4) and (term.values[ll] > 4):
+                prefactor *= -1
             ll -= 1
         term.indices[ll + 1] = temp_index
         term.values[ll + 1] = temp_value

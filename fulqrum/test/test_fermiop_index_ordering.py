@@ -37,3 +37,27 @@ def test_index_ordering_preservation():
         ("-", 3),
         ("+", 3),
     ]
+
+
+def test_index_ordering_projectors1():
+    """Test index ordering works with projectors"""
+    fop = FermionicOperator(2, [("-0", [1, 0])])
+    fop.index_ordering()
+    assert fop.operators == [("0", 0), ("-", 1)]
+    assert fop.coeff == 1.0
+
+
+def test_index_ordering_projectors2():
+    """Test index ordering works with projectors"""
+    fop = FermionicOperator(5, [("-0+", [4, 0, 3])])
+    fop.index_ordering()
+    assert fop.operators == [("0", 0), ("+", 3), ("-", 4)]
+    assert fop.coeff == -1.0
+
+
+def test_index_ordering_projectors3():
+    """Test index ordering works with projectors"""
+    fop = FermionicOperator(5, [("-0+1", [3, 1, 0, 2])])
+    fop.index_ordering()
+    assert fop.operators == [("+", 0), ("0", 1), ("1", 2), ("-", 3)]
+    assert fop.coeff == -1.0
