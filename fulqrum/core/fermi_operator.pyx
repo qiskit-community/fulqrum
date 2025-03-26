@@ -258,7 +258,8 @@ cdef class FermionicOperator():
 @cython.cdivision(True)
 @cython.boundscheck(False)
 cdef void insertion_sort_term(FermionicTerm_t * term):
-    cdef size_t kk, ll
+    cdef size_t kk
+    cdef int ll
     cdef size_t num_elems = term.indices.size()
     cdef size_t temp_index
     cdef unsigned char temp_value
