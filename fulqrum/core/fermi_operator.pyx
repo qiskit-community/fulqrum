@@ -246,90 +246,13 @@ cdef class FermionicOperator():
 
 
     @cython.boundscheck(False)
-    def normal_ordering(self):
-        """Put into normal ordering
-
-        Returns:
-            FermionicOperator: Operator in normal ordering
-        """
-        cdef size_t kk
-        cdef FermionicOperator out = FermionicOperator(self.width)
-        for kk in range(self.oper.terms.size()):
-            normal_order_term(self.oper.terms[kk], out.oper.terms)
-        return out
-
-
-    @cython.boundscheck(False)
     def index_ordering(self):
         """Inplace ordering of term elements by index.
         """
         cdef size_t kk, ll
         for kk in range(self.oper.terms.size()):
             insertion_sort_term(&self.oper.terms[kk])
-
-
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
-cdef void normal_order_term(FermionicTerm_t term, vector[FermionicTerm_t]& out_terms):
-    """Normal order a single OperatorTerm
-
-    Parameters:
-        term (OperatorTerm): Term to be ordered
-        out_terms (vector[OperatorTerm]): Output vector of terms
-    """
-    cdef size_t kk, term_idx, temp_idx
-    cdef int mm
-    cdef int attach_term = 1
-    cdef size_t temp_ind
-    cdef unsigned char temp_val
-    cdef FermionicTerm_t new_term
-    # Do insertion sorting of each term 
-    for term_idx in range(1, term.indices.size()):
-        temp_ind = term.indices[term_idx]
-        temp_val = term.values[term_idx]
-        mm = term_idx - 1
-        while mm >= 0 and attach_term:
-            # If rasing op on right move it
-            if (term.values[mm] < temp_val):
-                term.indices[mm+1] = term.indices[mm]
-                term.values[mm+1] = term.values[mm]
-                term.coeff *= -1
-                # Operator indices are the same then need to add a term
-                if (term.indices[mm] == temp_ind):
-                    new_term = EmptyFermionicTerm
-                    # This term has no sign flip from initial operator
-                    # so need to flip the flip that we made (-1 * -1 = 1)
-                    new_term.coeff = -1*term.coeff
-                    for temp_idx in range(0, <size_t>mm):
-                        new_term.indices.push_back(term.indices[temp_idx])
-                        new_term.values.push_back(term.values[temp_idx])
-                    for temp_idx in range(<size_t>(mm+2), term.indices.size()):
-                        new_term.indices.push_back(term.indices[temp_idx])
-                        new_term.values.push_back(term.values[temp_idx])
-                    normal_order_term(new_term, out_terms)
-                # Reduce the iter index
-                mm -= 1
-            # Both operators are the same kind
-            elif (term.values[mm] == temp_val):
-                # If indices are the same then the operator is a zero operator
-                if (term.indices[mm] == temp_ind):
-                    attach_term = False
-                # If indices are the different, then bring smaller index to the left
-                elif (term.indices[mm] > temp_ind):
-                    term.indices[mm+1] = term.indices[mm]
-                    term.values[mm+1] = term.values[mm]
-                    term.coeff *= -1
-                    # Reduce the iter index
-                    mm -= 1
-                    continue
-                break
-            else:
-                break
-        term.indices[mm+1] = temp_ind
-        term.values[mm+1] = temp_val
-    if attach_term:
-        out_terms.push_back(term)
+         
 
 
 @cython.cdivision(True)
