@@ -28,3 +28,14 @@ cdef extern from "../src/base.hpp":
         size_t num_bins
         size_t bin_width
         size_t size
+
+
+    ctypedef struct FermionicTerm_t:
+        double complex coeff
+        vector[size_t] indices
+        vector[unsigned char] values
+
+    
+    ctypedef struct FermionicOperator_t:
+        size_t width
+        vector[FermionicTerm_t] terms

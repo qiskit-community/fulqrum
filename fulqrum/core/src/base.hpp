@@ -39,6 +39,32 @@ typedef struct QubitOperator{
 } QubitOperator_t;
 
 
+/** @brief Data structure for each Fermionic operator term
+ *
+ * @var indices the modes (locations) where non-idenity term operators are
+ * @var values are the char representations of the operators
+ * @var coeff is the complex coeffcient multiplying the term
+ */
+ typedef struct FermionicTerm{
+    std::complex<double> coeff;
+    std::vector<std::size_t> indices;
+    std::vector<unsigned char> values;
+} FermionicTerm_t;
+
+
+/** @struct FermionicOperator
+ * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
+ *
+ * @var width is the number of qubits
+ * @var terms is a vector of OperatorTerms that make up the operator
+ * @var sorted is a flag that indicates the term is sorted (NOT USED AT PRESENT)
+ */
+ typedef struct FermionicOperator{
+    std::size_t width;
+    std::vector<FermionicTerm_t> terms;
+} FermionicOperator_t;
+
+
 /** @struct subspace
  * @brief Datastructure for subspace defined by counts
  *

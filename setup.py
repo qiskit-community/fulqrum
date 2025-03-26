@@ -31,16 +31,16 @@ this_dir = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_dir, "README.md"), encoding="utf-8") as readme:
     LONG_DESCRIPTION = readme.read()
 
-CYTHON_EXTS = ["qubit_operator", "subspace", "spmv",
+CYTHON_EXTS = ["qubit_operator", "subspace", "spmv", "fermi_operator",
                "qiskit",
                "string_funcs", "oper_funcs"]
 CYTHON_MODULES = [
-    "fulqrum.core", "fulqrum.core", "fulqrum.core",
+    "fulqrum.core", "fulqrum.core", "fulqrum.core", "fulqrum.core",
     "fulqrum.convert",
     "fulqrum.test", "fulqrum.test",
 ]
 CYTHON_SOURCE_DIRS = [
-    "fulqrum/core", "fulqrum/core", "fulqrum/core",
+    "fulqrum/core", "fulqrum/core", "fulqrum/core", "fulqrum/core",
     "fulqrum/convert",
     "fulqrum/test", "fulqrum/test",
 ]
