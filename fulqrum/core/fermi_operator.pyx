@@ -252,6 +252,19 @@ cdef class FermionicOperator():
         cdef size_t kk, ll
         for kk in range(self.oper.terms.size()):
             insertion_sort_term(&self.oper.terms[kk])
+    
+    @cython.boundscheck(False)
+    def deflate_indices(self):
+        """Deflate repeated indices into singles and remove zero terms
+
+        Returns:
+            FermionicOperator: Deflated operator
+        """
+        cdef size_t kk
+        cdef FermionicOperator out = FermionicOperator(self.width)
+        for kk in range(self.oper.terms.size()):
+            deflate_term_indicies(&self.oper.terms[kk], &out.oper.terms)
+        return out
          
 
 
@@ -282,3 +295,55 @@ cdef void insertion_sort_term(FermionicTerm_t * term):
         term.indices[ll + 1] = temp_index
         term.values[ll + 1] = temp_value
     term.coeff *= prefactor
+
+
+# DEFLATION ROUTINES
+
+# These are the values returned when compressing two values over the same index
+cdef int[16] DEFLATED_VALUES = [1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6 , -1, 2, -1]
+
+
+cdef int deflated_value(unsigned char x):
+    """Converts a regular value index into a deflated one
+    """
+    if x == 1:
+        return 0
+    elif x == 2:
+        return 1
+    elif x == 5:
+        return 2
+    else: # x=6
+        return 3
+
+
+cdef void deflate_term_indicies(FermionicTerm_t * term, vector[FermionicTerm_t] * out_terms):
+    cdef size_t num_elems = term.indices.size()
+    cdef size_t kk 
+    cdef size_t start, num_touched
+    cdef FermionicTerm_t new_term = EmptyFermionicTerm
+    cdef size_t current_index
+    cdef int temp_int
+    cdef unsigned char current_value
+
+    num_touched = 0
+    while(num_touched < num_elems):
+        current_index = term.indices[num_touched]
+        current_value = term.values[num_touched]
+        num_touched += 1
+        for kk in range(num_touched, num_elems):
+            #next term has a matching index with the current one
+            if term.indices[kk] == current_index:
+                temp_int = DEFLATED_VALUES[4*deflated_value(current_value) + deflated_value(term.values[kk])]
+                # This operator becomes a null operator return
+                if temp_int < 0:
+                    return
+                else:
+                    current_value = <unsigned char>temp_int
+                num_touched += 1
+            else:
+                # Move on to next index since not matching and we assume we index sorted already
+                break
+        new_term.indices.push_back(current_index)
+        new_term.values.push_back(current_value)
+    new_term.coeff = term.coeff
+    out_terms.push_back(new_term)
