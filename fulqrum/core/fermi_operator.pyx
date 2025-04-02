@@ -53,6 +53,7 @@ cdef class FermionicOperator():
                         term.coeff = coeff
                 else:
                     term.coeff = 1
+                insertion_sort_term(&term)
                 self.oper.terms.push_back(term)
 
     
@@ -245,14 +246,6 @@ cdef class FermionicOperator():
             self.oper.terms.push_back(other.oper.terms[kk])
 
 
-    @cython.boundscheck(False)
-    def index_ordering(self):
-        """Inplace ordering of term elements by index.
-        """
-        cdef size_t kk, ll
-        for kk in range(self.oper.terms.size()):
-            insertion_sort_term(&self.oper.terms[kk])
-    
     @cython.boundscheck(False)
     def deflate_indices(self):
         """Deflate repeated indices into singles and remove zero terms
