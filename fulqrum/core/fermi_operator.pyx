@@ -247,16 +247,16 @@ cdef class FermionicOperator():
 
 
     @cython.boundscheck(False)
-    def deflate_indices(self):
-        """Deflate repeated indices into singles and remove zero terms
+    def collapse_indices(self):
+        """collapse repeated indices into singles and remove zero terms
 
         Returns:
-            FermionicOperator: Deflated operator
+            FermionicOperator: Collapsed operator
         """
         cdef size_t kk
         cdef FermionicOperator out = FermionicOperator(self.width)
         for kk in range(self.oper.terms.size()):
-            deflate_term_indicies(&self.oper.terms[kk], &out.oper.terms)
+            collapse_term_indicies(&self.oper.terms[kk], &out.oper.terms)
         return out
          
 
@@ -293,10 +293,10 @@ cdef void insertion_sort_term(FermionicTerm_t * term):
 # DEFLATION ROUTINES
 
 # These are the values returned when compressing two values over the same index
-cdef int[16] DEFLATED_VALUES = [1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6 , -1, 2, -1]
+cdef int[16] COLLAPSED_VALUES = [1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6 , -1, 2, -1]
 
 
-cdef int deflated_value(unsigned char x):
+cdef int collapse_value(unsigned char x):
     """Converts a regular value index into a deflated one
     """
     if x == 1:
@@ -309,7 +309,7 @@ cdef int deflated_value(unsigned char x):
         return 3
 
 
-cdef void deflate_term_indicies(FermionicTerm_t * term, vector[FermionicTerm_t] * out_terms):
+cdef void collapse_term_indicies(FermionicTerm_t * term, vector[FermionicTerm_t] * out_terms):
     cdef size_t num_elems = term.indices.size()
     cdef size_t kk 
     cdef size_t start, num_touched
@@ -326,7 +326,7 @@ cdef void deflate_term_indicies(FermionicTerm_t * term, vector[FermionicTerm_t] 
         for kk in range(num_touched, num_elems):
             #next term has a matching index with the current one
             if term.indices[kk] == current_index:
-                temp_int = DEFLATED_VALUES[4*deflated_value(current_value) + deflated_value(term.values[kk])]
+                temp_int = COLLAPSED_VALUES[4*collapse_value(current_value) + collapse_value(term.values[kk])]
                 # This operator becomes a null operator return
                 if temp_int < 0:
                     return
