@@ -85,7 +85,7 @@ def test_fermioperator_single_term_repeat_indices2():
     """Test single term FermionicOperator repeated indices"""
     N = 5
     fo = FermionicOperator(N, [("+--+-", [2, 1, 1, 0, 0], 1)])
-    assert fo.operators == [("+", 2), ("-", 1), ("-", 1), ("+", 0), ("-", 0)]
+    assert fo.operators == [("+", 0), ("-", 0), ("-", 1), ("-", 1), ("+", 2)]
 
 
 def test_fermioperator_subtraction():
