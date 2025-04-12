@@ -33,6 +33,10 @@ cdef char[6] diag_oper_elems = [1, -1,   # Z
 cdef const OperatorTerm_t EmptyOperatorTerm
 
 
+from fulqrum.version import version as fversion
+FORMAT_VERSION = '1.0.0'
+
+
 @cython.boundscheck(False)
 cdef int diagonal_term(OperatorTerm_t * term):
     """Check if term is diagonal in computational basis
@@ -586,3 +590,51 @@ cdef class QubitOperator():
         """
         offdiag_term_sort(self.oper)
         self.oper.sorted = 1
+    
+
+    @cython.boundscheck(False)
+    def to_dict(self):
+        """Dictionary represenation of QubitOperator
+        
+        Returns:
+            dict: Dictionary representation of QubitOperator
+        """
+        cdef dict out = {'format-version': FORMAT_VERSION,
+                        'fulqrum-version': fversion,
+                        'operator-type': 'qubit',
+                        'width': self.width
+                        }
+        cdef OperatorTerm_t * term
+        cdef size_t kk, jj
+        cdef list terms = []
+        cdef list temp_inds
+        cdef str temp_vals
+        for kk in range(self.oper.terms.size()):
+            term = &self.oper.terms[kk]
+            temp_inds = []
+            temp_vals = ''
+            for jj in range(term.indices.size()):
+                temp_inds.append(term.indices[jj])
+                temp_vals += IND_TO_STR[term.values[jj]]
+            terms.append([temp_vals, temp_inds, (term.coeff.real, term.coeff.imag)])
+        out['terms'] = terms
+        return out
+    
+    
+    @classmethod
+    def from_dict(self, dict dic):
+        """QubitOperator from dictionary
+
+        Parameters:
+            dic(dict): Dictionary representation of operator
+        
+        Returns:
+            QubitOperator
+        """
+        if dic['operator-type'] != 'qubit':
+            raise FulqrumError("Dictionary operator-type is not 'qubit'")
+        cdef size_t width = dic['width']
+        cdef QubitOperator out = QubitOperator(width)
+        for term in dic['terms']:
+            out += QubitOperator(width, [(term[0], term[1], complex(*term[2]))])
+        return out
