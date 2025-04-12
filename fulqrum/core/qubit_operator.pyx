@@ -14,7 +14,9 @@ from cython.operator cimport dereference, preincrement
 from fulqrum.exceptions import FulqrumError
 
 from collections.abc import Iterable
+from pathlib import Path
 import numbers
+import orjson
 import numpy as np
 cimport numpy as np
 
@@ -596,9 +598,9 @@ cdef class QubitOperator():
         Returns:
             dict: Dictionary representation of QubitOperator
         """
-        cdef dict out = {'format-version': FORMAT_VERSION,
+        cdef dict out = {'operator-type': 'qubit',
+                        'format-version': FORMAT_VERSION,
                         'fulqrum-version': fversion,
-                        'operator-type': 'qubit',
                         'width': self.width
                         }
         cdef OperatorTerm_t * term
@@ -634,4 +636,21 @@ cdef class QubitOperator():
         cdef QubitOperator out = QubitOperator(width)
         for term in dic['terms']:
             out += QubitOperator(width, [(term[0], term[1], complex(*term[2]))])
+        return out
+    
+
+    def to_json(self, filename, overwrite=False):
+        file = Path(filename)
+        if file.is_file() and not overwrite:
+            raise Exception("File already exists, set overwrite=True")
+        dic = self.to_dict()
+        with open(filename, "wb") as fd:
+            fd.write(orjson.dumps(dic))
+
+
+    @classmethod
+    def from_json(self, filename):
+        with open(filename, "r", encoding="utf-8") as fd:
+            dic = orjson.loads(fd.read())
+        out = QubitOperator.from_dict(dic)
         return out
