@@ -21,8 +21,9 @@ cimport numpy as np
 include "includes/base_header.pxi"
 include "includes/elements_header.pxi"
 include "includes/bitstrings_header.pxi"
-include "includes/converters.pxi"
 include "includes/operators_header.pxi"
+include "includes/converters.pxi"
+include "includes/io.pxi"
 
 cdef char[6] diag_oper_elems = [1, -1,   # Z
                                 1, 0,    # 0
@@ -31,10 +32,6 @@ cdef char[6] diag_oper_elems = [1, -1,   # Z
 
 
 cdef const OperatorTerm_t EmptyOperatorTerm
-
-
-from fulqrum.version import version as fversion
-FORMAT_VERSION = '1.0.0'
 
 
 @cython.boundscheck(False)
@@ -620,7 +617,7 @@ cdef class QubitOperator():
         out['terms'] = terms
         return out
     
-    
+
     @classmethod
     def from_dict(self, dict dic):
         """QubitOperator from dictionary
