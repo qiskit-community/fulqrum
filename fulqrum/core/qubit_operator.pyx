@@ -14,15 +14,18 @@ from cython.operator cimport dereference, preincrement
 from fulqrum.exceptions import FulqrumError
 
 from collections.abc import Iterable
+from pathlib import Path
 import numbers
+import orjson
 import numpy as np
 cimport numpy as np
 
 include "includes/base_header.pxi"
 include "includes/elements_header.pxi"
 include "includes/bitstrings_header.pxi"
-include "includes/converters.pxi"
 include "includes/operators_header.pxi"
+include "includes/converters.pxi"
+include "includes/io.pxi"
 
 cdef char[6] diag_oper_elems = [1, -1,   # Z
                                 1, 0,    # 0
@@ -586,3 +589,68 @@ cdef class QubitOperator():
         """
         offdiag_term_sort(self.oper)
         self.oper.sorted = 1
+    
+
+    @cython.boundscheck(False)
+    def to_dict(self):
+        """Dictionary represenation of QubitOperator
+        
+        Returns:
+            dict: Dictionary representation of QubitOperator
+        """
+        cdef dict out = {'operator-type': 'qubit',
+                        'format-version': FORMAT_VERSION,
+                        'fulqrum-version': fversion,
+                        'width': self.width
+                        }
+        cdef OperatorTerm_t * term
+        cdef size_t kk, jj
+        cdef list terms = []
+        cdef list temp_inds
+        cdef str temp_vals
+        for kk in range(self.oper.terms.size()):
+            term = &self.oper.terms[kk]
+            temp_inds = []
+            temp_vals = ''
+            for jj in range(term.indices.size()):
+                temp_inds.append(term.indices[jj])
+                temp_vals += IND_TO_STR[term.values[jj]]
+            terms.append([temp_vals, temp_inds, (term.coeff.real, term.coeff.imag)])
+        out['terms'] = terms
+        return out
+    
+
+    @classmethod
+    def from_dict(self, dict dic):
+        """QubitOperator from dictionary
+
+        Parameters:
+            dic(dict): Dictionary representation of operator
+        
+        Returns:
+            QubitOperator
+        """
+        if dic['operator-type'] != 'qubit':
+            raise FulqrumError("Dictionary operator-type is not 'qubit'")
+        cdef size_t width = dic['width']
+        cdef QubitOperator out = QubitOperator(width)
+        for term in dic['terms']:
+            out += QubitOperator(width, [(term[0], term[1], complex(*term[2]))])
+        return out
+    
+
+    def to_json(self, filename, overwrite=False):
+        file = Path(filename)
+        if file.is_file() and not overwrite:
+            raise Exception("File already exists, set overwrite=True")
+        dic = self.to_dict()
+        with open(filename, "wb") as fd:
+            fd.write(orjson.dumps(dic))
+
+
+    @classmethod
+    def from_json(self, filename):
+        with open(filename, "r", encoding="utf-8") as fd:
+            dic = orjson.loads(fd.read())
+        out = QubitOperator.from_dict(dic)
+        return out
