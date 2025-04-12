@@ -12,12 +12,15 @@ import numbers
 from fulqrum.core.qubit_operator cimport QubitOperator
 from fulqrum.exceptions import FulqrumError
 
+import orjson
+from pathlib import Path
 import numpy as np
 cimport numpy as np
 
 include "includes/base_header.pxi"
-include "includes/converters.pxi"
 include "includes/operators_header.pxi"
+include "includes/converters.pxi"
+include "includes/io.pxi"
 
 cdef const FermionicTerm_t EmptyFermionicTerm
 
@@ -274,6 +277,70 @@ cdef class FermionicOperator():
             jw_term(fermi.oper.terms[kk], out.oper.terms[kk])
             sort_term_data(out.oper.terms[kk].indices, out.oper.terms[kk].values)
         return out
+
+    @cython.boundscheck(False)
+    def to_dict(self):
+        """Dictionary represenation of FermionicOperator
+        
+        Returns:
+            dict: Dictionary representation of FermionicOperator
+        """
+        cdef dict out = {'operator-type': 'fermi',
+                        'format-version': FORMAT_VERSION,
+                        'fulqrum-version': fversion,
+                        'width': self.width
+                        }
+        cdef FermionicTerm_t * term
+        cdef size_t kk, jj
+        cdef list terms = []
+        cdef list temp_inds
+        cdef str temp_vals
+        for kk in range(self.oper.terms.size()):
+            term = &self.oper.terms[kk]
+            temp_inds = []
+            temp_vals = ''
+            for jj in range(term.indices.size()):
+                temp_inds.append(term.indices[jj])
+                temp_vals += IND_TO_STR[term.values[jj]]
+            terms.append([temp_vals, temp_inds, (term.coeff.real, term.coeff.imag)])
+        out['terms'] = terms
+        return out
+    
+
+    @classmethod
+    def from_dict(self, dict dic):
+        """QubitOperator from dictionary
+
+        Parameters:
+            dic(dict): Dictionary representation of operator
+        
+        Returns:
+            QubitOperator
+        """
+        if dic['operator-type'] != 'fermi':
+            raise FulqrumError("Dictionary operator-type is not 'fermi'")
+        cdef size_t width = dic['width']
+        cdef FermionicOperator out = FermionicOperator(width)
+        for term in dic['terms']:
+            out += FermionicOperator(width, [(term[0], term[1], complex(*term[2]))])
+        return out
+    
+
+    def to_json(self, filename, overwrite=False):
+        file = Path(filename)
+        if file.is_file() and not overwrite:
+            raise Exception("File already exists, set overwrite=True")
+        dic = self.to_dict()
+        with open(filename, "wb") as fd:
+            fd.write(orjson.dumps(dic))
+
+    @classmethod
+    def from_json(self, filename):
+        with open(filename, "r", encoding="utf-8") as fd:
+            dic = orjson.loads(fd.read())
+        out = FermionicOperator.from_dict(dic)
+        return out
+
          
 
 
