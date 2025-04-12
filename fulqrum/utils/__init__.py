@@ -3,4 +3,4 @@
 
 """Fulqrum helper utilites"""
 
-from .matrix import kron_str
+from .matrix import kron_str, qubitoperator_to_matrix
