@@ -21,3 +21,5 @@ Working over extended (i.e. non-Pauli) alphabets allows Fulqrum to be applicable
     self
     Installation <install>
     How it works <how_it_works>
+    API documentation <api>
+

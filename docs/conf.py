@@ -1,4 +1,4 @@
-# Fulqrum - Top Hat
+# Fulqrum
 # Copyright (C) 2024, IBM
 
 # pylint: disable=invalid-name

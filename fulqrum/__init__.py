@@ -1,7 +1,7 @@
-# Fulqrum - Top Hat
+# Fulqrum
 # Copyright (C) 2024, IBM
 
-"""Fulqrum Top Hat core"""
+"""Fulqrum"""
 
 # Grab version from version.py
 try:
@@ -24,6 +24,6 @@ def about():
     print("██       ██████  ███████  ██████  ██   ██  ██████  ██    ████    ██")
     print("")
     print("Copyright (C) 2024, IBM Quantum")
-    print("Paul D. Nation and Hwajung Kang")
+    print("Paul D. Nation, Abdullah Saki, and Hwajung Kang")
     print(f"Fulqrum version: {__version__}")
     print(f"OpenMP enabled: {openmp}")
