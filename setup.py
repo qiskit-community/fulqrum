@@ -166,7 +166,7 @@ setuptools.setup(
     ],
     install_requires=REQUIREMENTS,
     package_data=PACKAGE_DATA,
-    ext_modules=cythonize(EXT_MODULES, language_level=3),
+    ext_modules=cythonize(EXT_MODULES, language_level=3, compiler_directives={'embedsignature': True}),
     include_package_data=True,
     zip_safe=False,
 )

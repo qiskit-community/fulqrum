@@ -1,4 +1,4 @@
-# Fulqrum - Top Hat
+# Fulqrum
 # Copyright (C) 2024, IBM
 
 from fulqrum.version import version as fversion
