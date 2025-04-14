@@ -154,6 +154,23 @@ cdef class FermionicOperator():
             raise FulqrumError(f"Cannot get operator terms using {type(key)}")
         return out
 
+    @classmethod
+    def from_label(self, size_t num_qubits, str label="", double complex coeff = 1.0):
+        cdef FermionicTerm_t term = EmptyFermionicTerm
+        cdef FermionicOperator out = FermionicOperator(num_qubits)
+        cdef list items = label.split(' ')
+        cdef list temp
+        if any(items):
+            for item in items:
+                temp = item.split(':')
+                term.indices.push_back(<size_t>int(temp[1]))
+                ind = STR_TO_IND[(<string>temp[0]).c_str()[0]]
+                term.values.push_back(ind)
+        term.coeff = coeff
+        insertion_sort_term(&term)
+        out.oper.terms.push_back(term)
+        return out
+
     @property
     def num_terms(self):
         """Return the number of terms in the operator
