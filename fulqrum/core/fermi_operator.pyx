@@ -155,9 +155,9 @@ cdef class FermionicOperator():
         return out
 
     @classmethod
-    def from_label(self, size_t num_qubits, str label="", double complex coeff = 1.0):
+    def from_label(self, size_t width, str label="", double complex coeff = 1.0):
         cdef FermionicTerm_t term = EmptyFermionicTerm
-        cdef FermionicOperator out = FermionicOperator(num_qubits)
+        cdef FermionicOperator out = FermionicOperator(width)
         cdef list items = label.split(' ')
         cdef list temp
         if any(items):
