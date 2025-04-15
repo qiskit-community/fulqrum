@@ -4,6 +4,7 @@
  */
 #pragma once
 #include <cstdlib>
+#include <complex>
 #include <vector>
 #include <algorithm>
 #include "base.hpp"
@@ -162,3 +163,74 @@ int nonzero_extended_value(const OperatorTerm_t * term,
     }
     return out;
 }
+
+
+/**
+ * Combine repeated terms that represent same
+ * operators, dropping terms smaller than requested tolerance.
+ *
+ * @param terms Terms for input operator
+ * @param out_terms Terms for ouput operator (to push_back to)
+ * @param touched pointer array indicating if term has been touched
+ * @param num_terms Number of terms in input operator
+ * @param atol Absolute tolerance for term truncation
+ * 
+ */
+void combine_qubit_terms(std::vector<OperatorTerm_t>& terms,
+                         std::vector<OperatorTerm_t>& out_terms,
+                         unsigned char * touched,
+                         std::size_t num_terms,
+                         double atol)
+{
+    std::size_t kk, jj, mm;
+    OperatorTerm_t target_term;
+    OperatorTerm_t * current_term;
+    int do_combine;
+    for(kk=0; kk<num_terms; kk++)
+    {
+        if(touched[kk]) // If touched, move onto next term
+        {
+            continue;
+        }
+        touched[kk] = 1;
+        target_term = terms[kk];
+        for(jj=kk+1; jj < num_terms; jj++)
+        {
+            if(touched[jj])
+            {
+                continue;
+            }
+            current_term = &terms[jj];
+            // filter if offdiag weights differ
+            if(target_term.offdiag_weight != current_term->offdiag_weight)
+            {
+                continue;
+            }
+            // filter if weights are different
+            if(target_term.indices.size() != current_term->indices.size())
+            {
+                continue;
+            }
+            do_combine = 1;
+            // look to see if indices and values match
+            for(mm=0; mm < target_term.indices.size(); mm++)
+            {
+                if((target_term.indices[mm] != current_term->indices[mm]) || (target_term.values[mm] != current_term->values[mm]))
+                {
+                    do_combine = 0;
+                    break;
+                }
+            }
+            if(do_combine)
+            {
+                touched[jj] = 1;
+                target_term.coeff += current_term->coeff;
+            }
+        } // end jj for-loop
+        // Add term to output if either real or imag parts are greater than atol
+        if(std::abs(target_term.coeff) > atol)
+        {
+            out_terms.push_back(target_term);
+        }
+    } // end main kk loop
+} // end combine_qubit_terms
