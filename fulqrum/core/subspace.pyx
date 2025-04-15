@@ -4,6 +4,7 @@
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libc.string cimport memcmp
+from libc.math cimport abs
 
 import math
 cimport cython
@@ -142,7 +143,21 @@ cdef class Subspace():
         return (bin_num, bin_ind-start)
 
     @cython.boundscheck(False)
-    def interpret_vector(self, double complex[::1] vec, int sort=0):
+    def interpret_vector(self, double complex[::1] vec, double atol=1e-14, int sort=0):
+        """Convert solution vector into dict of counts and complex amplitudes
+
+        Parameters:
+            vec (ndarray): Complex solution vector
+            atol (double): Absolute tolerance for truncation, default=1e-14
+            sort (int): Sort output dict by integer representation.
+                        For small numbers of qubits only, e.g. < 32
+
+        Returns:
+            dict: Dictionary with bit-string keys and complex values
+
+        Notes:
+            Truncation can be disabled by calling `atol=-1`
+        """
         cdef size_t kk, idx
         cdef string temp
         cdef dict out = {}
@@ -150,6 +165,8 @@ cdef class Subspace():
         temp.resize(self.subspace.num_qubits)
 
         for kk in range(self.subspace.size):
+            if abs(vec[kk]) <= atol and abs(vec[kk].imag) <= atol:
+                continue
             for idx in range(self.subspace.num_qubits):
                 temp[idx] = sub[kk*self.subspace.num_qubits+idx] + 48
             out[temp] = vec[kk]
