@@ -9,6 +9,7 @@ from fulqrum.utils import qubitoperator_to_matrix
 
 
 def test_combining_h2_terms():
+    """Validate combining repeat qubitop terms yields same num_terms and numberic operator"""
     path = Path(__file__).parent / "data/h2.json"
     fop = FermionicOperator.from_json(path)
     assert fop.num_terms == 36
