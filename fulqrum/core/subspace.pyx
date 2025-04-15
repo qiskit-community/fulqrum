@@ -47,7 +47,6 @@ cdef class Subspace():
 
         cdef size_t kk
         cdef string key
-        cdef size_t val
         cdef size_t temp_idx
         cdef size_t bin_idx = 0
         cdef vector[unsigned char] temp_vec
@@ -58,7 +57,7 @@ cdef class Subspace():
         for kk in range(self.subspace.num_bins):
             self.subspace.bin_counts[kk] = 0     
         
-        for key, val in counts.items():
+        for key in counts.keys():
             string_to_vec(key.c_str(), &temp_vec[0], self.subspace.num_qubits)
             for kk in range(self.subspace.num_qubits):
                 self.subspace.bitstrings.push_back(temp_vec[kk])
