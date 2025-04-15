@@ -14,3 +14,10 @@ cdef extern from "../src/operators.hpp":
     int nonzero_extended_value(OperatorTerm_t * term,
                                unsigned char * row, 
                                size_t width) nogil
+
+
+    void combine_qubit_terms(vector[OperatorTerm_t]& terms,
+                             vector[OperatorTerm_t]& out_terms,
+                             unsigned char * touched,
+                             size_t num_terms,
+                             double atol) nogil

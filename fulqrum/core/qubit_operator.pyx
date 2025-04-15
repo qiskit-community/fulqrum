@@ -590,6 +590,22 @@ cdef class QubitOperator():
         offdiag_term_sort(self.oper)
         self.oper.sorted = 1
     
+    def combine_repeated_terms(self, double atol=1e-14):
+        """Combine repeated terms that represent same
+        operators, dropping terms smaller than requested tolerance.
+
+        Parameters:
+            atol (double): Tolerance for dropping terms, default=1e-14
+
+        Returns:
+            QubitOperator: Operator with repeat terms combined
+        """
+        cdef QubitOperator out = QubitOperator(self.width)
+        cdef size_t num_terms = self.oper.terms.size()
+        cdef unsigned char[::1] touched = np.zeros(num_terms, dtype=np.uint8)
+        combine_qubit_terms(self.oper.terms, out.oper.terms,
+                            &touched[0], num_terms, atol)
+        return out
 
     @cython.boundscheck(False)
     def to_dict(self):
