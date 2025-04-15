@@ -36,7 +36,7 @@ class SubspaceHamiltonian(LinearOperator):
 
         Returns:
             dict: Dictionary with bit-string keys and complex values
-        
+
         Notes:
             Truncation can be disabled by calling `atol=-1`
         """
