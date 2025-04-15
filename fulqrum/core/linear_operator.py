@@ -26,8 +26,21 @@ class SubspaceHamiltonian(LinearOperator):
         self.shape = (len(subspace),) * 2
         self.dtype = np.dtype(complex)
 
-    def interpret_vector(self, vec, sort=0):
-        return self.spmv.subspace.interpret_vector(vec, sort)
+    def interpret_vector(self, vec, atol=1e-14, sort=0):
+        """Convert solution vector into dict of counts and complex amplitudes
+
+        Parameters:
+            vec (ndarray): Complex solution vector
+            atol (double): Absolute tolerance for truncation, default=1e-14
+            sort (int): Sort output dict by integer representation.
+
+        Returns:
+            dict: Dictionary with bit-string keys and complex values
+        
+        Notes:
+            Truncation can be disabled by calling `atol=-1`
+        """
+        return self.spmv.subspace.interpret_vector(vec, atol, sort)
 
     def __repr__(self):
         out = f"<SubspaceHamiltonian(width={self.spmv.width}, "
