@@ -48,6 +48,8 @@ class SubspaceHamiltonian(LinearOperator):
         Notes:
             Truncation can be disabled by calling `atol=-1`
         """
+        if len(vec.shape) == 2:
+            vec = vec.view().reshape(vec.shape[0])
         return self.spmv.subspace.interpret_vector(vec, atol, sort)
 
     def __repr__(self):
