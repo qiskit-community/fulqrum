@@ -26,6 +26,14 @@ class SubspaceHamiltonian(LinearOperator):
         self.shape = (len(subspace),) * 2
         self.dtype = np.dtype(complex)
 
+    def diagonal_vector(self):
+        """Return diagonal vector of Hamiltonian in subspace
+
+        Returns:
+            ndarray: Complex vector for diagonal of Hamiltonian
+        """
+        return self.spmv.diagonal_vector()
+
     def interpret_vector(self, vec, atol=1e-14, sort=0):
         """Convert solution vector into dict of counts and complex amplitudes
 
