@@ -60,8 +60,48 @@ def test_grouping_split():
     assert np.allclose(offdiag.groups(), offdiag_ans)
 
 
+def test_basic_group_pointers():
+    """Test simple term group pointers"""
+    H = QubitOperator(5)
+    H += QubitOperator.from_label("IIIIX")
+    H += QubitOperator.from_label("IIIXI")
+    H += QubitOperator.from_label("IIYII")
+    H += QubitOperator.from_label("I-III")
+    H += QubitOperator.from_label("+IIII")
+    assert H.num_groups == 5
+    assert np.allclose(H.group_ptrs(), np.arange(5 + 1))
+
+
+def test_basic_group_pointers2():
+    """Test repeat elements in front"""
+    H = QubitOperator(5)
+    H += QubitOperator.from_label('IIIIX')
+    H += QubitOperator.from_label('IIIIY')
+    H += QubitOperator.from_label('IIIXI')
+    H += QubitOperator.from_label('IIYII')
+    H += QubitOperator.from_label('I-III')
+    H += QubitOperator.from_label('+IIII')
+    assert H.num_groups == 5
+    # repeat elements in front
+    assert np.allclose(H.group_ptrs(), np.array([0,2,3,4,5,6]))
+
+
+def test_basic_group_pointers3():
+    """Test repeat elements in back"""
+    H = QubitOperator(5)
+    H += QubitOperator.from_label('IIIIX')
+    H += QubitOperator.from_label('IIIXI')
+    H += QubitOperator.from_label('IIYII')
+    H += QubitOperator.from_label('I-III')
+    H += QubitOperator.from_label('+IIII')
+    H += QubitOperator.from_label('XIIII')
+    assert H.num_groups == 5
+    # repeat elements in front
+    assert np.allclose(H.group_ptrs(), np.array([0,1,2,3,4,6]))
+
+
 def test_square_group_pointers():
-    # Build 1600-qubit square coupling map
+    """Build 1600-qubit square coupling map and validate grouping pointers"""
     cmap = CouplingMap.from_grid(40, 40)
     num_qubits = cmap.size()
 
