@@ -8,14 +8,6 @@ from qiskit.transpiler import CouplingMap
 from fulqrum import QubitOperator, FermionicOperator
 
 
-def test_unset_grouping():
-    """Test that all groups are -1 for unsorted operator"""
-    H = QubitOperator(2, [])
-    for item in ["XY", "XI", "IY", "YY", "IZ", "II", "Z0"]:
-        H += QubitOperator.from_label(item)
-    ans = -1 * np.ones(7, dtype=np.int32)
-    assert np.allclose(ans, H.groups())
-
 
 def test_grouping1():
     """Test grouping"""

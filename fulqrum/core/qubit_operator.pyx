@@ -580,6 +580,8 @@ cdef class QubitOperator():
 
 
     def groups(self):
+        if not self.sorted:
+            self.offdiag_term_grouping()
         cdef size_t kk
         cdef int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.int32)
         for kk in range(self.oper.terms.size()):
