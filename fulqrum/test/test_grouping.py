@@ -3,8 +3,9 @@
 # pylint: disable=no-name-in-module
 """Test basic core functionality"""
 import numpy as np
+from pathlib import Path
 from qiskit.transpiler import CouplingMap
-from fulqrum import QubitOperator
+from fulqrum import QubitOperator, FermionicOperator
 
 
 def test_unset_grouping():
@@ -153,3 +154,16 @@ def test_square_group_pointers():
     # XX and YY have same off-diagonal structure so this is True here
     assert H_off.num_terms // 2 == (hoff_ptrs.shape[0] - 1)
     assert np.allclose(np.diff(hoff_ptrs), 2 * np.ones(H_off.num_terms // 2))
+
+
+def test_square_group_pointers_h2_example():
+    """Test Fermionic grouping and pointers example using H2"""
+    path = Path(__file__).parent / "data/h2.json"
+    fop = FermionicOperator.from_json(path)
+    op = fop.extended_jw_transformation()
+    op_ptrs = op.group_ptrs()
+    diag, off = op.split_diagonal()
+    assert diag.num_terms == op_ptrs[1]
+    assert off.num_terms == op_ptrs[2] - op_ptrs[1]
+    # All the elements in the off-diagonal component have the same diagonal structure
+    assert np.allclose(off.group_ptrs(), np.array([0, 8]))
