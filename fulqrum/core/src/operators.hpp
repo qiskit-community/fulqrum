@@ -143,6 +143,23 @@ void set_extended_flag(OperatorTerm_t& term){
 
 
 /**
+ * In-place set off-diagonal weight
+ *
+ * @param term Hamiltonian term
+ * 
+ */
+ void set_offdiag_weight(OperatorTerm_t& term){
+    std::size_t kk;
+    std::size_t weight = 0;
+    unsigned char * values = &term.values[0];
+    for(kk=0; kk < term.values.size(); kk++){
+        weight += (values[kk] > 2);
+    }
+    term.offdiag_weight = weight;
+}
+
+
+/**
  * Check if extended term has a nonzero value for the
  * given row bit-string
  *

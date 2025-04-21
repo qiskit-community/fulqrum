@@ -85,11 +85,11 @@ cdef class QubitOperator():
                                 term.indices.push_back(inds[kk])
                                 ind = STR_TO_IND[op_str[kk]]
                                 term.values.push_back(ind)
-                                term.offdiag_weight += (ind > 2)
                         term.coeff = coeff
                 else:
                     term.coeff = 1
                 sort_term_data(term.indices, term.values)
+                set_offdiag_weight(term)
                 set_extended_flag(term)
                 self.oper.terms.push_back(term)
 
