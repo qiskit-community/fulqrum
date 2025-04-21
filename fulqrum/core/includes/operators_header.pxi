@@ -11,6 +11,8 @@ cdef extern from "../src/operators.hpp":
 
     void set_extended_flag(OperatorTerm_t& term) nogil
 
+    void set_offdiag_weight(OperatorTerm_t& term) nogil
+
     int nonzero_extended_value(OperatorTerm_t * term,
                                unsigned char * row, 
                                size_t width) nogil

@@ -293,6 +293,7 @@ cdef class FermionicOperator():
         for kk in range(num_terms):
             jw_term(fermi.oper.terms[kk], out.oper.terms[kk])
             sort_term_data(out.oper.terms[kk].indices, out.oper.terms[kk].values)
+            set_offdiag_weight(out.oper.terms[kk])
         return out
 
     @cython.boundscheck(False)
