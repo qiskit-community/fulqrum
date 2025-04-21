@@ -22,6 +22,8 @@ void omp_matvec(QubitOperator_t& ham,
     int has_nonzero_diag,
     std::size_t bin_width,
     std::size_t * bin_ranges,
+    std::size_t * group_ptrs,
+    std::size_t num_groups,
     const std::complex<double> * in_vec,
     std::complex<double> * out_vec)
 {

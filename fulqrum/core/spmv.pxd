@@ -19,6 +19,8 @@ cdef class FulqrumSpMV:
     cdef public size_t bin_width
     cdef int has_nonzero_diag
     cdef double complex[::1] diag_vec
+    cdef size_t * group_ptrs
+    cdef size_t num_groups
     cdef size_t * bin_ranges
 
     cdef void compute_diag_vector(self)
