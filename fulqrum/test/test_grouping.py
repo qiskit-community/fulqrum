@@ -75,29 +75,29 @@ def test_basic_group_pointers():
 def test_basic_group_pointers2():
     """Test repeat elements in front"""
     H = QubitOperator(5)
-    H += QubitOperator.from_label('IIIIX')
-    H += QubitOperator.from_label('IIIIY')
-    H += QubitOperator.from_label('IIIXI')
-    H += QubitOperator.from_label('IIYII')
-    H += QubitOperator.from_label('I-III')
-    H += QubitOperator.from_label('+IIII')
+    H += QubitOperator.from_label("IIIIX")
+    H += QubitOperator.from_label("IIIIY")
+    H += QubitOperator.from_label("IIIXI")
+    H += QubitOperator.from_label("IIYII")
+    H += QubitOperator.from_label("I-III")
+    H += QubitOperator.from_label("+IIII")
     assert H.num_groups == 5
     # repeat elements in front
-    assert np.allclose(H.group_ptrs(), np.array([0,2,3,4,5,6]))
+    assert np.allclose(H.group_ptrs(), np.array([0, 2, 3, 4, 5, 6]))
 
 
 def test_basic_group_pointers3():
     """Test repeat elements in back"""
     H = QubitOperator(5)
-    H += QubitOperator.from_label('IIIIX')
-    H += QubitOperator.from_label('IIIXI')
-    H += QubitOperator.from_label('IIYII')
-    H += QubitOperator.from_label('I-III')
-    H += QubitOperator.from_label('+IIII')
-    H += QubitOperator.from_label('XIIII')
+    H += QubitOperator.from_label("IIIIX")
+    H += QubitOperator.from_label("IIIXI")
+    H += QubitOperator.from_label("IIYII")
+    H += QubitOperator.from_label("I-III")
+    H += QubitOperator.from_label("+IIII")
+    H += QubitOperator.from_label("XIIII")
     assert H.num_groups == 5
     # repeat elements in front
-    assert np.allclose(H.group_ptrs(), np.array([0,1,2,3,4,6]))
+    assert np.allclose(H.group_ptrs(), np.array([0, 1, 2, 3, 4, 6]))
 
 
 def test_square_group_pointers():
