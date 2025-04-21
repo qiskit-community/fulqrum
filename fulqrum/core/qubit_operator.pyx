@@ -158,6 +158,17 @@ cdef class QubitOperator():
         """
         return self.oper.sorted
     
+    @property
+    def num_groups(self):
+        """Number of off-diagonal groupings
+
+        Returns:
+            int : Number of groups in operator
+        """
+        if not self.sorted:
+            self.offdiag_term_grouping()
+        return (self.oper.terms[self.num_terms-1].group - self.oper.terms[0].group) + 1
+    
     @cython.boundscheck(False)
     def split_diagonal(self):
         """Spit an operator into diagonal and non-diagonal components
@@ -572,6 +583,26 @@ cdef class QubitOperator():
         for kk in range(self.oper.terms.size()):
             out[kk] = self.oper.terms[kk].group
         return np.asarray(out)
+
+    @cython.boundscheck(False)
+    def group_ptrs(self):
+        """Get pointers to start and stop indices for off-diagona grouping
+        """
+        if not self.sorted:
+            self.offdiag_term_grouping()
+        cdef size_t num_groups = self.oper.terms[self.num_terms-1].group - self.oper.terms[0].group + 1
+        cdef size_t[::1] ptrs = np.zeros(num_groups+1, dtype=np.uintp)
+        cdef size_t kk
+        cdef OperatorTerm_t * terms = &self.oper.terms[0]
+        cdef int idx = 0
+        cdef int val = terms[0].group
+        for kk in range(self.num_terms):
+            if terms[kk].group > val:
+                ptrs[idx+1] = kk
+                idx += 1
+                val += 1
+        ptrs[idx+1] = self.num_terms
+        return np.asarray(ptrs)
     
     def extended(self):
         cdef size_t kk

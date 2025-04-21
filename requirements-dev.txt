@@ -1,8 +1,8 @@
 pytest
 pylint
 pycodestyle
-qiskit>=0.45
-qiskit-nature>=0.7.1
+qiskit>=1.2
+qiskit-nature>=0.7.2
 openfermion>=1.6.0
 Sphinx<6
 pydata_sphinx_theme

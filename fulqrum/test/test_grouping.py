@@ -3,6 +3,7 @@
 # pylint: disable=no-name-in-module
 """Test basic core functionality"""
 import numpy as np
+from qiskit.transpiler import CouplingMap
 from fulqrum import QubitOperator
 
 
@@ -57,3 +58,32 @@ def test_grouping_split():
     offdiag_ans = np.array([1, 1, 2, 3])
     assert np.allclose(diag.groups(), diag_ans)
     assert np.allclose(offdiag.groups(), offdiag_ans)
+
+
+def test_square_group_pointers():
+    # Build 1600-qubit square coupling map
+    cmap = CouplingMap.from_grid(40,40)
+    num_qubits = cmap.size()
+
+    # Generate Hamiltonian
+    H = QubitOperator(num_qubits, [])
+    touched_edges = set({})
+    coeffs = [1/2, 1/2, 1]
+    for edge in cmap.get_edges():
+        if edge[::-1] not in touched_edges:
+            H += QubitOperator(num_qubits, [("XX", edge, coeffs[0]), 
+                                            ("YY", edge, coeffs[1]), 
+                                            ("ZZ", edge, coeffs[2])])
+            touched_edges.add(edge)
+
+    h_ptrs = H.group_ptrs()
+    H_diag, H_off = H.split_diagonal()
+    assert H_diag.num_terms == h_ptrs[1]
+    hdiag_ptrs = H_diag.group_ptrs()
+    assert hdiag_ptrs.shape[0] == 2
+    assert hdiag_ptrs[1] == h_ptrs[1]
+    assert np.allclose(H_diag.groups(), np.zeros(H_diag.num_terms))
+    hoff_ptrs = H_off.group_ptrs()
+    # XX and YY have same off-diagonal structure so this is True here
+    assert H_off.num_terms // 2 == (hoff_ptrs.shape[0] - 1)
+    assert np.allclose(np.diff(hoff_ptrs), 2*np.ones(H_off.num_terms // 2))
