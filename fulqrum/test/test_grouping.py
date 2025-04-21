@@ -8,7 +8,6 @@ from qiskit.transpiler import CouplingMap
 from fulqrum import QubitOperator, FermionicOperator
 
 
-
 def test_grouping1():
     """Test grouping"""
     H = QubitOperator(2, [])
