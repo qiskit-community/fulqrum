@@ -29,7 +29,7 @@ void omp_matvec(QubitOperator_t& ham,
     std::complex<double> * out_vec)
 {
     std::size_t kk;
-    #pragma omp parallel if(subspace_dim > 100)
+    #pragma omp parallel if(subspace_dim > 128)
     {
     // Take care of diagonal term first, if any (usually there is)
     if(has_nonzero_diag){
@@ -41,53 +41,56 @@ void omp_matvec(QubitOperator_t& ham,
 
     std::size_t num_terms = ham.terms.size();
     // Take care of off-diagonal terms
-    #pragma omp for
-    for(kk=0; kk < subspace_dim; kk++)
+    if(num_terms)
     {
-        const unsigned char * row_start = &subspace[kk*width];
-        std::vector<unsigned char> col_vec;
-        std::complex<double> temp_val, val=0;
-        OperatorTerm_t * term;
-        std::size_t start, stop;
-        std::size_t group_start, group_stop, group;
-        std::size_t idx, weight, col_idx;
-        int bin_num;
-        col_vec.resize(width);
-        // Loop over all off-diagonal terms in operator
-        for(group=0; group < num_groups; group++)
+        #pragma omp for
+        for(kk=0; kk < subspace_dim; kk++)
         {
-            group_start = group_ptrs[group];
-            group_stop = group_ptrs[group+1];
-            for(idx=group_start; idx < group_stop; idx++)
+            const unsigned char * row_start = &subspace[kk*width];
+            std::vector<unsigned char> col_vec;
+            std::complex<double> temp_val, val=0;
+            OperatorTerm_t * term;
+            std::size_t start, stop;
+            std::size_t group_start, group_stop, group;
+            std::size_t idx, weight, col_idx;
+            int bin_num;
+            col_vec.resize(width);
+            // Loop over all off-diagonal terms in operator
+            for(group=0; group < num_groups; group++)
             {
-                term = &ham.terms[idx];
-                weight = term->indices.size();
-                // break early if term is extended and zero
-                if(term->extended)
+                group_start = group_ptrs[group];
+                group_stop = group_ptrs[group+1];
+                for(idx=group_start; idx < group_stop; idx++)
                 {
-                    // extended term is zero so move on to next term
-                    if(!nonzero_extended_value(term, row_start, width))
+                    term = &ham.terms[idx];
+                    weight = term->indices.size();
+                    // break early if term is extended and zero
+                    if(term->extended)
                     {
-                        continue;
+                        // extended term is zero so move on to next term
+                        if(!nonzero_extended_value(term, row_start, width))
+                        {
+                            continue;
+                        }
+                    } // end extended term check
+                    memcpy(&col_vec[0], row_start, width);
+                    get_column_vec(row_start, &col_vec[0], width, &term->indices[0], &term->values[0], weight);
+                    bin_num = bin_width_to_int(&col_vec[0], width, bin_width);
+                    start = bin_ranges[bin_num];
+                    stop = bin_ranges[bin_num+1];
+                    col_idx = col_index(start, stop, &col_vec[0], &subspace[0], width);
+                    
+                    if(col_idx < MAX_SIZE_T)
+                    {
+                        temp_val = compute_element_vec(row_start, &col_vec[0], width,
+                                                    &term->indices[0], &term->values[0], term->coeff,
+                                                    weight);
+                        val += temp_val * in_vec[col_idx];
                     }
-                } // end extended term check
-                memcpy(&col_vec[0], row_start, width);
-                get_column_vec(row_start, &col_vec[0], width, &term->indices[0], &term->values[0], weight);
-                bin_num = bin_width_to_int(&col_vec[0], width, bin_width);
-                start = bin_ranges[bin_num];
-                stop = bin_ranges[bin_num+1];
-                col_idx = col_index(start, stop, &col_vec[0], &subspace[0], width);
-                
-                if(col_idx < MAX_SIZE_T)
-                {
-                    temp_val = compute_element_vec(row_start, &col_vec[0], width,
-                                                &term->indices[0], &term->values[0], term->coeff,
-                                                weight);
-                    val += temp_val * in_vec[col_idx];
                 }
             }
-        }
-        out_vec[kk] += val;
-    }
+            out_vec[kk] += val;
+        } // end for-loop over rows
+    } // end if num_terms
     } //end parallel region
 } // end matvec
