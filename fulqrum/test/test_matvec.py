@@ -5,14 +5,14 @@
 
 import numpy as np
 from fulqrum import QubitOperator, Subspace, SubspaceHamiltonian
-from fulqrum.core.spmv import FulqrumSpMV
 from fulqrum.utils import kron_str
 
 
 def test_matvec1():
     """Test simple matvec over full subspace"""
     H = QubitOperator.from_label("ZZ")
-    H += QubitOperator.from_label("XX", 5j)
+    H += QubitOperator.from_label("XX", 5)
+    H += QubitOperator.from_label("YY", -3)
     S = Subspace({"00": 10, "01": 10, "10": 10, "11": 10})
     F = SubspaceHamiltonian(H, S)
     in_vec = np.ones(len(S), dtype=complex)
@@ -20,7 +20,7 @@ def test_matvec1():
     perm_vec = in_vec[perm]
     out_vec = F.matvec(perm_vec)
     res = F.interpret_vector(out_vec, -1, sort=True)
-    dense_op = kron_str("ZZ") + 5j * kron_str("XX")
+    dense_op = kron_str("ZZ") + 5 * kron_str("XX") - 3 * kron_str("YY")
     ans = dense_op.dot(in_vec)
     assert np.allclose(list(res.values()), ans)
 
