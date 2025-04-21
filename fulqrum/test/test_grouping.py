@@ -100,6 +100,20 @@ def test_basic_group_pointers3():
     assert np.allclose(H.group_ptrs(), np.array([0, 1, 2, 3, 4, 6]))
 
 
+def test_basic_group_pointers4():
+    """Test repeat terms with id term"""
+    H = QubitOperator(5)
+    H += QubitOperator.from_label("IIIIX")
+    H += QubitOperator.from_label("+IIII")
+    H += QubitOperator.from_label("XIIII")
+    H += QubitOperator.from_label("YIIII")
+    H += QubitOperator.from_label("IIIII")
+    assert H.num_groups == 3
+    # Id term gets moved to front since group is 0 by definition
+    # next is IIIIX term, then last 3 terms combined
+    assert np.allclose(H.group_ptrs(), np.array([0, 1, 2, 5]))
+
+
 def test_square_group_pointers():
     """Build 1600-qubit square coupling map and validate grouping pointers"""
     cmap = CouplingMap.from_grid(40, 40)
