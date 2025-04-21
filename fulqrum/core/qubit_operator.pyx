@@ -165,6 +165,8 @@ cdef class QubitOperator():
         Returns:
             int : Number of groups in operator
         """
+        if self.num_terms == 0:
+            return 0
         if not self.sorted:
             self.offdiag_term_grouping()
         return (self.oper.terms[self.num_terms-1].group - self.oper.terms[0].group) + 1
@@ -588,6 +590,8 @@ cdef class QubitOperator():
     def group_ptrs(self):
         """Get pointers to start and stop indices for off-diagona grouping
         """
+        if self.num_terms == 0:
+            return np.zeros(0, dtype=np.uintp)
         if not self.sorted:
             self.offdiag_term_grouping()
         cdef size_t num_groups = self.oper.terms[self.num_terms-1].group - self.oper.terms[0].group + 1
