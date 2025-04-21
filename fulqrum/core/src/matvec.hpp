@@ -13,7 +13,6 @@
 #include "elements.hpp"
 #include "operators.hpp"
 
-#include <assert.h>
 
 void omp_matvec(QubitOperator_t& ham,
     std::vector<unsigned char>& subspace,
@@ -66,11 +65,9 @@ void omp_matvec(QubitOperator_t& ham,
                 {
                     term = &ham.terms[idx];
                     weight = term->indices.size();
-                    // break early if term is extended and zero
-                    if(term->extended)
+                    if(term->extended) // check if extended term is zero
                     {
-                        // extended term is zero so move on to next term
-                        if(!nonzero_extended_value(term, row_start, width))
+                        if(!nonzero_extended_value(term, row_start, width)) // extended term is zero so move on to next term
                         {
                             continue;
                         }
