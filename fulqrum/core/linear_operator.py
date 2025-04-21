@@ -19,11 +19,14 @@ class SubspaceHamiltonian(LinearOperator):
 
     def __init__(self, hamiltonian, subspace):
         diag_H, off_H = hamiltonian.split_diagonal()
-        if not off_H.sorted:
-            off_H.offdiag_term_grouping()
-        # if there are no off-diagonal terms then we pass a dummy zero array of len=1
-        self.spmv = FulqrumSpMV(diag_H, off_H, subspace, 
-                                off_H.group_ptrs() if off_H.num_terms else np.zeros(1, dtype=np.uintp))
+        # if there are no off-diagonal terms then we pass a dummy empty array of len=1
+        self.group_ptrs = off_H.group_ptrs() if off_H.num_terms else np.empty(1, dtype=np.uintp)
+        self.spmv = FulqrumSpMV(
+            diag_H,
+            off_H,
+            subspace,
+            self.group_ptrs,
+        )
         self._matvec = self.matvec
         self.shape = (len(subspace),) * 2
         self.dtype = np.dtype(complex)
