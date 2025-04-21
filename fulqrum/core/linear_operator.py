@@ -20,7 +20,9 @@ class SubspaceHamiltonian(LinearOperator):
     def __init__(self, hamiltonian, subspace):
         diag_H, off_H = hamiltonian.split_diagonal()
         # if there are no off-diagonal terms then we pass a dummy empty array of len=1
-        self.group_ptrs = off_H.group_ptrs() if off_H.num_terms else np.zeros(1, dtype=np.uintp)
+        self.group_ptrs = (
+            off_H.group_ptrs() if off_H.num_terms else np.zeros(1, dtype=np.uintp)
+        )
         self.spmv = FulqrumSpMV(
             diag_H,
             off_H,
