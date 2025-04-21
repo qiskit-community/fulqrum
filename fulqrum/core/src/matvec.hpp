@@ -54,12 +54,14 @@ void omp_matvec(QubitOperator_t& ham,
             std::size_t group_start, group_stop, group;
             std::size_t idx, weight, col_idx;
             int bin_num;
+            int do_col_search;
             col_vec.resize(width);
             // Loop over all off-diagonal terms in operator
             for(group=0; group < num_groups; group++)
             {
                 group_start = group_ptrs[group];
                 group_stop = group_ptrs[group+1];
+                do_col_search = 1;
                 for(idx=group_start; idx < group_stop; idx++)
                 {
                     term = &ham.terms[idx];
@@ -73,22 +75,29 @@ void omp_matvec(QubitOperator_t& ham,
                             continue;
                         }
                     } // end extended term check
-                    memcpy(&col_vec[0], row_start, width);
-                    get_column_vec(row_start, &col_vec[0], width, &term->indices[0], &term->values[0], weight);
-                    bin_num = bin_width_to_int(&col_vec[0], width, bin_width);
-                    start = bin_ranges[bin_num];
-                    stop = bin_ranges[bin_num+1];
-                    col_idx = col_index(start, stop, &col_vec[0], &subspace[0], width);
-                    
-                    if(col_idx < MAX_SIZE_T)
+                    if(do_col_search) // check if column is in subspace for this group
                     {
+                        memcpy(&col_vec[0], row_start, width);
+                        get_column_vec(row_start, &col_vec[0], width, &term->indices[0], &term->values[0], weight);
+                        bin_num = bin_width_to_int(&col_vec[0], width, bin_width);
+                        start = bin_ranges[bin_num];
+                        stop = bin_ranges[bin_num+1];
+                        col_idx = col_index(start, stop, &col_vec[0], &subspace[0], width);
+                    }
+                    if(col_idx < MAX_SIZE_T) // column is in the subspace
+                    {
+                        do_col_search = 0; // do not search again for this group
                         temp_val = compute_element_vec(row_start, &col_vec[0], width,
-                                                    &term->indices[0], &term->values[0], term->coeff,
-                                                    weight);
+                                                       &term->indices[0], &term->values[0], term->coeff,
+                                                       weight);
                         val += temp_val * in_vec[col_idx];
                     }
-                }
-            }
+                    else // column is not in the subspace so entire group does nothing, break
+                    {
+                        break;
+                    }
+                } // end loop for this group
+            } // end loop over all groups
             out_vec[kk] += val;
         } // end for-loop over rows
     } // end if num_terms
