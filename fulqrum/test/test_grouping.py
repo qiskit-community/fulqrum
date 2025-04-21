@@ -60,6 +60,13 @@ def test_grouping_split():
     assert np.allclose(offdiag.groups(), offdiag_ans)
 
 
+def test_empty_operator_pointers():
+    """Test grouping and pointers do not fail for empty operator"""
+    H = QubitOperator(5)
+    assert H.num_groups == 0
+    assert np.allclose(H.group_ptrs(), np.zeros(0))
+
+
 def test_basic_group_pointers():
     """Test simple term group pointers"""
     H = QubitOperator(5)
