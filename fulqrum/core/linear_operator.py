@@ -66,6 +66,14 @@ class SubspaceHamiltonian(LinearOperator):
         return out
 
     def matvec(self, x):
+        """Matrix-free implimentation of SpMV for subspace Hamiltonian
+
+        Parameters:
+            x (ndarray): Complex-valued input array
+
+        Returns:
+            ndarray: Complex output vector after SpMV on input vector
+        """
         col_vec = False
         if len(x.shape) == 2:
             col_vec = True
@@ -76,6 +84,3 @@ class SubspaceHamiltonian(LinearOperator):
         if col_vec:
             out = out.view().reshape(x.shape[0], 1)
         return out
-
-    def to_csr(self):
-        return self.spmv.to_csr()

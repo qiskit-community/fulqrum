@@ -66,6 +66,11 @@ cdef class FulqrumSpMV():
                             self.subspace_dim)
 
     def diagonal_vector(self):
+        """Diagonal vector of subspace Hamitlonian
+
+        Returns:
+            ndarray: Aray of complex numbers representating diagonal
+        """
         if not self.has_nonzero_diag:
             return np.zeros(self.subspace_dim, dtype=complex)
         if self.diag_vec is None and self.has_nonzero_diag:
@@ -74,6 +79,14 @@ cdef class FulqrumSpMV():
 
 
     def matvec(self, const double complex[::1] x):
+        """Matrix-free implimentation of SpMV for subspace Hamiltonian
+
+        Parameters:
+            x (ndarray): Complex-valued input array
+
+        Returns:
+            ndarray: Complex output vector after SpMV on input vector
+        """
         if <size_t>x.shape[0] != self.subspace_dim:
             raise Exception('Incorrect length of input vector.')
         # generate diagonal vector if we have not done so already
