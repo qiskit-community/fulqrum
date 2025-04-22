@@ -13,5 +13,7 @@ cdef extern from "../src/matvec.hpp":
                 int has_nonzero_diag,
                 size_t bin_width,
                 size_t * bin_ranges,
+                size_t * group_ptrs,
+                size_t num_groups,
                 const double complex * in_vec,
                 double complex * out_vec)

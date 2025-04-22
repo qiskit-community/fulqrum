@@ -25,7 +25,7 @@ include "includes/matvec_header.pxi"
 
 cdef class FulqrumSpMV():
     def __cinit__(self, QubitOperator diag_hamiltonian,
-                  QubitOperator hamiltonian, Subspace subspace):
+                  QubitOperator hamiltonian, Subspace subspace, size_t[::1] group_ptrs):
         cdef size_t kk
         self.diag_oper = diag_hamiltonian.oper
         self.oper = hamiltonian.oper
@@ -36,6 +36,8 @@ cdef class FulqrumSpMV():
         self.num_terms = self.oper.terms.size()
         self.num_diag_terms = self.diag_oper.terms.size()
         self.bin_ranges = &self.subspace.subspace.bin_ranges[0]
+        self.group_ptrs = &group_ptrs[0]
+        self.num_groups = group_ptrs.shape[0] - 1
         if self.diag_oper.terms.size() > 0:
             self.has_nonzero_diag = 1
              # Init diagonal memoryview to None because
@@ -86,6 +88,8 @@ cdef class FulqrumSpMV():
                    self.has_nonzero_diag,
                    self.bin_width,
                    self.bin_ranges,
+                   self.group_ptrs,
+                   self.num_groups,
                    &x[0],
                    &out[0])
         return np.asarray(out)
