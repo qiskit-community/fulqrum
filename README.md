@@ -62,12 +62,12 @@ python setup.py install --openmp
 
 ### 1541 qubit spin-lattice
 
-| Processor  | Platform    | Time (sec)  |
-| :--------: | :---------: | :---------: |
-| AMD 7900   | Linux       | 335         |
-| Intel 256v | WSL         | 937         |
-| M1         | OSX         | 1569        |
-| M1 Pro     | OSX         | 1170        |
+| Processor  | Platform    | Time (sec)  | Time w/grouping (sec)  |
+| :--------: | :---------: | :---------: | :--------------------: |
+| AMD 7900   | Linux       | 335         | 187                    |
+| Intel 256v | WSL         | 937         |  -                     |
+| M1         | OSX         | 1569        | 876                    |
+| M1 Pro     | OSX         | 1170        | 652                    |
 
 ```python
 import time
