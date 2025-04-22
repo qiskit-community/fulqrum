@@ -67,11 +67,22 @@ cdef class FermionicOperator():
         self.oper.terms = vector[FermionicTerm_t]()
     
     def __len__(self):
+        """Number of terms in operator
+
+        Returns:
+            int
+        """
         return self.oper.terms.size()
 
     @cython.boundscheck(False)
     def __add__(self, FermionicOperator other):
-        """Addition of QubitOperators withcopy
+        """Addition of QubitOperators with copy
+
+        Parameters:
+            other (FermionicOperator): Other operator
+
+        Returns:
+            FermionicOperator
         """
         cdef size_t kk
         cdef FermionicOperator out = FermionicOperator(self.oper.width)
@@ -89,6 +100,12 @@ cdef class FermionicOperator():
     @cython.boundscheck(False)
     def __sub__(self, FermionicOperator other):
         """Subtraction of QubitOperators with copy
+
+        Parameters:
+            other (FermionicOperator): Other operator
+
+        Returns:
+            FermionicOperator
         """
         cdef size_t kk
         cdef FermionicOperator out = FermionicOperator(self.oper.width)
@@ -103,6 +120,12 @@ cdef class FermionicOperator():
     @cython.boundscheck(False)
     def __mul__(self, double complex other):
         """Multiplication of FermionicOperators on left with copy
+
+        Parameters:
+            other (complex): Complex number
+
+        Returns:
+            FermionicOperator
         """
         cdef size_t kk
         cdef FermionicOperator out = FermionicOperator(self.oper.width)
@@ -114,6 +137,12 @@ cdef class FermionicOperator():
     @cython.boundscheck(False)
     def __rmul__(self, double complex other):
         """Multiplication of FermionicOperators on right with copy
+
+        Parameters:
+            other (complex): Complex number
+
+        Returns:
+            FermionicOperator
         """
         cdef size_t kk
         cdef FermionicOperator out = FermionicOperator(self.oper.width)
@@ -156,6 +185,16 @@ cdef class FermionicOperator():
 
     @classmethod
     def from_label(self, size_t width, str label="", double complex coeff = 1.0):
+        """Create FermionicOperator from a string label
+
+        Parameters:
+            width (int): Width of operator
+            label (str): Label of operator
+            coeff (complex): Complex coefficient, default=1.0
+
+        Returns:
+            FermionicOperator
+        """
         cdef FermionicTerm_t term = EmptyFermionicTerm
         cdef FermionicOperator out = FermionicOperator(width)
         cdef list items = label.split(' ')
@@ -182,11 +221,19 @@ cdef class FermionicOperator():
     
     @property
     def width(self):
+        """Width of operator
+
+        Returns:
+            int
+        """
         return self.oper.width
 
     @property
     def coeff(self):
         """Return the coeff for a single term or empty operator
+
+        Returns:
+            complex
         """
         cdef size_t kk, jj
         cdef FermionicTerm_t * term
@@ -327,13 +374,13 @@ cdef class FermionicOperator():
 
     @classmethod
     def from_dict(self, dict dic):
-        """QubitOperator from dictionary
+        """FermionicOperator from dictionary
 
         Parameters:
             dic(dict): Dictionary representation of operator
         
         Returns:
-            QubitOperator
+            FermionicOperator
         """
         if dic['operator-type'] != 'fermi':
             raise FulqrumError("Dictionary operator-type is not 'fermi'")
@@ -345,6 +392,12 @@ cdef class FermionicOperator():
     
 
     def to_json(self, filename, overwrite=False):
+        """Save operator to a JSON file.
+
+        Parameters:
+            filename (str): File to store to
+            overwrite (bool): Overwrite file if it exits, default=False
+        """
         file = Path(filename)
         if file.is_file() and not overwrite:
             raise Exception("File already exists, set overwrite=True")
@@ -354,6 +407,14 @@ cdef class FermionicOperator():
 
     @classmethod
     def from_json(self, filename):
+        """Load operator from a JSON file.
+
+        Parameters:
+            filename (str): File to load from
+
+        Returns:
+            FermionicOperator
+        """
         with open(filename, "r", encoding="utf-8") as fd:
             dic = orjson.loads(fd.read())
         out = FermionicOperator.from_dict(dic)
