@@ -29,7 +29,8 @@ jobs:
       - pytest -p no:warnings fulqrum/test
 
   - stage: "Build docs"
-    script:  
+    script:
+      - python setup.py install --openmp  
       - conda install pandoc
       - cd docs
       - make html
