@@ -1,4 +1,5 @@
 .. _started:
+
 ###############
 Getting started
 ###############
@@ -61,6 +62,7 @@ The found eigenenergy is:
 
     print("Eigenvalue:", evals[0])
 
+
 there is of course an associated eigenvector, but because of the way Fulqrum solves the problem, it is not
 immediately usable.  Instead, we can use ``SubspaceHamiltonian.interpret_vector()`` to cast the solution
 as a dictionary with complex values:
@@ -68,3 +70,4 @@ as a dictionary with complex values:
 .. jupyter-execute::
 
     Hsub.interpret_vector(evecs)
+
