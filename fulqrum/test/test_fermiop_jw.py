@@ -303,7 +303,7 @@ def test_jw10():
 def test_jwH2():
     """Validate H2 molecule JW transform"""
     # Load H2 operator data from JSON file
-    path = Path(__file__).parent / "data/H2.json"
+    path = Path(__file__).parent / "data/h2.json"
     fop = FermionicOperator.from_json(path)
     op = fop.extended_jw_transformation()
     op_mat = sp.csr_array(qubitoperator_to_matrix(op))

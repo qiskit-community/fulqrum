@@ -1,17 +1,17 @@
 # Fulqrum
 # Copyright (C) 2024, IBM
 # pylint: disable=no-name-in-module
-"""Test matvec functionality"""
+"""Test eigen functionality on H2"""
 from pathlib import Path
 import numpy as np
 import scipy.linalg as la
 import scipy.sparse.linalg as spla
 
-from fulqrum import FermionicOperator, QubitOperator, Subspace, SubspaceHamiltonian
+from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
 from fulqrum.utils import qubitoperator_to_matrix
 
 
-_path = Path(__file__).parent / "data/H2.json"
+_path = Path(__file__).parent / "data/h2.json"
 FOP = FermionicOperator.from_json(_path)
 OP = FOP.extended_jw_transformation()
 M = qubitoperator_to_matrix(OP)
