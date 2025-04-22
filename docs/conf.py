@@ -43,7 +43,8 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.extlinks',
-    'nbsphinx',
+    "nbsphinx",
+    "jupyter_sphinx",
 ]
 html_static_path = ['_static']
 html_css_files = ["custom.css", 'gallery.css']

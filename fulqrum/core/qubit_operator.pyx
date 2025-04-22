@@ -150,11 +150,19 @@ cdef class QubitOperator():
     
     @property
     def width(self):
+        """Width (number of qubits) of the operator
+
+        Returns:
+            int: Width of operator
+        """
         return self.oper.width
 
     @property
     def sorted(self):
         """Is the operator sorted by off-diagonal structure
+
+        Returns:
+            bool: Operator is sorted
         """
         return self.oper.sorted
     
@@ -280,7 +288,10 @@ cdef class QubitOperator():
 
     @cython.boundscheck(False)
     def __add__(self, QubitOperator other):
-        """Addition of QubitOperators withcopy
+        """Addition of QubitOperators with copy
+
+        Returns:
+            QubitOperator
         """
         cdef size_t kk
         cdef QubitOperator out = QubitOperator(self.oper.width)
@@ -292,6 +303,9 @@ cdef class QubitOperator():
     @cython.boundscheck(False)
     def __sub__(self, QubitOperator other):
         """Subtraction of QubitOperators with copy
+
+        Returns:
+            QubitOperator
         """
         cdef size_t kk
         cdef QubitOperator out = QubitOperator(self.oper.width)
@@ -306,6 +320,9 @@ cdef class QubitOperator():
     @cython.boundscheck(False)
     def __mul__(self, double complex other):
         """Multiplication of QubitOperators on left with copy
+
+        Returns:
+            QubitOperator
         """
         cdef size_t kk
         cdef QubitOperator out = QubitOperator(self.oper.width)
@@ -317,6 +334,9 @@ cdef class QubitOperator():
     @cython.boundscheck(False)
     def __rmul__(self, double complex other):
         """Multiplication of QubitOperators on right with copy
+
+        Returns:
+            QubitOperator
         """
         cdef size_t kk
         cdef QubitOperator out = QubitOperator(self.oper.width)
@@ -580,6 +600,11 @@ cdef class QubitOperator():
 
 
     def groups(self):
+        """Off-diagonal group structure of terms in operator
+
+        Returns:
+            ndarray: Array of ints indicating group of each term
+        """
         if not self.sorted:
             self.offdiag_term_grouping()
         cdef size_t kk
@@ -590,7 +615,10 @@ cdef class QubitOperator():
 
     @cython.boundscheck(False)
     def group_ptrs(self):
-        """Get pointers to start and stop indices for off-diagona grouping
+        """Get pointers to start and stop indices for off-diagonal grouping
+
+        Returns:
+            ndarray: Array of ints giving pointers to group starts and stops
         """
         if self.num_terms == 0:
             return np.zeros(0, dtype=np.uintp)
@@ -611,6 +639,11 @@ cdef class QubitOperator():
         return np.asarray(ptrs)
     
     def extended(self):
+        """Extended element flag for each term
+
+        Returns:
+            ndarray: Array of ints indicating if terms are extended or not
+        """
         cdef size_t kk
         cdef int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.int32)
         for kk in range(self.oper.terms.size()):
@@ -693,6 +726,12 @@ cdef class QubitOperator():
     
 
     def to_json(self, filename, overwrite=False):
+        """Save operator to a JSON file.
+
+        Parameters:
+            filename (str): File to store to
+            overwrite (bool): Overwrite file if it exits, default=False
+        """
         file = Path(filename)
         if file.is_file() and not overwrite:
             raise Exception("File already exists, set overwrite=True")
@@ -703,6 +742,14 @@ cdef class QubitOperator():
 
     @classmethod
     def from_json(self, filename):
+        """Load operator from a JSON file.
+
+        Parameters:
+            filename (str): File to load from
+
+        Returns:
+            QubitOperator
+        """
         with open(filename, "r", encoding="utf-8") as fd:
             dic = orjson.loads(fd.read())
         out = QubitOperator.from_dict(dic)

@@ -79,6 +79,11 @@ cdef class Subspace():
 
     @property
     def bin_width(self):
+        """Bin-width used in partial sorting of subspace
+
+        Returns:
+            int
+        """
         return self.subspace.bin_width
 
     
@@ -176,6 +181,11 @@ cdef class Subspace():
     
     @cython.boundscheck(False)
     def to_dict(self):
+        """Converts Subspace to a dictionary
+
+        Returns:
+            dict
+        """
         cdef size_t kk, idx
         cdef string temp
         cdef dict out = {}
