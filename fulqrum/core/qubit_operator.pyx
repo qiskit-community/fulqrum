@@ -66,7 +66,7 @@ cdef class QubitOperator():
         cdef double complex coeff
         cdef object inds
         cdef size_t kk
-        cdef char op, ind
+        cdef unsigned char op, ind
         if operators is not None:
             for item in operators:
                 term = EmptyOperatorTerm
@@ -177,7 +177,7 @@ cdef class QubitOperator():
             return 0
         if not self.sorted:
             self.offdiag_term_grouping()
-        return (self.oper.terms[self.num_terms-1].group - self.oper.terms[0].group) + 1
+        return (self.oper.terms[self.oper.terms.size()-1].group - self.oper.terms[0].group) + 1
     
     @cython.boundscheck(False)
     def split_diagonal(self):
@@ -208,9 +208,9 @@ cdef class QubitOperator():
         cdef size_t kk, jj
         cdef OperatorTerm_t * term
         cdef list out = []
-        if self.num_terms > 2:
+        if self.oper.terms.size() > 2:
             raise FulqrumError('Can only grab coeff from operators with < 2 terms')
-        elif self.num_terms == 0:
+        elif self.oper.terms.size() == 0:
             return 0+0j
         return self.oper.terms[0].coeff
 
@@ -624,18 +624,18 @@ cdef class QubitOperator():
             return np.zeros(0, dtype=np.uintp)
         if not self.sorted:
             self.offdiag_term_grouping()
-        cdef size_t num_groups = self.oper.terms[self.num_terms-1].group - self.oper.terms[0].group + 1
+        cdef size_t num_groups = self.oper.terms[self.oper.terms.size()-1].group - self.oper.terms[0].group + 1
         cdef size_t[::1] ptrs = np.zeros(num_groups+1, dtype=np.uintp)
         cdef size_t kk
         cdef OperatorTerm_t * terms = &self.oper.terms[0]
         cdef int idx = 0
         cdef int val = terms[0].group
-        for kk in range(self.num_terms):
+        for kk in range(self.oper.terms.size()):
             if terms[kk].group > val:
                 ptrs[idx+1] = kk
                 idx += 1
                 val += 1
-        ptrs[idx+1] = self.num_terms
+        ptrs[idx+1] = self.oper.terms.size()
         return np.asarray(ptrs)
     
     def extended(self):
