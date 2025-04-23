@@ -169,16 +169,18 @@ void set_extended_flag(OperatorTerm_t& term){
  * 
  * @return Int indicating if value is nonzero
  */
-int nonzero_extended_value(const OperatorTerm_t * term,
-                           const unsigned char * row, 
-                           std::size_t width){
+inline int nonzero_extended_value(const OperatorTerm_t * term,
+                                  const unsigned char * row, 
+                                  std::size_t width){
     std::size_t kk, idx;
-    int out = 1;
     for(kk=0; kk < term->indices.size(); kk++){
         idx = width - term->indices[kk] - 1;
-        out *= EXT_NZ_MASK[term->values[kk] + row[idx]];
+        if(!EXT_NZ_MASK[term->values[kk] + row[idx]])
+        {
+            return 0;
+        }
     }
-    return out;
+    return 1;
 }
 
 
