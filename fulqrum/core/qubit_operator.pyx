@@ -66,7 +66,7 @@ cdef class QubitOperator():
         cdef double complex coeff
         cdef object inds
         cdef size_t kk
-        cdef char op, ind
+        cdef unsigned char op, ind
         if operators is not None:
             for item in operators:
                 term = EmptyOperatorTerm
