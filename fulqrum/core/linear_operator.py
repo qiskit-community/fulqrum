@@ -84,7 +84,7 @@ class SubspaceHamiltonian(LinearOperator):
         if col_vec:
             out = out.view().reshape(x.shape[0], 1)
         return out
-    
+
     def to_csr_array(self):
         """Convert subspace Hamiltonian to a SciPy CSR array
 
