@@ -32,18 +32,18 @@ with open(os.path.join(this_dir, "README.md"), encoding="utf-8") as readme:
     LONG_DESCRIPTION = readme.read()
 
 CYTHON_EXTS = ["qubit_operator", "subspace", "spmv", "fermi_operator",
-               "qiskit",
+               "qiskit", "openfermion",
                "string_funcs", "oper_funcs",
                "matrix"]
 CYTHON_MODULES = [
     "fulqrum.core", "fulqrum.core", "fulqrum.core", "fulqrum.core",
-    "fulqrum.convert",
+    "fulqrum.convert", "fulqrum.convert",
     "fulqrum.test", "fulqrum.test",
     "fulqrum.utils"
 ]
 CYTHON_SOURCE_DIRS = [
     "fulqrum/core", "fulqrum/core", "fulqrum/core", "fulqrum/core",
-    "fulqrum/convert",
+    "fulqrum/convert", "fulqrum/convert",
     "fulqrum/test", "fulqrum/test",
     "fulqrum/utils"
 ]
