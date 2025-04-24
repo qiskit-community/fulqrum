@@ -9,10 +9,12 @@ from libc.string cimport memcpy
 
 from fulqrum.core.qubit_operator cimport QubitOperator
 from fulqrum.core.subspace cimport Subspace
+from fulqrum.core.csr cimport csr_matrix_builder
 
 from cython.parallel cimport prange, parallel
 
 import numpy as np
+import scipy.sparse as sp
 cimport numpy as np
 np.import_array()
 
@@ -21,6 +23,8 @@ include "includes/elements_header.pxi"
 include "includes/bitstrings_header.pxi"
 include "includes/diag_header.pxi"
 include "includes/matvec_header.pxi"
+
+ctypedef long long int64
 
 
 cdef class FulqrumSpMV():
@@ -106,3 +110,96 @@ cdef class FulqrumSpMV():
                    &x[0],
                    &out[0])
         return np.asarray(out)
+
+    
+    def to_csr_array(self):
+        """Convert subspace Hamiltonian to a SciPy CSR array
+
+        Returns:
+            csr_array: Sparse representation of subspace Hamiltonian
+        """
+        cdef size_t max_int = np.iinfo(np.int32).max
+        cdef size_t num_terms = self.oper.terms.size()
+        cdef int int_64 = 0
+        # If subspace is larger than int32, go to int64
+        if (self.subspace_dim > max_int):
+            int_64 = 1
+        # If the total number of terms is projected to be larger than int
+        # go to int64
+        if num_terms:
+            if (self.subspace_dim*self.oper.terms[num_terms-1].group > max_int):
+                int_64 = 1
+        cdef int[::1] indptr32
+        cdef int[::1] indices32
+        cdef int64[::1] indptr64
+        cdef int64[::1] indices64
+        cdef double complex[::1] data = np.zeros(1, dtype=complex)
+
+        if int_64:
+            indptr64 = np.zeros(self.subspace_dim+1, dtype=np.int64)
+            indices64 = np.zeros(1, dtype=np.int64)
+        else:
+            indptr32 = np.zeros(self.subspace_dim+1, dtype=np.int32)
+            indices32 = np.zeros(1, dtype=np.int32)
+
+
+        if self.diag_vec.shape[0] == 0 and self.has_nonzero_diag:
+            self.compute_diag_vector()
+
+        cdef int compute_values;
+        for compute_values in range(2):
+            if compute_values:
+                if int_64:
+                    # matrix is empty
+                    if not indptr64[self.subspace_dim]:
+                        return sp.csr_array(([], [[],[]]), 
+                                            shape=(self.subspace_dim,)*2, dtype=complex)
+                    indices64 = np.zeros(indptr64[self.subspace_dim], dtype=np.int64)
+                    data = np.zeros(indptr64[self.subspace_dim], dtype=complex)
+                else:
+                    # matrix is empty
+                    if not indptr32[self.subspace_dim]:
+                        return sp.csr_array(([], [[],[]]), 
+                                            shape=(self.subspace_dim,)*2, dtype=complex)
+                    indices32 = np.zeros(indptr32[self.subspace_dim], dtype=np.int32)
+                    data = np.zeros(indptr32[self.subspace_dim], dtype=complex)
+                
+            if int_64:
+                csr_matrix_builder(self.oper,
+                                    self.subspace.subspace.bitstrings,
+                                    &self.diag_vec[0],
+                                    self.width,
+                                    self.subspace_dim,
+                                    self.has_nonzero_diag,
+                                    self.bin_width,
+                                    self.bin_ranges,
+                                    self.group_ptrs,
+                                    self.num_groups,
+                                    &indptr64[0],
+                                    &indices64[0],
+                                    &data[0],
+                                    compute_values)
+            else:
+                csr_matrix_builder(self.oper,
+                                    self.subspace.subspace.bitstrings,
+                                    &self.diag_vec[0],
+                                    self.width,
+                                    self.subspace_dim,
+                                    self.has_nonzero_diag,
+                                    self.bin_width,
+                                    self.bin_ranges,
+                                    self.group_ptrs,
+                                    self.num_groups,
+                                    &indptr32[0],
+                                    &indices32[0],
+                                    &data[0],
+                                    compute_values)
+
+        if int_64:
+            mat = sp.csr_array((data, indices64, indptr64), 
+                            shape=(self.subspace_dim,)*2, dtype=complex)
+        else:
+            mat = sp.csr_array((data, indices32, indptr32), 
+                            shape=(self.subspace_dim,)*2, dtype=complex)
+        mat.sort_indices()
+        return mat
