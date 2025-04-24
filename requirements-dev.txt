@@ -1,5 +1,4 @@
 pytest
-scipy>=1.11.1
 jupyter
 pylint
 pycodestyle
