@@ -9,12 +9,14 @@ from libc.string cimport memcpy
 
 from fulqrum.core.qubit_operator cimport QubitOperator
 from fulqrum.core.subspace cimport Subspace
+from fulqrum.exceptions import FulqrumError
 #from fulqrum.core.csr cimport csr_matrix_builder
 
 from cython.parallel cimport prange, parallel
 
 import numpy as np
 import scipy.sparse as sp
+import psutil
 cimport numpy as np
 np.import_array()
 
@@ -121,47 +123,50 @@ cdef class FulqrumSpMV():
         """
         cdef size_t max_int = np.iinfo(np.int32).max
         cdef size_t num_terms = self.oper.terms.size()
-        cdef int int_64 = 0
-        # If subspace is larger than int32, go to int64
-        if (self.subspace_dim > max_int):
-            int_64 = 1
-        # If the total number of terms is projected to be larger than int
-        # go to int64
-        if num_terms:
-            if (self.subspace_dim*self.num_groups > max_int):
-                int_64 = 1
+        
         cdef int[::1] indptr32
         cdef int[::1] indices32
         cdef int64[::1] indptr64
         cdef int64[::1] indices64
         cdef double complex[::1] data = np.zeros(1, dtype=complex)
 
-        if int_64:
-            indptr64 = np.zeros(self.subspace_dim+1, dtype=np.int64)
-            indices64 = np.zeros(1, dtype=np.int64)
-        else:
-            indptr32 = np.zeros(self.subspace_dim+1, dtype=np.int32)
-            indices32 = np.zeros(1, dtype=np.int32)
+        indptr64 = np.zeros(self.subspace_dim+1, dtype=np.int64)
+        indices64 = np.zeros(1, dtype=np.int64)
 
 
         if self.diag_vec.shape[0] == 0 and self.has_nonzero_diag:
             self.compute_diag_vector()
 
         cdef int compute_values;
+        cdef int64 total_bytes;
+        cdef int int_64 = 1 # always start with 64bit ints
         for compute_values in range(2):
             if compute_values:
-                if int_64:
-                    # matrix is empty
-                    if not indptr64[self.subspace_dim]:
+                # matrix is empty
+                if not indptr64[self.subspace_dim]:
                         return sp.csr_array(([], [[],[]]), 
                                             shape=(self.subspace_dim,)*2, dtype=complex)
+
+                 # if num_elem > int32 or subspace_dim + 1 > int32
+                if (indptr64[self.subspace_dim] > max_int) or ((self.subspace_dim + 1) > max_int):
+                    int_64 = 1
+                
+                # check if matrix will fit into memory
+                if int_64:
+                    # indptr + indices + data sizes
+                    total_bytes = (self.subspace_dim + 1) * 8  + indptr64[self.subspace_dim] * 8 + indptr64[self.subspace_dim] * 16
+                else:
+                    total_bytes = (self.subspace_dim + 1) * 4  + indptr64[self.subspace_dim] * 4 + indptr64[self.subspace_dim] * 16
+                if psutil.virtual_memory().available < total_bytes:
+                    raise FulqrumError(f"Sparse matrix of size {total_bytes/(10124**3)}Gb does not fit within available memory.")
+
+                if int_64:
                     indices64 = np.zeros(indptr64[self.subspace_dim], dtype=np.int64)
                     data = np.zeros(indptr64[self.subspace_dim], dtype=complex)
                 else:
-                    # matrix is empty
-                    if not indptr32[self.subspace_dim]:
-                        return sp.csr_array(([], [[],[]]), 
-                                            shape=(self.subspace_dim,)*2, dtype=complex)
+                    int_64 = 0
+                    indptr32 = np.asarray(indptr64, dtype=np.int32)
+                    indptr64 = np.zeros(1, dtype=np.int64)
                     indices32 = np.zeros(indptr32[self.subspace_dim], dtype=np.int32)
                     data = np.zeros(indptr32[self.subspace_dim], dtype=complex)
                 
