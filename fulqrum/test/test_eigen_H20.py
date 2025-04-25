@@ -15,7 +15,7 @@ _path = Path(__file__).parent / "data/h2o.json"
 FOP = FermionicOperator.from_json(_path)
 OP = FOP.extended_jw_transformation()
 NEW_OP = OP.combine_repeated_terms()
-GROUND_ENERGY = -84.20635059 # Answer from direct full-matrix 
+GROUND_ENERGY = -84.20635059  # Answer from direct full-matrix
 
 
 def test_full_dist_h20_eigenenergy_matrix_free():
