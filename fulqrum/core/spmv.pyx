@@ -148,8 +148,8 @@ cdef class FulqrumSpMV():
                                             shape=(self.subspace_dim,)*2, dtype=complex)
 
                  # if num_elem > int32 or subspace_dim + 1 > int32
-                if (indptr64[self.subspace_dim] > max_int) or ((self.subspace_dim + 1) > max_int):
-                    int_64 = 1
+                if (indptr64[self.subspace_dim] < max_int) and ((self.subspace_dim + 1) < max_int):
+                    int_64 = 0
                 
                 # check if matrix will fit into memory
                 if int_64:
@@ -164,7 +164,6 @@ cdef class FulqrumSpMV():
                     indices64 = np.zeros(indptr64[self.subspace_dim], dtype=np.int64)
                     data = np.zeros(indptr64[self.subspace_dim], dtype=complex)
                 else:
-                    int_64 = 0
                     indptr32 = np.asarray(indptr64, dtype=np.int32)
                     indptr64 = np.zeros(1, dtype=np.int64)
                     indices32 = np.zeros(indptr32[self.subspace_dim], dtype=np.int32)
