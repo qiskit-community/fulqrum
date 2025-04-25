@@ -15,7 +15,7 @@ _path = Path(__file__).parent / "data/h2o.json"
 FOP = FermionicOperator.from_json(_path)
 OP = FOP.extended_jw_transformation()
 NEW_OP = OP.combine_repeated_terms()
-GROUND_ENERGY = -84.20635059
+GROUND_ENERGY = -84.20635059 # Answer from direct full-matrix 
 
 
 def test_full_dist_h20_eigenenergy_matrix_free():
@@ -27,7 +27,6 @@ def test_full_dist_h20_eigenenergy_matrix_free():
     S = Subspace(full_dist)
     Hsub = SubspaceHamiltonian(NEW_OP, S)
 
-    # here we use starting vector of all ones to match phase with direct ans
     evals, _ = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
@@ -42,6 +41,5 @@ def test_full_dist_h20_eigenenergy_csr():
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_array()
 
-    # here we use starting vector of all ones to match phase with direct ans
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
