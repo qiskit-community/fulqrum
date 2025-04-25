@@ -37,6 +37,7 @@ def test_csr1():
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
     assert np.allclose(P.data, M.data)
+    assert P.indptr.dtype == np.int32
 
 
 def test_csr2():
@@ -63,6 +64,7 @@ def test_csr2():
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
     assert np.allclose(P.data, M.data)
+    assert P.indptr.dtype == np.int32
 
 
 def test_csr3():
@@ -89,6 +91,7 @@ def test_csr3():
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
     assert np.allclose(P.data, M.data)
+    assert P.indptr.dtype == np.int32
 
 
 def test_csr4():
@@ -115,6 +118,7 @@ def test_csr4():
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
     assert np.allclose(P.data, M.data)
+    assert P.indptr.dtype == np.int32
 
 
 def test_csr5():
@@ -141,6 +145,7 @@ def test_csr5():
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
     assert np.allclose(P.data, M.data)
+    assert P.indptr.dtype == np.int32
 
 
 def test_csr6():
@@ -167,3 +172,4 @@ def test_csr6():
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
     assert np.allclose(P.data, M.data)
+    assert P.indptr.dtype == np.int32

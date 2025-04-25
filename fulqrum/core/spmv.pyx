@@ -143,9 +143,8 @@ cdef class FulqrumSpMV():
         for compute_values in range(2):
             if compute_values:
                 # matrix is empty
-                if not indptr64[self.subspace_dim]:
-                        return sp.csr_array(([], [[],[]]), 
-                                            shape=(self.subspace_dim,)*2, dtype=complex)
+                if indptr64[self.subspace_dim] == 0:
+                        return sp.csr_array((self.subspace_dim, self.subspace_dim), dtype=complex)
 
                  # if num_elem > int32 or subspace_dim + 1 > int32
                 if (indptr64[self.subspace_dim] < max_int) and ((self.subspace_dim + 1) < max_int):
