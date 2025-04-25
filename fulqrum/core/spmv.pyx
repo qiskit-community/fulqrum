@@ -9,7 +9,7 @@ from libc.string cimport memcpy
 
 from fulqrum.core.qubit_operator cimport QubitOperator
 from fulqrum.core.subspace cimport Subspace
-from fulqrum.core.csr cimport csr_matrix_builder
+#from fulqrum.core.csr cimport csr_matrix_builder
 
 from cython.parallel cimport prange, parallel
 
@@ -23,6 +23,7 @@ include "includes/elements_header.pxi"
 include "includes/bitstrings_header.pxi"
 include "includes/diag_header.pxi"
 include "includes/matvec_header.pxi"
+include "includes/csr_header.pxi"
 
 ctypedef long long int64
 
@@ -165,7 +166,7 @@ cdef class FulqrumSpMV():
                     data = np.zeros(indptr32[self.subspace_dim], dtype=complex)
                 
             if int_64:
-                csr_matrix_builder(self.oper,
+                csr_matrix_builder[int64](&self.oper.terms[0],
                                     self.subspace.subspace.bitstrings,
                                     &self.diag_vec[0],
                                     self.width,
@@ -180,7 +181,7 @@ cdef class FulqrumSpMV():
                                     &data[0],
                                     compute_values)
             else:
-                csr_matrix_builder(self.oper,
+                csr_matrix_builder[int](&self.oper.terms[0],
                                     self.subspace.subspace.bitstrings,
                                     &self.diag_vec[0],
                                     self.width,
