@@ -16,4 +16,4 @@ cdef extern from "../src/matvec.hpp":
                 size_t * group_ptrs,
                 size_t num_groups,
                 const double complex * in_vec,
-                double complex * out_vec)
+                double complex * out_vec) nogil
