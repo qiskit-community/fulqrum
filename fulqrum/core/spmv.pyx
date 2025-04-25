@@ -128,7 +128,7 @@ cdef class FulqrumSpMV():
         # If the total number of terms is projected to be larger than int
         # go to int64
         if num_terms:
-            if (self.subspace_dim*self.oper.terms[num_terms-1].group > max_int):
+            if (self.subspace_dim*self.num_groups > max_int):
                 int_64 = 1
         cdef int[::1] indptr32
         cdef int[::1] indices32
