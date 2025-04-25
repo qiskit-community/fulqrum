@@ -30,7 +30,7 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
 {
     std::size_t kk;
     T temp, _sum;
-    #pragma omp parallel if(subspace_dim > 128)
+    #pragma omp parallel for if(subspace_dim > 128)
     for(kk=0; kk<subspace_dim; kk++)
     { // begin loop over all rows
         // define variables locally for omp for loop
