@@ -7,6 +7,7 @@ import scipy.sparse.linalg as spla
 import fulqrum as fq
 
 import logging
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -29,12 +30,18 @@ def main(tol=None):
     Hsub = fq.SubspaceHamiltonian(new_op, S)
 
     st = time.perf_counter()
-    evals, _ = spla.eigsh(Hsub, k=1, which='SA',tol=0 if not tol else tol, v0=np.ones(len(S),dtype=complex))
+    evals, _ = spla.eigsh(
+        Hsub,
+        k=1,
+        which="SA",
+        tol=0 if not tol else tol,
+        v0=np.ones(len(S), dtype=complex),
+    )
     return (time.perf_counter() - st), evals[0]
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tol', nargs='?', const=0, type=float)
+    parser.add_argument("--tol", nargs="?", const=0, type=float)
     args = parser.parse_args()
     print(main(args.tol))

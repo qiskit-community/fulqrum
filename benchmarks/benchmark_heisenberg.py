@@ -7,8 +7,8 @@ import fulqrum as fq
 from qiskit.transpiler import CouplingMap
 
 import logging
-logging.basicConfig(level=logging.INFO)
 
+logging.basicConfig(level=logging.INFO)
 
 
 def main(tol=None):
@@ -19,12 +19,17 @@ def main(tol=None):
     # Generate Hamiltonian
     H = fq.QubitOperator(num_qubits, [])
     touched_edges = set({})
-    coeffs = [1/2, 1/2, 1]
+    coeffs = [1 / 2, 1 / 2, 1]
     for edge in cmap.get_edges():
         if edge[::-1] not in touched_edges:
-            H += fq.QubitOperator(num_qubits, [("XX", edge, coeffs[0]), 
-                                            ("YY", edge, coeffs[1]), 
-                                            ("ZZ", edge, coeffs[2])])
+            H += fq.QubitOperator(
+                num_qubits,
+                [
+                    ("XX", edge, coeffs[0]),
+                    ("YY", edge, coeffs[1]),
+                    ("ZZ", edge, coeffs[2]),
+                ],
+            )
             touched_edges.add(edge)
 
     # 1 million Pseudo counts
@@ -36,14 +41,18 @@ def main(tol=None):
     S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
     st = time.perf_counter()
-    evals, _ = spla.eigsh(Hsub, k=1, which='SA', tol=0 if not tol else tol, v0=np.ones(len(S),dtype=complex))
+    evals, _ = spla.eigsh(
+        Hsub,
+        k=1,
+        which="SA",
+        tol=0 if not tol else tol,
+        v0=np.ones(len(S), dtype=complex),
+    )
     return (time.perf_counter() - st), evals[0]
-
-
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tol', nargs='?', const=0, type=float)
+    parser.add_argument("--tol", nargs="?", const=0, type=float)
     args = parser.parse_args()
     print(main(args.tol))
