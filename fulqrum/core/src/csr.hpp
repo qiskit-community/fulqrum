@@ -13,19 +13,19 @@
 #include "operators.hpp"
 
 
-template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
-                                            std::vector<unsigned char>& subspace,
-                                            const std::complex<double> * diag_vec,
+template <typename T> void csr_matrix_builder(const OperatorTerm_t *__restrict terms,
+                                            const std::vector<unsigned char>&__restrict subspace,
+                                            const std::complex<double> *__restrict diag_vec,
                                             std::size_t width,
                                             std::size_t subspace_dim,
                                             int has_nonzero_diag,
                                             std::size_t bin_width,
-                                            const std::size_t * bin_ranges,
-                                            const std::size_t * group_ptrs,
+                                            const std::size_t *__restrict bin_ranges,
+                                            const std::size_t *__restrict group_ptrs,
                                             std::size_t num_groups,
-                                            T * indptr,
-                                            T * indices,
-                                            std::complex<double> * data,
+                                            T *__restrict indptr,
+                                            T *__restrict indices,
+                                            std::complex<double> *__restrict data,
                                             int compute_values)
 {
     std::size_t kk;

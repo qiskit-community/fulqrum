@@ -24,7 +24,7 @@ const int EXT_NZ_MASK[8] = {1, 1, 0, 1, 1, 1, 0, 1};
  * @param inds The term indices (qubits) array
  * @param vals The term values (operators) array
  */
-void sort_term_data(std::vector<std::size_t>& inds, std::vector<unsigned char>& vals) {
+void sort_term_data(std::vector<std::size_t>&__restrict inds, std::vector<unsigned char>&__restrict vals) {
     std::size_t n = inds.size();
     for (std::size_t i = 1; i < n; i++) {
         std::size_t key = inds[i];
@@ -48,7 +48,7 @@ void sort_term_data(std::vector<std::size_t>& inds, std::vector<unsigned char>& 
  * 
  * @return comparitor value
  */
-int group_comp(OperatorTerm_t& term1, OperatorTerm_t& term2){
+int group_comp(OperatorTerm_t&__restrict term1, OperatorTerm_t&__restrict term2){
     return term1.group < term2.group;
 }
 
@@ -59,7 +59,7 @@ int group_comp(OperatorTerm_t& term1, OperatorTerm_t& term2){
  * @param oper Hamiltonian operator
  * 
  */
-void offdiag_term_sort(QubitOperator_t& oper){
+void offdiag_term_sort(QubitOperator_t&__restrict oper){
     OperatorTerm_t * term;
     OperatorTerm_t * term2;
     std::size_t kk, ll, idx;
@@ -132,7 +132,7 @@ void offdiag_term_sort(QubitOperator_t& oper){
  * @param term Hamiltonian term
  * 
  */
-void set_extended_flag(OperatorTerm_t& term){
+void set_extended_flag(OperatorTerm_t&__restrict term){
     std::size_t kk;
     int out = 1;
     for(kk=0; kk < term.values.size(); kk++){
@@ -148,7 +148,7 @@ void set_extended_flag(OperatorTerm_t& term){
  * @param term Hamiltonian term
  * 
  */
- void set_offdiag_weight(OperatorTerm_t& term){
+ void set_offdiag_weight(OperatorTerm_t&__restrict term){
     std::size_t kk;
     std::size_t weight = 0;
     unsigned char * values = &term.values[0];
@@ -169,8 +169,8 @@ void set_extended_flag(OperatorTerm_t& term){
  * 
  * @return Int indicating if value is nonzero
  */
-inline int nonzero_extended_value(const OperatorTerm_t * term,
-                                  const unsigned char * row, 
+inline int nonzero_extended_value(const OperatorTerm_t *__restrict term,
+                                  const unsigned char *__restrict row, 
                                   std::size_t width){
     std::size_t kk, idx;
     for(kk=0; kk < term->indices.size(); kk++){
@@ -195,9 +195,9 @@ inline int nonzero_extended_value(const OperatorTerm_t * term,
  * @param atol Absolute tolerance for term truncation
  * 
  */
-void combine_qubit_terms(std::vector<OperatorTerm_t>& terms,
-                         std::vector<OperatorTerm_t>& out_terms,
-                         unsigned char * touched,
+void combine_qubit_terms(std::vector<OperatorTerm_t>&__restrict terms,
+                         std::vector<OperatorTerm_t>&__restrict out_terms,
+                         unsigned char *__restrict touched,
                          std::size_t num_terms,
                          double atol)
 {
