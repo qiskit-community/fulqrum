@@ -30,13 +30,13 @@ const std::complex<double> OPER_ELEMENTS[28] = {{1,0}, {0,0}, {0,0}, {-1,0},   /
  * @param N The length of the pos and val vector, i.e. number of non-ID operators in term
  * @return Column string
  */
-inline std::complex<double> compute_element_vec(const unsigned char * row,
-                                            const unsigned char * col,
-                                            std::size_t bit_len,
-                                            const std::size_t * pos,
-                                            const unsigned char * val,
-                                            std::complex<double> coeff,
-                                            std::size_t N)
+inline std::complex<double> compute_element_vec(const unsigned char *__restrict row,
+                                                const unsigned char *__restrict col,
+                                                std::size_t bit_len,
+                                                const std::size_t *__restrict pos,
+                                                const unsigned char *__restrict val,
+                                                std::complex<double> coeff,
+                                                std::size_t N)
     {
         std::complex<double> out = 1.0;
         std::size_t kk;
