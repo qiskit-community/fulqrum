@@ -18,8 +18,8 @@ const std::size_t MAX_SIZE_T = (std::size_t)-1;
  * @param out_string Output string
  * @param num_qubits Width of the strings
  */
-inline void string_to_vec(const char *__restrict in_string, 
-                          unsigned char *__restrict out_string, 
+inline void string_to_vec(const char * in_string, 
+                          unsigned char * out_string, 
                           std::size_t num_qubits)
     {
     for(std::size_t kk=0; kk < num_qubits; kk++)
@@ -37,7 +37,7 @@ inline void string_to_vec(const char *__restrict in_string,
  *
  * @return Integer value of bin bits
  */
-inline int bin_width_to_int(const unsigned char *__restrict vec,
+inline int bin_width_to_int(const unsigned char * vec,
                             std::size_t num_qubits,
                             std::size_t bin_width)
 	{
@@ -62,8 +62,8 @@ inline int bin_width_to_int(const unsigned char *__restrict vec,
  * @return Integer value of bin bits
  */
 inline std::size_t col_index(std::size_t start, std::size_t stop,
-                             const unsigned char *__restrict col, 
-                             const unsigned char *__restrict subspace,
+                             const unsigned char * col, 
+                             const unsigned char * subspace,
                              std::size_t num_qubits)
     {
     int val;
@@ -91,11 +91,11 @@ inline std::size_t col_index(std::size_t start, std::size_t stop,
  * @param N The length of the pos and val vector, i.e. number of non-ID operators in term
  * @return Column string
  */
-inline void get_column_vec(const unsigned char *__restrict row,
-                           unsigned char *__restrict col,
+inline void get_column_vec(const unsigned char * row,
+                           unsigned char * col,
                            std::size_t bit_len,
-                           const std::size_t *__restrict pos,
-                           const unsigned char *__restrict val,
+                           const std::size_t * pos,
+                           const unsigned char * val,
                            std::size_t N)
         {
             std::size_t idx;
