@@ -13,12 +13,12 @@
 
 void compute_diag_vector(const unsigned char * __restrict data,
                          std::complex<double> * __restrict diag_vec,
-                         QubitOperator_t& diag_oper,
+                         QubitOperator_t&__restrict diag_oper,
                          std::size_t width,
                          std::size_t subspace_dim){
         std::size_t kk;
         std::size_t num_terms = diag_oper.terms.size();
-        #pragma omp parallel for if(subspace_dim > 100)
+        #pragma omp parallel for if(subspace_dim > 128)
         for(kk=0; kk < subspace_dim; kk++){
             std::size_t ll, weight, row_start;
             std::complex<double> val = 0;

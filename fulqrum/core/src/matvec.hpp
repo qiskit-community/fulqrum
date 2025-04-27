@@ -14,18 +14,18 @@
 #include "operators.hpp"
 
 
-void omp_matvec(QubitOperator_t& ham,
-    std::vector<unsigned char>& subspace,
-    std::complex<double> * diag_vec,
+void omp_matvec(const QubitOperator_t&__restrict ham,
+    const std::vector<unsigned char>&__restrict subspace,
+    const std::complex<double> *__restrict diag_vec,
     std::size_t width,
     std::size_t subspace_dim,
     int has_nonzero_diag,
     std::size_t bin_width,
-    std::size_t * bin_ranges,
-    std::size_t * group_ptrs,
+    const std::size_t *__restrict bin_ranges,
+    const std::size_t *__restrict group_ptrs,
     std::size_t num_groups,
-    const std::complex<double> * in_vec,
-    std::complex<double> * out_vec)
+    const std::complex<double> *__restrict in_vec,
+    std::complex<double> *__restrict out_vec)
 {
     std::size_t kk;
     #pragma omp parallel if(subspace_dim > 128)
@@ -48,7 +48,7 @@ void omp_matvec(QubitOperator_t& ham,
             const unsigned char * row_start = &subspace[kk*width];
             std::vector<unsigned char> col_vec;
             std::complex<double> temp_val, val=0;
-            OperatorTerm_t * term;
+            const OperatorTerm_t * term;
             std::size_t start, stop;
             std::size_t group_start, group_stop, group;
             std::size_t idx, weight, col_idx;
