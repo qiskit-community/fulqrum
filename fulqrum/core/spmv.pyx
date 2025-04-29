@@ -157,7 +157,7 @@ cdef class FulqrumSpMV():
                 else:
                     total_bytes = (self.subspace_dim + 1) * 4  + indptr64[self.subspace_dim] * 4 + indptr64[self.subspace_dim] * 16
                 if psutil.virtual_memory().available < total_bytes:
-                    raise FulqrumError(f"Sparse matrix of size {total_bytes/(10124**3)}Gb does not fit within available memory.")
+                    raise FulqrumError(f"Sparse matrix of size {total_bytes/(1024**3)}Gb does not fit within available memory.")
 
                 if int_64:
                     indices64 = np.zeros(indptr64[self.subspace_dim], dtype=np.int64)
