@@ -65,14 +65,7 @@ void omp_matvec(QubitOperator_t& ham,
                 {
                     term = &ham.terms[idx];
                     weight = term->indices.size();
-                    if(term->extended) // check if extended term is zero
-                    {
-                        if(!nonzero_extended_value(term, row_start, width)) // extended term is zero so move on to next term
-                        {
-                            continue;
-                        }
-                    } // end extended term check
-                    if(do_col_search) // check if column is in subspace for this group
+                    if(do_col_search)
                     {
                         memcpy(&col_vec[0], row_start, width);
                         get_column_vec(row_start, &col_vec[0], width, &term->indices[0], &term->values[0], weight);
@@ -80,18 +73,39 @@ void omp_matvec(QubitOperator_t& ham,
                         start = bin_ranges[bin_num];
                         stop = bin_ranges[bin_num+1];
                         col_idx = col_index(start, stop, &col_vec[0], &subspace[0], width);
+                        if(col_idx < MAX_SIZE_T) // column is in the subspace
+                        {
+                            do_col_search = 0; // do not search again for this group
+                            if(term->extended) // check if extended term is zero
+                            {
+                                if(!nonzero_extended_value(term, row_start, width)) // extended term is zero so move on to next term
+                                {
+                                    continue;
+                                }
+                            }
+                            temp_val = compute_element_vec(row_start, &col_vec[0], width,
+                                                        &term->indices[0], &term->values[0],
+                                                        term->coeff, weight);
+                            val += temp_val * in_vec[col_idx];
+                        }
+                        else // column is not in the subspace so entire group does nothing, break
+                        {
+                            break;
+                        }
                     }
-                    if(col_idx < MAX_SIZE_T) // column is in the subspace
+                    else // column already found, process remaining terms
                     {
-                        do_col_search = 0; // do not search again for this group
+                        if(term->extended) // check if extended term is zero
+                        {
+                            if(!nonzero_extended_value(term, row_start, width)) // extended term is zero so move on to next term
+                            {
+                                continue;
+                            }
+                        }
                         temp_val = compute_element_vec(row_start, &col_vec[0], width,
-                                                       &term->indices[0], &term->values[0], term->coeff,
-                                                       weight);
+                                                       &term->indices[0], &term->values[0],
+                                                       term->coeff, weight);
                         val += temp_val * in_vec[col_idx];
-                    }
-                    else // column is not in the subspace so entire group does nothing, break
-                    {
-                        break;
                     }
                 } // end loop for this group
             } // end loop over all groups
