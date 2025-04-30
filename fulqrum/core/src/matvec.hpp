@@ -84,8 +84,8 @@ void omp_matvec(QubitOperator_t& ham,
                                 }
                             }
                             temp_val = compute_element_vec(row_start, &col_vec[0], width,
-                                                        &term->indices[0], &term->values[0], term->coeff,
-                                                        weight);
+                                                        &term->indices[0], &term->values[0],
+                                                        term->coeff, weight);
                             val += temp_val * in_vec[col_idx];
                         }
                         else // column is not in the subspace so entire group does nothing, break
@@ -103,7 +103,8 @@ void omp_matvec(QubitOperator_t& ham,
                             }
                         }
                         temp_val = compute_element_vec(row_start, &col_vec[0], width,
-                                                       &term->indices[0], &term->values[0], term->coeff, weight);
+                                                       &term->indices[0], &term->values[0],
+                                                       term->coeff, weight);
                         val += temp_val * in_vec[col_idx];
                     }
                 } // end loop for this group
