@@ -175,7 +175,7 @@ cdef class QubitOperator():
         """
         if self.num_terms == 0:
             return 0
-        if not self.sorted:
+        if not self.oper.sorted:
             self.offdiag_term_grouping()
         return (self.oper.terms[self.oper.terms.size()-1].group - self.oper.terms[0].group) + 1
     
@@ -490,7 +490,7 @@ cdef class QubitOperator():
         if operator != 'I':
             self.oper.terms[0].indices.push_back(qubit)
             self.oper.terms[0].values.push_back(STR_TO_IND[operator])
-        self.sorted = False
+        self.oper.sorted = 0
 
     @cython.boundscheck(False)
     cpdef double complex sum_identity_terms(self):
@@ -605,7 +605,7 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of ints indicating group of each term
         """
-        if not self.sorted:
+        if not self.oper.sorted:
             self.offdiag_term_grouping()
         cdef size_t kk
         cdef int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.int32)
@@ -622,7 +622,7 @@ cdef class QubitOperator():
         """
         if self.num_terms == 0:
             return np.zeros(0, dtype=np.uintp)
-        if not self.sorted:
+        if not self.oper.sorted:
             self.offdiag_term_grouping()
         cdef size_t num_groups = self.oper.terms[self.oper.terms.size()-1].group - self.oper.terms[0].group + 1
         cdef size_t[::1] ptrs = np.zeros(num_groups+1, dtype=np.uintp)
