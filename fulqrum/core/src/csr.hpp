@@ -139,3 +139,25 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
         }
     }
 }
+
+
+template <typename T>void csr_spmv(const T * indptr, const T * indices, const std::complex<double> * data, 
+                                   const std::complex<double> * vec, 
+                                   std::complex<double> * out, std::size_t dim)
+    {
+        std::size_t row;
+        #pragma omp parallel for if(dim > 128)
+        for(row=0; row < dim; row++)
+        {   
+            T jj;
+            T row_start, row_end;
+            std::complex<double> dot = 0;
+            row_start = indptr[row];
+            row_end = indptr[row+1];
+            for(jj=row_start; jj < row_end; jj++)
+            {
+                dot += data[jj]*vec[indices[jj]];
+            }
+            out[row] += dot;
+        }
+    }

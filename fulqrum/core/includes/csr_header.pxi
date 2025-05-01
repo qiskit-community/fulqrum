@@ -20,3 +20,8 @@ cdef extern from "../src/csr.hpp":
                               T * indices,
                               double complex * data,
                               int compute_values) nogil
+
+    
+    void csr_spmv[T](const T * indptr, const T * indices, const double complex * data, 
+                     double complex * vec, double complex * out,
+                     size_t dim) nogil
