@@ -68,3 +68,19 @@ def test_partial_dist_h2_eigen2():
     ans_dict = Hsub.interpret_vector(evecs)
     assert abs(ans_dict["1010"] - GROUND_DIST["1010"]) < 1e-14
     assert abs(ans_dict["0101"] - GROUND_DIST["0101"]) < 1e-14
+
+
+def test_full_dist_h2_eigen_csr_linearoperator():
+    """Test full space solution against exact for CSR linearoperator"""
+    full_dist = {}
+    for kk in range(2**4):
+        full_dist[bin(kk)[2:].zfill(4)] = None
+
+    S = Subspace(full_dist)
+    Hsub = SubspaceHamiltonian(OP, S)
+    M = Hsub.to_csr_linearoperator()
+
+    # here we use starting vector of all ones to match phase with direct ans
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])

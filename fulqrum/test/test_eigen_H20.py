@@ -31,7 +31,7 @@ def test_full_dist_h20_eigenenergy_matrix_free():
 
 
 def test_full_dist_h20_eigenenergy_csr():
-    """Test full space solution against exact"""
+    """Test full space solution against exact for CSR matrix"""
     full_dist = {}
     for kk in range(2**14):
         full_dist[bin(kk)[2:].zfill(14)] = None
@@ -39,6 +39,20 @@ def test_full_dist_h20_eigenenergy_csr():
     S = Subspace(full_dist)
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_array()
+
+    evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+
+def test_full_dist_h20_eigenenergy_csr_linearoperator():
+    """Test full space solution against exact for CSR linearoperator"""
+    full_dist = {}
+    for kk in range(2**14):
+        full_dist[bin(kk)[2:].zfill(14)] = None
+
+    S = Subspace(full_dist)
+    Hsub = SubspaceHamiltonian(NEW_OP, S)
+    M = Hsub.to_csr_linearoperator()
 
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)

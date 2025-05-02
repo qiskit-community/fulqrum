@@ -6,6 +6,7 @@ import numpy as np
 from scipy.sparse.linalg import LinearOperator
 
 from .spmv import FulqrumSpMV
+from .csr import csr_matvec
 
 
 class SubspaceHamiltonian(LinearOperator):
@@ -92,3 +93,33 @@ class SubspaceHamiltonian(LinearOperator):
             csr_array: Sparse representation of subspace Hamiltonian
         """
         return self.spmv.to_csr_array()
+
+    def to_csr_linearoperator(self):
+        """Convert subspace Hamiltonian to a LinearOperator wrapping a CSR matrix
+
+        Returns:
+            CSRLinearOperator: LinearOperator wrapping a CSR matrix.
+        """
+        M = self.spmv.to_csr_array()
+        return CSRLinearOperator(M)
+
+
+class CSRLinearOperator(LinearOperator):
+    _matvec = None
+
+    def __init__(self, mat):
+        self.mat = mat
+        super().__init__(shape=mat.shape, dtype=complex)
+
+    def matvec(self, x):
+        col_vec = False
+        if len(x.shape) == 2:
+            col_vec = True
+            x = x.view().reshape(
+                x.shape[0],
+            )
+        out = np.zeros_like(x, dtype=complex)
+        csr_matvec(self.mat.indptr, self.mat.indices, self.mat.data, x, out, x.shape[0])
+        if col_vec:
+            out = out.view().reshape(x.shape[0], 1)
+        return out
