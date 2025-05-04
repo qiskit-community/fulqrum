@@ -4,7 +4,7 @@
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libc.string cimport memcmp
-from libc.math cimport abs, pow
+from libc.math cimport abs
 
 import math
 cimport cython
@@ -38,7 +38,7 @@ cdef class Subspace():
              raise Exception(f'bin_width ({bin_width}) must be <= MAX_BIN_WIDTH ({MAX_BIN_WIDTH})')
             
         self.subspace.bin_width = bin_width
-        self.subspace.num_bins = <size_t>pow(2.0, bin_width)
+        self.subspace.num_bins = <size_t>(2**bin_width)
         self.subspace.bitstrings.reserve(self.subspace.num_qubits*self.subspace.size)
 
         # Sort counts according to bin-width
