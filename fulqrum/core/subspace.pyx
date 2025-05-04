@@ -4,7 +4,7 @@
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libc.string cimport memcmp
-from libc.math cimport abs
+from libc.math cimport abs, pow
 
 import math
 cimport cython
@@ -12,7 +12,7 @@ import numpy as np
 cimport numpy as np
 
 
-include "fulqrum/core/includes/bitstrings_header.pxi"
+include "includes/bitstrings_header.pxi"
 
 
 cdef size_t intmin(size_t a, size_t b):
@@ -38,7 +38,7 @@ cdef class Subspace():
              raise Exception(f'bin_width ({bin_width}) must be <= MAX_BIN_WIDTH ({MAX_BIN_WIDTH})')
             
         self.subspace.bin_width = bin_width
-        self.subspace.num_bins = pow(2, bin_width)
+        self.subspace.num_bins = <size_t>pow(2.0, bin_width)
         self.subspace.bitstrings.reserve(self.subspace.num_qubits*self.subspace.size)
 
         # Sort counts according to bin-width
@@ -69,7 +69,8 @@ cdef class Subspace():
         cdef size_t total = self.subspace.bin_counts[0]
         for kk in range(1, self.subspace.num_bins+1):
             self.subspace.bin_ranges[kk] = total
-            total += self.subspace.bin_counts[kk]
+            if kk != self.subspace.num_bins:
+                total += self.subspace.bin_counts[kk]
     
     def __dealloc__(self):
         # Clear vectors upon deallocation of class
