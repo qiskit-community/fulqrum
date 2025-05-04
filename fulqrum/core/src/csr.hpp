@@ -128,7 +128,7 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
             indptr[kk] = row_nnz;
         }
     } // end loop over all rows
-    if(not compute_values) // Done all rows so cummulate for correct indptr structure
+    if(!compute_values) // Done all rows so cummulate for correct indptr structure
     {
         _sum = 0;
         for(kk=0; kk < (subspace_dim+1); kk++)
