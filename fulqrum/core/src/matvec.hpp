@@ -42,7 +42,7 @@ void omp_matvec(QubitOperator_t& ham,
     // Take care of off-diagonal terms
     if(num_terms)
     {
-        #pragma omp for
+        #pragma omp for schedule(dynamic)
         for(kk=0; kk < subspace_dim; kk++)
         {
             const unsigned char * row_start = &subspace[kk*width];
