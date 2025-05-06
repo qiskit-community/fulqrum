@@ -37,11 +37,12 @@ inline void string_to_vec(const char * in_string,
  *
  * @return Integer value of bin bits
  */
-inline int bin_width_to_int(const unsigned char * vec,
+inline int bin_width_to_int(const unsigned char *__restrict vec,
                             std::size_t num_qubits,
                             std::size_t bin_width)
 	{
     int val = 0;
+    #pragma omp simd reduction(+:val)
     for(std::size_t kk=0; kk < bin_width; kk++)
     	{
         val += vec[num_qubits-kk-1]*(1 << kk);

@@ -208,28 +208,3 @@ cdef class FulqrumSpMV():
                             shape=(self.subspace_dim,)*2, dtype=complex)
         mat.sort_indices()
         return mat
-
-
-@cython.boundscheck(False)
-@cython.cdivision(True)
-def uppertri_row_grouping(size_t dim, size_t num_threads):
-    """Array that groups rows of an upper-triangle matrix
-    such that each group does approx. the same work.
-
-    Parameters:
-        dim (size_t): Dimension of matrix
-        num_threads (size_t): Number of OMP threads to use
-
-    Returns:
-        ndarray: Array of length num_threads+1
-
-    Notes:
-        This is looking for N pieces of a triangle
-        that have equal area using similar triangle properties.
-    """
-    cdef size_t[::1] omp_rows = np.zeros(num_threads+1, dtype=np.uintp)
-    cdef size_t kk
-    cdef double coeff = 1.0/num_threads
-    for kk in range(num_threads+1):
-        omp_rows[num_threads-kk] = <size_t>(floor(dim-(sqrt((kk * coeff)) * dim)))
-    return np.asarray(omp_rows)
