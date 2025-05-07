@@ -14,18 +14,18 @@
 #include "operators.hpp"
 
 
-void omp_matvec(QubitOperator_t& ham,
-    std::vector<unsigned char>& subspace,
-    std::complex<double> * diag_vec,
-    std::size_t width,
-    std::size_t subspace_dim,
-    int has_nonzero_diag,
-    std::size_t bin_width,
-    std::size_t * bin_ranges,
-    std::size_t * group_ptrs,
-    std::size_t num_groups,
-    const std::complex<double> * in_vec,
-    std::complex<double> * out_vec)
+void omp_matvec(const QubitOperator_t& ham,
+    const std::vector<unsigned char>& subspace,
+    const std::complex<double> * diag_vec,
+    const std::size_t width,
+    const std::size_t subspace_dim,
+    const int has_nonzero_diag,
+    const std::size_t bin_width,
+    const std::size_t *__restrict bin_ranges,
+    const std::size_t *__restrict group_ptrs,
+    const std::size_t num_groups,
+    const std::complex<double> *__restrict in_vec,
+    std::complex<double> *__restrict out_vec)
 {
     std::size_t kk;
     #pragma omp parallel if(subspace_dim > 128)
@@ -48,7 +48,7 @@ void omp_matvec(QubitOperator_t& ham,
             const unsigned char * row_start = &subspace[kk*width];
             std::vector<unsigned char> col_vec;
             std::complex<double> temp_val, val=0;
-            OperatorTerm_t * term;
+            const OperatorTerm_t * term;
             std::size_t start, stop;
             std::size_t group_start, group_stop, group;
             std::size_t idx, weight, col_idx;
@@ -65,6 +65,7 @@ void omp_matvec(QubitOperator_t& ham,
                 {
                     term = &ham.terms[idx];
                     weight = term->indices.size();
+                    temp_val = 0;
                     if(do_col_search)
                     {
                         memcpy(&col_vec[0], row_start, width);
@@ -83,10 +84,9 @@ void omp_matvec(QubitOperator_t& ham,
                                     continue;
                                 }
                             }
-                            temp_val = compute_element_vec(row_start, &col_vec[0], width,
-                                                        &term->indices[0], &term->values[0],
-                                                        term->coeff, weight);
-                            val += temp_val * in_vec[col_idx];
+                            compute_element_vec(row_start, &col_vec[0], width,
+                                                &term->indices[0], &term->values[0],
+                                                term->coeff, weight, temp_val);
                         }
                         else // column is not in the subspace so entire group does nothing, break
                         {
@@ -102,11 +102,14 @@ void omp_matvec(QubitOperator_t& ham,
                                 continue;
                             }
                         }
-                        temp_val = compute_element_vec(row_start, &col_vec[0], width,
-                                                       &term->indices[0], &term->values[0],
-                                                       term->coeff, weight);
-                        val += temp_val * in_vec[col_idx];
+                        compute_element_vec(row_start, &col_vec[0], width,
+                                             &term->indices[0], &term->values[0],
+                                            term->coeff, weight, temp_val);
                     }
+                if(!do_col_search)
+                {
+                    val += temp_val * in_vec[col_idx];
+                }
                 } // end loop for this group
             } // end loop over all groups
             out_vec[kk] += val;
