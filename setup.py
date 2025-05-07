@@ -66,7 +66,12 @@ if WITH_OMP or os.getenv("FULQRUM_OPENMP", False):
         OPTIONAL_ARGS.append("-fopenmp")
 
 if os.getenv("FULQRUM_ARCH", False) and sys.platform != "win32":
-    OPTIONAL_FLAGS.append("-march=" + os.getenv("FULQRUM_ARCH"))
+    if sys.platform == "darwin":
+        # This is needed to set the flag for ARM processors on OSX
+        # M1 = apple-a14, M2 = apple-a15, M3 = apple-a16, M4 = apple-m4
+        OPTIONAL_FLAGS.append("-mcpu=" + os.getenv("FULQRUM_ARCH"))
+    else:
+        OPTIONAL_FLAGS.append("-march=" + os.getenv("FULQRUM_ARCH"))
 
 INCLUDE_DIRS = [np.get_include()]
 # Extra link args
