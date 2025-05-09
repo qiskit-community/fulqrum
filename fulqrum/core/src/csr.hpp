@@ -90,9 +90,9 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
                                 continue;
                             }
                         }
-                        compute_element_vec(row_start, &col_vec[0], width,
-                                                    &term->indices[0], &term->values[0], 
-                                                    term->coeff, weight,val);
+                        accum_element_value(row_start, &col_vec[0], width,
+                                            &term->indices[0], &term->values[0], 
+                                            term->coeff, weight,val);
                     }
                     else // column is not in the subspace so entire group does nothing, break
                     {
@@ -108,9 +108,9 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
                             continue;
                         }
                     }
-                    compute_element_vec(row_start, &col_vec[0], width,
-                                               &term->indices[0], &term->values[0],
-                                               term->coeff, weight, val);
+                    accum_element_value(row_start, &col_vec[0], width,
+                                        &term->indices[0], &term->values[0],
+                                        term->coeff, weight, val);
                 }
             } // end loop over terms in this group
             if(val!=0.0)

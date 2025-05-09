@@ -84,7 +84,7 @@ void omp_matvec(const QubitOperator_t& ham,
                                     continue;
                                 }
                             }
-                            compute_element_vec(row_start, &col_vec[0], width,
+                            accum_element_value(row_start, &col_vec[0], width,
                                                 &term->indices[0], &term->values[0],
                                                 term->coeff, weight, temp_val);
                         }
@@ -102,9 +102,9 @@ void omp_matvec(const QubitOperator_t& ham,
                                 continue;
                             }
                         }
-                        compute_element_vec(row_start, &col_vec[0], width,
+                        accum_element_value(row_start, &col_vec[0], width,
                                              &term->indices[0], &term->values[0],
-                                            term->coeff, weight, temp_val);
+                                             term->coeff, weight, temp_val);
                     }
                 if(!do_col_search)
                 {

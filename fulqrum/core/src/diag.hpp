@@ -27,7 +27,7 @@ void compute_diag_vector(const unsigned char * __restrict data,
             for(ll=0; ll < num_terms; ll++){
                 term = &diag_oper.terms[ll];
                 weight = term->indices.size();
-                compute_element_vec(&data[row_start], &data[row_start], width,
+                accum_element_value(&data[row_start], &data[row_start], width,
                                            &term->indices[0],
                                            &term->values[0],
                                            term->coeff, weight, val);

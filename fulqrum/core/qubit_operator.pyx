@@ -591,12 +591,12 @@ cdef class QubitOperator():
                            weight)
             # Input col string matches that of nonzero column
             if col_vec == nonzero_vec:
-                compute_element_vec(&row_vec[0], 
-                                           &nonzero_vec[0], 
-                                           bit_len,
-                                           &term.indices[0],
-                                           &term.values[0],
-                                           term.coeff, weight, out)
+                accum_element_value(&row_vec[0], 
+                                    &nonzero_vec[0], 
+                                    bit_len,
+                                    &term.indices[0],
+                                    &term.values[0],
+                                    term.coeff, weight, out)
         return out
 
 
