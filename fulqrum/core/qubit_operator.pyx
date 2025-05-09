@@ -577,6 +577,7 @@ cdef class QubitOperator():
         cdef size_t num_terms = self.oper.terms.size()
         cdef size_t kk, weight
         cdef double complex out = 0.0
+        cdef double complex temp
         cdef OperatorTerm_t * term
         for kk in range(num_terms):
             term = &self.oper.terms[kk]
@@ -590,12 +591,12 @@ cdef class QubitOperator():
                            weight)
             # Input col string matches that of nonzero column
             if col_vec == nonzero_vec:
-                out += compute_element_vec(&row_vec[0], 
-                                           &nonzero_vec[0], 
-                                           bit_len,
-                                           &term.indices[0],
-                                           &term.values[0],
-                                           term.coeff, weight)
+                accum_element_value(&row_vec[0], 
+                                    &nonzero_vec[0], 
+                                    bit_len,
+                                    &term.indices[0],
+                                    &term.values[0],
+                                    term.coeff, weight, out)
         return out
 
 

@@ -60,8 +60,8 @@ int group_comp(OperatorTerm_t& term1, OperatorTerm_t& term2){
  * 
  */
 void offdiag_term_sort(QubitOperator_t& oper){
-    OperatorTerm_t * term;
-    OperatorTerm_t * term2;
+    OperatorTerm_t *__restrict term;
+    OperatorTerm_t *__restrict term2;
     std::size_t kk, ll, idx;
     std::size_t ind_size;
     std::vector<std::size_t>::iterator inds_it;
@@ -173,14 +173,16 @@ inline int nonzero_extended_value(const OperatorTerm_t * term,
                                   const unsigned char * row, 
                                   std::size_t width){
     std::size_t kk, idx;
+    int out = 1;
     for(kk=0; kk < term->indices.size(); kk++){
         idx = width - term->indices[kk] - 1;
         if(!EXT_NZ_MASK[term->values[kk] + row[idx]])
         {
-            return 0;
+            out = 0;
+            break;
         }
     }
-    return 1;
+    return out;
 }
 
 
@@ -195,8 +197,8 @@ inline int nonzero_extended_value(const OperatorTerm_t * term,
  * @param atol Absolute tolerance for term truncation
  * 
  */
-void combine_qubit_terms(std::vector<OperatorTerm_t>& terms,
-                         std::vector<OperatorTerm_t>& out_terms,
+void combine_qubit_terms(std::vector<OperatorTerm_t>&__restrict terms,
+                         std::vector<OperatorTerm_t>&__restrict out_terms,
                          unsigned char * touched,
                          std::size_t num_terms,
                          double atol)

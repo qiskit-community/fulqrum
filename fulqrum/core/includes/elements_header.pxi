@@ -3,10 +3,11 @@
 
 cdef extern from "../src/elements.hpp":
 
-    double complex compute_element_vec(const unsigned char * row,
-                                       const unsigned char * col,
-                                       size_t bit_len,
-                                       const size_t * pos,
-                                       const unsigned char * val,
-                                       double complex coeff,
-                                       size_t N) nogil
+    void accum_element_value(const unsigned char * row,
+                             const unsigned char * col,
+                             const size_t bit_len,
+                             const size_t * pos,
+                             const unsigned char * val,
+                             const double complex coeff,
+                             const size_t N,
+                             double complex& out) nogil
