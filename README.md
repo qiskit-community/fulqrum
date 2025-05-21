@@ -19,7 +19,18 @@ This is very much a work in progress, and not suitable for human or animal consu
 > [!IMPORTANT]
 > For some reason clang gives markedly better performance than gcc. Vendor specific compilers also give added performance, if available.
 
-### Building files locally
+## Requirements
+
+Currently Fulqrum requires the Boost library.  If using `conda` then adding this can be done using:
+
+```bash
+conda install boost
+```
+
+and the required include files should be automatically found.
+
+
+## Building files locally
 
 In order to run the unittests locally, it is only necessary to build the Cython files inplace:
 
