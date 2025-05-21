@@ -31,18 +31,18 @@ this_dir = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_dir, "README.md"), encoding="utf-8") as readme:
     LONG_DESCRIPTION = readme.read()
 
-CYTHON_EXTS = ["qubit_operator", "subspace", "spmv", "fermi_operator", "csr",
+CYTHON_EXTS = ["qubit_operator", "subspace", "spmv", "fermi_operator", "csr", "bitset", "bitset_view",
                "qiskit", "openfermion",
                "string_funcs", "oper_funcs",
                "matrix"]
 CYTHON_MODULES = [
-    "fulqrum.core", "fulqrum.core", "fulqrum.core", "fulqrum.core", "fulqrum.core",
+    "fulqrum.core", "fulqrum.core", "fulqrum.core", "fulqrum.core", "fulqrum.core", "fulqrum.core", "fulqrum.core",
     "fulqrum.convert", "fulqrum.convert",
     "fulqrum.test", "fulqrum.test",
     "fulqrum.utils"
 ]
 CYTHON_SOURCE_DIRS = [
-    "fulqrum/core", "fulqrum/core", "fulqrum/core", "fulqrum/core", "fulqrum/core",
+    "fulqrum/core", "fulqrum/core", "fulqrum/core", "fulqrum/core", "fulqrum/core", "fulqrum/core", "fulqrum/core",
     "fulqrum/convert", "fulqrum/convert",
     "fulqrum/test", "fulqrum/test",
     "fulqrum/utils"
@@ -93,7 +93,8 @@ for idx, ext in enumerate(CYTHON_EXTS):
         extra_compile_args=COMPILER_FLAGS + OPTIONAL_FLAGS,
         extra_link_args=LINK_FLAGS + OPTIONAL_ARGS,
         language="c++",
-        define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+        define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION"), 
+                       ("BOOST_DYNAMIC_BITSET_DONT_USE_FRIENDS", None)],
     )
     EXT_MODULES.append(mod)
 
