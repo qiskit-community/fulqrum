@@ -39,3 +39,8 @@ cdef class Bitset:
         cdef string s
         to_string(self.bits, s)
         return s
+
+    def to_int(self):
+        cdef string s
+        to_string(self.bits, s)
+        return int(s, 2)
