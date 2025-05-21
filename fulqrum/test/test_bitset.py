@@ -22,9 +22,50 @@ def test_to_string2():
     assert in_string == out_string
 
 
-def test_to_int():
+def test_to_int1():
     """Test Bitset to int (large)"""
     in_string = "101100" * 100
     bits = Bitset(in_string)
     out_int = bits.to_int()
     assert out_int == int(in_string, 2)
+
+
+def test_to_int2():
+    """Test two different len bitsets that equal same int"""
+    string1 = '101110'
+    bits1 = Bitset(string1)
+
+    string2 = '0101110'
+    bits2 = Bitset(string2)
+    assert bits1.to_int() == bits2.to_int()
+
+
+def test_equality():
+    """Test Bitset equality"""
+    string1 = '101110'
+    bits1 = Bitset(string1)
+    bits2 = Bitset(string1)
+
+    assert bits1 == bits2
+
+
+def test_inequality1():
+    """Test Bitset inequality, same length"""
+    string1 = '101110'
+    bits1 = Bitset(string1)
+
+    string2 = '101111'
+    bits2 = Bitset(string2)
+
+    assert bits1 != bits2
+
+
+def test_inequality2():
+    """Test Bitset inequality, different lengths"""
+    string1 = '101110'
+    bits1 = Bitset(string1)
+
+    string2 = '0101110'
+    bits2 = Bitset(string2)
+
+    assert bits1 != bits2
