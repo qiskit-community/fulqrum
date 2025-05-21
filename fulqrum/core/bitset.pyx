@@ -2,6 +2,8 @@
 from .bitset cimport bitset_t, to_string
 from libcpp cimport string
 
+from fulqrum.exceptions import FulqrumError
+
 include "includes/bitset_utils_header.pxi"
 
 
@@ -48,3 +50,11 @@ cdef class Bitset:
         cdef string s
         to_string(self.bits, s)
         return int(s, 2)
+
+    def bin_width_int(self, unsigned int bin_width):
+        if bin_width > self.bits.size():
+            raise FulqrumError("bin_width is larger than number of bits")
+        cdef size_t out
+        bin_int(self.bits, bin_width, out)
+        return out
+
