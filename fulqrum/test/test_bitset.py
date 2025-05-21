@@ -69,3 +69,23 @@ def test_inequality2():
     bits2 = Bitset(string2)
 
     assert bits1 != bits2
+
+
+def test_bin_width_int1():
+    """Test bin-width integers are correct (small)"""
+    string = '101110'
+    bits = Bitset(string)
+    ans = [0, 2, 6, 14, 14, 46]
+    for kk in range(1,7):
+        out = bits.bin_width_int(kk)
+        assert out == ans[kk-1]
+
+
+def test_bin_width_int2():
+    """Test bin-width integers are correct (large)"""
+    string = '101110' * 100
+    str_len = len(string)
+    bits = Bitset(string)
+    for kk in range(30, 41):
+        out = bits.bin_width_int(kk)
+        assert out == int(string[-kk:], 2)
