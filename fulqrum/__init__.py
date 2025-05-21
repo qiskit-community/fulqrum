@@ -11,7 +11,13 @@ except ImportError:
     __version__ = "0.0.0"
     openmp = False
 
-from .core import QubitOperator, Subspace, SubspaceHamiltonian, FermionicOperator, Bitset
+from .core import (
+    QubitOperator,
+    Subspace,
+    SubspaceHamiltonian,
+    FermionicOperator,
+    Bitset,
+)
 
 
 def about():
