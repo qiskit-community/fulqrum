@@ -35,7 +35,7 @@ cdef class Bitset:
     def num_blocks(self):
         return self.bits.num_blocks()
 
-    def as_string(self):
+    def to_string(self):
         cdef string s
         to_string(self.bits, s)
         return s
