@@ -2,6 +2,10 @@
 from .bitset cimport bitset_t, to_string
 from libcpp cimport string
 
+include "includes/bitset_utils_header.pxi"
+
+
+
 cdef class Bitset:
     
     cdef bitset_t bits

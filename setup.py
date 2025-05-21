@@ -93,7 +93,8 @@ for idx, ext in enumerate(CYTHON_EXTS):
         extra_compile_args=COMPILER_FLAGS + OPTIONAL_FLAGS,
         extra_link_args=LINK_FLAGS + OPTIONAL_ARGS,
         language="c++",
-        define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+        define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION"), 
+                       ("BOOST_DYNAMIC_BITSET_DONT_USE_FRIENDS", None)],
     )
     EXT_MODULES.append(mod)
 
