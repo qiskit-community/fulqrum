@@ -13,7 +13,6 @@ from fulqrum.core.fermi_operator cimport FermionicOperator
 include "includes/bitset_utils_header.pxi"
 
 
-
 cdef class Bitset:
 
     def __cinit__(self, str bitstring = ''):
