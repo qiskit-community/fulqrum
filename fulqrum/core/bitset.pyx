@@ -13,8 +13,9 @@ include "includes/bitset_utils_header.pxi"
 
 cdef class Bitset:
 
-    def __cinit__(self, string bitstring):
-        self.bits = bitset_t(bitstring, 0, bitstring.size())
+    def __cinit__(self, str bitstring = ''):
+        cdef string temp = bitstring
+        self.bits = bitset_t(temp, 0, temp.size())
 
     def __dealloc__(self):
         self.bits = bitset_t()
