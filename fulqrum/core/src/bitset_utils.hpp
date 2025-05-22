@@ -6,14 +6,29 @@
 
 const std::size_t BITS_PER_BLOCK = 8 * sizeof(std::size_t);
 
-
-inline void bin_int(const boost::dynamic_bitset<std::size_t>& b, unsigned int len, std::size_t& res)
+/**
+ * Compute the integer corresponding to the bin-width of a bitset
+ *
+ * @param bitset The target bitset
+ * @param bin_width The bin-width
+ * @param res The resulting integer
+ */
+inline void bin_int(const boost::dynamic_bitset<std::size_t>& bitset, 
+                    unsigned int bin_width, std::size_t& res)
     {
-        res = b.m_bits[0] & (( 1ULL << len) - 1);
+        res = bitset.m_bits[0] & (( 1ULL << bin_width) - 1);
     }
 
 
-inline void flip_bits(boost::dynamic_bitset<std::size_t>& b, std::size_t * arr, std::size_t size)
+/**
+ * Flip a series of bits in a bitset
+ *
+ * @param bitset The target bitset
+ * @param arr Pointer to array of indices which to flip
+ * @param size The size of the array
+ */
+inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
+                      std::size_t * arr, std::size_t size)
     {
         std::size_t kk;
         std::size_t block_num, block_idx;
@@ -23,6 +38,6 @@ inline void flip_bits(boost::dynamic_bitset<std::size_t>& b, std::size_t * arr, 
             pos = arr[kk];
             block_num = pos / BITS_PER_BLOCK;
             block_idx = pos % BITS_PER_BLOCK;
-            b.m_bits[block_num] = b.m_bits[block_num] ^ (1ULL << block_idx);
+            bitset.m_bits[block_num] = bitset.m_bits[block_num] ^ (1ULL << block_idx);
         }
     }
