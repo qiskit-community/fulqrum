@@ -2,6 +2,9 @@
 from .bitset cimport bitset_t, to_string
 from libcpp cimport string
 
+import numpy as np
+import numbers
+from collections.abc import Iterable
 from fulqrum.exceptions import FulqrumError
 
 include "includes/bitset_utils_header.pxi"
@@ -9,8 +12,6 @@ include "includes/bitset_utils_header.pxi"
 
 
 cdef class Bitset:
-    
-    cdef bitset_t bits
 
     def __cinit__(self, string bitstring):
         self.bits = bitset_t(bitstring, 0, bitstring.size())
@@ -57,4 +58,15 @@ cdef class Bitset:
         cdef size_t out
         bin_int(self.bits, bin_width, out)
         return out
+
+    def flip(self, object bits):
+        cdef size_t[::1] int_array
+        if isinstance(bits, numbers.Integral):
+            int_array = np.asarray([bits], dtype=np.uintp)
+        elif isinstance(bits, Iterable):
+            int_array = np.asarray(bits, dtype=np.uintp)
+        else:
+            raise Exception("What the hell")
+
+        flip_bits(self.bits, &int_array[0], int_array.shape[0])
 

@@ -1,5 +1,6 @@
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 from libcpp.string cimport string
+from libcpp.vector cimport vector
 from libcpp cimport bool
 
 cdef extern from "<boost/dynamic_bitset.hpp>" namespace "boost":
@@ -9,6 +10,8 @@ cdef extern from "<boost/dynamic_bitset.hpp>" namespace "boost":
         dynamic_bitset(size_t)
         dynamic_bitset(size_t, size_t)
         dynamic_bitset(string, size_t, size_t)
+
+        vector[T] m_bits
 
         bint operator==(const dynamic_bitset&, const dynamic_bitset&)
         bint operator!=(const dynamic_bitset&, const dynamic_bitset&)
@@ -36,3 +39,8 @@ cdef extern from "<boost/dynamic_bitset.hpp>" namespace "boost":
 
 # typedef the kind we want which is always size_t
 ctypedef dynamic_bitset[size_t] bitset_t
+
+
+
+cdef class Bitset:
+    cdef bitset_t bits
