@@ -32,6 +32,11 @@ cdef class Bitset:
         return f"<Bitset: {s}>"
 
     def size(self):
+        """Number of bits in Bitset
+
+        Returns:
+            int: Number of bits
+        """
         return self.bits.size()
 
     def __getitem__(self, size_t idx):
@@ -44,19 +49,42 @@ cdef class Bitset:
         return self.bits != other.bits
 
     def num_blocks(self):
+        """Number of blocks (int64) used to store Bitset
+
+        Returns:
+            int: Number of blocks
+        """
         return self.bits.num_blocks()
 
     def to_string(self):
+        """Convert Bitset to string
+
+        Returns:
+            str: String representation of Bitset
+        """
         cdef string s
         to_string(self.bits, s)
         return s
 
     def to_int(self):
+        """Convert Bitset to Python integer
+
+        Returns:
+            int: Integer value for Bitset
+        """
         cdef string s
         to_string(self.bits, s)
         return int(s, 2)
 
     def bin_width_int(self, unsigned int bin_width):
+        """Compute the integer for a given bin-width
+
+        Parameters:
+            bin_width (int): Bin-width to compute
+
+        Returns:
+            int: Computed bin-width
+        """
         if bin_width > self.bits.size():
             raise FulqrumError("bin_width is larger than number of bits")
         cdef size_t out
@@ -64,6 +92,11 @@ cdef class Bitset:
         return out
 
     def flip(self, object bits):
+        """Flip one or more bits inplace
+
+        Parameters:
+            bits (int or array_like): Indices to flip
+        """
         cdef size_t[::1] int_array
         if isinstance(bits, numbers.Integral):
             int_array = np.asarray([bits], dtype=np.uintp)
@@ -74,7 +107,20 @@ cdef class Bitset:
 
         flip_bits(self.bits, &int_array[0], int_array.shape[0])
 
-    def column_bitset(self, QubitOperator op):
+    def offdiag_flip(self, QubitOperator op):
+        """Flip bits corresponding to off-diagonal operators in a single Hamiltonian terms
+
+        Parameters:
+            op (QubitOperator): QubitOperator with a single-term
+
+        Returns:
+            Bitset: Bitset with off-diagonal bits flipped
+
+        Raises:
+            FulqrumError: Operator must have a single-term
+
+            FulqrumError: Size of Bitset and QubitOperator do not match
+        """
         if op.num_terms > 1:
             raise FulqrumError("Operator must contain a single-term only")
         if self.size() != op.width:
