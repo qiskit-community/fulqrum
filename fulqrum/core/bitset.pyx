@@ -7,6 +7,9 @@ import numbers
 from collections.abc import Iterable
 from fulqrum.exceptions import FulqrumError
 
+from fulqrum.core.qubit_operator cimport QubitOperator
+from fulqrum.core.fermi_operator cimport FermionicOperator
+
 include "includes/bitset_utils_header.pxi"
 
 
@@ -70,4 +73,17 @@ cdef class Bitset:
             raise Exception("What the hell")
 
         flip_bits(self.bits, &int_array[0], int_array.shape[0])
+
+    def column_bitset(self, QubitOperator op):
+        if op.num_terms > 1:
+            raise FulqrumError("Operator must contain a single-term only")
+        if self.size() != op.width:
+            raise FulqrumError('Bitset and Operator must have same size')
+        cdef Bitset out = Bitset()
+        out.bits = self.bits
+        get_column_bitset(out.bits,
+                          &op.oper.terms[0].indices[0],
+                          &op.oper.terms[0].values[0],
+                          op.oper.terms[0].indices.size())
+        return out
 

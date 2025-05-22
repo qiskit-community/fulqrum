@@ -9,9 +9,7 @@ cdef extern from "../src/bitset_utils.hpp":
 
     void flip_bits(bitset_t& b, size_t * arr, size_t size)
 
-    void get_column_bitset(bitset_t& row,
-                           bitset_t& col,
-                           size_t bit_len,
+    void get_column_bitset(bitset_t& col,
                            size_t * pos,
                            unsigned char * val,
                            size_t N)
