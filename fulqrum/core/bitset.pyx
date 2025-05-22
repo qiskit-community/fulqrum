@@ -108,7 +108,7 @@ cdef class Bitset:
         flip_bits(self.bits, &int_array[0], int_array.shape[0])
 
     def offdiag_flip(self, QubitOperator op):
-        """Flip bits corresponding to off-diagonal operators in a single Hamiltonian terms
+        """Flip bits corresponding to off-diagonal operators in a single Hamiltonian term
 
         Parameters:
             op (QubitOperator): QubitOperator with a single-term
