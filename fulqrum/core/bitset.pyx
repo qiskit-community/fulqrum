@@ -103,7 +103,7 @@ cdef class Bitset:
         elif isinstance(bits, Iterable):
             int_array = np.asarray(bits, dtype=np.uintp)
         else:
-            raise Exception("What the hell")
+            raise FulqrumError('bits arg is not a valid type')
 
         flip_bits(self.bits, &int_array[0], int_array.shape[0])
 
