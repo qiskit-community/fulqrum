@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <vector>
 #include <complex>
+#include <boost/dynamic_bitset.hpp>
 
 
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
@@ -77,7 +78,7 @@ typedef struct QubitOperator{
  * @var size Dimenion / number of bit-strings in the subpsace
  */
  typedef struct Subspace{
-    std::vector<unsigned char> bitstrings;
+    std::vector<boost::dynamic_bitset<std::size_t>> bitstrings;
     std::vector<std::size_t> bin_counts;
     std::vector<std::size_t> bin_ranges;
     std::size_t num_qubits;

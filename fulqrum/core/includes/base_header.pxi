@@ -2,6 +2,7 @@
 # Copyright (C) 2024, IBM
 
 from libcpp.vector cimport vector
+from fulqrum.core.bitset cimport bitset_t
 
 
 cdef extern from "../src/base.hpp":
@@ -21,7 +22,7 @@ cdef extern from "../src/base.hpp":
 
 
     ctypedef struct Subspace_t:
-        vector[unsigned char] bitstrings
+        vector[bitset_t] bitstrings
         vector[size_t] bin_counts
         vector[size_t] bin_ranges
         size_t num_qubits
