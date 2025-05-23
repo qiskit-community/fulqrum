@@ -44,8 +44,8 @@ cdef class Subspace():
         self.subspace.bitstrings.reserve(self.subspace.size)
 
         # Sort counts according to bin-width
-        counts = {k: v for k, v in sorted(counts.items(),
-                                          key=lambda item: int(item[0][-bin_width:], 2))}
+        #counts = {k: v for k, v in sorted(counts.items(),
+        #                                  key=lambda item: int(item[0][-bin_width:], 2))}
 
         cdef size_t kk
         cdef string key
@@ -63,6 +63,9 @@ cdef class Subspace():
             self.subspace.bitstrings.push_back(temp_bits)
             bin_int(temp_bits, bin_width, temp_idx)
             self.subspace.bin_counts[temp_idx] += 1
+
+
+        sort_bitset_vector(self.subspace.bitstrings, bin_width)
 
         # Do cumsum to get bin starts and stops
         self.subspace.bin_ranges[0] = 0

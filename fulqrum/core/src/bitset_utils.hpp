@@ -2,6 +2,8 @@
 #define BOOST_DYNAMIC_BITSET_DONT_USE_FRIENDS
 #endif
 #pragma once
+#include <vector>
+#include <algorithm>
 #include <boost/dynamic_bitset.hpp>
 
 const std::size_t BITS_PER_BLOCK = 8 * sizeof(std::size_t);
@@ -14,7 +16,7 @@ const std::size_t BITS_PER_BLOCK = 8 * sizeof(std::size_t);
  * @param res The resulting integer
  */
 inline void bin_int(const boost::dynamic_bitset<std::size_t>& bitset, 
-                    unsigned int bin_width, std::size_t& res)
+                    std::size_t bin_width, std::size_t& res)
     {
         res = bitset.m_bits[0] & (( 1ULL << bin_width) - 1);
     }
@@ -43,7 +45,14 @@ inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
     }
 
 
-
+/**
+ * Gets the column bitset from an input row bitset and operator term
+ *
+ * @param col The input row bitset that will be converted to column
+ * @param pos Array of indices on which operators act
+ * @param val The value representing each operator
+ * @param N Number of non-ID operators in the term
+ */
 inline void get_column_bitset(boost::dynamic_bitset<std::size_t>& col,
                               const std::size_t *__restrict pos,
                               const unsigned char *__restrict val,
@@ -60,3 +69,18 @@ inline void get_column_bitset(boost::dynamic_bitset<std::size_t>& col,
             col.m_bits[block_num] = col.m_bits[block_num] ^ ((std::size_t)(val[kk] > 2) << block_idx);
         }
 }
+
+
+inline void sort_bitset_vector(std::vector<boost::dynamic_bitset<std::size_t> >& vec,
+                               const std::size_t bin_width)
+    {
+        
+        std::size_t res_a, res_b;
+        std::sort(vec.begin(), vec.end(), [&](const boost::dynamic_bitset<std::size_t> a,
+                                              const boost::dynamic_bitset<std::size_t> b)
+                                  {
+                                      bin_int(a, bin_width, res_a);
+                                      bin_int(b, bin_width, res_b);
+                                      return res_a < res_b;
+                                  });
+    }
