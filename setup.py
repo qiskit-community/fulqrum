@@ -76,7 +76,7 @@ if os.getenv("FULQRUM_ARCH", False) and sys.platform != "win32":
 
 INCLUDE_DIRS = [np.get_include()]
 # Extra link args
-LINK_FLAGS = ['-ltbb']
+LINK_FLAGS = []
 # If on Win and not in MSYS2 (i.e. Visual studio compile)
 if sys.platform == "win32" and os.environ.get("MSYSTEM", None) is None:
     COMPILER_FLAGS = ["/O2", "/std:c++17"]

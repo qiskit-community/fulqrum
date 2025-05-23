@@ -5,7 +5,6 @@
 #include <vector>
 #include <algorithm>
 #include <boost/dynamic_bitset.hpp>
-#include <oneapi/tbb/parallel_sort.h>
 
 const std::size_t BITS_PER_BLOCK = 8 * sizeof(std::size_t);
 
@@ -76,7 +75,7 @@ inline void sort_bitset_vector(std::vector<boost::dynamic_bitset<std::size_t> >&
                                std::size_t bin_width)
     {
         
-        tbb::parallel_sort(vec.begin(), vec.end(), [=](const boost::dynamic_bitset<std::size_t> a,
+        std::sort(vec.begin(), vec.end(), [=](const boost::dynamic_bitset<std::size_t> a,
                                               const boost::dynamic_bitset<std::size_t> b)
                                   {
                                     std::size_t res_a, res_b;  
