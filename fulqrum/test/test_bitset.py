@@ -2,7 +2,7 @@
 # Copyright (C) 2024, IBM
 # pylint: disable=no-name-in-module
 """Test bitset object"""
-
+from fulqrum import QubitOperator
 from fulqrum.core import Bitset
 
 
@@ -84,8 +84,33 @@ def test_bin_width_int1():
 def test_bin_width_int2():
     """Test bin-width integers are correct (large)"""
     string = "101110" * 100
-    str_len = len(string)
     bits = Bitset(string)
     for kk in range(30, 41):
         out = bits.bin_width_int(kk)
         assert out == int(string[-kk:], 2)
+
+
+def test_offdiag_flip1():
+    """Test flipping off-diagonal bits for a given operator"""
+    N = 100
+    bits = Bitset("0" * N)
+    inds = [0, 5, 17, 77]
+    op_str = "X" * len(inds)
+    op = QubitOperator(N, [(op_str, inds, 1.0)])
+    new_bits = bits.offdiag_flip(op)
+    new_str = new_bits.to_string()
+    for ind in inds:
+        assert new_str[N - ind - 1] == "1"
+
+
+def test_offdiag_flip2():
+    """Test flipping off-diagonal bits for a given operator"""
+    N = 100
+    bits = Bitset("1" * N)
+    inds = [1, 87, 88, 91]
+    op_str = "+" * len(inds)
+    op = QubitOperator(N, [(op_str, inds, 1.0)])
+    new_bits = bits.offdiag_flip(op)
+    new_str = new_bits.to_string()
+    for ind in inds:
+        assert new_str[N - ind - 1] == "0"
