@@ -8,7 +8,6 @@ from collections.abc import Iterable
 from fulqrum.exceptions import FulqrumError
 
 from fulqrum.core.qubit_operator cimport QubitOperator
-from fulqrum.core.fermi_operator cimport FermionicOperator
 
 include "includes/bitset_utils_header.pxi"
 

@@ -32,3 +32,13 @@ cdef class BitsetView:
 
     def num_blocks(self):
         return self.bits.num_blocks()
+
+    def to_string(self):
+        """Convert Bitset to string
+
+        Returns:
+            str: String representation of Bitset
+        """
+        cdef string s
+        to_string(deref(self.bits), s)
+        return s

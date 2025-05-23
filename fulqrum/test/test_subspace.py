@@ -22,42 +22,30 @@ dic2 = {
 def test_subspace_vector_order1():
     V = Subspace(dic, bin_width=1)
     # Order is only guarenteed up to first bit
-    assert V[0][-1] == 0
-    assert V[1][-1] == 0
-    assert V[2][-1] == 1
-    assert V[3][-1] == 1
+    assert V[0].to_string()[-1] == "0"
+    assert V[1].to_string()[-1] == "0"
+    assert V[2].to_string()[-1] == "1"
+    assert V[3].to_string()[-1] == "1"
 
 
 def test_subspace_vector_order2():
     V = Subspace(dic, bin_width=2)
-    assert np.allclose(V[0], np.array([1, 1, 1, 0, 0], dtype=np.uint8))
-    assert np.allclose(V[1], np.array([1, 0, 1, 0, 1], dtype=np.uint8))
-    assert np.allclose(V[2], np.array([0, 1, 0, 1, 0], dtype=np.uint8))
-    assert np.allclose(V[3], np.array([1, 1, 1, 1, 1], dtype=np.uint8))
+    assert list(V.to_dict().keys()) == ["11100", "10101", "01010", "11111"]
 
 
 def test_subspace_vector_order3():
     V = Subspace(dic, bin_width=3)
-    assert np.allclose(V[0], np.array([0, 1, 0, 1, 0], dtype=np.uint8))
-    assert np.allclose(V[1], np.array([1, 1, 1, 0, 0], dtype=np.uint8))
-    assert np.allclose(V[2], np.array([1, 0, 1, 0, 1], dtype=np.uint8))
-    assert np.allclose(V[3], np.array([1, 1, 1, 1, 1], dtype=np.uint8))
+    assert list(V.to_dict().keys()) == ["01010", "11100", "10101", "11111"]
 
 
 def test_subspace_vector_order4():
     V = Subspace(dic, bin_width=4)
-    assert np.allclose(V[0], np.array([1, 0, 1, 0, 1], dtype=np.uint8))
-    assert np.allclose(V[1], np.array([0, 1, 0, 1, 0], dtype=np.uint8))
-    assert np.allclose(V[2], np.array([1, 1, 1, 0, 0], dtype=np.uint8))
-    assert np.allclose(V[3], np.array([1, 1, 1, 1, 1], dtype=np.uint8))
+    assert list(V.to_dict().keys()) == ["10101", "01010", "11100", "11111"]
 
 
 def test_subspace_vector_order5():
     V = Subspace(dic, bin_width=5)
-    assert np.allclose(V[0], np.array([0, 1, 0, 1, 0], dtype=np.uint8))
-    assert np.allclose(V[1], np.array([1, 0, 1, 0, 1], dtype=np.uint8))
-    assert np.allclose(V[2], np.array([1, 1, 1, 0, 0], dtype=np.uint8))
-    assert np.allclose(V[3], np.array([1, 1, 1, 1, 1], dtype=np.uint8))
+    assert list(V.to_dict().keys()) == ["01010", "10101", "11100", "11111"]
 
 
 def test_subspace_bin_counts1():
