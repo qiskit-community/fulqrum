@@ -23,7 +23,7 @@ include "fulqrum/core/includes/bitset_utils_header.pxi"
 cdef size_t intmin(size_t a, size_t b):
     return (b-a)*(b < a) + a
 
-cdef size_t MAX_BIN_WIDTH = 40
+cdef size_t MAX_BIN_WIDTH = 32
 
 
 cdef class Subspace():
