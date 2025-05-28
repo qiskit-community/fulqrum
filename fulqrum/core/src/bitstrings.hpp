@@ -20,9 +20,9 @@ const std::size_t MAX_SIZE_T = (std::size_t)-1;
  */
 inline void string_to_vec(const char *__restrict in_string, 
                           unsigned char *__restrict out_string, 
-                          const std::size_t num_qubits)
+                          const unsigned int num_qubits)
     {
-    for(std::size_t kk=0; kk < num_qubits; kk++)
+    for(unsigned int kk=0; kk < num_qubits; kk++)
         {
         out_string[kk] = in_string[kk] - 48;
         }
@@ -38,12 +38,12 @@ inline void string_to_vec(const char *__restrict in_string,
  * @return Integer value of bin bits
  */
 inline int bin_width_to_int(const unsigned char *__restrict vec,
-                            const std::size_t num_qubits,
-                            const std::size_t bin_width)
+                            const unsigned int num_qubits,
+                            const unsigned int bin_width)
 	{
     int val = 0;
     #pragma omp simd reduction(+:val)
-    for(std::size_t kk=0; kk < bin_width; kk++)
+    for(unsigned int kk=0; kk < bin_width; kk++)
     	{
         val += vec[num_qubits-kk-1]*(1 << kk);
     	}
@@ -65,7 +65,7 @@ inline int bin_width_to_int(const unsigned char *__restrict vec,
 inline std::size_t col_index(const std::size_t start, const std::size_t stop,
                              const unsigned char *__restrict col, 
                              const unsigned char *__restrict subspace,
-                             const std::size_t num_qubits)
+                             const unsigned int num_qubits)
     {
     int val;
     std::size_t out = MAX_SIZE_T;
@@ -96,12 +96,12 @@ inline std::size_t col_index(const std::size_t start, const std::size_t stop,
  */
 inline void get_column_vec(const unsigned char *__restrict row,
                            unsigned char *__restrict col,
-                           const std::size_t bit_len,
-                           const std::size_t *__restrict pos,
+                           const unsigned int bit_len,
+                           const unsigned int *__restrict pos,
                            const unsigned char *__restrict val,
                            const std::size_t N)
 {
-    std::size_t idx;
+    unsigned int idx;
     for (std::size_t kk = 0; kk < N; kk++)
         {
             idx = bit_len - pos[kk] - 1; // Need to flip index for LSB ordering

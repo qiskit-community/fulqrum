@@ -28,7 +28,7 @@ cdef const FermionicTerm_t EmptyFermionicTerm
 cdef class FermionicOperator():
     """Operator class for Fermionic operators
     """
-    def __cinit__(self, size_t num_qubits,
+    def __cinit__(self, unsigned int num_qubits,
                   object operators=None):
         self.oper.width = num_qubits
         cdef object item
@@ -49,7 +49,7 @@ cdef class FermionicOperator():
                         inds = item[1] if isinstance(item[1], Iterable) else [item[1]] 
                         coeff = item[2] if len(item) == 3 else 1.0
                         for kk in range(<size_t>len(item[0])):
-                            if inds[kk] > <size_t>(self.oper.width - 1):
+                            if inds[kk] > (self.oper.width - 1):
                                 raise FulqrumError(f'Index {item[1]} is out of range for width={self.oper.width}')
                             if op_str[kk] != 73:
                                 term.indices.push_back(inds[kk])
@@ -202,7 +202,7 @@ cdef class FermionicOperator():
         if any(items):
             for item in items:
                 temp = item.split(':')
-                term.indices.push_back(<size_t>int(temp[1]))
+                term.indices.push_back(<unsigned int>int(temp[1]))
                 ind = STR_TO_IND[(<string>temp[0]).c_str()[0]]
                 term.values.push_back(ind)
         term.coeff = coeff
@@ -429,7 +429,7 @@ cdef void insertion_sort_term(FermionicTerm_t * term):
     cdef size_t kk
     cdef int ll
     cdef size_t num_elems = term.indices.size()
-    cdef size_t temp_index
+    cdef unsigned int temp_index
     cdef unsigned char temp_value
     cdef int prefactor = 1
     for kk in range(1, num_elems):
@@ -476,7 +476,7 @@ cdef void collapse_term_indicies(FermionicTerm_t * term, vector[FermionicTerm_t]
     cdef size_t kk 
     cdef size_t start, num_touched
     cdef FermionicTerm_t new_term = EmptyFermionicTerm
-    cdef size_t current_index
+    cdef unsigned int current_index
     cdef int temp_int
     cdef unsigned char current_value
 
