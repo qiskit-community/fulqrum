@@ -16,7 +16,7 @@ const std::size_t BITS_PER_BLOCK = 8 * sizeof(std::size_t);
  * @param res The resulting integer
  */
 inline void bin_int(const boost::dynamic_bitset<std::size_t>& bitset, 
-                    std::size_t bin_width, std::size_t& res)
+                    const unsigned int bin_width, std::size_t& res)
     {
         res = bitset.m_bits[0] & (( 1ULL << bin_width) - 1);
     }
@@ -30,11 +30,11 @@ inline void bin_int(const boost::dynamic_bitset<std::size_t>& bitset,
  * @param size The size of the array
  */
 inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
-                      std::size_t * arr, std::size_t size)
+                      unsigned int * arr, unsigned int size)
     {
-        std::size_t kk;
-        std::size_t block_num, block_idx;
-        std::size_t pos;
+        unsigned int  kk;
+        unsigned int block_num, block_idx;
+        unsigned int pos;
         for(kk=0; kk < size; kk++)
         {
             pos = arr[kk];
@@ -54,12 +54,12 @@ inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
  * @param N Number of non-ID operators in the term
  */
 inline void get_column_bitset(boost::dynamic_bitset<std::size_t>& col,
-                              const std::size_t *__restrict pos,
+                              const unsigned int *__restrict pos,
                               const unsigned char *__restrict val,
                               const std::size_t N)
 {
     std::size_t block_num, block_idx;
-    std::size_t ind;
+    unsigned int ind;
     std::size_t kk;
     for (kk = 0; kk < N; kk++)
         {
@@ -72,7 +72,7 @@ inline void get_column_bitset(boost::dynamic_bitset<std::size_t>& col,
 
 
 inline void sort_bitset_vector(std::vector<boost::dynamic_bitset<std::size_t> >& vec,
-                               std::size_t bin_width)
+                               unsigned int bin_width)
     {
         
         std::sort(vec.begin(), vec.end(), [=](const boost::dynamic_bitset<std::size_t> a,

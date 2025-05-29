@@ -18,9 +18,9 @@
  */
 typedef struct OperatorTerm{
     std::complex<double> coeff;
-    std::vector<std::size_t> indices;
+    std::vector<unsigned int> indices;
     std::vector<unsigned char> values;
-    std::size_t offdiag_weight {0};
+    unsigned int offdiag_weight {0};
     int extended {0};
     int group {-1}; // -1 means unset here
 } OperatorTerm_t;
@@ -34,7 +34,7 @@ typedef struct OperatorTerm{
  * @var sorted is a flag that indicates the term is sorted (NOT USED AT PRESENT)
  */
 typedef struct QubitOperator{
-    std::size_t width;
+    unsigned int width;
     std::vector<OperatorTerm_t> terms;
     int sorted {0};
 } QubitOperator_t;
@@ -48,7 +48,7 @@ typedef struct QubitOperator{
  */
  typedef struct FermionicTerm{
     std::complex<double> coeff;
-    std::vector<std::size_t> indices;
+    std::vector<unsigned int> indices;
     std::vector<unsigned char> values;
 } FermionicTerm_t;
 
@@ -61,7 +61,7 @@ typedef struct QubitOperator{
  * @var sorted is a flag that indicates the term is sorted (NOT USED AT PRESENT)
  */
  typedef struct FermionicOperator{
-    std::size_t width;
+    unsigned int width;
     std::vector<FermionicTerm_t> terms;
 } FermionicOperator_t;
 
@@ -81,7 +81,7 @@ typedef struct QubitOperator{
     std::vector<boost::dynamic_bitset<std::size_t>> bitstrings;
     std::vector<std::size_t> bin_counts;
     std::vector<std::size_t> bin_ranges;
-    std::size_t num_qubits;
+    unsigned int num_qubits;
     std::size_t num_bins;
     std::size_t bin_width;
     std::size_t size;

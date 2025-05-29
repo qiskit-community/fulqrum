@@ -45,7 +45,7 @@ cdef int diagonal_term(OperatorTerm_t * term):
     """
     cdef size_t kk
     for kk in range(term.values.size()):
-        if term.values[kk] > 2:
+        if term.values[kk] > 2U:
             return 0
     return 1
 
@@ -56,7 +56,7 @@ cdef class QubitOperator():
     """
     #QubitOperator oper
 
-    def __cinit__(self, size_t num_qubits,
+    def __cinit__(self, unsigned int num_qubits,
                   object operators=None):
         self.oper.width = num_qubits
         self.oper.sorted = False
@@ -79,7 +79,7 @@ cdef class QubitOperator():
                         inds = item[1] if isinstance(item[1], Iterable) else [item[1]] 
                         coeff = item[2]
                         for kk in range(<size_t>len(item[0])):
-                            if inds[kk] > <size_t>(self.oper.width - 1):
+                            if inds[kk] > (self.oper.width - 1):
                                 raise FulqrumError(f'Index {item[1]} is out of range for width={self.oper.width}')
                             if op_str[kk] != 73:
                                 term.indices.push_back(inds[kk])
@@ -102,10 +102,10 @@ cdef class QubitOperator():
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def from_label(self, string label, double complex coeff = 1.0):
-        cdef size_t num_qubits = label.size()
+        cdef unsigned int num_qubits = label.size()
         cdef OperatorTerm_t term = EmptyOperatorTerm
         cdef QubitOperator out = QubitOperator(num_qubits)
-        cdef size_t kk
+        cdef unsigned int kk
         cdef const char * labels = label.c_str()
         cdef char s, ind
         for kk in range(num_qubits):
@@ -122,11 +122,11 @@ cdef class QubitOperator():
         return out
 
     @classmethod
-    def from_constant(self, size_t width, double complex coeff):
+    def from_constant(self, unsigned int width, double complex coeff):
         """Generate a constant Hamiltonian term
 
         Parameters:
-            width (size_t): Width of operator
+            width (unsigned int): Width of operator
             coeff (complex): Operator coefficient
         
         Returns:
@@ -385,7 +385,7 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of operator weights
         """
-        cdef size_t[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uintp)
+        cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
         cdef size_t kk
         for kk in range(self.oper.terms.size()):
             out[kk] = self.oper.terms[kk].values.size()
@@ -398,7 +398,7 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of operator off-diagonal weights
         """
-        cdef size_t[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uintp)
+        cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
         cdef size_t kk
         for kk in range(self.oper.terms.size()):
             out[kk] = self.oper.terms[kk].offdiag_weight
@@ -471,7 +471,7 @@ cdef class QubitOperator():
     
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def add_operator(self, size_t qubit, str operator, bool overwrite=False):
+    def add_operator(self, unsigned int qubit, str operator, bool overwrite=False):
         cdef size_t kk
         cdef OperatorTerm_t temp_term 
         if self.oper.terms.size() == 0:
@@ -561,7 +561,7 @@ cdef class QubitOperator():
             raise Exception('bad col input')
         if row_str.size() != col_str.size():
             raise Exception('String lengths differ')
-        cdef size_t bit_len = row_str.size()
+        cdef unsigned int bit_len = row_str.size()
 
         # resize vectors (DO NOT use reserve)
         row_vec.resize(bit_len)

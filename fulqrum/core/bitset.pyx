@@ -95,11 +95,11 @@ cdef class Bitset:
         Parameters:
             bits (int or array_like): Indices to flip
         """
-        cdef size_t[::1] int_array
+        cdef unsigned int[::1] int_array
         if isinstance(bits, numbers.Integral):
-            int_array = np.asarray([bits], dtype=np.uintp)
+            int_array = np.asarray([bits], dtype=np.uint32)
         elif isinstance(bits, Iterable):
-            int_array = np.asarray(bits, dtype=np.uintp)
+            int_array = np.asarray(bits, dtype=np.uint32)
         else:
             raise FulqrumError('bits arg is not a valid type')
 
