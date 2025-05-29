@@ -561,7 +561,7 @@ cdef class QubitOperator():
             raise Exception('bad col input')
         if row_str.size() != col_str.size():
             raise Exception('String lengths differ')
-        cdef size_t bit_len = row_str.size()
+        cdef unsigned int bit_len = row_str.size()
 
         # resize vectors (DO NOT use reserve)
         row_vec.resize(bit_len)

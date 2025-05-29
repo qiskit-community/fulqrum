@@ -32,7 +32,7 @@ const std::complex<double> OPER_ELEMENTS[28] = {{1,0}, {0,0}, {0,0}, {-1,0},   /
  */
 inline void accum_element_value(const unsigned char *__restrict row,
                                 const unsigned char *__restrict col,
-                                const std::size_t bit_len,
+                                const unsigned int bit_len,
                                 const unsigned int *__restrict pos,
                                 const unsigned char *__restrict val,
                                 std::complex<double> coeff,
