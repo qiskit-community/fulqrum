@@ -299,7 +299,7 @@ cdef class FermionicOperator():
         Returns:
             ndarray: Array of operator weights
         """
-        cdef size_t[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uintp)
+        cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
         cdef size_t kk
         for kk in range(self.oper.terms.size()):
             out[kk] = self.oper.terms[kk].values.size()
