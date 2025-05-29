@@ -66,15 +66,14 @@ inline void accum_element(const boost::dynamic_bitset<std::size_t>& row,
                           std::complex<double>& out)
     {
         std::complex<double> temp = {1.0, 0};
-        std::size_t kk;
-        unsigned int offset, block_num, block_idx;
-        unsigned int pos, row_int, col_int;
+        unsigned int kk, pos, block_num, block_idx;
+        std::size_t offset, row_int, col_int;
         for(kk=0; kk<N; kk++){
             pos = inds[kk];
             block_num = pos / BITS_PER_BLOCK;
             block_idx = pos % BITS_PER_BLOCK;
-            row_int = (row.m_bits[block_num] >> block_idx) & 1U;
-            col_int = (col.m_bits[block_num] >> block_idx) & 1U;
+            row_int = (row.m_bits[block_num] >> block_idx) & 1;
+            col_int = (col.m_bits[block_num] >> block_idx) & 1;
             offset = 2*row_int + col_int;
             temp *= OPER_ELEMENTS[4*val[kk] + offset];
         }
