@@ -13,6 +13,6 @@ cdef extern from "../src/bitset_utils.hpp":
     void get_column_bitset(bitset_t& col,
                            unsigned int * pos,
                            unsigned char * val,
-                           size_t N)
+                           unsigned int N)
 
     void sort_bitset_vector(vector[bitset_t]& vec, unsigned int bin_width)

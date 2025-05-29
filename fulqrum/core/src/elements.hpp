@@ -77,5 +77,6 @@ inline void accum_element(const boost::dynamic_bitset<std::size_t>& row,
             offset = 2*row_int + col_int;
             temp *= OPER_ELEMENTS[4*val[kk] + offset];
         }
+        // accumulate to output value
         out += coeff*temp;
     }
