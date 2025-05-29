@@ -30,11 +30,11 @@ inline void bin_int(const boost::dynamic_bitset<std::size_t>& bitset,
  * @param size The size of the array
  */
 inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
-                      std::size_t * arr, std::size_t size)
+                      unsigned int * arr, unsigned int size)
     {
-        std::size_t kk;
-        std::size_t block_num, block_idx;
-        std::size_t pos;
+        unsigned int  kk;
+        unsigned int block_num, block_idx;
+        unsigned int pos;
         for(kk=0; kk < size; kk++)
         {
             pos = arr[kk];
