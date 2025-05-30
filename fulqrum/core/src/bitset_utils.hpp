@@ -4,9 +4,9 @@
 #pragma once
 #include <vector>
 #include <algorithm>
+#include "base.hpp"
 #include <boost/dynamic_bitset.hpp>
 
-const std::size_t BITS_PER_BLOCK = 8 * sizeof(std::size_t);
 
 /**
  * Compute the integer corresponding to the bin-width of a bitset
@@ -56,17 +56,17 @@ inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
 inline void get_column_bitset(boost::dynamic_bitset<std::size_t>& col,
                               const unsigned int *__restrict pos,
                               const unsigned char *__restrict val,
-                              const std::size_t N)
+                              const unsigned int N)
 {
-    std::size_t block_num, block_idx;
+    unsigned int block_num, block_idx;
     unsigned int ind;
-    std::size_t kk;
+    unsigned int kk;
     for (kk = 0; kk < N; kk++)
         {
             ind = pos[kk];
             block_num = ind / BITS_PER_BLOCK;
             block_idx = ind % BITS_PER_BLOCK;
-            col.m_bits[block_num] = col.m_bits[block_num] ^ ((std::size_t)(val[kk] > 2) << block_idx);
+            col.m_bits[block_num] = col.m_bits[block_num] ^ (std::size_t)((val[kk] > 2) << block_idx);
         }
 }
 

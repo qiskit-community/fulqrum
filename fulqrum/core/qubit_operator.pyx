@@ -23,6 +23,7 @@ cimport numpy as np
 include "includes/base_header.pxi"
 include "includes/elements_header.pxi"
 include "includes/bitstrings_header.pxi"
+include "includes/bitset_utils_header.pxi"
 include "includes/operators_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
@@ -546,7 +547,6 @@ cdef class QubitOperator():
             complex: Element value at H[row, col]
         """
         cdef string row_str, col_str
-        cdef vector[unsigned char] row_vec, col_vec, nonzero_vec
         if isinstance(row, numbers.Integral):
             row_str = bin(row)[2:].zfill(self.oper.width)
         elif isinstance(row, str):
@@ -563,14 +563,11 @@ cdef class QubitOperator():
             raise Exception('String lengths differ')
         cdef unsigned int bit_len = row_str.size()
 
-        # resize vectors (DO NOT use reserve)
-        row_vec.resize(bit_len)
-        col_vec.resize(bit_len)
-        nonzero_vec.resize(bit_len)
+        cdef bitset_t row_vec, col_vec, nonzero_vec
 
         # convert strings to bit arrays
-        string_to_vec(row_str.c_str(), &row_vec[0], bit_len)
-        string_to_vec(col_str.c_str(), &col_vec[0], bit_len)
+        row_vec = bitset_t(row_str, 0, row_str.size())
+        col_vec = bitset_t(col_str, 0, col_str.size())
 
         if bit_len != self.oper.width:
             raise Exception('Operator width does not match string length')
@@ -583,20 +580,11 @@ cdef class QubitOperator():
             term = &self.oper.terms[kk]
             weight = term.indices.size()
             nonzero_vec = row_vec #copy row vec into nonzero vec
-            get_column_vec(&row_vec[0],
-                           &nonzero_vec[0],
-                           bit_len,
-                           &term.indices[0],
-                           &term.values[0],
-                           weight)
+            get_column_bitset(nonzero_vec, &term.indices[0], &term.values[0], weight)
             # Input col string matches that of nonzero column
             if col_vec == nonzero_vec:
-                accum_element_value(&row_vec[0], 
-                                    &nonzero_vec[0], 
-                                    bit_len,
-                                    &term.indices[0],
-                                    &term.values[0],
-                                    term.coeff, weight, out)
+                accum_element(row_vec, nonzero_vec,
+                              &term.indices[0], &term.values[0], term.coeff, weight, out)
         return out
 
 
