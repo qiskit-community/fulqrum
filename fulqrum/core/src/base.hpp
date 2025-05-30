@@ -9,6 +9,9 @@
 #include <boost/dynamic_bitset.hpp>
 
 
+const unsigned int BITS_PER_BLOCK = 8 * sizeof(std::size_t);
+
+
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
  *
  * @var indices the qubits (locations) where non-idenity term operators are

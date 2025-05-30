@@ -8,9 +8,9 @@
 #pragma once
 #include <cstdlib>
 #include <complex>
+#include "base.hpp"
 #include <boost/dynamic_bitset.hpp>
 
-const unsigned int BITS_PER_BLOCK = 8 * sizeof(std::size_t);
 
 
 const std::complex<double> OPER_ELEMENTS[28] = {{1,0}, {0,0}, {0,0}, {-1,0},   // Z
@@ -58,7 +58,6 @@ inline void accum_element_value(const unsigned char *__restrict row,
 
 inline void accum_element(const boost::dynamic_bitset<std::size_t>& row,
                           const boost::dynamic_bitset<std::size_t>& col,
-                          const unsigned int bit_len,
                           const unsigned int *__restrict inds,
                           const unsigned char *__restrict val,
                           const std::complex<double>& coeff,

@@ -31,7 +31,7 @@ cdef class BitsetView:
         return self.bits.size()
 
     def __getitem__(self, size_t idx):
-        return self.bits.at(idx)
+        return deref(self.bits)[idx]
 
     def __eq__(self, BitsetView other):
         return self.bits == other.bits

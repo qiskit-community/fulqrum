@@ -4,9 +4,9 @@
 #pragma once
 #include <vector>
 #include <algorithm>
+#include "base.hpp"
 #include <boost/dynamic_bitset.hpp>
 
-const unsigned int BITS_PER_BLOCK = 8 * sizeof(std::size_t);
 
 /**
  * Compute the integer corresponding to the bin-width of a bitset
