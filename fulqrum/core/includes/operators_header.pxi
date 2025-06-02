@@ -13,11 +13,6 @@ cdef extern from "../src/operators.hpp":
 
     void set_offdiag_weight(OperatorTerm_t& term) nogil
 
-    int nonzero_extended_value(OperatorTerm_t * term,
-                               unsigned char * row, 
-                               size_t width) nogil
-
-
     void combine_qubit_terms(vector[OperatorTerm_t]& terms,
                              vector[OperatorTerm_t]& out_terms,
                              unsigned char * touched,

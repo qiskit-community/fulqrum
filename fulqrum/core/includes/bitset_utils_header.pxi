@@ -3,6 +3,8 @@
 from libcpp.vector cimport vector
 from fulqrum.core.bitset cimport bitset_t
 
+include "base_header.pxi"
+
 
 cdef extern from "../src/bitset_utils.hpp":
     
@@ -16,3 +18,6 @@ cdef extern from "../src/bitset_utils.hpp":
                            unsigned int N)
 
     void sort_bitset_vector(vector[bitset_t]& vec, unsigned int bin_width)
+
+    int nonzero_extended_bitset(const OperatorTerm_t * term,
+                                const bitset_t& row)

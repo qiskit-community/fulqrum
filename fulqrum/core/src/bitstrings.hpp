@@ -5,8 +5,7 @@
 #pragma once
 #include <cstdlib>
 #include <cstring>
-
-const std::size_t MAX_SIZE_T = (std::size_t)-1;
+#include "base.hpp"
 
 
 /**

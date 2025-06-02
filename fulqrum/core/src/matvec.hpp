@@ -9,13 +9,14 @@
 #include <complex>
 
 #include "base.hpp"
-#include "bitstrings.hpp"
+#include "bitset_utils.hpp"
 #include "elements.hpp"
 #include "operators.hpp"
+#include <boost/dynamic_bitset.hpp>
 
 
 void omp_matvec(const QubitOperator_t& ham,
-    const std::vector<unsigned char>& subspace,
+    const std::vector<boost::dynamic_bitset<std::size_t> >& subspace,
     const std::complex<double> * diag_vec,
     const std::size_t width,
     const std::size_t subspace_dim,
@@ -45,16 +46,14 @@ void omp_matvec(const QubitOperator_t& ham,
         #pragma omp for schedule(dynamic)
         for(kk=0; kk < subspace_dim; kk++)
         {
-            const unsigned char * row_start = &subspace[kk*width];
-            std::vector<unsigned char> col_vec;
+            boost::dynamic_bitset<std::size_t> col_vec;
             std::complex<double> temp_val, val=0;
             const OperatorTerm_t * term;
             std::size_t start, stop;
             std::size_t group_start, group_stop, group;
             std::size_t idx, weight, col_idx;
-            int bin_num;
+            std::size_t bin_num;
             int do_col_search;
-            col_vec.resize(width);
             // Loop over all off-diagonal terms in operator
             for(group=0; group < num_groups; group++)
             {
@@ -68,25 +67,25 @@ void omp_matvec(const QubitOperator_t& ham,
                     temp_val = 0;
                     if(do_col_search)
                     {
-                        memcpy(&col_vec[0], row_start, width);
-                        get_column_vec(row_start, &col_vec[0], width, &term->indices[0], &term->values[0], weight);
-                        bin_num = bin_width_to_int(&col_vec[0], width, bin_width);
+                        col_vec = subspace[kk];
+                        get_column_bitset(col_vec, &term->indices[0], &term->values[0], weight);
+                        bin_int(col_vec, bin_width, bin_num);
                         start = bin_ranges[bin_num];
                         stop = bin_ranges[bin_num+1];
-                        col_idx = col_index(start, stop, &col_vec[0], &subspace[0], width);
+                        bitset_column_index(start, stop, col_vec, subspace, col_idx);
                         if(col_idx < MAX_SIZE_T) // column is in the subspace
                         {
                             do_col_search = 0; // do not search again for this group
                             if(term->extended) // check if extended term is zero
                             {
-                                if(!nonzero_extended_value(term, row_start, width)) // extended term is zero so move on to next term
+                                if(!nonzero_extended_bitset(term, subspace[kk])) // extended term is zero so move on to next term
                                 {
                                     continue;
                                 }
                             }
-                            accum_element_value(row_start, &col_vec[0], width,
-                                                &term->indices[0], &term->values[0],
-                                                term->coeff, weight, temp_val);
+                            accum_element(subspace[kk], col_vec,
+                                          &term->indices[0], &term->values[0],
+                                          term->coeff, weight, temp_val);
                         }
                         else // column is not in the subspace so entire group does nothing, break
                         {
@@ -97,14 +96,14 @@ void omp_matvec(const QubitOperator_t& ham,
                     {
                         if(term->extended) // check if extended term is zero
                         {
-                            if(!nonzero_extended_value(term, row_start, width)) // extended term is zero so move on to next term
+                            if(!nonzero_extended_bitset(term, subspace[kk])) // extended term is zero so move on to next term
                             {
                                 continue;
                             }
                         }
-                        accum_element_value(row_start, &col_vec[0], width,
-                                             &term->indices[0], &term->values[0],
-                                             term->coeff, weight, temp_val);
+                        accum_element(subspace[kk], col_vec,
+                                          &term->indices[0], &term->values[0],
+                                          term->coeff, weight, temp_val);
                     }
                 if(!do_col_search)
                 {

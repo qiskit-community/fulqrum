@@ -1,13 +1,14 @@
 # Fulqrum
 # Copyright (C) 2024, IBM
 from libcpp.vector cimport vector
+from fulqrum.core.bitset cimport bitset_t
 include "base_header.pxi"
 
 
 cdef extern from "../src/csr.hpp":
 
-    void csr_matrix_builder[T](OperatorTerm_t * terms,
-                              vector[unsigned char]& subspace,
+    void csr_matrix_builder[T](const OperatorTerm_t * terms,
+                              const vector[bitset_t]& subspace,
                               const double complex * diag_vec,
                               size_t width,
                               size_t subspace_dim,

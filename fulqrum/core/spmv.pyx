@@ -40,7 +40,7 @@ cdef class FulqrumSpMV():
         self.subspace = subspace
         self.bin_width = self.subspace.subspace.bin_width
         self.width = self.oper.width
-        self.subspace_dim = self.subspace.subspace.bitstrings.size() // self.width
+        self.subspace_dim = self.subspace.subspace.bitstrings.size()
         self.num_terms = self.oper.terms.size()
         self.num_diag_terms = self.diag_oper.terms.size()
         self.bin_ranges = &self.subspace.subspace.bin_ranges[0]
@@ -65,9 +65,8 @@ cdef class FulqrumSpMV():
 
     @cython.boundscheck(False)
     cdef void compute_diag_vector(self):
-        cdef const unsigned char * data = &self.subspace.subspace.bitstrings.data()[0]
         self.diag_vec = np.empty(self.subspace_dim, dtype=complex)
-        compute_diag_vector(data,
+        compute_diag_vector(self.subspace.subspace.bitstrings,
                             &self.diag_vec[0],
                             self.diag_oper,
                             self.width,

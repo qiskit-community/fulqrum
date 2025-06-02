@@ -8,25 +8,26 @@
 #include <complex>
 
 #include "base.hpp"
-#include "bitstrings.hpp"
+#include "bitset_utils.hpp"
 #include "elements.hpp"
 #include "operators.hpp"
+#include <boost/dynamic_bitset.hpp>
 
 
 template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
-                                            std::vector<unsigned char>& subspace,
-                                            const std::complex<double> * diag_vec,
-                                            std::size_t width,
-                                            std::size_t subspace_dim,
-                                            int has_nonzero_diag,
-                                            std::size_t bin_width,
-                                            const std::size_t * bin_ranges,
-                                            const std::size_t * group_ptrs,
-                                            std::size_t num_groups,
-                                            T * indptr,
-                                            T * indices,
-                                            std::complex<double> * data,
-                                            int compute_values)
+                                              const std::vector<boost::dynamic_bitset<std::size_t> >& subspace,
+                                              const std::complex<double> * diag_vec,
+                                              const unsigned int width,
+                                              const std::size_t subspace_dim,
+                                              const int has_nonzero_diag,
+                                              const unsigned int bin_width,
+                                              const std::size_t * bin_ranges,
+                                              const std::size_t * group_ptrs,
+                                              const std::size_t num_groups,
+                                              T * indptr,
+                                              T * indices,
+                                              std::complex<double> * data,
+                                              const int compute_values)
 {
     std::size_t kk;
     T temp, _sum;
@@ -39,14 +40,12 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
         std::size_t start, stop;
         T row_nnz, elem_start;
         const OperatorTerm_t * term;
-        std::vector<unsigned char> col_vec;
-        std::size_t weight, col_idx;
+        boost::dynamic_bitset<std::size_t> col_vec;
+        std::size_t col_idx;
+        unsigned int weight;
         std::complex<double> val;
-        const unsigned char * row_start;
         int do_col_search;
         std::size_t bin_num;
-        col_vec.resize(width);
-        row_start = &subspace[kk*width];
         row_nnz = 0;
         elem_start = indptr[kk];
         // do diagonal first, if any
@@ -74,25 +73,25 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
                 weight = term->indices.size();
                 if(do_col_search)
                 {
-                    memcpy(&col_vec[0], row_start, width);
-                    get_column_vec(row_start, &col_vec[0], width, &term->indices[0], &term->values[0], weight);
-                    bin_num = bin_width_to_int(&col_vec[0], width, bin_width);
+                    col_vec = subspace[kk];
+                    get_column_bitset(col_vec, &term->indices[0], &term->values[0], weight);
+                    bin_int(col_vec, bin_width, bin_num);
                     start = bin_ranges[bin_num];
                     stop = bin_ranges[bin_num+1];
-                    col_idx = col_index(start, stop, &col_vec[0], &subspace[0], width);
+                    bitset_column_index(start, stop, col_vec, subspace, col_idx);
                     if(col_idx < MAX_SIZE_T) // column is in the subspace
                     {
                         do_col_search = 0; // do not search again for this group
                         if(term->extended) // check if extended term is zero
                         {
-                            if(!nonzero_extended_value(term, row_start, width)) // extended term is zero so move on to next term
+                            if(!nonzero_extended_bitset(term, subspace[kk])) // extended term is zero so move on to next term
                             {
                                 continue;
                             }
                         }
-                        accum_element_value(row_start, &col_vec[0], width,
-                                            &term->indices[0], &term->values[0], 
-                                            term->coeff, weight,val);
+                        accum_element(subspace[kk], col_vec,
+                                      &term->indices[0], &term->values[0], term->coeff,
+                                      weight, val);
                     }
                     else // column is not in the subspace so entire group does nothing, break
                     {
@@ -103,14 +102,14 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
                 {
                     if(term->extended) // check if extended term is zero
                     {
-                        if(!nonzero_extended_value(term, row_start, width)) // extended term is zero so move on to next term
+                        if(!nonzero_extended_bitset(term, subspace[kk])) // extended term is zero so move on to next term
                         {
                             continue;
                         }
                     }
-                    accum_element_value(row_start, &col_vec[0], width,
-                                        &term->indices[0], &term->values[0],
-                                        term->coeff, weight, val);
+                    accum_element(subspace[kk], col_vec,
+                                  &term->indices[0], &term->values[0], term->coeff,
+                                  weight, val);
                 }
             } // end loop over terms in this group
             if(val!=0.0)

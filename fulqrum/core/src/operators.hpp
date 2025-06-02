@@ -13,9 +13,7 @@
 // Z, 0, 1, X, Y, -, +
 const int REV_EXT_MASK[7] = {1, 0, 0, 1, 1, 0, 0};
 
-// Mask for checking if extended operator term
-// has a nonzero value at the given row bit-string
-const int EXT_NZ_MASK[8] = {1, 1, 0, 1, 1, 1, 0, 1};
+
 
 
 /**
@@ -156,33 +154,6 @@ void set_extended_flag(OperatorTerm_t& term){
         weight += (values[kk] > 2);
     }
     term.offdiag_weight = weight;
-}
-
-
-/**
- * Check if extended term has a nonzero value for the
- * given row bit-string
- *
- * @param term Extended Hamiltonian term
- * @param row pointer to row bit-string
- * @param width Width of the operator
- * 
- * @return Int indicating if value is nonzero
- */
-inline int nonzero_extended_value(const OperatorTerm_t * term,
-                                  const unsigned char * row, 
-                                  std::size_t width){
-    std::size_t kk, idx;
-    int out = 1;
-    for(kk=0; kk < term->indices.size(); kk++){
-        idx = width - term->indices[kk] - 1;
-        if(!EXT_NZ_MASK[term->values[kk] + row[idx]])
-        {
-            out = 0;
-            break;
-        }
-    }
-    return out;
 }
 
 

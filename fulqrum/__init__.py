@@ -14,7 +14,7 @@ except ImportError:
 from .core import (
     QubitOperator,
     Subspace,
-    # SubspaceHamiltonian,
+    SubspaceHamiltonian,
     FermionicOperator,
     Bitset,
 )

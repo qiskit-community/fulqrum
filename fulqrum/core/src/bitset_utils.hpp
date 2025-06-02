@@ -8,6 +8,11 @@
 #include <boost/dynamic_bitset.hpp>
 
 
+// Mask for checking if extended operator term
+// has a nonzero value at the given row bit-string
+const int EXT_NZ_MASK[8] = {1, 1, 0, 1, 1, 1, 0, 1};
+
+
 /**
  * Compute the integer corresponding to the bin-width of a bitset
  *
@@ -68,6 +73,44 @@ inline void get_column_bitset(boost::dynamic_bitset<std::size_t>& col,
             block_idx = ind % BITS_PER_BLOCK;
             col.m_bits[block_num] = col.m_bits[block_num] ^ (std::size_t)((val[kk] > 2) << block_idx);
         }
+}
+
+
+inline void bitset_column_index(const std::size_t start, const std::size_t stop,
+                                const boost::dynamic_bitset<std::size_t>& col,
+                                const std::vector<boost::dynamic_bitset<std::size_t> >& subspace,
+                                std::size_t& col_idx)
+{
+    std::size_t kk;
+    col_idx = MAX_SIZE_T;
+    for(kk=start; kk < stop; kk++)
+    {
+        if(col == subspace[kk])
+        {
+            col_idx = kk;
+            break;
+        }
+    }
+}
+
+inline int nonzero_extended_bitset(const OperatorTerm_t * term,
+                                   const boost::dynamic_bitset<std::size_t>& row)
+{
+    std::size_t kk;
+    unsigned int ind, block_num, block_idx, row_int;
+    int out = 1;
+    for(kk=0; kk < term->indices.size(); kk++){
+        ind = term->indices[kk];
+        block_num = ind / BITS_PER_BLOCK;
+        block_idx = ind % BITS_PER_BLOCK;
+        row_int = (row.m_bits[block_num] >> block_idx) & 1;
+        if(!EXT_NZ_MASK[term->values[kk] + row_int])
+        {
+            out = 0;
+            break;
+        }
+    }
+    return out;
 }
 
 

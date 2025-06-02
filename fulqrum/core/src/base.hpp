@@ -9,6 +9,7 @@
 #include <boost/dynamic_bitset.hpp>
 
 
+const std::size_t MAX_SIZE_T = (std::size_t)-1;
 const unsigned int BITS_PER_BLOCK = 8 * sizeof(std::size_t);
 
 
@@ -81,7 +82,7 @@ typedef struct QubitOperator{
  * @var size Dimenion / number of bit-strings in the subpsace
  */
  typedef struct Subspace{
-    std::vector<boost::dynamic_bitset<std::size_t>> bitstrings;
+    std::vector<boost::dynamic_bitset<std::size_t> > bitstrings;
     std::vector<std::size_t> bin_counts;
     std::vector<std::size_t> bin_ranges;
     unsigned int num_qubits;
