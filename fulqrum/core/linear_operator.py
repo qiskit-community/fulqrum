@@ -42,12 +42,12 @@ class SubspaceHamiltonian(LinearOperator):
         """
         return self.spmv.diagonal_vector()
 
-    def interpret_vector(self, vec, atol=1e-14, sort=0):
+    def interpret_vector(self, vec, atol=1e-12, sort=0):
         """Convert solution vector into dict of counts and complex amplitudes
 
         Parameters:
             vec (ndarray): Complex solution vector
-            atol (double): Absolute tolerance for truncation, default=1e-14
+            atol (double): Absolute tolerance for truncation, default=1e-12
             sort (int): Sort output dict by integer representation.
 
         Returns:
