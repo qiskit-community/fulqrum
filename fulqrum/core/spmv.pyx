@@ -23,7 +23,6 @@ np.import_array()
 
 include "includes/base_header.pxi"
 include "includes/elements_header.pxi"
-include "includes/bitstrings_header.pxi"
 include "includes/diag_header.pxi"
 include "includes/matvec_header.pxi"
 include "includes/csr_header.pxi"

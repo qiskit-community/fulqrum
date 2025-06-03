@@ -32,7 +32,7 @@ with open(os.path.join(this_dir, "README.md"), encoding="utf-8") as readme:
     LONG_DESCRIPTION = readme.read()
 
 CYTHON_EXTS = ["subspace","bitset", "bitset_view", "qubit_operator", "fermi_operator",
-                "spmv", "csr",
+               "spmv", "csr",
                "qiskit", "openfermion",
                "oper_funcs",
                "matrix"]
