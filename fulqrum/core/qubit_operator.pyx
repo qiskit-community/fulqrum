@@ -347,6 +347,11 @@ cdef class QubitOperator():
         cdef OperatorTerm_t term
         cdef size_t kk
         cdef size_t num_terms = self.oper.terms.size()
+        cdef size_t total_terms = num_terms
+        cdef int too_many_terms = 0
+        if num_terms > 100:
+            too_many_terms = 1
+            num_terms = 100
         for idx in range(num_terms):
             temp_str = ''
             term = self.oper.terms[idx]
@@ -358,6 +363,8 @@ cdef class QubitOperator():
             out.append((temp_str, term.coeff))
 
         out_strs = ', '.join(str(kk) for kk in out)
+        if too_many_terms:
+            out_strs += f' + {total_terms-100} more terms'
         add_str = ''
         if num_terms == 1:
             add_str = f", extended={self.oper.terms[0].extended}, group={self.oper.terms[0].group}"
