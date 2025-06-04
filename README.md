@@ -10,9 +10,6 @@ Working over extended (i.e. non-Pauli) alphabets allows Fulqrum to work for both
 
 This is very much a work in progress, and not suitable for human or animal consumption.
 
-> [!WARNING]
-> This package more or less requires OpenMP 3.0+ to be useful at the scales where matrix-free matters.
-
 
 ## Installation
 
@@ -21,7 +18,9 @@ This is very much a work in progress, and not suitable for human or animal consu
 
 ## Requirements
 
-Currently Fulqrum requires the Boost library.  If using `conda` then adding this can be done using:
+Outside of standard packages, currently Fulqrum requires the Boost library and OpenMP v3+ . 
+
+If using `conda` then adding Boost can be done using:
 
 ```bash
 conda install boost
@@ -35,16 +34,16 @@ and the required include files should be automatically found.
 In order to run the unittests locally, it is only necessary to build the Cython files inplace:
 
 ```bash
-python setup.py build_ext --inplace --openmp
+python setup.py build_ext --inplace
 ```
-you can add also use env flags such as `FULQRUM_OPENMP=1` (in place of `--openmp`) or `FULQRUM_ARCH=znver4` (or whatever you arch is) if you like.
+you can add also use env flags such as `FULQRUM_ARCH=znver4` (or whatever you arch is) if you like.
 
 ## Installation on Linux
 
 Installation on Linux is simple:
 
 ```bash
-FULQRUM_OPENMP=1 pip install .
+pip install .
 ```
 
 ### Installation on OSX
@@ -58,7 +57,7 @@ brew install llvm
 Then installation of Fulqrum with openmp can be accomplished using a call like:
 
 ```bash
-FULQRUM_OPENMP=1 CC=clang CXX=clang++ pip install .
+CC=clang CXX=clang++ pip install .
 ```
 
 ### Installation on Windows
@@ -66,7 +65,7 @@ FULQRUM_OPENMP=1 CC=clang CXX=clang++ pip install .
 I have no idea how to set env vars on Windows, so I just do:
 
 ```bash
-python setup.py install --openmp
+python setup.py install
 ```
 
 ## Examples
