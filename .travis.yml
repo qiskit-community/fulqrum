@@ -21,17 +21,17 @@ jobs:
   include:
   - stage: "Black"
     script:
-      - python setup.py build_ext --inplace --openmp
+      - python setup.py build_ext --inplace
       - black --check fulqrum
 
   - stage: "Run tests"  
     script:
-      - python setup.py build_ext --inplace --openmp
+      - python setup.py build_ext --inplace
       - pytest -p no:warnings fulqrum/test
   
   - stage: "Build docs"
     script:
-      - python setup.py install --openmp  
+      - python setup.py install
       - conda install pandoc
       - cd docs
       - make html

@@ -52,19 +52,12 @@ CYTHON_SOURCE_DIRS = ["fulqrum/core","fulqrum/core", "fulqrum/core", "fulqrum/co
 # Add openmp flags
 OPTIONAL_FLAGS = []
 OPTIONAL_ARGS = []
-WITH_OMP = False
-for _arg in sys.argv:
-    if _arg == "--openmp":
-        WITH_OMP = True
-        sys.argv.remove(_arg)
-        break
-if WITH_OMP or os.getenv("FULQRUM_OPENMP", False):
-    WITH_OMP = True
-    if sys.platform == "win32":
-        OPTIONAL_FLAGS = ["/openmp:llvm"]
-    else:
-        OPTIONAL_FLAGS = ["-fopenmp"]
-        OPTIONAL_ARGS.append("-fopenmp")
+
+if sys.platform == "win32":
+    OPTIONAL_FLAGS = ["/openmp:llvm"]
+else:
+    OPTIONAL_FLAGS = ["-fopenmp"]
+    OPTIONAL_ARGS.append("-fopenmp")
 
 if os.getenv("FULQRUM_ARCH", False) and sys.platform != "win32":
     if sys.platform == "darwin":
@@ -120,7 +113,6 @@ def write_version_py(filename="/fulqrum/version.py"):
 # pylint: disable=missing-module-docstring
 short_version = '%(version)s'
 version = '%(fullversion)s'
-openmp = %(with_omp)s
 """
     a = open(os.path.dirname(__file__) + filename, "w")
     try:
@@ -129,7 +121,6 @@ openmp = %(with_omp)s
             % {
                 "version": VERSION,
                 "fullversion": FULLVERSION,
-                "with_omp": str(WITH_OMP),
             }
         )
     finally:
