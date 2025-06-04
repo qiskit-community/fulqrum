@@ -21,6 +21,7 @@ include "includes/base_header.pxi"
 include "includes/operators_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
+include "includes/fermi_header.pxi"
 
 cdef const FermionicTerm_t EmptyFermionicTerm
 
@@ -502,49 +503,3 @@ cdef void collapse_term_indicies(FermionicTerm_t * term, vector[FermionicTerm_t]
         new_term.values.push_back(current_value)
     new_term.coeff = term.coeff
     out_terms.push_back(new_term)
-
-
-# JW routines
-cdef inline int jw_phase(unsigned char op):
-    if op == 5: #minus sign if op = -
-        return -1
-    if op == 2: #minus sign if op = 1
-        return -1
-    else:
-        return 1
-
-
-@cython.boundscheck(False)
-cdef void jw_term(FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term):
-    cdef size_t num_elems = fermi_term.indices.size()
-    cdef size_t kk, jj
-    cdef size_t current_ind
-    cdef unsigned char current_val
-    qubit_term.coeff = fermi_term.coeff
-    qubit_term.extended = (num_elems > 0)
-    # Start with do_z = 0 since nothing has been done yet
-    cdef int do_z = 0
-    for kk in range(num_elems-1, -1, -1):
-        current_ind = fermi_term.indices[kk]
-        current_val = fermi_term.values[kk]
-        #Add start element to qubit operator
-        qubit_term.indices.push_back(current_ind)
-        qubit_term.values.push_back(current_val)
-        # If a Z term acts on the current value then need to account
-        # for the phase factor in the coefficient
-        if do_z:
-            qubit_term.coeff *= jw_phase(current_val)
-        # update do_z with this operator
-        do_z ^= (current_val > 4)
-        # if not at last element in num_elems and do_z
-        # make every id element between start and the next elem a Z operator
-        if kk and do_z:
-            for jj in range(current_ind-1, fermi_term.indices[kk-1], -1):
-                qubit_term.indices.push_back(jj)
-                qubit_term.values.push_back(0)
-        # If only one element exists then kk=0 but I still need to
-        # add Z operators down to zero
-        elif num_elems==1 and do_z:
-            for jj in range(current_ind-1, -1, -1):
-                qubit_term.indices.push_back(jj)
-                qubit_term.values.push_back(0)
