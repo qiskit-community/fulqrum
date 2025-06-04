@@ -338,7 +338,6 @@ cdef class FermionicOperator():
         cdef QubitOperator out = QubitOperator(fermi.width)
         out.oper.terms.resize(num_terms)
         extended_jw_transform(fermi.oper, out.oper, num_terms)
-        out = out.combine_repeated_terms()
         return out
 
     @cython.boundscheck(False)
