@@ -1,8 +1,7 @@
 # Fulqrum
 # Copyright (C) 2024, IBM
 
-"""Fulqrum : A sophisticated take on quantum operators
-"""
+"""Fulqrum : A sophisticated take on quantum operators"""
 
 import os
 import sys
@@ -31,40 +30,55 @@ this_dir = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_dir, "README.md"), encoding="utf-8") as readme:
     LONG_DESCRIPTION = readme.read()
 
-CYTHON_EXTS = ["subspace","bitset", "bitset_view", "qubit_operator", "fermi_operator",
-               "spmv", "csr",
-               "qiskit", "openfermion",
-               "oper_funcs",
-               "matrix"]
-CYTHON_MODULES = ["fulqrum.core", "fulqrum.core", "fulqrum.core", "fulqrum.core", "fulqrum.core",
-    "fulqrum.core", "fulqrum.core",
-    "fulqrum.convert", "fulqrum.convert",
-    "fulqrum.test",
-    "fulqrum.utils"
+CYTHON_EXTS = [
+    "subspace",
+    "bitset",
+    "bitset_view",
+    "qubit_operator",
+    "fermi_operator",
+    "spmv",
+    "csr",
+    "qiskit",
+    "openfermion",
+    "oper_funcs",
+    "matrix",
 ]
-CYTHON_SOURCE_DIRS = ["fulqrum/core","fulqrum/core", "fulqrum/core", "fulqrum/core", "fulqrum/core",
-    "fulqrum/core", "fulqrum/core",
-    "fulqrum/convert", "fulqrum/convert",
+CYTHON_MODULES = [
+    "fulqrum.core",
+    "fulqrum.core",
+    "fulqrum.core",
+    "fulqrum.core",
+    "fulqrum.core",
+    "fulqrum.core",
+    "fulqrum.core",
+    "fulqrum.convert",
+    "fulqrum.convert",
+    "fulqrum.test",
+    "fulqrum.utils",
+]
+CYTHON_SOURCE_DIRS = [
+    "fulqrum/core",
+    "fulqrum/core",
+    "fulqrum/core",
+    "fulqrum/core",
+    "fulqrum/core",
+    "fulqrum/core",
+    "fulqrum/core",
+    "fulqrum/convert",
+    "fulqrum/convert",
     "fulqrum/test",
-    "fulqrum/utils"
+    "fulqrum/utils",
 ]
 
 # Add openmp flags
 OPTIONAL_FLAGS = []
 OPTIONAL_ARGS = []
-WITH_OMP = False
-for _arg in sys.argv:
-    if _arg == "--openmp":
-        WITH_OMP = True
-        sys.argv.remove(_arg)
-        break
-if WITH_OMP or os.getenv("FULQRUM_OPENMP", False):
-    WITH_OMP = True
-    if sys.platform == "win32":
-        OPTIONAL_FLAGS = ["/openmp:llvm"]
-    else:
-        OPTIONAL_FLAGS = ["-fopenmp"]
-        OPTIONAL_ARGS.append("-fopenmp")
+
+if sys.platform == "win32":
+    OPTIONAL_FLAGS = ["/openmp:llvm"]
+else:
+    OPTIONAL_FLAGS = ["-fopenmp"]
+    OPTIONAL_ARGS.append("-fopenmp")
 
 if os.getenv("FULQRUM_ARCH", False) and sys.platform != "win32":
     if sys.platform == "darwin":
@@ -94,8 +108,10 @@ for idx, ext in enumerate(CYTHON_EXTS):
         extra_compile_args=COMPILER_FLAGS + OPTIONAL_FLAGS,
         extra_link_args=LINK_FLAGS + OPTIONAL_ARGS,
         language="c++",
-        define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION"), 
-                       ("BOOST_DYNAMIC_BITSET_DONT_USE_FRIENDS", None)],
+        define_macros=[
+            ("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION"),
+            ("BOOST_DYNAMIC_BITSET_DONT_USE_FRIENDS", None),
+        ],
     )
     EXT_MODULES.append(mod)
 
@@ -120,7 +136,6 @@ def write_version_py(filename="/fulqrum/version.py"):
 # pylint: disable=missing-module-docstring
 short_version = '%(version)s'
 version = '%(fullversion)s'
-openmp = %(with_omp)s
 """
     a = open(os.path.dirname(__file__) + filename, "w")
     try:
@@ -129,7 +144,6 @@ openmp = %(with_omp)s
             % {
                 "version": VERSION,
                 "fullversion": FULLVERSION,
-                "with_omp": str(WITH_OMP),
             }
         )
     finally:
@@ -173,7 +187,9 @@ setuptools.setup(
     ],
     install_requires=REQUIREMENTS,
     package_data=PACKAGE_DATA,
-    ext_modules=cythonize(EXT_MODULES, language_level=3, compiler_directives={'embedsignature': True}),
+    ext_modules=cythonize(
+        EXT_MODULES, language_level=3, compiler_directives={"embedsignature": True}
+    ),
     include_package_data=True,
     zip_safe=False,
 )
