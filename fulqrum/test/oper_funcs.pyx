@@ -4,12 +4,13 @@
 
 cimport cython
 from fulqrum.core.qubit_operator cimport QubitOperator
+from fulqrum.core.bitset cimport Bitset, bitset_t
 
 include "../core/includes/base_header.pxi"
-include "../core/includes/operators_header.pxi"
+include "../core/includes/bitset_utils_header.pxi"
 
 
-def nonzero_extended_value_wrapper(QubitOperator ham, unsigned char[::1] bits):
+def nonzero_extended_value_wrapper(QubitOperator ham, Bitset bits):
     """Wrapper that helps with testing the nonzero_extended_value routine
 
     Input operator should have a single term only
@@ -23,4 +24,4 @@ def nonzero_extended_value_wrapper(QubitOperator ham, unsigned char[::1] bits):
     if ham.oper.terms.size() != 1:
         raise Exception('Single term operator only')
     cdef OperatorTerm_t * term = &ham.oper.terms[0]
-    return nonzero_extended_value(term, &bits[0], ham.width)
+    return nonzero_extended_bitset(term, bits.bits)

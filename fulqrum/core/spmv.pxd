@@ -12,11 +12,10 @@ cdef class FulqrumSpMV:
     cdef QubitOperator_t diag_oper
     cdef public Subspace subspace
     cdef public size_t subspace_dim
-    cdef int num_threads
-    cdef public size_t width
+    cdef public unsigned int width
     cdef public size_t num_diag_terms
     cdef public size_t num_terms
-    cdef public size_t bin_width
+    cdef public unsigned int bin_width
     cdef int has_nonzero_diag
     cdef double complex[::1] diag_vec
     cdef size_t * group_ptrs

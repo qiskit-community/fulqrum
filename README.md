@@ -19,7 +19,18 @@ This is very much a work in progress, and not suitable for human or animal consu
 > [!IMPORTANT]
 > For some reason clang gives markedly better performance than gcc. Vendor specific compilers also give added performance, if available.
 
-### Building files locally
+## Requirements
+
+Currently Fulqrum requires the Boost library.  If using `conda` then adding this can be done using:
+
+```bash
+conda install boost
+```
+
+and the required include files should be automatically found.
+
+
+## Building files locally
 
 In order to run the unittests locally, it is only necessary to build the Cython files inplace:
 
@@ -62,12 +73,12 @@ python setup.py install --openmp
 
 ### 1541 qubit spin-lattice
 
-| Processor  | Platform    | Time (sec)  | Time w/grouping (sec)  |
-| :--------: | :---------: | :---------: | :--------------------: |
-| AMD 7900   | Linux       | 335         | 187                    |
-| Intel 256v | Linux       | 937         | 521                    |
-| M1         | OSX         | 1569        | 876                    |
-| M1 Pro     | OSX         | 1170        | 652                    |
+| Processor  | Platform    | Time (sec)  | Time w/grouping (sec)  | Time w/bitset (sec)  |
+| :--------: | :---------: | :---------: | :--------------------: | :------------------: |
+| AMD 7900   | Linux       | 335         | 187                    | 72                   |
+| Intel 256v | Linux       | 937         | 521                    | 186                  |
+| M1         | OSX         | 1569        | 876                    | 262                  |
+| M1 Pro     | OSX         | 1170        | 652                    | 179                  |
 
 ```python
 import time

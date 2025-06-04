@@ -2,29 +2,30 @@
 # Copyright (C) 2024, IBM
 
 from libcpp.vector cimport vector
+from fulqrum.core.bitset cimport bitset_t
 
 
 cdef extern from "../src/base.hpp":
     ctypedef struct OperatorTerm_t:
         double complex coeff
-        vector[size_t] indices
+        vector[unsigned int] indices
         vector[unsigned char] values
-        size_t offdiag_weight
+        unsigned int offdiag_weight
         int extended
         int group
 
 
     ctypedef struct QubitOperator_t:
-        size_t width
+        unsigned int width
         vector[OperatorTerm_t] terms
         int sorted 
 
 
     ctypedef struct Subspace_t:
-        vector[unsigned char] bitstrings
+        vector[bitset_t] bitstrings
         vector[size_t] bin_counts
         vector[size_t] bin_ranges
-        size_t num_qubits
+        unsigned int num_qubits
         size_t num_bins
         size_t bin_width
         size_t size
@@ -32,10 +33,10 @@ cdef extern from "../src/base.hpp":
 
     ctypedef struct FermionicTerm_t:
         double complex coeff
-        vector[size_t] indices
+        vector[unsigned int] indices
         vector[unsigned char] values
 
     
     ctypedef struct FermionicOperator_t:
-        size_t width
+        unsigned int width
         vector[FermionicTerm_t] terms

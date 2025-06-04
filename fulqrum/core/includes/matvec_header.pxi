@@ -1,12 +1,13 @@
 # Fulqrum
 # Copyright (C) 2024, IBM
 from libcpp.vector cimport vector
+from fulqrum.core.bitset cimport bitset_t
 
 include "base_header.pxi"
 
 cdef extern from "../src/matvec.hpp":
     void omp_matvec(QubitOperator_t& ham,
-                vector[unsigned char]& subspace,
+                vector[bitset_t]& subspace,
                 double complex * diag_vec,
                 size_t width,
                 size_t subspace_dim,

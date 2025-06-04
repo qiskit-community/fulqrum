@@ -6,6 +6,11 @@
 #include <cstdlib>
 #include <vector>
 #include <complex>
+#include <boost/dynamic_bitset.hpp>
+
+
+const std::size_t MAX_SIZE_T = (std::size_t)-1;
+const unsigned int BITS_PER_BLOCK = 8 * sizeof(std::size_t);
 
 
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
@@ -17,9 +22,9 @@
  */
 typedef struct OperatorTerm{
     std::complex<double> coeff;
-    std::vector<std::size_t> indices;
+    std::vector<unsigned int> indices;
     std::vector<unsigned char> values;
-    std::size_t offdiag_weight {0};
+    unsigned int offdiag_weight {0};
     int extended {0};
     int group {-1}; // -1 means unset here
 } OperatorTerm_t;
@@ -33,7 +38,7 @@ typedef struct OperatorTerm{
  * @var sorted is a flag that indicates the term is sorted (NOT USED AT PRESENT)
  */
 typedef struct QubitOperator{
-    std::size_t width;
+    unsigned int width;
     std::vector<OperatorTerm_t> terms;
     int sorted {0};
 } QubitOperator_t;
@@ -47,7 +52,7 @@ typedef struct QubitOperator{
  */
  typedef struct FermionicTerm{
     std::complex<double> coeff;
-    std::vector<std::size_t> indices;
+    std::vector<unsigned int> indices;
     std::vector<unsigned char> values;
 } FermionicTerm_t;
 
@@ -60,7 +65,7 @@ typedef struct QubitOperator{
  * @var sorted is a flag that indicates the term is sorted (NOT USED AT PRESENT)
  */
  typedef struct FermionicOperator{
-    std::size_t width;
+    unsigned int width;
     std::vector<FermionicTerm_t> terms;
 } FermionicOperator_t;
 
@@ -77,10 +82,10 @@ typedef struct QubitOperator{
  * @var size Dimenion / number of bit-strings in the subpsace
  */
  typedef struct Subspace{
-    std::vector<unsigned char> bitstrings;
+    std::vector<boost::dynamic_bitset<std::size_t> > bitstrings;
     std::vector<std::size_t> bin_counts;
     std::vector<std::size_t> bin_ranges;
-    std::size_t num_qubits;
+    unsigned int num_qubits;
     std::size_t num_bins;
     std::size_t bin_width;
     std::size_t size;
