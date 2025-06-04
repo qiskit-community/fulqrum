@@ -85,7 +85,7 @@ cdef class Bitset:
         """
         if bin_width > self.bits.size():
             raise FulqrumError("bin_width is larger than number of bits")
-        cdef size_t out
+        cdef size_t out = 0
         bin_int(self.bits, bin_width, out)
         return out
 
