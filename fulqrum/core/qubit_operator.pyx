@@ -593,12 +593,12 @@ cdef class QubitOperator():
         offdiag_term_sort(self.oper)
         self.oper.sorted = 1
     
-    def combine_repeated_terms(self, double atol=1e-14):
+    def combine_repeated_terms(self, double atol=1e-12):
         """Combine repeated terms that represent same
         operators, dropping terms smaller than requested tolerance.
 
         Parameters:
-            atol (double): Tolerance for dropping terms, default=1e-14
+            atol (double): Tolerance for dropping terms, default=1e-12
 
         Returns:
             QubitOperator: Operator with repeat terms combined
