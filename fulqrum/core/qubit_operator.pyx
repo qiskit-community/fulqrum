@@ -27,12 +27,6 @@ include "includes/operators_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
 
-cdef char[6] diag_oper_elems = [1, -1,   # Z
-                                1, 0,    # 0
-                                0, 1     # 1
-                                ]
-
-
 cdef const OperatorTerm_t EmptyOperatorTerm
 
 
@@ -418,56 +412,7 @@ cdef class QubitOperator():
                 if self.oper.terms[kk].values[jj] > 2:
                     return 0
         return 1
-        
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    @cython.cdivision(True)
-    def expval(self, object dist):
-        """Expectation value of operator with respect to a given
-        input distribution of bit-strings.
-
-        Parameters:
-            dist (dict): Input dictionary of bit-strings and corresponding
-                         probabilities or counts
-        Returns:
-            double complex: Expectation value
-
-        Notes:
-            The return value is complex as the operator need not be
-            Hermitian
-        """
-        cdef double shots = 0
-        cdef unordered_map[string, double] dist_map = dist
-        cdef unordered_map[string, double].iterator it
-        cdef unordered_map[string, double].iterator end = dist_map.end()
-        cdef double temp_sum
-        cdef double complex out = 0
-        cdef size_t kk, jj,
-        cdef OperatorTerm_t * term
-        cdef const char * temp_str
-        cdef char prod
-
-        with nogil:
-            #compute shots
-            it = dist_map.begin()
-            while it != end:
-                shots += dereference(it).second
-                preincrement(it)
-            
-            for kk in range(self.oper.terms.size()):
-                it = dist_map.begin()
-                term = &self.oper.terms[kk]
-                temp_sum = 0
-                while it != end:
-                    temp_str = dereference(it).first.c_str()
-                    prod = 1
-                    for jj in range(term.indices.size()):
-                        prod *= diag_oper_elems[2*term.values[jj]+(<size_t>temp_str[self.oper.width-term.indices[jj]-1]-48)]
-                    temp_sum += prod * dereference(it).second
-                    preincrement(it)
-                out += term.coeff * temp_sum / shots
-        return out
     
     @cython.boundscheck(False)
     @cython.wraparound(False)
