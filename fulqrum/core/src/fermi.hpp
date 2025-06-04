@@ -3,12 +3,11 @@
  * Copyright (C) 2024, IBM
  */
 #pragma once
-#include <cstdlib>
 #include <cstddef>
-#include <complex>
 #include <vector>
 
 #include "base.hpp"
+#include "operators.hpp"
 
 
 inline int jw_phase(unsigned char op)
@@ -73,4 +72,18 @@ void jw_term(FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
             }
         }
     } // end kk loop
+}
+
+
+void extended_jw_transform(FermionicOperator_t& fermi, QubitOperator_t& out,
+                           std::size_t num_terms)
+{
+    std::size_t kk;
+    #pragma omp parallel for if(num_terms > 128)
+    for(kk=0; kk < num_terms; kk++)
+    {
+        jw_term(fermi.terms[kk], out.terms[kk]);
+        sort_term_data(out.terms[kk].indices, out.terms[kk].values);
+        set_offdiag_weight(out.terms[kk]);
+    }
 }

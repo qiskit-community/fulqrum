@@ -335,13 +335,9 @@ cdef class FermionicOperator():
         """
         cdef FermionicOperator fermi = self.collapse_indices()
         cdef size_t num_terms = fermi.oper.terms.size()
-        cdef size_t kk
         cdef QubitOperator out = QubitOperator(fermi.width)
         out.oper.terms.resize(num_terms)
-        for kk in range(num_terms):
-            jw_term(fermi.oper.terms[kk], out.oper.terms[kk])
-            sort_term_data(out.oper.terms[kk].indices, out.oper.terms[kk].values)
-            set_offdiag_weight(out.oper.terms[kk])
+        extended_jw_transform(fermi.oper, out.oper, num_terms)
         return out
 
     @cython.boundscheck(False)
