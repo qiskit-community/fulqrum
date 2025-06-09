@@ -24,38 +24,18 @@ const std::complex<double> OPER_ELEMENTS[28] = {{1,0}, {0,0}, {0,0}, {-1,0},   /
 
 
 /**
- * Return the matrix element value for given row and column bit-strings
+ * Accumulate the matrix element value for given row and column bit-strings
  *
  *
  * @param row The row bit-string
  * @param col The col bit-string
- * @param bit_len The length of the bit-strings
  * @param pos The positions (qubits) of the non-idenity operators in ther term
  * @param val The char value for each operator
  * @param coeff The complex coefficient of the term in question
  * @param N The length of the pos and val vector, i.e. number of non-ID operators in term
+ * @param out The complex number to accumulate to
  * @return Column string
  */
-inline void accum_element_value(const unsigned char *__restrict row,
-                                const unsigned char *__restrict col,
-                                const unsigned int bit_len,
-                                const unsigned int *__restrict pos,
-                                const unsigned char *__restrict val,
-                                const std::complex<double> coeff,
-                                const std::size_t N,
-                                std::complex<double>& out)
-    {
-        std::complex<double> temp = {1.0, 0};
-        std::size_t kk;
-        int offset;
-        for(kk=0; kk<N; kk++){
-            offset = 2*(row[bit_len - pos[kk] - 1]) + (col[bit_len - pos[kk] - 1]);
-            temp *= OPER_ELEMENTS[4*val[kk] + offset];
-        }
-        out += coeff*temp;
-    }
-
-
 inline void accum_element(const boost::dynamic_bitset<std::size_t>& row,
                           const boost::dynamic_bitset<std::size_t>& col,
                           const unsigned int *__restrict inds,
