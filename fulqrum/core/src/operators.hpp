@@ -229,7 +229,7 @@ void combine_qubit_terms(std::vector<OperatorTerm_t>&__restrict terms,
 
 
 
-inline unsigned int term_ladder_int(const OperatorTerm_t& term)
+inline unsigned int term_ladder_int(const OperatorTerm_t& term, unsigned int num_bits)
 {
     unsigned int subset = 0;
     unsigned int kk, counter = 0;
@@ -239,6 +239,10 @@ inline unsigned int term_ladder_int(const OperatorTerm_t& term)
         {
             subset = subset | ((unsigned int)term.values[kk]-5U) << counter;
             counter += 1;
+            if(counter == num_bits)
+            {
+                break;
+            }
         }
     }
     return subset;
