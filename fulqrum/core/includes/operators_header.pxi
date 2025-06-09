@@ -18,3 +18,6 @@ cdef extern from "../src/operators.hpp":
                              unsigned char * touched,
                              size_t num_terms,
                              double atol) nogil
+
+
+    unsigned int term_ladder_int(const OperatorTerm_t& term) nogil
