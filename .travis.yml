@@ -27,7 +27,7 @@ jobs:
   - stage: "Run tests"  
     script:
       - python setup.py build_ext --inplace
-      - pytest -p no:warnings fulqrum/test
+      - OPENBLAS_NUM_THREADS=1 pytest -p no:warnings fulqrum/test
   
   - stage: "Build docs"
     script:
