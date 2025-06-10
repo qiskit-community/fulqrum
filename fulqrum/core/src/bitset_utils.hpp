@@ -127,3 +127,22 @@ inline void sort_bitset_vector(std::vector<boost::dynamic_bitset<std::size_t> >&
                                     return res_a < res_b;
                                   });
     }
+
+
+inline unsigned int bitset_ladder_int(const boost::dynamic_bitset<std::size_t>& row, 
+                                      const unsigned int * inds,
+                                      unsigned int ladder_width)
+{
+    unsigned int subset = 0;
+    unsigned int kk, pos, block_num, block_idx, row_int, counter=0;
+    for(kk=0; kk < ladder_width; kk++)
+    {
+        pos = inds[kk];
+        block_num = pos / BITS_PER_BLOCK;
+        block_idx = pos % BITS_PER_BLOCK;
+        row_int = (row.m_bits[block_num] >> block_idx) & 1;
+        subset = subset | row_int << counter;
+        counter += 1;
+    }
+    return subset;
+}
