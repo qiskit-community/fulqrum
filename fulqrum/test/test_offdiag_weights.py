@@ -48,3 +48,13 @@ def test_offdiag_weights8():
         N, [("-XY", [4, 0, 2], -1 + 1j)]
     )
     assert np.allclose(Q.offdiag_weights(), np.array([1, 3]))
+
+
+def test_offdiag_weight_sorting():
+    """Test off-diagonal weight sorting"""
+    op = QubitOperator.from_label("IXI")
+    op += QubitOperator.from_label("YXX")
+    op += QubitOperator.from_label("X1Y")
+    op += QubitOperator.from_label("ZI0")
+    op.offdiag_weight_sort()
+    assert np.allclose(op.offdiag_weights(), [0, 1, 2, 3])

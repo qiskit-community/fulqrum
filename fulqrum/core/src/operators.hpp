@@ -50,6 +50,18 @@ int group_comp(OperatorTerm_t& term1, OperatorTerm_t& term2){
     return term1.group < term2.group;
 }
 
+/**
+ * Comparitor for off-diagonal weight grouping
+ *
+ * @param term1 The first term
+ * @param term2 The second term
+ * 
+ * @return comparitor value
+ */
+int offweight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2){
+    return term1.offdiag_weight < term2.offdiag_weight;
+}
+
 
 /**
  * In-place term sorting by off-diagonal structure
@@ -254,4 +266,11 @@ inline unsigned int term_ladder_int(const OperatorTerm_t& term, unsigned int lad
         subset = subset & (( 1U << ladder_width) - 1U);
     }
     return subset;
+}
+
+
+void offdiag_weight_sort(QubitOperator_t& oper)
+{
+    // sort by group index
+    std::sort(oper.terms.begin(), oper.terms.end(), offweight_comp);
 }
