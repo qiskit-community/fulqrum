@@ -617,6 +617,23 @@ cdef class QubitOperator():
                             &touched[0], num_terms, atol)
         return out
 
+    def ladder_ints(self, unsigned int ladder_width=3):
+        """Compute the ladder operator integer for each term
+
+        If no ladder ops present then default int is max(uint32)
+
+        Parameters:
+            ladder_width (int): Number of ladder terms to consider, default = 3
+
+        Returns:
+            ndarray: Array of uint32 integers 
+        """
+        cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
+        cdef size_t kk
+        for kk in range(self.oper.terms.size()):
+            out[kk] = term_ladder_int(self.oper.terms[kk], ladder_width)
+        return np.asarray(out)
+
     @cython.boundscheck(False)
     def to_dict(self):
         """Dictionary represenation of QubitOperator

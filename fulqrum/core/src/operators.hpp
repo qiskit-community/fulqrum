@@ -241,6 +241,17 @@ inline unsigned int term_ladder_int(const OperatorTerm_t& term, unsigned int lad
             counter += 1;
         }
     }
-    subset = subset & (( 1U << ladder_width) - 1U);
+    if(counter < ladder_width)
+    {
+        ladder_width = counter;
+    }
+    if(!counter)
+    {
+        subset = MAX_UINT;
+    }
+    else
+    {
+        subset = subset & (( 1U << ladder_width) - 1U);
+    }
     return subset;
 }
