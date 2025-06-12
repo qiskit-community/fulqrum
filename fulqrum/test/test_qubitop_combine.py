@@ -4,12 +4,26 @@
 """Test combining qubit terms"""
 from pathlib import Path
 import numpy as np
-from fulqrum import FermionicOperator
+from fulqrum import QubitOperator, FermionicOperator
 from fulqrum.utils import qubitoperator_to_matrix
 
 
+def test_combining_terms1():
+    op = QubitOperator.from_label("IZYXI")
+    op += QubitOperator.from_label("IZYXI")
+    op += QubitOperator.from_label("IZYXI")
+    op += QubitOperator.from_label("IZYXI")
+    op += QubitOperator.from_label("IZYXI")
+    op += QubitOperator.from_label("IIIII")
+    op += QubitOperator.from_label("I0YXI")
+    new_op = op.combine_repeated_terms()
+    assert new_op.num_terms == 3
+    assert np.allclose(new_op.weights(), [0, 3, 3])
+    assert new_op[1].coeff == 5.0
+
+
 def test_combining_h2_terms():
-    """Validate combining repeat qubitop terms yields same num_terms and numberic operator"""
+    """Validate combining repeat qubitop terms yields same num_terms and numeric operator"""
     path = Path(__file__).parent / "data/h2.json"
     fop = FermionicOperator.from_json(path)
     assert fop.num_terms == 36

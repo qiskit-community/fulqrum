@@ -15,10 +15,11 @@ cdef extern from "../src/operators.hpp":
 
     void combine_qubit_terms(vector[OperatorTerm_t]& terms,
                              vector[OperatorTerm_t]& out_terms,
-                             unsigned char * touched,
-                             size_t num_terms,
+                             unsigned int * touched,
                              double atol) nogil
 
     unsigned int term_ladder_int(const OperatorTerm_t& term, unsigned int num_bits) nogil
 
     void offdiag_weight_sort(QubitOperator_t& oper)
+    
+    void weight_sort(QubitOperator_t& oper)

@@ -602,6 +602,13 @@ cdef class QubitOperator():
 
     def offdiag_weight_sort(self):
         offdiag_weight_sort(self.oper)
+        self.oper.off_weight_sorted = 1
+        self.oper.weight_sorted = 0
+
+    def weight_sort(self):
+        weight_sort(self.oper)
+        self.oper.weight_sorted = 1
+        self.oper.off_weight_sorted = 0
     
     def combine_repeated_terms(self, double atol=1e-12):
         """Combine repeated terms that represent same
@@ -615,9 +622,11 @@ cdef class QubitOperator():
         """
         cdef QubitOperator out = QubitOperator(self.width)
         cdef size_t num_terms = self.oper.terms.size()
-        cdef unsigned char[::1] touched = np.zeros(num_terms, dtype=np.uint8)
+        cdef unsigned int[::1] touched = np.zeros(num_terms, dtype=np.uint32)
+        if not self.oper.weight_sorted:
+            self.weight_sort()
         combine_qubit_terms(self.oper.terms, out.oper.terms,
-                            &touched[0], num_terms, atol)
+                            &touched[0], atol)
         return out
 
     def ladder_ints(self, unsigned int ladder_width=3):

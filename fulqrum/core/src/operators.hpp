@@ -62,6 +62,18 @@ int offweight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2){
     return term1.offdiag_weight < term2.offdiag_weight;
 }
 
+/**
+ * Comparitor for weight grouping
+ *
+ * @param term1 The first term
+ * @param term2 The second term
+ * 
+ * @return comparitor value
+ */
+int weight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2){
+    return term1.indices.size() < term2.indices.size();
+}
+
 
 /**
  * In-place term sorting by off-diagonal structure
@@ -169,9 +181,29 @@ void set_extended_flag(OperatorTerm_t& term){
 }
 
 
+void set_weight_ptrs(std::vector<OperatorTerm_t>&__restrict terms, 
+                     std::vector<std::size_t>& vec)
+{
+    vec.resize(0);
+    vec.push_back(0);
+    std::size_t kk;
+    unsigned int val = terms[0].indices.size();
+    for(kk=1; kk < terms.size(); kk++)
+    {
+        if(terms[kk].indices.size() > val)
+        {
+            vec.push_back(kk);
+            val = terms[kk].indices.size();
+        }
+    }
+    vec.push_back(terms.size());
+}
+
 /**
  * Combine repeated terms that represent same
  * operators, dropping terms smaller than requested tolerance.
+ * 
+ * Input terms must be sorted by weight before calling this routine
  *
  * @param terms Terms for input operator
  * @param out_terms Terms for ouput operator (to push_back to)
@@ -182,61 +214,80 @@ void set_extended_flag(OperatorTerm_t& term){
  */
 void combine_qubit_terms(std::vector<OperatorTerm_t>&__restrict terms,
                          std::vector<OperatorTerm_t>&__restrict out_terms,
-                         unsigned char * touched,
-                         std::size_t num_terms,
+                         unsigned int * touched,
                          double atol)
 {
-    std::size_t kk, jj, mm;
-    OperatorTerm_t target_term;
-    OperatorTerm_t * current_term;
-    int do_combine;
-    for(kk=0; kk<num_terms; kk++)
+    std::size_t kk, qq, num_terms=terms.size();
+    std::vector<std::size_t> weight_ptrs;
+    set_weight_ptrs(terms, weight_ptrs);
+    std::vector<std::vector<OperatorTerm_t>> temp_terms;
+    temp_terms.resize(weight_ptrs.size()-1);
+    // do sort over each collection of terms with same weight
+    #pragma omp parallel for schedule(dynamic) if(num_terms > 1024) 
+    for(kk=0; kk<weight_ptrs.size()-1; kk++)
     {
-        if(touched[kk]) // If touched, move onto next term
+        std::size_t jj, mm, pp;
+        std::size_t start, stop;
+        OperatorTerm_t target_term;
+        OperatorTerm_t * current_term;
+        int do_combine;
+        // set start and stop for terms of the same weight
+        start = weight_ptrs[kk];
+        stop = weight_ptrs[kk+1];
+        for(jj=start; jj < stop; jj++)
         {
-            continue;
-        }
-        touched[kk] = 1;
-        target_term = terms[kk];
-        for(jj=kk+1; jj < num_terms; jj++)
-        {
-            if(touched[jj])
+            if(touched[jj]) // If touched, move onto next term
             {
                 continue;
             }
-            current_term = &terms[jj];
-            // filter if offdiag weights differ
-            if(target_term.offdiag_weight != current_term->offdiag_weight)
+            touched[jj] = 1;
+            target_term = terms[jj];
+            for(mm=jj+1; mm < stop; mm++)
             {
-                continue;
-            }
-            // filter if weights are different
-            if(target_term.indices.size() != current_term->indices.size())
-            {
-                continue;
-            }
-            do_combine = 1;
-            // look to see if indices and values match
-            for(mm=0; mm < target_term.indices.size(); mm++)
-            {
-                if((target_term.indices[mm] != current_term->indices[mm]) || (target_term.values[mm] != current_term->values[mm]))
+                if(touched[mm])
                 {
-                    do_combine = 0;
-                    break;
+                    continue;
                 }
-            }
-            if(do_combine)
-            {
-                touched[jj] = 1;
-                target_term.coeff += current_term->coeff;
-            }
-        } // end jj for-loop
+                current_term = &terms[mm];
+                // filter if offdiag weights differ
+                if(target_term.offdiag_weight != current_term->offdiag_weight)
+                {
+                    continue;
+                }
+            
+                do_combine = 1;
+                // look to see if indices and values match
+                for(pp=0; pp < target_term.indices.size(); pp++)
+                {
+                    if((target_term.indices[pp] != current_term->indices[pp]) || (target_term.values[pp] != current_term->values[pp]))
+                    {
+                        do_combine = 0;
+                        break;
+                    }
+                }
+                if(do_combine)
+                {
+                    touched[mm] = 1;
+                    target_term.coeff += current_term->coeff;
+                }
+            } // end mm for-loop
         // Add term to output if either real or imag parts are greater than atol
         if(std::abs(target_term.coeff) > atol)
         {
-            out_terms.push_back(target_term);
+            temp_terms[kk].push_back(target_term);
         }
-    } // end main kk loop
+        } // end main jj loop
+    } //end kk-loop
+
+    // at end of all, add to output terms
+    for(kk=0; kk<weight_ptrs.size()-1; kk++)
+    {
+        for(qq=0; qq < temp_terms[kk].size(); qq++)
+        {
+            out_terms.push_back(temp_terms[kk][qq]);
+        }
+    }
+
 } // end combine_qubit_terms
 
 
@@ -273,4 +324,10 @@ void offdiag_weight_sort(QubitOperator_t& oper)
 {
     // sort by group index
     std::sort(oper.terms.begin(), oper.terms.end(), offweight_comp);
+}
+
+void weight_sort(QubitOperator_t& oper)
+{
+    // sort by group index
+    std::sort(oper.terms.begin(), oper.terms.end(), weight_comp);
 }
