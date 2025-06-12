@@ -18,7 +18,8 @@ cdef extern from "../src/base.hpp":
     ctypedef struct QubitOperator_t:
         unsigned int width
         vector[OperatorTerm_t] terms
-        int sorted 
+        int sorted
+        int weight_sorted 
 
 
     ctypedef struct Subspace_t:
