@@ -602,7 +602,13 @@ cdef class QubitOperator():
 
     def offdiag_weight_sort(self):
         offdiag_weight_sort(self.oper)
-        self.weight_sorted = 1
+        self.oper.off_weight_sorted = 1
+        self.oper.weight_sorted = 0
+
+    def weight_sort(self):
+        weight_sort(self.oper)
+        self.oper.weight_sorted = 1
+        self.oper.off_weight_sorted = 0
     
     def combine_repeated_terms(self, double atol=1e-12):
         """Combine repeated terms that represent same

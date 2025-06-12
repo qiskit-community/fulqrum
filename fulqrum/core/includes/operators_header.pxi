@@ -22,3 +22,5 @@ cdef extern from "../src/operators.hpp":
     unsigned int term_ladder_int(const OperatorTerm_t& term, unsigned int num_bits) nogil
 
     void offdiag_weight_sort(QubitOperator_t& oper)
+    
+    void weight_sort(QubitOperator_t& oper)
