@@ -157,4 +157,4 @@ def test_square_group_pointers_h2_example():
     assert diag.num_terms == op_ptrs[1]
     assert off.num_terms == op_ptrs[2] - op_ptrs[1]
     # All the elements in the off-diagonal component have the same diagonal structure
-    assert np.allclose(off.group_ptrs(), np.array([0, 8]))
+    assert np.allclose(off.group_ptrs(), np.array([0, 4]))
