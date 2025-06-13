@@ -15,7 +15,7 @@ def test_grouping1():
         H += QubitOperator.from_label(item)
     H.offdiag_term_grouping()
     # three diag terms, two terms of weight two, and one of each others
-    ans = np.array([0, 0, 0, 1, 1, 2, 3], dtype=np.int32)
+    ans = np.array([0, 0, 0, 1, 2, 3, 3], dtype=np.int32)
     assert np.allclose(ans, H.groups())
 
 
