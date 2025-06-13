@@ -564,12 +564,17 @@ cdef class QubitOperator():
             return np.zeros(0, dtype=np.uintp)
         if not self.oper.sorted:
             self.offdiag_term_grouping()
-        cdef size_t num_groups = self.oper.terms[self.oper.terms.size()-1].group - self.oper.terms[0].group + 1
-        cdef size_t[::1] ptrs = np.zeros(num_groups+1, dtype=np.uintp)
-        cdef size_t kk
         cdef OperatorTerm_t * terms = &self.oper.terms[0]
         cdef int idx = 0
+        cdef size_t kk
+        cdef size_t num_groups = 1
         cdef int val = terms[0].group
+        for kk in range(self.oper.terms.size()):
+            if terms[kk].group > val:
+                num_groups += 1
+                val = terms[kk].group
+        cdef size_t[::1] ptrs = np.zeros(num_groups+1, dtype=np.uintp)
+        val = terms[0].group
         for kk in range(self.oper.terms.size()):
             if terms[kk].group > val:
                 ptrs[idx+1] = kk
@@ -590,15 +595,14 @@ cdef class QubitOperator():
             out[kk] = self.oper.terms[kk].extended
         return np.asarray(out)
 
-    def offdiag_term_grouping(self, int overwrite=False):
+    def offdiag_term_grouping(self):
         """Inplace sorting of operator terms according to off-diagonal
         structure.
-
-        Parameters:
-            overwrite (int): Overwrite existing sort, if present.
         """
+        offdiag_weight_sort(self.oper)
         offdiag_term_sort(self.oper)
         self.oper.sorted = 1
+        self.oper.weight_sorted = 1
 
     def offdiag_weight_sort(self):
         offdiag_weight_sort(self.oper)
