@@ -20,6 +20,11 @@ cdef extern from "../src/operators.hpp":
 
     unsigned int term_ladder_int(const OperatorTerm_t& term, unsigned int num_bits) nogil
 
-    void offdiag_weight_sort(QubitOperator_t& oper)
+    void offdiag_weight_sort(QubitOperator_t& oper) nogil
     
-    void weight_sort(QubitOperator_t& oper)
+    void weight_sort(QubitOperator_t& oper) nogil
+
+    void set_offdiag_weight_ptrs(vector[OperatorTerm_t]& terms, vector[size_t]& vec) nogil
+
+    unsigned int max_offdiag_ptr_size(size_t * vec, size_t size) nogil
+    

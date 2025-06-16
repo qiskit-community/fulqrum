@@ -75,6 +75,67 @@ int weight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2){
 }
 
 
+
+/**
+ * Set the pointers for the off-diagonal weights
+ *
+ * @param terms Operator terms
+ * @param vec Vector to add pointers to
+ * 
+ */
+void set_offdiag_weight_ptrs(std::vector<OperatorTerm_t>&__restrict terms, 
+                             std::vector<std::size_t>& vec)
+{
+    vec.resize(0);
+    std::size_t kk;
+    unsigned int val = terms[0].offdiag_weight;
+    if(val > 0) // Only start pointers where non-diagonal terms start
+    {
+        vec.push_back(0);
+    }
+    for(kk=1; kk < terms.size(); kk++)
+    {
+        if(terms[kk].offdiag_weight > val)
+        {
+            vec.push_back(kk);
+            val = terms[kk].offdiag_weight;
+        }
+    }
+    if(vec.size() != 0)
+    {
+    vec.push_back(terms.size());
+    }
+}
+
+
+/**
+ * Find max. number of elements with same off-diag weight
+ * 
+ * Used for offseting the group counter for parallel execution
+ *
+ * @param vec Vector of off-diagonal pointers
+ * 
+ * @returns Unsigned int for max. number of terms
+ * 
+ */
+unsigned int max_offdiag_ptr_size(std::size_t * vec, std::size_t size)
+{
+    std::size_t kk;
+    unsigned int temp, max = 0;
+    for(kk=0; kk < size-1; kk++)
+    {
+        temp = vec[kk+1]-vec[kk];
+        if(temp > max)
+        {
+            max = temp;
+        }
+    }
+    return max;
+}
+
+
+
+
 /**
  * In-place term sorting by off-diagonal structure
  *
@@ -324,10 +385,14 @@ void offdiag_weight_sort(QubitOperator_t& oper)
 {
     // sort by group index
     std::sort(oper.terms.begin(), oper.terms.end(), offweight_comp);
+    oper.off_weight_sorted = 1;
+    oper.weight_sorted = 0;
 }
 
 void weight_sort(QubitOperator_t& oper)
 {
     // sort by group index
     std::sort(oper.terms.begin(), oper.terms.end(), weight_comp);
+    oper.off_weight_sorted = 0;
+    oper.weight_sorted = 1;
 }
