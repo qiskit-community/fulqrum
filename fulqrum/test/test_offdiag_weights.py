@@ -3,6 +3,7 @@
 # pylint: disable=no-name-in-module
 """Test off-diagonal weights"""
 import numpy as np
+import fulqrum as fq
 from fulqrum import QubitOperator
 
 
@@ -58,3 +59,34 @@ def test_offdiag_weight_sorting():
     op += QubitOperator.from_label("ZI0")
     op.offdiag_weight_sort()
     assert np.allclose(op.offdiag_weights(), [0, 1, 2, 3])
+
+
+def test_offdiag_weight_ptrs1():
+    """Test pointers when all offdiag weights the same"""
+    op = fq.QubitOperator.from_label("IIII+")
+    op += fq.QubitOperator.from_label("III+I")
+    op += fq.QubitOperator.from_label("II+II")
+    op += fq.QubitOperator.from_label("I+III")
+    op += fq.QubitOperator.from_label("+IIII")
+    assert np.allclose(op.offdiag_weight_ptrs(), [0, 5])
+
+
+def test_offdiag_weight_ptrs3():
+    """Test pointers for mix of diag and off-diag"""
+    op = fq.QubitOperator.from_label("IIIII")
+    op += fq.QubitOperator.from_label("IIZII")
+    op += fq.QubitOperator.from_label("IZZZI")
+    op += fq.QubitOperator.from_label("I+III")
+    op += fq.QubitOperator.from_label("++III")
+    assert np.allclose(op.offdiag_weight_ptrs(), [3, 4, 5])
+    assert np.allclose(op[:3].offdiag_weights(), [0, 0, 0])
+    assert np.allclose(op[3].offdiag_weights(), [1])
+    assert np.allclose(op[4].offdiag_weights(), [2])
+
+
+def test_offdiag_weight_ptrs_all_diag():
+    """Test pointers when all terms are diagonal"""
+    op = fq.QubitOperator.from_label("IIIII")
+    op += fq.QubitOperator.from_label("IIZII")
+    op += fq.QubitOperator.from_label("IZZZI")
+    assert np.allclose(op.offdiag_weight_ptrs(), [])

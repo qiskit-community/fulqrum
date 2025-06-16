@@ -601,18 +601,32 @@ cdef class QubitOperator():
         """
         offdiag_weight_sort(self.oper)
         offdiag_term_sort(self.oper)
-        self.oper.sorted = 1
-        self.oper.weight_sorted = 1
 
     def offdiag_weight_sort(self):
+        """In-place sort terms by their off-diagonal weight
+        """
         offdiag_weight_sort(self.oper)
-        self.oper.off_weight_sorted = 1
-        self.oper.weight_sorted = 0
 
     def weight_sort(self):
+        """In-place sort terms by their standard weight
+        """
         weight_sort(self.oper)
-        self.oper.weight_sorted = 1
-        self.oper.off_weight_sorted = 0
+
+    def offdiag_weight_ptrs(self):
+        """Off-diagonal weight pointers for the operator
+
+        Returns:
+            ndarray: Array of off-diagonal weight pointers
+        """
+        if not self.oper.off_weight_sorted:
+            self.offdiag_weight_sort()
+        cdef vector[size_t] vec
+        set_offdiag_weight_ptrs(self.oper.terms, vec)
+        cdef size_t[::1] out = np.empty(vec.size(), dtype=np.uintp)
+        cdef size_t kk
+        for kk in range(vec.size()):
+            out[kk] = vec[kk]
+        return np.asarray(out)
     
     def combine_repeated_terms(self, double atol=1e-12):
         """Combine repeated terms that represent same
