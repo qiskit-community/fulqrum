@@ -118,11 +118,11 @@ void set_offdiag_weight_ptrs(std::vector<OperatorTerm_t>&__restrict terms,
  * @returns Unsigned int for max. number of terms
  * 
  */
-unsigned int max_offdiag_ptr_size(std::vector<std::size_t>& vec)
+unsigned int max_offdiag_ptr_size(std::size_t * vec, std::size_t size)
 {
     std::size_t kk;
     unsigned int temp, max = 0;
-    for(kk=0; kk < vec.size()-1; kk++)
+    for(kk=0; kk < size-1; kk++)
     {
         temp = vec[kk+1]-vec[kk];
         if(temp > max)
