@@ -10,6 +10,7 @@ cdef extern from "../src/base.hpp":
         double complex coeff
         vector[unsigned int] indices
         vector[unsigned char] values
+        vector[unsigned int] proj_indices
         unsigned int offdiag_weight
         int extended
         int group
