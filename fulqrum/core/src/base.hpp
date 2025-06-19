@@ -25,6 +25,7 @@ typedef struct OperatorTerm{
     std::complex<double> coeff;
     std::vector<unsigned int> indices;
     std::vector<unsigned char> values;
+    std::vector<unsigned int> proj_indices;
     unsigned int offdiag_weight {0};
     int extended {0};
     int group {-1}; // -1 means unset here

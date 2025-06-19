@@ -39,9 +39,21 @@ cdef int diagonal_term(OperatorTerm_t * term):
     """
     cdef size_t kk
     for kk in range(term.values.size()):
-        if term.values[kk] > 2U:
+        if term.values[kk] > 2:
             return 0
     return 1
+
+
+@cython.boundscheck(False)
+cdef void set_proj_indices(OperatorTerm_t& term):
+    cdef size_t kk
+    cdef unsigned char val
+    term.proj_indices.resize(0)
+    for kk in range(term.values.size()):
+        val = term.values[kk]
+        if val == 1 or val == 2:
+            term.proj_indices.push_back(term.indices[kk])
+
 
 
 cdef class QubitOperator():
@@ -84,6 +96,7 @@ cdef class QubitOperator():
                     term.coeff = 1
                 sort_term_data(term.indices, term.values)
                 set_offdiag_weight(term)
+                set_proj_indices(term)
                 set_extended_flag(term)
                 self.oper.terms.push_back(term)
 
@@ -111,6 +124,8 @@ cdef class QubitOperator():
                 term.offdiag_weight += (ind > 2)
         term.coeff = coeff
         sort_term_data(term.indices, term.values)
+        set_offdiag_weight(term)
+        set_proj_indices(term)
         set_extended_flag(term)
         out.oper.terms.push_back(term)
         return out
@@ -232,6 +247,21 @@ cdef class QubitOperator():
                 for jj in range(term.indices.size()):
                     out.append((IND_TO_STR[term.values[jj]], term.indices[jj]))
             return out
+
+    @property
+    def proj_indices(self):
+        """Return the projector indices for a single term or empty operator
+        """
+        if self.oper.terms.size() > 2:
+            raise FulqrumError('Can only grab projector indices from operators with < 2 terms')
+        cdef size_t kk
+        cdef unsigned int[::1] out
+        if self.oper.terms.size() == 0:
+            return np.array([], dtype=np.uint32)
+        out = np.zeros(self.oper.terms[0].proj_indices.size(), dtype=np.uint32)
+        for kk in range(self.oper.terms[0].proj_indices.size()):
+            out[kk] = self.oper.terms[0].proj_indices[kk]
+        return np.asarray(out)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
