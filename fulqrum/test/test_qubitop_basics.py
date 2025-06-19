@@ -179,7 +179,7 @@ def test_operator_subtraction():
 
 def test_proj_indices1():
     """Test projector indices are set properly #1"""
-    op = fq.QubitOperator.from_label('1I0I0')
+    op = fq.QubitOperator.from_label("1I0I0")
     assert np.allclose(op.proj_indices, [0, 2, 4])
 
 
@@ -191,8 +191,9 @@ def test_proj_indices2():
 
 def test_proj_indices3():
     """Validate no proj indices for term"""
-    op = fq.QubitOperator.from_label('IZXY+-')
+    op = fq.QubitOperator.from_label("IZXY+-")
     assert not any(op.proj_indices)
+
 
 def test_proj_indices4():
     """Validate no proj indices for empty term"""
