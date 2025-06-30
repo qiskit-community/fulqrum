@@ -48,6 +48,7 @@ void offdiag_term_sort(QubitOperator_t& oper){
 
     if(!weight_ptrs.size()) // return if no off-diagonal terms are present
     {
+        oper.sorted = 1;
         return;
     }
     unsigned int step_size = max_offdiag_ptr_size(&weight_ptrs[0], weight_ptrs.size());
@@ -128,4 +129,6 @@ void offdiag_term_sort(QubitOperator_t& oper){
             oper.terms[ii].group = current_idx;
         }
     }
+    // set the grouping flag for the operator
+    oper.sorted = 1;
 }
