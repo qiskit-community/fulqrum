@@ -24,6 +24,7 @@ include "includes/base_header.pxi"
 include "includes/elements_header.pxi"
 include "includes/bitset_utils_header.pxi"
 include "includes/operators_header.pxi"
+include "includes/grouping_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
 
