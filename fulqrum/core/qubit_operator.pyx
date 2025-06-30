@@ -24,6 +24,7 @@ include "includes/base_header.pxi"
 include "includes/elements_header.pxi"
 include "includes/bitset_utils_header.pxi"
 include "includes/operators_header.pxi"
+include "includes/grouping_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
 
@@ -667,7 +668,7 @@ cdef class QubitOperator():
         temp = self.offdiag_weight_ptrs()
         if temp.shape[0] == 0:
             return 0
-        cdef size_t[::1] out = self.offdiag_weight_ptrs()
+        cdef size_t[::1] out = temp
         return max_offdiag_ptr_size(&out[0], out.shape[0])
     
     def combine_repeated_terms(self, double atol=1e-12):
