@@ -5,6 +5,7 @@
 import numpy as np
 from pathlib import Path
 from qiskit.transpiler import CouplingMap
+import fulqrum as fq
 from fulqrum import QubitOperator, FermionicOperator
 
 
@@ -111,6 +112,20 @@ def test_basic_group_pointers4():
     # Id term gets moved to front since group is 0 by definition
     # next is IIIIX term, then last 3 terms combined
     assert np.allclose(H.group_ptrs(), np.array([0, 1, 2, 5]))
+
+
+def test_basic_group_pointers5():
+    """Test combination of terms for grouping"""
+    op = fq.QubitOperator.from_label("IIII")
+    op += fq.QubitOperator.from_label("XIIX")
+    op += fq.QubitOperator.from_label("YIIX")
+    op += fq.QubitOperator.from_label("IYYI")
+    op += fq.QubitOperator.from_label("ZIII")
+    op += fq.QubitOperator.from_label("XYYX")
+    op += fq.QubitOperator.from_label("IIIX")
+    assert op.num_groups == 5
+    op.offdiag_term_grouping()
+    assert np.allclose(op.group_ptrs(), np.array([0, 2, 3, 5, 6, 7]))
 
 
 def test_square_group_pointers():

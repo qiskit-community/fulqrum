@@ -53,7 +53,7 @@ void offdiag_term_sort(QubitOperator_t& oper){
     unsigned int step_size = max_offdiag_ptr_size(&weight_ptrs[0], weight_ptrs.size());
     std::ptrdiff_t dist;
     std::size_t num_terms = oper.terms.size();
-    #pragma omp parallel for schedule(dynamic) // if(num_terms > 1024)
+    #pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
     for(ii=0; ii < weight_ptrs.size()-1; ii++)
     {
         std::size_t start = weight_ptrs[ii];
@@ -105,10 +105,10 @@ void offdiag_term_sort(QubitOperator_t& oper){
                 } // end non-id match
             } // end ll for-loop
         } // end kk for-loop
+        // sort by group index within the start and stop indices
+        std::sort(&oper.terms[start], &oper.terms[stop], group_comp);
     } // end ii loop
     
-    // sort by group index
-    std::sort(oper.terms.begin(), oper.terms.end(), group_comp);
      // relabel groups into continuous integers
     int current_group=1, current_idx=1, next_idx = 2;
     for(ii=0; ii < oper.terms.size(); ii++)
