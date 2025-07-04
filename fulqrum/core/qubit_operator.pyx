@@ -175,6 +175,24 @@ cdef class QubitOperator():
             bool: Operator is sorted
         """
         return self.oper.sorted
+
+    @property
+    def weight_sorted(self):
+        """Is the operator sorted by full operator weight
+
+        Returns:
+            bool: Operator is sorted by full weight
+        """
+        return self.oper.weight_sorted
+
+    @property
+    def off_weight_sorted(self):
+        """Is the operator sorted by off-diagonal weight
+
+        Returns:
+            bool: Operator is sorted by off-diagonal weight
+        """
+        return self.oper.off_weight_sorted
     
     @property
     def num_groups(self):
@@ -188,6 +206,19 @@ cdef class QubitOperator():
         if not self.oper.sorted:
             self.offdiag_term_grouping()
         return (self.oper.terms[self.oper.terms.size()-1].group - self.oper.terms[0].group) + 1
+    
+    def copy(self):
+        """Copy QubitOperator
+
+        Returns:
+            QubitOperator
+        """
+        cdef QubitOperator out = QubitOperator(self.width)
+        out.oper.terms = self.oper.terms
+        out.oper.sorted = self.oper.sorted
+        out.oper.weight_sorted = self.oper.weight_sorted
+        out.oper.off_weight_sorted = self.oper.off_weight_sorted
+        return out
     
     @cython.boundscheck(False)
     def split_diagonal(self):
