@@ -149,6 +149,23 @@ cdef class QubitOperator():
     def __len__(self):
         return self.oper.terms.size()
 
+    def set_type(self, unsigned int value):
+        if (value != 1 or value != 2):
+            raise FulqrumError("Type of operator must be '1' or '2'")
+        self.oper.type = value
+    
+    @property
+    def type(self):
+        """ Type of QubitOperator
+
+        Type `1` is standard Qubit systems, e.g. Paulis and projectors
+        Type `2` is for systems derived from Fermionic systems via extended JW
+
+        Returns:
+            int: Type of operator
+        """
+        return self.oper.type
+
     @property
     def num_terms(self):
         """Return the number of terms in the operator
@@ -663,6 +680,12 @@ cdef class QubitOperator():
         """
         offdiag_weight_sort(self.oper)
         offdiag_term_sort(self.oper)
+
+    def group_ladder_indices(self):
+        if not self.oper.sorted:
+            raise FulqrumError('Operator must be sorted')
+        if self.oper.type != 2:
+            raise FulqrumError('Operator must be from Fermionic system')
 
     def offdiag_weight_sort(self):
         """In-place sort terms by their off-diagonal weight
