@@ -143,7 +143,7 @@ void offdiag_term_sort(QubitOperator_t& oper){
  * @param ladder_width Number of elements to consider for appending
  * 
  */
-inline void compute_group_ladder_inds(const OperatorTerm_t& term, 
+inline void compute_term_ladder_inds(const OperatorTerm_t& term, 
                                       std::vector<unsigned int>& ladder_inds, 
                                       unsigned int ladder_width)
 {

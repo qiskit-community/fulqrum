@@ -8,7 +8,7 @@ cdef extern from "../src/grouping.hpp":
     void offdiag_term_sort(QubitOperator_t& oper) nogil
 
 
-    void compute_group_ladder_inds(const OperatorTerm_t& term, 
+    void compute_term_ladder_inds(const OperatorTerm_t& term, 
                                    vector[unsigned int]& ladder_inds, 
                                    unsigned int ladder_width) nogil
 
