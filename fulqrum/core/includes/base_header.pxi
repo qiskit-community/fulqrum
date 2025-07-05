@@ -20,6 +20,7 @@ cdef extern from "../src/base.hpp":
         unsigned int width
         vector[OperatorTerm_t] terms
         int sorted
+        int type
         int weight_sorted
         int off_weight_sorted
 

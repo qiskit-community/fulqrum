@@ -32,17 +32,13 @@ cdef const OperatorTerm_t EmptyOperatorTerm
 
 
 @cython.boundscheck(False)
-cdef int diagonal_term(OperatorTerm_t * term):
+cdef inline int diagonal_term(OperatorTerm_t * term):
     """Check if term is diagonal in computational basis
 
     Returns:
         bool: True if diagonal
     """
-    cdef size_t kk
-    for kk in range(term.values.size()):
-        if term.values[kk] > 2:
-            return 0
-    return 1
+    return term.offdiag_weight == 0
 
 
 @cython.boundscheck(False)
@@ -148,6 +144,23 @@ cdef class QubitOperator():
 
     def __len__(self):
         return self.oper.terms.size()
+
+    def set_type(self, unsigned int value):
+        if (value != 1 and value != 2):
+            raise FulqrumError("Type of operator must be '1' or '2'")
+        self.oper.type = value
+    
+    @property
+    def type(self):
+        """ Type of QubitOperator
+
+        Type `1` is standard Qubit systems, e.g. Paulis and projectors
+        Type `2` is for systems derived from Fermionic systems via extended JW
+
+        Returns:
+            int: Type of operator
+        """
+        return self.oper.type
 
     @property
     def num_terms(self):
@@ -737,6 +750,21 @@ cdef class QubitOperator():
         for kk in range(self.oper.terms.size()):
             out[kk] = term_ladder_int(self.oper.terms[kk], ladder_width)
         return np.asarray(out)
+    
+    def group_ladder_indices(self, unsigned int ladder_width=3):
+        if not self.oper.sorted:
+            raise FulqrumError("Operator must be group sorted first")
+        if not self.oper.type == 2:
+            raise FulqrumError("Operator must be type=2")
+        cdef size_t[::1] group_ptrs = self.group_ptrs()
+        cdef size_t kk, jj
+        cdef list out = []
+        cdef unsigned int[::1] temp_inds
+        for kk in range(group_ptrs.shape[0]-1):
+            temp_inds = np.zeros(min(self.oper.terms[group_ptrs[kk]].offdiag_weight, ladder_width), dtype=np.uint32)
+            compute_term_ladder_inds(self.oper.terms[group_ptrs[kk]], &temp_inds[0], ladder_width)
+            out.append(np.asarray(temp_inds))
+        return out
 
     @cython.boundscheck(False)
     def to_dict(self):

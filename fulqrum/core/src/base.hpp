@@ -42,6 +42,7 @@ typedef struct OperatorTerm{
 typedef struct QubitOperator{
     unsigned int width;
     std::vector<OperatorTerm_t> terms;
+    int type {1};
     int sorted {0};
     int weight_sorted {0};
     int off_weight_sorted {0};
