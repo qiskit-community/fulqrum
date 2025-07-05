@@ -139,12 +139,12 @@ void offdiag_term_sort(QubitOperator_t& oper){
  * ladder indices vector
  *
  * @param term Operator term
- * @param ladder_inds Empty vector to append indices to
+ * @param ladder_inds Pre-sized array (size=off-diag weight) to store indices in
  * @param ladder_width Number of elements to consider for appending
  * 
  */
 inline void compute_term_ladder_inds(const OperatorTerm_t& term, 
-                                      std::vector<unsigned int>& ladder_inds, 
+                                      unsigned int * ladder_inds, 
                                       unsigned int ladder_width)
 {
     unsigned int kk, counter = 1;
@@ -158,7 +158,7 @@ inline void compute_term_ladder_inds(const OperatorTerm_t& term,
         if(term.values[kk] > 4)
         {
             
-            ladder_inds.push_back(term.indices[kk]);
+            ladder_inds[kk] = term.indices[kk];
             counter += 1;
         }
     }
