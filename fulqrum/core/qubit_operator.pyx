@@ -32,17 +32,13 @@ cdef const OperatorTerm_t EmptyOperatorTerm
 
 
 @cython.boundscheck(False)
-cdef int diagonal_term(OperatorTerm_t * term):
+cdef inline int diagonal_term(OperatorTerm_t * term):
     """Check if term is diagonal in computational basis
 
     Returns:
         bool: True if diagonal
     """
-    cdef size_t kk
-    for kk in range(term.values.size()):
-        if term.values[kk] > 2:
-            return 0
-    return 1
+    return term.offdiag_weight == 0
 
 
 @cython.boundscheck(False)
