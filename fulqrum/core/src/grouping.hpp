@@ -158,7 +158,7 @@ inline void compute_term_ladder_inds(const OperatorTerm_t& term,
         if(term.values[kk] > 4)
         {
             
-            ladder_inds.push_back(kk);
+            ladder_inds.push_back(term.indices[kk]);
             counter += 1;
         }
     }

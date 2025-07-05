@@ -150,7 +150,7 @@ cdef class QubitOperator():
         return self.oper.terms.size()
 
     def set_type(self, unsigned int value):
-        if (value != 1 or value != 2):
+        if (value != 1 and value != 2):
             raise FulqrumError("Type of operator must be '1' or '2'")
         self.oper.type = value
     
@@ -760,6 +760,25 @@ cdef class QubitOperator():
         for kk in range(self.oper.terms.size()):
             out[kk] = term_ladder_int(self.oper.terms[kk], ladder_width)
         return np.asarray(out)
+    
+    def group_ladder_indices(self, unsigned int ladder_width=3):
+        if not self.oper.sorted:
+            raise FulqrumError("Operator must be group sorted first")
+        if not self.oper.type == 2:
+            raise FulqrumError("Operator must be type=2")
+        cdef size_t[::1] group_ptrs = self.group_ptrs()
+        cdef vector[unsigned int] grp_ladder_inds
+        cdef size_t kk, jj
+        cdef list out = []
+        cdef unsigned int[::1] temp_inds
+        for kk in range(group_ptrs.shape[0]-1):
+            grp_ladder_inds.resize(0)
+            compute_term_ladder_inds(self.oper.terms[group_ptrs[kk]], grp_ladder_inds, ladder_width)
+            temp_inds = np.zeros(grp_ladder_inds.size(), dtype=np.uint32)
+            for jj in range(grp_ladder_inds.size()):
+                temp_inds[jj] = grp_ladder_inds[jj]
+            out.append(np.asarray(temp_inds))
+        return out
 
     @cython.boundscheck(False)
     def to_dict(self):
