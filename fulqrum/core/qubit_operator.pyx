@@ -681,12 +681,6 @@ cdef class QubitOperator():
         offdiag_weight_sort(self.oper)
         offdiag_term_sort(self.oper)
 
-    def group_ladder_indices(self):
-        if not self.oper.sorted:
-            raise FulqrumError('Operator must be sorted')
-        if self.oper.type != 2:
-            raise FulqrumError('Operator must be from Fermionic system')
-
     def offdiag_weight_sort(self):
         """In-place sort terms by their off-diagonal weight
         """
@@ -767,16 +761,12 @@ cdef class QubitOperator():
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
         cdef size_t[::1] group_ptrs = self.group_ptrs()
-        cdef vector[unsigned int] grp_ladder_inds
         cdef size_t kk, jj
         cdef list out = []
         cdef unsigned int[::1] temp_inds
         for kk in range(group_ptrs.shape[0]-1):
-            grp_ladder_inds.resize(0)
-            compute_term_ladder_inds(self.oper.terms[group_ptrs[kk]], grp_ladder_inds, ladder_width)
-            temp_inds = np.zeros(grp_ladder_inds.size(), dtype=np.uint32)
-            for jj in range(grp_ladder_inds.size()):
-                temp_inds[jj] = grp_ladder_inds[jj]
+            temp_inds = np.zeros(min(self.oper.terms[group_ptrs[kk]].offdiag_weight, ladder_width), dtype=np.uint32)
+            compute_term_ladder_inds(self.oper.terms[group_ptrs[kk]], &temp_inds[0], ladder_width)
             out.append(np.asarray(temp_inds))
         return out
 
