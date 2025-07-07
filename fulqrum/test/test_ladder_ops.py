@@ -68,8 +68,9 @@ def test_operator_ladder_int2():
 
 
 def test_operator_ladder_int3():
-    """Test ladder int works if num. of ladder ops smalelr than default of 3"""
+    """Test ladder int works if num. of ladder ops smaller than default of 3"""
     op = fq.QubitOperator.from_label("I+-Z0X+-+Y") + fq.QubitOperator.from_label(
         "IXYI01IIXYZ"
     )
+    op.set_type(2)
     assert np.allclose(op.ladder_ints(), [5, np.iinfo(np.uint32).max])

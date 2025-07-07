@@ -194,3 +194,74 @@ def test_group_ladder_indices1():
     assert np.allclose(inds_list[3], np.array([1, 2], dtype=np.uint32))
     assert np.allclose(inds_list[4], np.array([0, 2, 3], dtype=np.uint32))
     assert np.allclose(inds_list[5], np.array([0, 1, 2], dtype=np.uint32))
+
+
+def test_group_terms_ladder_int1():
+    """Test that sorting groups by ladder ints does what it should"""
+    op = fq.QubitOperator.from_label("III+")
+    op += fq.QubitOperator.from_label("-II+")
+    op += fq.QubitOperator.from_label("+II-")
+    op += fq.QubitOperator.from_label("+II+")
+    op += fq.QubitOperator.from_label("++-I")
+    op += fq.QubitOperator.from_label("---I")
+    op += fq.QubitOperator.from_label("IZZI")
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int()
+    assert np.allclose(op.group_ptrs(), [0, 1, 2, 5, 7])
+    assert np.allclose(
+        op.ladder_ints(),
+        np.array([np.iinfo(np.uint32).max, 1, 1, 2, 3, 0, 6], dtype=np.uint32),
+    )
+
+
+def test_group_terms_ladder_int_width1():
+    """Test that sorting groups by ladder ints obeys ladder_width"""
+    op = fq.QubitOperator.from_label("++++++")
+    op += fq.QubitOperator.from_label("------")
+    op += fq.QubitOperator.from_label("IIIZZI")
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int()
+    assert np.allclose(
+        op.ladder_ints(), np.array([np.iinfo(np.uint32).max, 0, 7], dtype=np.uint32)
+    )
+
+
+def test_group_terms_ladder_int_width2():
+    """Test that sorting groups by ladder ints obeys ladder_width"""
+    op = fq.QubitOperator.from_label("++++++")
+    op += fq.QubitOperator.from_label("------")
+    op += fq.QubitOperator.from_label("IIIZZI")
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int(2)
+    assert np.allclose(
+        op.ladder_ints(2), np.array([np.iinfo(np.uint32).max, 0, 3], dtype=np.uint32)
+    )
+
+
+def test_group_terms_ladder_int_width3():
+    """Test that sorting groups by ladder ints obeys ladder_width"""
+    op = fq.QubitOperator.from_label("++++++")
+    op += fq.QubitOperator.from_label("------")
+    op += fq.QubitOperator.from_label("IIIZZI")
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int(1)
+    assert np.allclose(
+        op.ladder_ints(1), np.array([np.iinfo(np.uint32).max, 0, 1], dtype=np.uint32)
+    )
+
+
+def test_group_terms_ladder_int_width4():
+    """Test that sorting groups by ladder ints obeys ladder_width"""
+    op = fq.QubitOperator.from_label("_+II")
+    op += fq.QubitOperator.from_label("++II")
+    op += fq.QubitOperator.from_label("IIIZ")
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int(3)
+    assert np.allclose(
+        op.ladder_ints(3), np.array([np.iinfo(np.uint32).max, 1, 3], dtype=np.uint32)
+    )
