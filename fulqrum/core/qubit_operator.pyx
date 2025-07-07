@@ -777,6 +777,22 @@ cdef class QubitOperator():
         cdef size_t[::1] group_ptrs = self.group_ptrs()
         sort_groups_by_ladder_int(self.oper, &group_ptrs[0], group_ptrs.shape[0]-1, ladder_width)
 
+    def group_ladder_bin_starts(self, unsigned int ladder_width=3):
+        if not self.oper.type == 2:
+            raise FulqrumError("Operator must be type=2")
+        cdef size_t[::1] group_ptrs = self.group_ptrs()
+        cdef unsigned int num_bins = 2**ladder_width
+        cdef unsigned int ptr_size = num_bins + 1
+        cdef unsigned int num_groups = group_ptrs.shape[0] - 1
+        cdef unsigned int[::1] group_counts
+        cdef unsigned int[::1] group_ranges
+        group_counts = np.zeros(num_bins*num_groups, dtype=np.uint32)
+        group_ranges = np.zeros(ptr_size*num_groups, dtype=np.uint32)
+        ladder_bin_starts(&self.oper.terms[0], &group_ptrs[0], &group_counts[0], &group_ranges[0],
+                        num_groups, num_bins, ladder_width)
+        
+        return np.asarray(group_ranges)
+
     @cython.boundscheck(False)
     def to_dict(self):
         """Dictionary represenation of QubitOperator
