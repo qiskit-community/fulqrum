@@ -268,6 +268,7 @@ def test_group_terms_ladder_int_width4():
 
 
 def test_group_ladder_bin_starts1():
+    """Verify that ladder bin starts show correct locations of elements based on int values"""
     # group 0
     op = fq.QubitOperator.from_label("-II+")  # int = 1, final_pos = 0
     op += fq.QubitOperator.from_label("+II-")  # int = 2, final_pos = 1
@@ -296,3 +297,39 @@ def test_group_ladder_bin_starts1():
     ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
     # only diffs should be in locations with integers
     assert np.allclose(np.diff(ladder_starts), [1, 0, 0, 0, 0, 0, 1, 1])
+
+
+def test_group_ladder_bin_starts2():
+    """Verify that ladder bin starts point to correct terms"""
+    # group 0
+    op = fq.QubitOperator.from_label("-II+")  # int = 1, final_pos = 0
+    op += fq.QubitOperator.from_label("+II-")  # int = 2, final_pos = 1
+    op += fq.QubitOperator.from_label("+II+")  # int = 3, final_pos = 2
+    # group 1
+    op += fq.QubitOperator.from_label("II+-")  # int = 2 final_pos = 4
+    op += fq.QubitOperator.from_label("II-+")  # int = 1 final_pos = 3
+    # group 2
+    op += fq.QubitOperator.from_label("I++-")  # int = 6 final_pos = 6
+    op += fq.QubitOperator.from_label("I---")  # int = 0 final_pos = 5
+    op += fq.QubitOperator.from_label("I+++")  # int = 7 final_pos = 7
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int()
+
+    group_ladder_starts = op.group_ladder_bin_starts()
+    group_idx = 0
+    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    assert ladder_starts[1] == 0
+    assert ladder_starts[2] == 1
+    assert ladder_starts[3] == 2
+
+    group_idx = 1
+    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    assert ladder_starts[1] == 3
+    assert ladder_starts[2] == 4
+
+    group_idx = 2
+    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    assert ladder_starts[0] == 5
+    assert ladder_starts[6] == 6
+    assert ladder_starts[7] == 7
