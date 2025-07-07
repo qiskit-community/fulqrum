@@ -761,7 +761,7 @@ cdef class QubitOperator():
         cdef list out = []
         cdef unsigned int[::1] temp_inds
         for kk in range(group_ptrs.shape[0]-1):
-            if not self.oper.terms[group_ptrs[kk]].group:
+            if not self.oper.terms[group_ptrs[kk]].group: # diagonal group so return nothing
                 temp_inds = np.zeros(0, dtype=np.uint32)
             else:
                 temp_inds = np.zeros(min(self.oper.terms[group_ptrs[kk]].offdiag_weight, ladder_width), dtype=np.uint32)
