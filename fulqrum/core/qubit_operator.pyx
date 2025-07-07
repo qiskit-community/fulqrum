@@ -747,8 +747,6 @@ cdef class QubitOperator():
         """
         cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
         cdef size_t kk
-        if not self.oper.type == 2:
-            raise FulqrumError("Operator must be type=2")
         for kk in range(self.oper.terms.size()):
             out[kk] = term_ladder_int(self.oper.terms[kk], ladder_width)
         return np.asarray(out)
@@ -768,7 +766,7 @@ cdef class QubitOperator():
             out.append(np.asarray(temp_inds))
         return out
 
-    def inner_group_sort_by_ladder_int(self, unsigned int ladder_width=3):
+    def group_term_sort_by_ladder_int(self, unsigned int ladder_width=3):
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
         if not self.oper.sorted:
