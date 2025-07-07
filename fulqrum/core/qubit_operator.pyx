@@ -747,6 +747,8 @@ cdef class QubitOperator():
         """
         cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
         cdef size_t kk
+        if not self.oper.type == 2:
+            raise FulqrumError("Operator must be type=2")
         for kk in range(self.oper.terms.size()):
             out[kk] = term_ladder_int(self.oper.terms[kk], ladder_width)
         return np.asarray(out)
@@ -765,6 +767,14 @@ cdef class QubitOperator():
             compute_term_ladder_inds(self.oper.terms[group_ptrs[kk]], &temp_inds[0], ladder_width)
             out.append(np.asarray(temp_inds))
         return out
+
+    def inner_group_sort_by_ladder_int(self, unsigned int ladder_width=3):
+        if not self.oper.type == 2:
+            raise FulqrumError("Operator must be type=2")
+        if not self.oper.sorted:
+            raise FulqrumError('Operator must be group sorted')
+        cdef size_t[::1] group_ptrs = self.group_ptrs()
+        sort_groups_by_ladder_int(self.oper, &group_ptrs[0], group_ptrs.shape[0]-1, ladder_width)
 
     @cython.boundscheck(False)
     def to_dict(self):

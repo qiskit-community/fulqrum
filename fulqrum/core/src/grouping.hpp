@@ -163,3 +163,24 @@ inline void compute_term_ladder_inds(const OperatorTerm_t& term,
         }
     }
 }
+
+
+inline void sort_groups_by_ladder_int(QubitOperator_t& oper,
+                                      std::size_t * group_ptrs,
+                                      unsigned int num_groups,
+                                      unsigned int ladder_width)
+    {
+        
+        unsigned int kk;
+        #pragma omp parallel for if(num_groups > 128)
+        for(kk=0; kk < num_groups; kk++)
+        {
+            std::sort(&oper.terms[group_ptrs[kk]], &oper.terms[group_ptrs[kk+1]], [=](const OperatorTerm_t& a, OperatorTerm_t& b)
+                                  {
+                                    unsigned int res_a, res_b;  
+                                    res_a = term_ladder_int(a, ladder_width);
+                                    res_b = term_ladder_int(b, ladder_width);
+                                    return res_a < res_b;
+                                  });
+        }
+    }
