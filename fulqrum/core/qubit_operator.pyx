@@ -12,6 +12,7 @@ from libcpp.map cimport map
 from libcpp.algorithm cimport sort as stdsort
 from cython.operator cimport dereference, preincrement
 from fulqrum.exceptions import FulqrumError
+from fulqrum.core.bitset cimport Bitset
 
 from collections.abc import Iterable
 from pathlib import Path
@@ -792,6 +793,18 @@ cdef class QubitOperator():
                         num_groups, num_bins, ladder_width)
         
         return np.asarray(group_ranges)
+
+    def projector_oper_validation(self, Bitset bits):
+        cdef size_t num_terms = self.oper.terms.size()
+        cdef int[::1] out = np.zeros(num_terms, dtype=np.int32)
+        cdef size_t kk
+        for kk in range(num_terms):
+            out[kk] = passes_proj_validation(bits.bits,
+                                &self.oper.terms[kk].values[0],
+                                &self.oper.terms[kk].proj_indices[0],
+                                self.oper.terms[kk].proj_indices.size())
+        return np.asarray(out)
+
 
     @cython.boundscheck(False)
     def to_dict(self):

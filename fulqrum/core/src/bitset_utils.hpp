@@ -177,7 +177,7 @@ inline bool passes_proj_validation(boost::dynamic_bitset<std::size_t>& bitset,
         block_num = pos / BITS_PER_BLOCK;
         block_idx = pos % BITS_PER_BLOCK;
         // check if the bit and the value match the requirements.  Recall '1' operator is value=2
-        out = ((bitset.m_bits[block_num] & (1UL << block_idx)) && (values[pos] == 2));
+        out = ((bitset.m_bits[block_num] & (1UL << block_idx)) == (values[pos] == 2));
     }
     return out;
 }
