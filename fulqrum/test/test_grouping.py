@@ -333,3 +333,17 @@ def test_group_ladder_bin_starts2():
     assert ladder_starts[0] == 5
     assert ladder_starts[6] == 6
     assert ladder_starts[7] == 7
+
+
+def test_group_ladder_bin_starts3():
+    """Verify that ladder bin starts correct for ladder_width=1"""
+    op = fq.QubitOperator.from_label("-II+")  # int = 1
+    op += fq.QubitOperator.from_label("-ZZ+")  # int = 1
+    op += fq.QubitOperator.from_label("+II-")  # int = 0
+    op += fq.QubitOperator.from_label("-ZZ-")  # int = 0
+    op += fq.QubitOperator.from_label("+0I-")  # int = 0
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int(1)
+    group_ladder_starts = op.group_ladder_bin_starts(1)
+    assert np.allclose(group_ladder_starts, [0, 3, 5])
