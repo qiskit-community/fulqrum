@@ -347,3 +347,39 @@ def test_group_ladder_bin_starts3():
     op.group_term_sort_by_ladder_int(1)
     group_ladder_starts = op.group_ladder_bin_starts(1)
     assert np.allclose(group_ladder_starts, [0, 3, 5])
+
+
+def test_group_ladder_bin_starts4():
+    """Verify that ladder bin starts yield correct numbers for 2 groups"""
+    # group 0
+    op = fq.QubitOperator.from_label("-II+")  # int = 1,
+    op += fq.QubitOperator.from_label("-ZZ+")  # int = 1,
+    op += fq.QubitOperator.from_label("+II-")  # int = 2,
+    op += fq.QubitOperator.from_label("-ZZ-")  # int = 0,
+    op += fq.QubitOperator.from_label("+0I-")  # int = 2,
+    op += fq.QubitOperator.from_label("+01+")  # int = 3,
+    # group 1
+    op += fq.QubitOperator.from_label("II-+")  # int = 1
+    op += fq.QubitOperator.from_label("II++")  # int = 3
+    op += fq.QubitOperator.from_label("ZZ--")  # int = 0
+    op += fq.QubitOperator.from_label("ZZ+-")  # int = 2
+    op += fq.QubitOperator.from_label("Z0+-")  # int = 2
+    op += fq.QubitOperator.from_label("Z0-+")  # int = 1
+    op += fq.QubitOperator.from_label("ZI++")  # int = 3
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int()
+    group_ladder_starts = op.group_ladder_bin_starts()
+    num_terms = np.diff(group_ladder_starts)
+    grp0_num_terms = num_terms[:8]
+    grp1_num_terms = num_terms[9:]
+
+    assert grp0_num_terms[0] == 1
+    assert grp0_num_terms[1] == 2
+    assert grp0_num_terms[2] == 2
+    assert grp0_num_terms[3] == 1
+
+    assert grp1_num_terms[0] == 1
+    assert grp1_num_terms[1] == 2
+    assert grp1_num_terms[2] == 2
+    assert grp1_num_terms[3] == 2
