@@ -265,3 +265,242 @@ def test_group_terms_ladder_int_width4():
     assert np.allclose(
         op.ladder_ints(3), np.array([np.iinfo(np.uint32).max, 1, 3], dtype=np.uint32)
     )
+
+
+def test_group_ladder_bin_starts1():
+    """Verify that ladder bin starts show correct locations of elements based on int values"""
+    # group 0
+    op = fq.QubitOperator.from_label("-II+")  # int = 1, final_pos = 0
+    op += fq.QubitOperator.from_label("+II-")  # int = 2, final_pos = 1
+    op += fq.QubitOperator.from_label("+II+")  # int = 3, final_pos = 2
+    # group 1
+    op += fq.QubitOperator.from_label("II+-")  # int = 2 final_pos = 4
+    op += fq.QubitOperator.from_label("II-+")  # int = 1 final_pos = 3
+    # group 2
+    op += fq.QubitOperator.from_label("I++-")  # int = 6 final_pos = 6
+    op += fq.QubitOperator.from_label("I---")  # int = 0 final_pos = 5
+    op += fq.QubitOperator.from_label("I+++")  # int = 7 final_pos = 7
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int()
+
+    group_ladder_starts = op.group_ladder_bin_starts()
+    group_idx = 0
+    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    # only diffs should be in locations with integers
+    assert np.allclose(np.diff(ladder_starts), [0, 1, 1, 1, 0, 0, 0, 0])
+    group_idx = 1
+    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    # only diffs should be in locations with integers
+    assert np.allclose(np.diff(ladder_starts), [0, 1, 1, 0, 0, 0, 0, 0])
+    group_idx = 2
+    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    # only diffs should be in locations with integers
+    assert np.allclose(np.diff(ladder_starts), [1, 0, 0, 0, 0, 0, 1, 1])
+
+
+def test_group_ladder_bin_starts2():
+    """Verify that ladder bin starts point to correct terms"""
+    # group 0
+    op = fq.QubitOperator.from_label("-II+")  # int = 1, final_pos = 0
+    op += fq.QubitOperator.from_label("+II-")  # int = 2, final_pos = 1
+    op += fq.QubitOperator.from_label("+II+")  # int = 3, final_pos = 2
+    # group 1
+    op += fq.QubitOperator.from_label("II+-")  # int = 2 final_pos = 4
+    op += fq.QubitOperator.from_label("II-+")  # int = 1 final_pos = 3
+    # group 2
+    op += fq.QubitOperator.from_label("I++-")  # int = 6 final_pos = 6
+    op += fq.QubitOperator.from_label("I---")  # int = 0 final_pos = 5
+    op += fq.QubitOperator.from_label("I+++")  # int = 7 final_pos = 7
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int()
+
+    group_ladder_starts = op.group_ladder_bin_starts()
+    group_idx = 0
+    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    assert ladder_starts[1] == 0
+    assert ladder_starts[2] == 1
+    assert ladder_starts[3] == 2
+
+    group_idx = 1
+    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    assert ladder_starts[1] == 3
+    assert ladder_starts[2] == 4
+
+    group_idx = 2
+    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    assert ladder_starts[0] == 5
+    assert ladder_starts[6] == 6
+    assert ladder_starts[7] == 7
+
+
+def test_group_ladder_bin_starts3():
+    """Verify that ladder bin starts correct for ladder_width=1"""
+    op = fq.QubitOperator.from_label("-II+")  # int = 1
+    op += fq.QubitOperator.from_label("-ZZ+")  # int = 1
+    op += fq.QubitOperator.from_label("+II-")  # int = 0
+    op += fq.QubitOperator.from_label("-ZZ-")  # int = 0
+    op += fq.QubitOperator.from_label("+0I-")  # int = 0
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int(1)
+    group_ladder_starts = op.group_ladder_bin_starts(1)
+    assert np.allclose(group_ladder_starts, [0, 3, 5])
+
+
+def test_group_ladder_bin_starts4():
+    """Verify that ladder bin starts yield correct numbers for 2 groups"""
+    # group 0
+    op = fq.QubitOperator.from_label("-II+")  # int = 1,
+    op += fq.QubitOperator.from_label("-ZZ+")  # int = 1,
+    op += fq.QubitOperator.from_label("+II-")  # int = 2,
+    op += fq.QubitOperator.from_label("-ZZ-")  # int = 0,
+    op += fq.QubitOperator.from_label("+0I-")  # int = 2,
+    op += fq.QubitOperator.from_label("+01+")  # int = 3,
+    # group 1
+    op += fq.QubitOperator.from_label("II-+")  # int = 1
+    op += fq.QubitOperator.from_label("II++")  # int = 3
+    op += fq.QubitOperator.from_label("ZZ--")  # int = 0
+    op += fq.QubitOperator.from_label("ZZ+-")  # int = 2
+    op += fq.QubitOperator.from_label("Z0+-")  # int = 2
+    op += fq.QubitOperator.from_label("Z0-+")  # int = 1
+    op += fq.QubitOperator.from_label("ZI++")  # int = 3
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int()
+    group_ladder_starts = op.group_ladder_bin_starts()
+    num_terms = np.diff(group_ladder_starts)
+    grp0_num_terms = num_terms[:8]
+    grp1_num_terms = num_terms[9:]
+
+    assert grp0_num_terms[0] == 1
+    assert grp0_num_terms[1] == 2
+    assert grp0_num_terms[2] == 2
+    assert grp0_num_terms[3] == 1
+
+    assert grp1_num_terms[0] == 1
+    assert grp1_num_terms[1] == 2
+    assert grp1_num_terms[2] == 2
+    assert grp1_num_terms[3] == 2
+
+
+def test_group_ladder_bin_starts5():
+    """bin starts yield correct numbers for 2 groups width ladder_width=1"""
+    # group 0
+    op = fq.QubitOperator.from_label("-II+")  # int = 1,
+    op += fq.QubitOperator.from_label("-ZZ+")  # int = 1,
+    op += fq.QubitOperator.from_label("+II-")  # int = 0
+    op += fq.QubitOperator.from_label("-ZZ-")  # int = 0,
+    op += fq.QubitOperator.from_label("+0I-")  # int = 0,
+    op += fq.QubitOperator.from_label("+01+")  # int = 1,
+    # group 1
+    op += fq.QubitOperator.from_label("II-+")  # int = 1
+    op += fq.QubitOperator.from_label("II++")  # int = 1
+    op += fq.QubitOperator.from_label("ZZ--")  # int = 0
+    op += fq.QubitOperator.from_label("ZZ+-")  # int = 0
+    op += fq.QubitOperator.from_label("Z0+-")  # int = 0
+    op += fq.QubitOperator.from_label("Z0-+")  # int = 1
+    op += fq.QubitOperator.from_label("ZI++")  # int = 1
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int(1)
+    group_ladder_starts = op.group_ladder_bin_starts(1)
+    num_terms = np.diff(group_ladder_starts)
+
+    grp0_num_terms = num_terms[:2]
+    grp1_num_terms = num_terms[3:]
+    assert np.allclose(grp0_num_terms, [3, 3])
+    assert np.allclose(grp1_num_terms, [3, 4])
+
+
+def test_group_ladder_bin_starts6():
+    """bin starts yield correct numbers for 2 groups that switch order"""
+    # group 1
+    op = fq.QubitOperator.from_label("-II+")  # int = 1,
+    op += fq.QubitOperator.from_label("-ZZ+")  # int = 1,
+    op += fq.QubitOperator.from_label("+II-")  # int = 2
+    op += fq.QubitOperator.from_label("-ZZ-")  # int = 0,
+    op += fq.QubitOperator.from_label("+0I-")  # int = 2,
+    op += fq.QubitOperator.from_label("+01+")  # int = 3,
+    # group 0
+    op += fq.QubitOperator.from_label("IIZ+")  # int = 1
+    op += fq.QubitOperator.from_label("II0+")  # int = 1
+    op += fq.QubitOperator.from_label("ZZI-")  # int = 0
+    op += fq.QubitOperator.from_label("ZZ1-")  # int = 0
+    op += fq.QubitOperator.from_label("Z01-")  # int = 0
+    op += fq.QubitOperator.from_label("Z00+")  # int = 1
+    op += fq.QubitOperator.from_label("ZII+")  # int = 1
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    group_ladder_starts = op.group_ladder_bin_starts()
+    num_terms = np.diff(group_ladder_starts)
+
+    grp0_num_terms = num_terms[:8]
+    grp1_num_terms = num_terms[9:]
+    assert np.allclose(grp0_num_terms, [3, 4, 0, 0, 0, 0, 0, 0])
+    assert np.allclose(grp1_num_terms, [1, 2, 2, 1, 0, 0, 0, 0])
+
+
+def test_group_ladder_bin_starts7():
+    """Validate bin starts index correct term"""
+    # group 1
+    op = fq.QubitOperator.from_label("-II+")  # int = 1,
+    op += fq.QubitOperator.from_label("-ZZ+")  # int = 1,
+    op += fq.QubitOperator.from_label("+II-")  # int = 2
+    op += fq.QubitOperator.from_label("-ZZ-")  # int = 0,
+    op += fq.QubitOperator.from_label("+0I-")  # int = 2,
+    op += fq.QubitOperator.from_label("+01+")  # int = 3,
+    # group 0
+    op += fq.QubitOperator.from_label("IIZ+")  # int = 1
+    op += fq.QubitOperator.from_label("II0+")  # int = 1
+    op += fq.QubitOperator.from_label("ZZI-")  # int = 0
+    op += fq.QubitOperator.from_label("ZZ1-")  # int = 0
+    op += fq.QubitOperator.from_label("Z01-")  # int = 0
+    op += fq.QubitOperator.from_label("Z00+")  # int = 1
+    op += fq.QubitOperator.from_label("ZII+")  # int = 1
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    group_ladder_starts = op.group_ladder_bin_starts()
+    ptr_size = 2**3 + 1  #  2**ladder_width + 1
+    idx = 1 * ptr_size + 3  # group 1 + int value = 3
+    # should find "+01+"
+    assert op[group_ladder_starts[idx]].operators == [
+        ("+", 0),
+        ("1", 1),
+        ("0", 2),
+        ("+", 3),
+    ]
+
+
+def test_group_ladder_bin_starts8():
+    """Validate bin starts pick out correct collection of terms by int"""
+    # group 1
+    op = fq.QubitOperator.from_label("-II+")  # int = 1,
+    op += fq.QubitOperator.from_label("-ZZ+")  # int = 1,
+    op += fq.QubitOperator.from_label("+II-")  # int = 2
+    op += fq.QubitOperator.from_label("-ZZ-")  # int = 0,
+    op += fq.QubitOperator.from_label("+0I-")  # int = 2,
+    op += fq.QubitOperator.from_label("+01+")  # int = 3,
+    # group 0
+    op += fq.QubitOperator.from_label("IIZ+")  # int = 1
+    op += fq.QubitOperator.from_label("II0+")  # int = 1
+    op += fq.QubitOperator.from_label("ZZI-")  # int = 0
+    op += fq.QubitOperator.from_label("ZZ1-")  # int = 0
+    op += fq.QubitOperator.from_label("Z01-")  # int = 0
+    op += fq.QubitOperator.from_label("Z00+")  # int = 1
+    op += fq.QubitOperator.from_label("ZII+")  # int = 1
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int()
+    group_ladder_starts = op.group_ladder_bin_starts()
+    ptr_size = 2**3 + 1
+    idx = 0 * ptr_size + 1  # group 0 + int value = 1
+    correct_terms = [
+        [("+", 0), ("Z", 1)],
+        [("+", 0), ("0", 1)],
+        [("+", 0), ("0", 1), ("0", 2), ("Z", 3)],
+        [("+", 0), ("Z", 3)],
+    ]
+    for kk in range(group_ladder_starts[idx], group_ladder_starts[idx + 1]):
+        assert op[kk].operators in correct_terms
