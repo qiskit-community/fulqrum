@@ -383,3 +383,60 @@ def test_group_ladder_bin_starts4():
     assert grp1_num_terms[1] == 2
     assert grp1_num_terms[2] == 2
     assert grp1_num_terms[3] == 2
+
+
+def test_group_ladder_bin_starts5():
+    """bin starts yield correct numbers for 2 groups width ladder_width=1"""
+    # group 0
+    op = fq.QubitOperator.from_label("-II+")  # int = 1,
+    op += fq.QubitOperator.from_label("-ZZ+")  # int = 1,
+    op += fq.QubitOperator.from_label("+II-")  # int = 0
+    op += fq.QubitOperator.from_label("-ZZ-")  # int = 0,
+    op += fq.QubitOperator.from_label("+0I-")  # int = 0,
+    op += fq.QubitOperator.from_label("+01+")  # int = 1,
+    # group 1
+    op += fq.QubitOperator.from_label("II-+")  # int = 1
+    op += fq.QubitOperator.from_label("II++")  # int = 1
+    op += fq.QubitOperator.from_label("ZZ--")  # int = 0
+    op += fq.QubitOperator.from_label("ZZ+-")  # int = 0
+    op += fq.QubitOperator.from_label("Z0+-")  # int = 0
+    op += fq.QubitOperator.from_label("Z0-+")  # int = 1
+    op += fq.QubitOperator.from_label("ZI++")  # int = 1
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int(1)
+    group_ladder_starts = op.group_ladder_bin_starts(1)
+    num_terms = np.diff(group_ladder_starts)
+
+    grp0_num_terms = num_terms[:2]
+    grp1_num_terms = num_terms[3:]
+    assert np.allclose(grp0_num_terms, [3, 3])
+    assert np.allclose(grp1_num_terms, [3, 4])
+
+
+def test_group_ladder_bin_starts6():
+    """bin starts yield correct numbers for 2 groups that switch order"""
+    # group 1
+    op = fq.QubitOperator.from_label("-II+")  # int = 1,
+    op += fq.QubitOperator.from_label("-ZZ+")  # int = 1,
+    op += fq.QubitOperator.from_label("+II-")  # int = 2
+    op += fq.QubitOperator.from_label("-ZZ-")  # int = 0,
+    op += fq.QubitOperator.from_label("+0I-")  # int = 2,
+    op += fq.QubitOperator.from_label("+01+")  # int = 3,
+    # group 0
+    op += fq.QubitOperator.from_label("IIZ+")  # int = 1
+    op += fq.QubitOperator.from_label("II0+")  # int = 1
+    op += fq.QubitOperator.from_label("ZZI-")  # int = 0
+    op += fq.QubitOperator.from_label("ZZ1-")  # int = 0
+    op += fq.QubitOperator.from_label("Z01-")  # int = 0
+    op += fq.QubitOperator.from_label("Z00+")  # int = 1
+    op += fq.QubitOperator.from_label("ZII+")  # int = 1
+    op.set_type(2)
+    op.offdiag_term_grouping()
+    group_ladder_starts = op.group_ladder_bin_starts()
+    num_terms = np.diff(group_ladder_starts)
+
+    grp0_num_terms = num_terms[:8]
+    grp1_num_terms = num_terms[9:]
+    assert np.allclose(grp0_num_terms, [3, 4, 0, 0, 0, 0, 0, 0])
+    assert np.allclose(grp1_num_terms, [1, 2, 2, 1, 0, 0, 0, 0])
