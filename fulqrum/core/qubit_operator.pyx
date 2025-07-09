@@ -47,10 +47,12 @@ cdef void set_proj_indices(OperatorTerm_t& term):
     cdef size_t kk
     cdef unsigned char val
     term.proj_indices.resize(0)
+    term.proj_bits.resize(0)
     for kk in range(term.values.size()):
         val = term.values[kk]
         if val == 1 or val == 2:
             term.proj_indices.push_back(term.indices[kk])
+            term.proj_bits.push_back(val-1)
 
 
 
@@ -800,7 +802,7 @@ cdef class QubitOperator():
         cdef size_t kk
         for kk in range(num_terms):
             out[kk] = passes_proj_validation(bits.bits,
-                                &self.oper.terms[kk].values[0],
+                                &self.oper.terms[kk].proj_bits[0],
                                 &self.oper.terms[kk].proj_indices[0],
                                 self.oper.terms[kk].proj_indices.size())
         return np.asarray(out)

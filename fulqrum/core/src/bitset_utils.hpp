@@ -163,7 +163,7 @@ inline unsigned int bitset_ladder_int(const boost::dynamic_bitset<std::size_t>& 
  * @param size The size of the proj array
  */
 inline bool passes_proj_validation(boost::dynamic_bitset<std::size_t>& bitset,
-                                  const unsigned char * values,
+                                  const unsigned int * proj_bits,
                                   const unsigned int * proj_indices,
                                   unsigned int size)
 {
@@ -171,13 +171,14 @@ inline bool passes_proj_validation(boost::dynamic_bitset<std::size_t>& bitset,
     unsigned int block_num, block_idx;
     unsigned int pos;
     bool out = 1;
+    unsigned int bit;
     for(kk=0; kk < size; kk++)
     {
         pos = proj_indices[kk];
         block_num = pos / BITS_PER_BLOCK;
         block_idx = pos % BITS_PER_BLOCK;
-        // check if the bit and the value match the requirements.  Recall '1' operator is value=2
-        out = ((bitset.m_bits[block_num] & (1UL << block_idx)) == (values[pos] == 2));
+        bit = (unsigned int)(bitset.m_bits[block_num] >> block_idx) & 1ULL;
+        out = (bit == proj_bits[kk]);
     }
     return out;
 }
