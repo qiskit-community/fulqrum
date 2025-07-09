@@ -818,7 +818,8 @@ cdef class QubitOperator():
         cdef dict out = {'operator-type': 'qubit',
                         'format-version': FORMAT_VERSION,
                         'fulqrum-version': fversion,
-                        'width': self.width
+                        'width': self.width,
+                        'type':self.oper.type,
                         }
         cdef OperatorTerm_t * term
         cdef size_t kk, jj
@@ -853,6 +854,7 @@ cdef class QubitOperator():
         cdef QubitOperator out = QubitOperator(width)
         for term in dic['terms']:
             out += QubitOperator(width, [(term[0], term[1], complex(*term[2]))])
+        out.oper.type = dic['type']
         return out
     
 
