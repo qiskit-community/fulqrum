@@ -11,6 +11,7 @@ cdef extern from "../src/base.hpp":
         vector[unsigned int] indices
         vector[unsigned char] values
         vector[unsigned int] proj_indices
+        vector[unsigned int] proj_bits
         unsigned int offdiag_weight
         int extended
         int group

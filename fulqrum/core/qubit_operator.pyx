@@ -12,6 +12,7 @@ from libcpp.map cimport map
 from libcpp.algorithm cimport sort as stdsort
 from cython.operator cimport dereference, preincrement
 from fulqrum.exceptions import FulqrumError
+from fulqrum.core.bitset cimport Bitset
 
 from collections.abc import Iterable
 from pathlib import Path
@@ -46,10 +47,12 @@ cdef void set_proj_indices(OperatorTerm_t& term):
     cdef size_t kk
     cdef unsigned char val
     term.proj_indices.resize(0)
+    term.proj_bits.resize(0)
     for kk in range(term.values.size()):
         val = term.values[kk]
         if val == 1 or val == 2:
             term.proj_indices.push_back(term.indices[kk])
+            term.proj_bits.push_back(val-1)
 
 
 
@@ -792,6 +795,18 @@ cdef class QubitOperator():
                         num_groups, num_bins, ladder_width)
         
         return np.asarray(group_ranges)
+
+    def projector_oper_validation(self, Bitset bits):
+        cdef size_t num_terms = self.oper.terms.size()
+        cdef int[::1] out = np.zeros(num_terms, dtype=np.int32)
+        cdef size_t kk
+        for kk in range(num_terms):
+            out[kk] = passes_proj_validation(bits.bits,
+                                &self.oper.terms[kk].proj_bits[0],
+                                &self.oper.terms[kk].proj_indices[0],
+                                self.oper.terms[kk].proj_indices.size())
+        return np.asarray(out)
+
 
     @cython.boundscheck(False)
     def to_dict(self):

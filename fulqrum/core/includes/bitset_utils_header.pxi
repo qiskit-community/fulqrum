@@ -1,6 +1,7 @@
 # Fulqrum
 # Copyright (C) 2024, IBM
 from libcpp.vector cimport vector
+from libcpp cimport bool
 from fulqrum.core.bitset cimport bitset_t
 
 include "base_header.pxi"
@@ -22,7 +23,11 @@ cdef extern from "../src/bitset_utils.hpp":
     int nonzero_extended_bitset(const OperatorTerm_t * term,
                                 const bitset_t& row) nogil
     
-
     unsigned int bitset_ladder_int(const bitset_t& row, 
                                    const unsigned int * inds,
                                    unsigned int ladder_width) nogil
+
+    bool passes_proj_validation(bitset_t& bitset,
+                                const unsigned int * proj_bits,
+                                const unsigned int * proj_indices,
+                                unsigned int size) nogil
