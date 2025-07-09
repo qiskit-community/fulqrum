@@ -177,7 +177,7 @@ inline bool passes_proj_validation(boost::dynamic_bitset<std::size_t>& bitset,
         pos = proj_indices[kk];
         block_num = pos / BITS_PER_BLOCK;
         block_idx = pos % BITS_PER_BLOCK;
-        bit = (unsigned int)(bitset.m_bits[block_num] >> block_idx) & 1ULL;
+        bit = ((bitset.m_bits[block_num] >> block_idx) & static_cast<std::size_t>(1));
         out = (bit == proj_bits[kk]);
     }
     return out;
