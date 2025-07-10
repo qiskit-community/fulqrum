@@ -12,7 +12,7 @@
 const std::size_t MAX_SIZE_T = (std::size_t)-1;
 const unsigned int MAX_UINT = (unsigned int)-1;
 const unsigned int BITS_PER_BLOCK = 8 * sizeof(std::size_t);
-
+unsigned int DEFAULT_LADDER_WIDTH = 3;
 
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
  *
@@ -44,9 +44,11 @@ typedef struct QubitOperator{
     unsigned int width;
     std::vector<OperatorTerm_t> terms;
     int type {1};
+    unsigned int ladder_width {DEFAULT_LADDER_WIDTH};
     int sorted {0};
     int weight_sorted {0};
     int off_weight_sorted {0};
+    int ladder_sorted {0};
 } QubitOperator_t;
 
 
