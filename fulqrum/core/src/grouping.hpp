@@ -147,17 +147,13 @@ inline void compute_term_offdiag_inds(const OperatorTerm_t& term,
                                      unsigned int * offdiag_inds, 
                                      unsigned int num_inds)
 {
-    unsigned int kk, counter = 1;
+    unsigned int kk;
+    unsigned int counter = 0;
     for(kk=0; kk < term.indices.size(); kk++)
     {
-        if(counter > num_inds)
-        {
-            break;
-        }
-
         if(term.values[kk] > 2)
         {
-            offdiag_inds[kk] = term.indices[kk];
+            offdiag_inds[counter] = term.indices[kk];
             counter += 1;
         }
     }
