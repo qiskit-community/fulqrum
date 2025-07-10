@@ -1,7 +1,7 @@
 # Fulqrum
 # Copyright (C) 2024, IBM
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
-
+from libcpp.vector cimport vector
 from fulqrum.core.subspace cimport Subspace
 
 include "includes/base_header.pxi"
@@ -21,5 +21,6 @@ cdef class FulqrumSpMV:
     cdef size_t * group_ptrs
     cdef size_t num_groups
     cdef size_t * bin_ranges
+    cdef vector[vector[unsigned int]] * group_offdiag_inds
 
     cdef void compute_diag_vector(self)

@@ -32,7 +32,7 @@ ctypedef long long int64
 
 cdef class FulqrumSpMV():
     def __cinit__(self, QubitOperator diag_hamiltonian,
-                  QubitOperator hamiltonian, Subspace subspace, size_t[::1] group_ptrs):
+                  QubitOperator hamiltonian, Subspace subspace, size_t[::1]& group_ptrs):
         cdef size_t kk
         self.diag_oper = diag_hamiltonian.oper
         self.oper = hamiltonian.oper

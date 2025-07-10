@@ -187,7 +187,7 @@ def test_group_ladder_indices1():
     op += fq.QubitOperator.from_label("--I-")
     op.set_type(2)
     op.group_term_sort_by_ladder_int()
-    inds_list = op.group_ladder_indices()
+    inds_list = op.group_offdiag_indices()
     assert np.allclose(inds_list[0], np.array([3], dtype=np.uint32))
     assert np.allclose(inds_list[1], np.array([0, 2], dtype=np.uint32))
     assert np.allclose(inds_list[2], np.array([0, 3], dtype=np.uint32))

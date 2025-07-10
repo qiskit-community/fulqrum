@@ -760,14 +760,12 @@ cdef class QubitOperator():
             out[kk] = term_ladder_int(self.oper.terms[kk], self.oper.ladder_width)
         return np.asarray(out)
     
-    def group_ladder_indices(self):
-        """Ladder indices for each group in the type=2 operator
+    def group_offdiag_indices(self):
+        """Offdiagonal indices for each group in operator
         """
-        if not self.oper.type == 2:
-            raise FulqrumError("Operator must be type=2")
         if not self.oper.sorted:
             self.offdiag_term_grouping()
-        if not self.oper.ladder_sorted:
+        if self.oper.type==2 and (not self.oper.ladder_sorted):
             raise FulqrumError("Operator must have groups sorted by ladder ints")
         cdef size_t[::1] group_ptrs = self.group_ptrs()
         cdef size_t kk, jj
@@ -775,8 +773,8 @@ cdef class QubitOperator():
         cdef unsigned int num_groups = group_ptrs.shape[0] - 1
         cdef vector[vector[unsigned int]] group_indices
         cdef unsigned int[::1] temp_inds
-        set_group_ladder_indices(self.oper.terms, group_indices, &group_ptrs[0],
-                                 num_groups, self.oper.ladder_width)
+        set_group_offdiag_indices(self.oper.terms, group_indices, &group_ptrs[0],
+                                 num_groups, self.oper.ladder_width, self.oper.type)
         for kk in range(num_groups):
             temp_inds = np.zeros(group_indices[kk].size(), dtype=np.uint32)
             for jj in range(group_indices[kk].size()):
