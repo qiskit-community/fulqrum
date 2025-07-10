@@ -178,22 +178,14 @@ inline void compute_term_offdiag_inds(const OperatorTerm_t& term,
 void set_group_offdiag_indices(const std::vector<OperatorTerm_t>& terms,
                               std::vector<std::vector<unsigned int>>& group_indices,
                               const std::size_t * group_ptrs,
-                              unsigned int num_groups,
-                              unsigned int ladder_width, int oper_type)
+                              unsigned int num_groups)
 {
     unsigned int kk;
     unsigned int inds_len;
     group_indices.resize(num_groups);
     for(kk=0; kk<num_groups; kk++)
     {
-        if(oper_type==2)
-        {
-            inds_len = std::min(terms[group_ptrs[kk]].offdiag_weight, ladder_width);
-        }
-        else
-        {
-            inds_len = terms[group_ptrs[kk]].offdiag_weight;
-        }
+        inds_len = terms[group_ptrs[kk]].offdiag_weight;
         group_indices[kk].resize(inds_len);
         compute_term_offdiag_inds(terms[group_ptrs[kk]], &(group_indices[kk])[0], inds_len);
     }

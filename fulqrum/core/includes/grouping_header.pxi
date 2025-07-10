@@ -24,6 +24,4 @@ cdef extern from "../src/grouping.hpp":
     void set_group_offdiag_indices(const vector[OperatorTerm_t]& terms,
                                  vector[vector[unsigned int]]& group_indices,
                                  const size_t * group_ptrs,
-                                 unsigned int num_groups,
-                                 unsigned int ladder_width,
-                                 int oper_type) nogil
+                                 unsigned int num_groups) nogil
