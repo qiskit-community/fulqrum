@@ -144,20 +144,19 @@ void offdiag_term_sort(QubitOperator_t& oper){
  * 
  */
 inline void compute_term_ladder_inds(const OperatorTerm_t& term, 
-                                      unsigned int * ladder_inds, 
-                                      unsigned int ladder_width)
+                                     unsigned int * ladder_inds, 
+                                     unsigned int num_inds)
 {
     unsigned int kk, counter = 1;
     for(kk=0; kk < term.indices.size(); kk++)
     {
-        if(counter > ladder_width)
+        if(counter > num_inds)
         {
             break;
         }
 
         if(term.values[kk] > 4)
         {
-            
             ladder_inds[kk] = term.indices[kk];
             counter += 1;
         }
@@ -165,8 +164,37 @@ inline void compute_term_ladder_inds(const OperatorTerm_t& term,
 }
 
 
+/**
+ * Set the ladder indices for each group in a off-diagonal type=2 Hamiltonian
+ *
+ * @param terms Operator terms
+ * @param group_indices Vector of vectors of group_indices
+ * @param group_ptrs Pointer of array of group pointers
+ * @param num_groups Number of groups = len(group_ptrs) - 1
+ * @param ladder_width Target ladder indices width
+ * 
+ */
+void set_group_ladder_indices(const std::vector<OperatorTerm_t>& terms,
+                              std::vector<std::vector<unsigned int>>& group_indices,
+                              const std::size_t * group_ptrs,
+                              unsigned int num_groups,
+                              unsigned int ladder_width)
+{
+    unsigned int kk;
+    unsigned int inds_len;
+    group_indices.resize(num_groups);
+    for(kk=0; kk<num_groups; kk++)
+    {
+        inds_len = std::min(terms[group_ptrs[kk]].offdiag_weight, ladder_width);
+        group_indices[kk].resize(inds_len);
+        compute_term_ladder_inds(terms[group_ptrs[kk]], &(group_indices[kk])[0], inds_len);
+    }
+}
+
+
+
 inline void sort_groups_by_ladder_int(QubitOperator_t& oper,
-                                      std::size_t * group_ptrs,
+                                      const std::size_t * group_ptrs,
                                       unsigned int num_groups,
                                       unsigned int ladder_width)
     {
