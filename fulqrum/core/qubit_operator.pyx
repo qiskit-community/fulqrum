@@ -256,6 +256,16 @@ cdef class QubitOperator():
         # set sorted flag
         diag.oper.sorted = self.oper.sorted
         offdiag.oper.sorted = self.oper.sorted
+        diag.oper.weight_sorted = self.oper.weight_sorted
+        offdiag.oper.weight_sorted = self.oper.weight_sorted
+        diag.oper.off_weight_sorted = self.oper.off_weight_sorted
+        offdiag.oper.off_weight_sorted = self.oper.off_weight_sorted
+        diag.oper.ladder_sorted = self.oper.ladder_sorted
+        offdiag.oper.ladder_sorted = self.oper.ladder_sorted
+        diag.oper.ladder_width = self.oper.ladder_width
+        offdiag.oper.ladder_width = self.oper.ladder_width
+        diag.oper.type = self.oper.type
+        offdiag.oper.type = self.oper.type
         return diag, offdiag
 
     @property
@@ -677,6 +687,8 @@ cdef class QubitOperator():
         """Inplace sorting of operator terms according to off-diagonal
         structure.
         """
+        if not self.oper.terms.size():
+            return
         offdiag_weight_sort(self.oper)
         offdiag_term_sort(self.oper)
 
@@ -735,6 +747,7 @@ cdef class QubitOperator():
             self.weight_sort()
         combine_qubit_terms(self.oper.terms, out.oper.terms,
                             &touched[0], atol)
+        out.oper.type = self.oper.type
         return out
 
     def ladder_ints(self):
