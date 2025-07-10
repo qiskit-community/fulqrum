@@ -195,6 +195,7 @@ def test_group_ladder_indices1():
     assert np.allclose(inds_list[4], np.array([0, 2, 3], dtype=np.uint32))
     assert np.allclose(inds_list[5], np.array([0, 1, 2, 3], dtype=np.uint32))
 
+
 def test_group_ladder_indices1():
     """Validate that group ladder indices routine works as it should for Paulis"""
     op = fq.QubitOperator.from_label("IXIY")
