@@ -221,7 +221,7 @@ cdef class QubitOperator():
             return 0
         if not self.oper.sorted:
             self.offdiag_term_grouping()
-        return (self.oper.terms[self.oper.terms.size()-1].group - self.oper.terms[0].group) + 1
+        return self.group_ptrs().shape[0] - 1
     
     def copy(self):
         """Copy QubitOperator
