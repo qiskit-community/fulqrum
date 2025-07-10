@@ -186,7 +186,7 @@ def test_group_ladder_indices1():
     op += fq.QubitOperator.from_label("----")
     op += fq.QubitOperator.from_label("--I-")
     op.set_type(2)
-    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int()
     inds_list = op.group_ladder_indices()
     assert np.allclose(inds_list[0], np.array([3], dtype=np.uint32))
     assert np.allclose(inds_list[1], np.array([0, 2], dtype=np.uint32))
@@ -206,7 +206,6 @@ def test_group_terms_ladder_int1():
     op += fq.QubitOperator.from_label("---I")
     op += fq.QubitOperator.from_label("IZZI")
     op.set_type(2)
-    op.offdiag_term_grouping()
     op.group_term_sort_by_ladder_int()
     assert np.allclose(op.group_ptrs(), [0, 1, 2, 5, 7])
     assert np.allclose(
@@ -221,7 +220,6 @@ def test_group_terms_ladder_int_width1():
     op += fq.QubitOperator.from_label("------")
     op += fq.QubitOperator.from_label("IIIZZI")
     op.set_type(2)
-    op.offdiag_term_grouping()
     op.group_term_sort_by_ladder_int()
     assert np.allclose(
         op.ladder_ints(), np.array([np.iinfo(np.uint32).max, 0, 7], dtype=np.uint32)
@@ -234,10 +232,9 @@ def test_group_terms_ladder_int_width2():
     op += fq.QubitOperator.from_label("------")
     op += fq.QubitOperator.from_label("IIIZZI")
     op.set_type(2)
-    op.offdiag_term_grouping()
     op.group_term_sort_by_ladder_int(2)
     assert np.allclose(
-        op.ladder_ints(2), np.array([np.iinfo(np.uint32).max, 0, 3], dtype=np.uint32)
+        op.ladder_ints(), np.array([np.iinfo(np.uint32).max, 0, 3], dtype=np.uint32)
     )
 
 
@@ -247,10 +244,9 @@ def test_group_terms_ladder_int_width3():
     op += fq.QubitOperator.from_label("------")
     op += fq.QubitOperator.from_label("IIIZZI")
     op.set_type(2)
-    op.offdiag_term_grouping()
     op.group_term_sort_by_ladder_int(1)
     assert np.allclose(
-        op.ladder_ints(1), np.array([np.iinfo(np.uint32).max, 0, 1], dtype=np.uint32)
+        op.ladder_ints(), np.array([np.iinfo(np.uint32).max, 0, 1], dtype=np.uint32)
     )
 
 
@@ -260,10 +256,9 @@ def test_group_terms_ladder_int_width4():
     op += fq.QubitOperator.from_label("++II")
     op += fq.QubitOperator.from_label("IIIZ")
     op.set_type(2)
-    op.offdiag_term_grouping()
     op.group_term_sort_by_ladder_int(3)
     assert np.allclose(
-        op.ladder_ints(3), np.array([np.iinfo(np.uint32).max, 1, 3], dtype=np.uint32)
+        op.ladder_ints(), np.array([np.iinfo(np.uint32).max, 1, 3], dtype=np.uint32)
     )
 
 
@@ -343,9 +338,8 @@ def test_group_ladder_bin_starts3():
     op += fq.QubitOperator.from_label("-ZZ-")  # int = 0
     op += fq.QubitOperator.from_label("+0I-")  # int = 0
     op.set_type(2)
-    op.offdiag_term_grouping()
     op.group_term_sort_by_ladder_int(1)
-    group_ladder_starts = op.group_ladder_bin_starts(1)
+    group_ladder_starts = op.group_ladder_bin_starts()
     assert np.allclose(group_ladder_starts, [0, 3, 5])
 
 
@@ -403,9 +397,8 @@ def test_group_ladder_bin_starts5():
     op += fq.QubitOperator.from_label("Z0-+")  # int = 1
     op += fq.QubitOperator.from_label("ZI++")  # int = 1
     op.set_type(2)
-    op.offdiag_term_grouping()
     op.group_term_sort_by_ladder_int(1)
-    group_ladder_starts = op.group_ladder_bin_starts(1)
+    group_ladder_starts = op.group_ladder_bin_starts()
     num_terms = np.diff(group_ladder_starts)
 
     grp0_num_terms = num_terms[:2]
@@ -432,7 +425,7 @@ def test_group_ladder_bin_starts6():
     op += fq.QubitOperator.from_label("Z00+")  # int = 1
     op += fq.QubitOperator.from_label("ZII+")  # int = 1
     op.set_type(2)
-    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int()
     group_ladder_starts = op.group_ladder_bin_starts()
     num_terms = np.diff(group_ladder_starts)
 
@@ -460,7 +453,7 @@ def test_group_ladder_bin_starts7():
     op += fq.QubitOperator.from_label("Z00+")  # int = 1
     op += fq.QubitOperator.from_label("ZII+")  # int = 1
     op.set_type(2)
-    op.offdiag_term_grouping()
+    op.group_term_sort_by_ladder_int()
     group_ladder_starts = op.group_ladder_bin_starts()
     ptr_size = 2**3 + 1  #  2**ladder_width + 1
     idx = 1 * ptr_size + 3  # group 1 + int value = 3

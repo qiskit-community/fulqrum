@@ -22,8 +22,10 @@ cdef extern from "../src/base.hpp":
         vector[OperatorTerm_t] terms
         int sorted
         int type
+        unsigned int ladder_width
         int weight_sorted
         int off_weight_sorted
+        int ladder_sorted
 
 
     ctypedef struct Subspace_t:

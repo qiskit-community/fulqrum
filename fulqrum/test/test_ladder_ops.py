@@ -50,12 +50,19 @@ def test_bitset_int4():
 def test_operator_ladder_int1():
     """Test ladder int works for various ladder widths"""
     op = fq.QubitOperator.from_label("I+-Z0X+-+Y")
-    assert op.ladder_ints(5)[0] == int("10101", 2)
-    assert op.ladder_ints(4)[0] == int("0101", 2)
-    assert op.ladder_ints(3)[0] == int("101", 2)
-    assert op.ladder_ints(2)[0] == int("01", 2)
-    assert op.ladder_ints(1)[0] == int("1", 2)
+    op.set_type(2)
+    op.group_term_sort_by_ladder_int(5)
+    assert op.ladder_ints()[0] == int("10101", 2)
+    op.group_term_sort_by_ladder_int(4)
+    assert op.ladder_ints()[0] == int("0101", 2)
+    op.group_term_sort_by_ladder_int(3)
+    assert op.ladder_ints()[0] == int("101", 2)
+    op.group_term_sort_by_ladder_int(2)
+    assert op.ladder_ints()[0] == int("01", 2)
+    op.group_term_sort_by_ladder_int(1)
+    assert op.ladder_ints()[0] == int("1", 2)
     # check default behavior
+    op.group_term_sort_by_ladder_int()
     assert op.ladder_ints()[0] == 5
 
 
@@ -64,7 +71,9 @@ def test_operator_ladder_int2():
     op = fq.QubitOperator.from_label("I+-Z0X+-+Y") + fq.QubitOperator.from_label(
         "IXYI01IIXYZ"
     )
-    assert np.allclose(op.ladder_ints(), [5, np.iinfo(np.uint32).max])
+    op.set_type(2)
+    op.group_term_sort_by_ladder_int()
+    assert np.allclose(op.ladder_ints(), [np.iinfo(np.uint32).max, 5])
 
 
 def test_operator_ladder_int3():
@@ -73,4 +82,5 @@ def test_operator_ladder_int3():
         "IXYI01IIXYZ"
     )
     op.set_type(2)
-    assert np.allclose(op.ladder_ints(), [5, np.iinfo(np.uint32).max])
+    op.group_term_sort_by_ladder_int()
+    assert np.allclose(op.ladder_ints(), [np.iinfo(np.uint32).max, 5])

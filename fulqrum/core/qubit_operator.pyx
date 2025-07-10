@@ -737,7 +737,7 @@ cdef class QubitOperator():
                             &touched[0], atol)
         return out
 
-    def ladder_ints(self, unsigned int ladder_width=3):
+    def ladder_ints(self):
         """Compute the ladder operator integer for each term
 
         If no ladder ops present then default int is max(uint32)
@@ -748,19 +748,27 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of uint32 integers 
         """
+        if not self.oper.type == 2:
+            raise FulqrumError("Operator must be type=2")
+        if not self.oper.sorted:
+            raise FulqrumError("Operator must be group sorted first")
+        if not self.oper.ladder_sorted:
+            raise FulqrumError("Operator must have groups sorted by ladder ints")
         cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
         cdef size_t kk
         for kk in range(self.oper.terms.size()):
-            out[kk] = term_ladder_int(self.oper.terms[kk], ladder_width)
+            out[kk] = term_ladder_int(self.oper.terms[kk], self.oper.ladder_width)
         return np.asarray(out)
     
-    def group_ladder_indices(self, unsigned int ladder_width=3):
+    def group_ladder_indices(self):
         """Ladder indices for each group in the type=2 operator
         """
-        if not self.oper.sorted:
-            raise FulqrumError("Operator must be group sorted first")
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
+        if not self.oper.sorted:
+            self.offdiag_term_grouping()
+        if not self.oper.ladder_sorted:
+            raise FulqrumError("Operator must have groups sorted by ladder ints")
         cdef size_t[::1] group_ptrs = self.group_ptrs()
         cdef size_t kk, jj
         cdef list out = []
@@ -768,7 +776,7 @@ cdef class QubitOperator():
         cdef vector[vector[unsigned int]] group_indices
         cdef unsigned int[::1] temp_inds
         set_group_ladder_indices(self.oper.terms, group_indices, &group_ptrs[0],
-                                 num_groups, ladder_width)
+                                 num_groups, self.oper.ladder_width)
         for kk in range(num_groups):
             temp_inds = np.zeros(group_indices[kk].size(), dtype=np.uint32)
             for jj in range(group_indices[kk].size()):
@@ -780,15 +788,19 @@ cdef class QubitOperator():
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
         if not self.oper.sorted:
-            raise FulqrumError('Operator must be group sorted')
+            self.offdiag_term_grouping()
         cdef size_t[::1] group_ptrs = self.group_ptrs()
         sort_groups_by_ladder_int(self.oper, &group_ptrs[0], group_ptrs.shape[0]-1, ladder_width)
+        self.oper.ladder_width = ladder_width
+        self.oper.ladder_sorted = 1
 
-    def group_ladder_bin_starts(self, unsigned int ladder_width=3):
+    def group_ladder_bin_starts(self):
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
+        if not self.oper.ladder_sorted:
+            raise FulqrumError("Operator must have groups sorted by ladder ints")
         cdef size_t[::1] group_ptrs = self.group_ptrs()
-        cdef unsigned int num_bins = 2**ladder_width
+        cdef unsigned int num_bins = 2**self.oper.ladder_width
         cdef unsigned int ptr_size = num_bins + 1
         cdef unsigned int num_groups = group_ptrs.shape[0] - 1
         cdef unsigned int[::1] group_counts
@@ -796,7 +808,7 @@ cdef class QubitOperator():
         group_counts = np.zeros(num_bins*num_groups, dtype=np.uint32)
         group_ranges = np.zeros(ptr_size*num_groups, dtype=np.uint32)
         ladder_bin_starts(&self.oper.terms[0], &group_ptrs[0], &group_counts[0], &group_ranges[0],
-                        num_groups, num_bins, ladder_width)
+                        num_groups, num_bins, self.oper.ladder_width)
         
         return np.asarray(group_ranges)
 
