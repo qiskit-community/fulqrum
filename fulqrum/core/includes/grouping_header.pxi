@@ -21,4 +21,8 @@ cdef extern from "../src/grouping.hpp":
                             unsigned int * group_counts, unsigned int * group_ranges,
                             unsigned int num_groups, unsigned int num_bins, unsigned int ladder_width) nogil
 
-    
+    void set_group_ladder_indices(const vector[OperatorTerm_t]& terms,
+                                 vector[vector[unsigned int]]& group_indices,
+                                 const size_t * group_ptrs,
+                                 unsigned int num_groups,
+                                 unsigned int ladder_width) nogil
