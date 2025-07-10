@@ -23,7 +23,7 @@ const int EXT_NZ_MASK[8] = {1, 1, 0, 1, 1, 1, 0, 1};
 inline void bin_int(const boost::dynamic_bitset<std::size_t>& bitset, 
                     const unsigned int bin_width, std::size_t& res)
     {
-        res = bitset.m_bits[0] & (( 1ULL << bin_width) - 1);
+        res = bitset.m_bits[0] & (( static_cast<std::size_t>(1) << bin_width) - 1);
     }
 
 
@@ -45,7 +45,7 @@ inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
             pos = arr[kk];
             block_num = pos / BITS_PER_BLOCK;
             block_idx = pos % BITS_PER_BLOCK;
-            bitset.m_bits[block_num] = bitset.m_bits[block_num] ^ (1ULL << block_idx);
+            bitset.m_bits[block_num] = bitset.m_bits[block_num] ^ (static_cast<std::size_t>(1) << block_idx);
         }
     }
 

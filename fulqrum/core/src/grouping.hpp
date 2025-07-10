@@ -139,8 +139,8 @@ void offdiag_term_sort(QubitOperator_t& oper){
  * ladder indices vector
  *
  * @param term Operator term
- * @param ladder_inds Pre-sized array (size=off-diag weight) to store indices in
- * @param ladder_width Number of elements to consider for appending
+ * @param ladder_inds Pre-sized array (size=num_inds) to store indices in
+ * @param num_inds Number of elements to consider for appending
  * 
  */
 inline void compute_term_ladder_inds(const OperatorTerm_t& term, 
