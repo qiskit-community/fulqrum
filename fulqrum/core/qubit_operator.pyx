@@ -755,6 +755,8 @@ cdef class QubitOperator():
         return np.asarray(out)
     
     def group_ladder_indices(self, unsigned int ladder_width=3):
+        """Ladder indices for each group in the type=2 operator
+        """
         if not self.oper.sorted:
             raise FulqrumError("Operator must be group sorted first")
         if not self.oper.type == 2:
