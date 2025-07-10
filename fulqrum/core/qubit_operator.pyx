@@ -762,13 +762,15 @@ cdef class QubitOperator():
         cdef size_t[::1] group_ptrs = self.group_ptrs()
         cdef size_t kk, jj
         cdef list out = []
+        cdef unsigned int num_groups = group_ptrs.shape[0] - 1
+        cdef vector[vector[unsigned int]] group_indices
         cdef unsigned int[::1] temp_inds
-        for kk in range(group_ptrs.shape[0]-1):
-            if not self.oper.terms[group_ptrs[kk]].group: # diagonal group so return nothing
-                temp_inds = np.zeros(0, dtype=np.uint32)
-            else:
-                temp_inds = np.zeros(min(self.oper.terms[group_ptrs[kk]].offdiag_weight, ladder_width), dtype=np.uint32)
-                compute_term_ladder_inds(self.oper.terms[group_ptrs[kk]], &temp_inds[0], temp_inds.shape[0])
+        set_group_ladder_indices(self.oper.terms, group_indices, &group_ptrs[0],
+                                 num_groups, ladder_width)
+        for kk in range(num_groups):
+            temp_inds = np.zeros(group_indices[kk].size(), dtype=np.uint32)
+            for jj in range(group_indices[kk].size()):
+                temp_inds[jj] = group_indices[kk][jj]
             out.append(np.asarray(temp_inds))
         return out
 
