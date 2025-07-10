@@ -163,6 +163,17 @@ inline void compute_term_ladder_inds(const OperatorTerm_t& term,
     }
 }
 
+
+/**
+ * Set the ladder indices for each group in a off-diagonal type=2 Hamiltonian
+ *
+ * @param terms Operator terms
+ * @param group_indices Vector of vectors of group_indices
+ * @param group_ptrs Pointer of array of group pointers
+ * @param num_groups Number of groups = len(group_ptrs) - 1
+ * @param ladder_width Target ladder indices width
+ * 
+ */
 void set_group_ladder_indices(const std::vector<OperatorTerm_t>& terms,
                               std::vector<std::vector<unsigned int>>& group_indices,
                               const std::size_t * group_ptrs,
