@@ -133,15 +133,15 @@ inline void sort_bitset_vector(std::vector<boost::dynamic_bitset<std::size_t> >&
  *
  * @param row The input row bitset
  * @param inds Pointer to array of indices as unsigned ints 
- * @param ladder_width The number of bits to consider
+ * @param num_bits The number of bits to consider
  */
 inline unsigned int bitset_ladder_int(const boost::dynamic_bitset<std::size_t>& row, 
                                       const unsigned int * inds,
-                                      unsigned int ladder_width)
+                                      unsigned int num_bits)
 {
     unsigned int subset = 0;
     unsigned int kk, pos, block_num, block_idx, row_int, counter=0;
-    for(kk=0; kk < ladder_width; kk++)
+    for(kk=0; kk < num_bits; kk++)
     {
         pos = inds[kk];
         block_num = pos / BITS_PER_BLOCK;
