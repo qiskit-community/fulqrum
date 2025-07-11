@@ -64,8 +64,6 @@ void omp_matvec(const QubitOperator_t& ham,
                 temp_val = 0;
                 for(idx=group_start; idx < group_stop; idx++)
                 {
-                    term = &ham.terms[idx];
-                    weight = term->indices.size();
                     if(do_col_search)
                     {
                         col_vec = subspace[kk];
@@ -75,14 +73,20 @@ void omp_matvec(const QubitOperator_t& ham,
                         stop = bin_ranges[bin_num+1];
                         bitset_column_index(start, stop, col_vec, subspace, col_idx);
                         do_col_search = 0; // do not search again for this group
-                        if(col_idx == MAX_SIZE_T) // column is in the subspace
+                        if(col_idx == MAX_SIZE_T) // column is not in the subspace
                         {
                             break;
                         }
                     }
-                    accum_element(subspace[kk], col_vec,
+                    term = &ham.terms[idx];
+                    weight = term->indices.size();
+                    if(passes_proj_validation(subspace[kk], &term->proj_bits[0],
+                                              &term->proj_indices[0], term->proj_bits.size()))
+                    {
+                        accum_element(subspace[kk], col_vec,
                                   &term->indices[0], &term->values[0],
                                   term->coeff, weight, temp_val);
+                    }
                 }
                 if(!do_col_search) // if there is anything to do
                 {

@@ -35,7 +35,7 @@ inline void bin_int(const boost::dynamic_bitset<std::size_t>& bitset,
  * @param size The size of the array
  */
 inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
-                      const unsigned int * arr, unsigned int size)
+                      const unsigned int *__restrict arr, unsigned int size)
     {
         unsigned int  kk;
         unsigned int block_num, block_idx;
@@ -93,7 +93,7 @@ inline void bitset_column_index(const std::size_t start, const std::size_t stop,
     }
 }
 
-inline int nonzero_extended_bitset(const OperatorTerm_t * term,
+inline int nonzero_extended_bitset(const OperatorTerm_t *__restrict term,
                                    const boost::dynamic_bitset<std::size_t>& row)
 {
     std::size_t kk;
@@ -136,7 +136,7 @@ inline void sort_bitset_vector(std::vector<boost::dynamic_bitset<std::size_t> >&
  * @param num_bits The number of bits to consider
  */
 inline unsigned int bitset_ladder_int(const boost::dynamic_bitset<std::size_t>& row, 
-                                      const unsigned int * inds,
+                                      const unsigned int *__restrict inds,
                                       unsigned int num_bits)
 {
     unsigned int subset = 0;
@@ -163,8 +163,8 @@ inline unsigned int bitset_ladder_int(const boost::dynamic_bitset<std::size_t>& 
  * @param size The size of the proj array
  */
 inline bool passes_proj_validation(const boost::dynamic_bitset<std::size_t>& bitset,
-                                   const unsigned int * proj_bits,
-                                   const unsigned int * proj_indices,
+                                   const unsigned int *__restrict proj_bits,
+                                   const unsigned int *__restrict proj_indices,
                                    unsigned int size)
 {
     unsigned int  kk;
