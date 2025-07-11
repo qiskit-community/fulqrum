@@ -95,3 +95,10 @@ def test_bitstring_term_proj_validation13():
     op = fq.QubitOperator.from_label("0" + "I" * 43)
     bits = fq.Bitset("1" * 44)
     assert np.allclose(op.projector_oper_validation(bits), [0])
+
+
+def test_bitstring_term_proj_validation14():
+    """Test projector validation of term and bitstring"""
+    op = fq.QubitOperator.from_label("1II1")
+    bits = fq.Bitset("1100")
+    assert np.allclose(op.projector_oper_validation(bits), [0])
