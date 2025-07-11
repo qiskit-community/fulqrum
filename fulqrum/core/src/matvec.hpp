@@ -24,6 +24,7 @@ void omp_matvec(const QubitOperator_t& ham,
     const std::size_t bin_width,
     const std::size_t *__restrict bin_ranges,
     const std::size_t *__restrict group_ptrs,
+    const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
     const std::size_t num_groups,
     const std::complex<double> *__restrict in_vec,
     std::complex<double> *__restrict out_vec)
@@ -53,6 +54,7 @@ void omp_matvec(const QubitOperator_t& ham,
             std::size_t group_start, group_stop, group;
             std::size_t idx, weight, col_idx;
             std::size_t bin_num;
+            const std::vector<unsigned int> * group_inds;
             int do_col_search;
             // Loop over all off-diagonal terms in operator
             for(group=0; group < num_groups; group++)
@@ -60,6 +62,7 @@ void omp_matvec(const QubitOperator_t& ham,
                 group_start = group_ptrs[group];
                 group_stop = group_ptrs[group+1];
                 do_col_search = 1;
+                group_inds = &group_offdiag_inds[group];
                 for(idx=group_start; idx < group_stop; idx++)
                 {
                     term = &ham.terms[idx];
@@ -68,7 +71,7 @@ void omp_matvec(const QubitOperator_t& ham,
                     if(do_col_search)
                     {
                         col_vec = subspace[kk];
-                        get_column_bitset(col_vec, &term->indices[0], &term->values[0], weight);
+                        flip_bits(col_vec, group_inds->data(), group_inds->size());
                         bin_int(col_vec, bin_width, bin_num);
                         start = bin_ranges[bin_num];
                         stop = bin_ranges[bin_num+1];

@@ -176,7 +176,7 @@ def test_square_group_pointers_h2_example():
 
 
 def test_group_ladder_indices1():
-    """Validate that group ladder indices routine works as it should"""
+    """Validate that group ladder indices routine works as it should for ladders"""
     op = fq.QubitOperator.from_label("I+I+")
     op += fq.QubitOperator.from_label("+II+")
     op += fq.QubitOperator.from_label("+III")
@@ -187,13 +187,33 @@ def test_group_ladder_indices1():
     op += fq.QubitOperator.from_label("--I-")
     op.set_type(2)
     op.group_term_sort_by_ladder_int()
-    inds_list = op.group_ladder_indices()
+    inds_list = op.group_offdiag_indices()
     assert np.allclose(inds_list[0], np.array([3], dtype=np.uint32))
     assert np.allclose(inds_list[1], np.array([0, 2], dtype=np.uint32))
     assert np.allclose(inds_list[2], np.array([0, 3], dtype=np.uint32))
     assert np.allclose(inds_list[3], np.array([1, 2], dtype=np.uint32))
     assert np.allclose(inds_list[4], np.array([0, 2, 3], dtype=np.uint32))
-    assert np.allclose(inds_list[5], np.array([0, 1, 2], dtype=np.uint32))
+    assert np.allclose(inds_list[5], np.array([0, 1, 2, 3], dtype=np.uint32))
+
+
+def test_group_ladder_indices1():
+    """Validate that group ladder indices routine works as it should for Paulis"""
+    op = fq.QubitOperator.from_label("IXIY")
+    op += fq.QubitOperator.from_label("XIIX")
+    op += fq.QubitOperator.from_label("YIII")
+    op += fq.QubitOperator.from_label("XIII")
+    op += fq.QubitOperator.from_label("IXXI")
+    op += fq.QubitOperator.from_label("IYYI")
+    op += fq.QubitOperator.from_label("YYYY")
+    op += fq.QubitOperator.from_label("YYIY")
+    op.offdiag_term_grouping()
+    inds_list = op.group_offdiag_indices()
+    assert np.allclose(inds_list[0], np.array([3], dtype=np.uint32))
+    assert np.allclose(inds_list[1], np.array([0, 2], dtype=np.uint32))
+    assert np.allclose(inds_list[2], np.array([0, 3], dtype=np.uint32))
+    assert np.allclose(inds_list[3], np.array([1, 2], dtype=np.uint32))
+    assert np.allclose(inds_list[4], np.array([0, 2, 3], dtype=np.uint32))
+    assert np.allclose(inds_list[5], np.array([0, 1, 2, 3], dtype=np.uint32))
 
 
 def test_group_terms_ladder_int1():
