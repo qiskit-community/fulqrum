@@ -27,7 +27,5 @@ cdef extern from "../src/bitset_utils.hpp":
                                    const unsigned int * inds,
                                    unsigned int ladder_width) nogil
 
-    bool passes_proj_validation(bitset_t& bitset,
-                                const unsigned int * proj_bits,
-                                const unsigned int * proj_indices,
-                                unsigned int size) nogil
+    bool passes_proj_validation(const OperatorTerm_t * term,
+                                const bitset_t& row) nogil

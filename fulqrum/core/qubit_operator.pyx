@@ -826,10 +826,7 @@ cdef class QubitOperator():
         cdef int[::1] out = np.zeros(num_terms, dtype=np.int32)
         cdef size_t kk
         for kk in range(num_terms):
-            out[kk] = passes_proj_validation(bits.bits,
-                                &self.oper.terms[kk].proj_bits[0],
-                                &self.oper.terms[kk].proj_indices[0],
-                                self.oper.terms[kk].proj_indices.size())
+            out[kk] = passes_proj_validation(&self.oper.terms[kk], bits.bits)
         return np.asarray(out)
 
 
