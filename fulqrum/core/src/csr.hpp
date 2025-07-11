@@ -23,6 +23,7 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
                                               const unsigned int bin_width,
                                               const std::size_t * bin_ranges,
                                               const std::size_t * group_ptrs,
+                                              const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
                                               const std::size_t num_groups,
                                               T * indptr,
                                               T * indices,
@@ -41,6 +42,7 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
         T row_nnz, elem_start;
         const OperatorTerm_t * term;
         boost::dynamic_bitset<std::size_t> col_vec;
+        const std::vector<unsigned int> * group_inds;
         std::size_t col_idx;
         unsigned int weight;
         std::complex<double> val;
@@ -67,6 +69,7 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
             group_stop = group_ptrs[group+1];
             do_col_search = 1;
             val = 0;
+            group_inds = &group_offdiag_inds[group];
             for(idx=group_start; idx < group_stop; idx++)
             { // begin loop over terms in this group
                 term = &terms[idx];
@@ -74,7 +77,7 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
                 if(do_col_search)
                 {
                     col_vec = subspace[kk];
-                    get_column_bitset(col_vec, &term->indices[0], &term->values[0], weight);
+                    flip_bits(col_vec, group_inds->data(), group_inds->size());
                     bin_int(col_vec, bin_width, bin_num);
                     start = bin_ranges[bin_num];
                     stop = bin_ranges[bin_num+1];
