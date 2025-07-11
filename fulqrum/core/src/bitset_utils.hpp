@@ -35,7 +35,7 @@ inline void bin_int(const boost::dynamic_bitset<std::size_t>& bitset,
  * @param size The size of the array
  */
 inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
-                      unsigned int * arr, unsigned int size)
+                      const unsigned int * arr, unsigned int size)
     {
         unsigned int  kk;
         unsigned int block_num, block_idx;
@@ -162,10 +162,10 @@ inline unsigned int bitset_ladder_int(const boost::dynamic_bitset<std::size_t>& 
  * @param proj_indices Pointer to array of indices on which projectors act
  * @param size The size of the proj array
  */
-inline bool passes_proj_validation(boost::dynamic_bitset<std::size_t>& bitset,
-                                  const unsigned int * proj_bits,
-                                  const unsigned int * proj_indices,
-                                  unsigned int size)
+inline bool passes_proj_validation(const boost::dynamic_bitset<std::size_t>& bitset,
+                                   const unsigned int * proj_bits,
+                                   const unsigned int * proj_indices,
+                                   unsigned int size)
 {
     unsigned int  kk;
     unsigned int block_num, block_idx;

@@ -15,6 +15,7 @@ cdef extern from "../src/matvec.hpp":
                 size_t bin_width,
                 size_t * bin_ranges,
                 size_t * group_ptrs,
+                const vector[vector[unsigned int]]& group_offdiag_inds,
                 size_t num_groups,
                 const double complex * in_vec,
                 double complex * out_vec) nogil

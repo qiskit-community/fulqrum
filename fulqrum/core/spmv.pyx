@@ -26,6 +26,7 @@ include "includes/elements_header.pxi"
 include "includes/diag_header.pxi"
 include "includes/matvec_header.pxi"
 include "includes/csr_header.pxi"
+include "includes/grouping_header.pxi"
 
 ctypedef long long int64
 
@@ -43,8 +44,13 @@ cdef class FulqrumSpMV():
         self.num_terms = self.oper.terms.size()
         self.num_diag_terms = self.diag_oper.terms.size()
         self.bin_ranges = &self.subspace.subspace.bin_ranges[0]
-        self.group_ptrs = &group_ptrs[0]
+        self.group_ptrs = group_ptrs
         self.num_groups = group_ptrs.shape[0] - 1
+        if group_ptrs.shape[0] > 1:
+            set_group_offdiag_indices(self.oper.terms, self.group_offdiag_inds,
+                                      &self.group_ptrs[0], self.num_groups)
+        
+        
         if self.diag_oper.terms.size() > 0:
             self.has_nonzero_diag = 1
              # Init diagonal memoryview to None because
@@ -107,7 +113,8 @@ cdef class FulqrumSpMV():
                    self.has_nonzero_diag,
                    self.bin_width,
                    self.bin_ranges,
-                   self.group_ptrs,
+                   &self.group_ptrs[0],
+                   self.group_offdiag_inds,
                    self.num_groups,
                    &x[0],
                    &out[0])
@@ -176,7 +183,7 @@ cdef class FulqrumSpMV():
                                     self.has_nonzero_diag,
                                     self.bin_width,
                                     self.bin_ranges,
-                                    self.group_ptrs,
+                                    &self.group_ptrs[0],
                                     self.num_groups,
                                     &indptr64[0],
                                     &indices64[0],
@@ -191,7 +198,7 @@ cdef class FulqrumSpMV():
                                     self.has_nonzero_diag,
                                     self.bin_width,
                                     self.bin_ranges,
-                                    self.group_ptrs,
+                                    &self.group_ptrs[0],
                                     self.num_groups,
                                     &indptr32[0],
                                     &indices32[0],
