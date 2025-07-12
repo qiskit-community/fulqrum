@@ -25,7 +25,9 @@ include "includes/base_header.pxi"
 include "includes/elements_header.pxi"
 include "includes/diag_header.pxi"
 include "includes/matvec_header.pxi"
+include "includes/matvec2_header.pxi"
 include "includes/csr_header.pxi"
+include "includes/csr2_header.pxi"
 include "includes/grouping_header.pxi"
 
 ctypedef long long int64
@@ -105,19 +107,34 @@ cdef class FulqrumSpMV():
         if self.diag_vec.shape[0] == 0 and self.has_nonzero_diag:
             self.compute_diag_vector()
         cdef double complex[::1] out = np.zeros(x.shape[0], dtype=complex)
-        omp_matvec(self.oper,
-                   self.subspace.subspace.bitstrings,
-                   &self.diag_vec[0],
-                   self.width,
-                   self.subspace_dim,
-                   self.has_nonzero_diag,
-                   self.bin_width,
-                   self.bin_ranges,
-                   &self.group_ptrs[0],
-                   self.group_offdiag_inds,
-                   self.num_groups,
-                   &x[0],
-                   &out[0])
+        if self.oper.type == 2:
+            omp_matvec2(self.oper,
+                    self.subspace.subspace.bitstrings,
+                    &self.diag_vec[0],
+                    self.width,
+                    self.subspace_dim,
+                    self.has_nonzero_diag,
+                    self.bin_width,
+                    self.bin_ranges,
+                    &self.group_ptrs[0],
+                    self.group_offdiag_inds,
+                    self.num_groups,
+                    &x[0],
+                    &out[0])
+        else:
+            omp_matvec(self.oper,
+                    self.subspace.subspace.bitstrings,
+                    &self.diag_vec[0],
+                    self.width,
+                    self.subspace_dim,
+                    self.has_nonzero_diag,
+                    self.bin_width,
+                    self.bin_ranges,
+                    &self.group_ptrs[0],
+                    self.group_offdiag_inds,
+                    self.num_groups,
+                    &x[0],
+                    &out[0])
         return np.asarray(out)
 
     
@@ -175,37 +192,71 @@ cdef class FulqrumSpMV():
                     data = np.zeros(indptr32[self.subspace_dim], dtype=complex)
                 
             if int_64:
-                csr_matrix_builder[int64](&self.oper.terms[0],
-                                    self.subspace.subspace.bitstrings,
-                                    &self.diag_vec[0],
-                                    self.width,
-                                    self.subspace_dim,
-                                    self.has_nonzero_diag,
-                                    self.bin_width,
-                                    self.bin_ranges,
-                                    &self.group_ptrs[0],
-                                    self.group_offdiag_inds,
-                                    self.num_groups,
-                                    &indptr64[0],
-                                    &indices64[0],
-                                    &data[0],
-                                    compute_values)
+                if self.oper.type == 2:
+                    csr_matrix_builder2[int64](&self.oper.terms[0],
+                                        self.subspace.subspace.bitstrings,
+                                        &self.diag_vec[0],
+                                        self.width,
+                                        self.subspace_dim,
+                                        self.has_nonzero_diag,
+                                        self.bin_width,
+                                        self.bin_ranges,
+                                        &self.group_ptrs[0],
+                                        self.group_offdiag_inds,
+                                        self.num_groups,
+                                        &indptr64[0],
+                                        &indices64[0],
+                                        &data[0],
+                                        compute_values)
+                else:
+                    csr_matrix_builder[int64](&self.oper.terms[0],
+                                        self.subspace.subspace.bitstrings,
+                                        &self.diag_vec[0],
+                                        self.width,
+                                        self.subspace_dim,
+                                        self.has_nonzero_diag,
+                                        self.bin_width,
+                                        self.bin_ranges,
+                                        &self.group_ptrs[0],
+                                        self.group_offdiag_inds,
+                                        self.num_groups,
+                                        &indptr64[0],
+                                        &indices64[0],
+                                        &data[0],
+                                        compute_values)
             else:
-                csr_matrix_builder[int](&self.oper.terms[0],
-                                    self.subspace.subspace.bitstrings,
-                                    &self.diag_vec[0],
-                                    self.width,
-                                    self.subspace_dim,
-                                    self.has_nonzero_diag,
-                                    self.bin_width,
-                                    self.bin_ranges,
-                                    &self.group_ptrs[0],
-                                    self.group_offdiag_inds,
-                                    self.num_groups,
-                                    &indptr32[0],
-                                    &indices32[0],
-                                    &data[0],
-                                    compute_values)
+                if self.oper.type == 2:
+                    csr_matrix_builder2[int](&self.oper.terms[0],
+                                        self.subspace.subspace.bitstrings,
+                                        &self.diag_vec[0],
+                                        self.width,
+                                        self.subspace_dim,
+                                        self.has_nonzero_diag,
+                                        self.bin_width,
+                                        self.bin_ranges,
+                                        &self.group_ptrs[0],
+                                        self.group_offdiag_inds,
+                                        self.num_groups,
+                                        &indptr32[0],
+                                        &indices32[0],
+                                        &data[0],
+                                        compute_values)
+                else:
+                    csr_matrix_builder[int](&self.oper.terms[0],
+                                        self.subspace.subspace.bitstrings,
+                                        &self.diag_vec[0],
+                                        self.width,
+                                        self.subspace_dim,
+                                        self.has_nonzero_diag,
+                                        self.bin_width,
+                                        self.bin_ranges,
+                                        &self.group_ptrs[0],
+                                        self.group_offdiag_inds,
+                                        self.num_groups,
+                                        &indptr32[0],
+                                        &indices32[0],
+                                        &data[0],
+                                        compute_values)
 
         if int_64:
             mat = sp.csr_array((data, indices64, indptr64), 
