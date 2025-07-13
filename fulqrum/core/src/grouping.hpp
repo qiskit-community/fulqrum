@@ -219,14 +219,14 @@ inline void sort_groups_by_ladder_int(QubitOperator_t& oper,
 
 
 void ladder_bin_starts(const OperatorTerm_t * terms, const std::size_t * group_ptrs,
-                        unsigned int * group_counts, unsigned int * group_ranges,
+                        unsigned int * group_counts, std::size_t * group_ranges,
                         unsigned int num_groups, unsigned int num_bins, unsigned int ladder_width)
 {
 
     std::size_t start, stop, kk, mm;
     unsigned int ptr_size = num_bins + 1;
     unsigned int term_int;
-    unsigned int total;
+    std::size_t total;
     for(kk=0; kk<num_groups; kk++)
     {
         start = group_ptrs[kk];

@@ -833,9 +833,9 @@ cdef class QubitOperator():
         cdef unsigned int ptr_size = num_bins + 1
         cdef unsigned int num_groups = group_ptrs.shape[0] - 1
         cdef unsigned int[::1] group_counts
-        cdef unsigned int[::1] group_ranges
+        cdef size_t[::1] group_ranges
         group_counts = np.zeros(num_bins*num_groups, dtype=np.uint32)
-        group_ranges = np.zeros(ptr_size*num_groups, dtype=np.uint32)
+        group_ranges = np.zeros(ptr_size*num_groups, dtype=np.uintp)
         ladder_bin_starts(&self.oper.terms[0], &group_ptrs[0], &group_counts[0], &group_ranges[0],
                         num_groups, num_bins, self.oper.ladder_width)
         
