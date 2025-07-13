@@ -16,6 +16,7 @@ cdef extern from "../src/csr2.hpp":
                               size_t bin_width,
                               const size_t * bin_ranges,
                               const size_t * group_ptrs,
+                              const size_t * group_ladder_ptrs,
                               const vector[vector[unsigned int]]& group_offdiag_inds,
                               size_t num_groups,
                               T * indptr,
