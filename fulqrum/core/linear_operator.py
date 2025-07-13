@@ -24,6 +24,8 @@ class SubspaceHamiltonian(LinearOperator):
         self.group_ptrs = (
             off_H.group_ptrs() if off_H.num_terms else np.zeros(1, dtype=np.uintp)
         )
+        if off_H.type == 2:
+            off_H.group_term_sort_by_ladder_int()
         self.spmv = FulqrumSpMV(
             diag_H,
             off_H,

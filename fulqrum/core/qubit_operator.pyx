@@ -783,10 +783,6 @@ cdef class QubitOperator():
         """
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
-        if not self.oper.sorted:
-            raise FulqrumError("Operator must be group sorted first")
-        if not self.oper.ladder_sorted:
-            raise FulqrumError("Operator must have groups sorted by ladder ints")
         cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
         cdef size_t kk
         for kk in range(self.oper.terms.size()):
