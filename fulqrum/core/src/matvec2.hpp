@@ -15,7 +15,7 @@
 #include <boost/dynamic_bitset.hpp>
 
 
-void omp_matvec2(const QubitOperator_t& ham,
+void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
     const std::vector<boost::dynamic_bitset<std::size_t> >& subspace,
     const std::complex<double> * diag_vec,
     const std::size_t width,
@@ -28,6 +28,7 @@ void omp_matvec2(const QubitOperator_t& ham,
     const unsigned int *__restrict group_rowint_length,
     const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
     const std::size_t num_groups,
+    const unsigned int ladder_offset,
     const std::complex<double> *__restrict in_vec,
     std::complex<double> *__restrict out_vec)
 {
@@ -42,79 +43,61 @@ void omp_matvec2(const QubitOperator_t& ham,
         }
     }
 
-    std::size_t num_terms = ham.terms.size();
+    std::size_t num_terms = terms.size();
     // Take care of off-diagonal terms
     if(num_terms)
     {
         #pragma omp for schedule(dynamic)
         for(kk=0; kk < subspace_dim; kk++)
         {
-            boost::dynamic_bitset<std::size_t> col_vec;
+            boost::dynamic_bitset<std::size_t> row, col_vec;
+            row = subspace[kk];
             std::complex<double> temp_val, val=0;
             const OperatorTerm_t * term;
             std::size_t start, stop;
             std::size_t group_start, group_stop, group;
+            std::size_t group_int_start, group_int_stop;
             std::size_t idx, weight, col_idx;
             std::size_t bin_num;
+            unsigned int row_int;
             const std::vector<unsigned int> * group_inds;
             int do_col_search;
             // Loop over all off-diagonal terms in operator
             for(group=0; group < num_groups; group++)
             {
                 group_start = group_ptrs[group];
+                row_int = term_ladder_int(terms[group_start], group_rowint_length[group]);
                 group_stop = group_ptrs[group+1];
                 do_col_search = 1;
+                group_int_start = group_ladder_ptrs[group*ladder_offset+row_int];
+                group_int_stop = group_ladder_ptrs[group*ladder_offset+row_int+1];
                 group_inds = &group_offdiag_inds[group];
-                for(idx=group_start; idx < group_stop; idx++)
+                temp_val = 0;
+                for(idx=group_int_start; idx < group_int_stop; idx++)
                 {
-                    term = &ham.terms[idx];
+                    term = &terms[idx];
                     weight = term->indices.size();
-                    temp_val = 0;
                     if(do_col_search)
                     {
-                        col_vec = subspace[kk];
+                        col_vec = row;
                         flip_bits(col_vec, group_inds->data(), group_inds->size());
                         bin_int(col_vec, bin_width, bin_num);
                         start = bin_ranges[bin_num];
                         stop = bin_ranges[bin_num+1];
                         bitset_column_index(start, stop, col_vec, subspace, col_idx);
-                        if(col_idx < MAX_SIZE_T) // column is in the subspace
-                        {
-                            do_col_search = 0; // do not search again for this group
-                            if(term->extended) // check if extended term is zero
-                            {
-                                if(!nonzero_extended_bitset(term, subspace[kk])) // extended term is zero so move on to next term
-                                {
-                                    continue;
-                                }
-                            }
-                            accum_element(subspace[kk], col_vec,
-                                          &term->indices[0], &term->values[0],
-                                          term->coeff, weight, temp_val);
-                        }
-                        else // column is not in the subspace so entire group does nothing, break
+                        if(col_idx == MAX_SIZE_T) // column is NOT in the subspace
                         {
                             break;
                         }
+                        do_col_search = 0;
                     }
-                    else // column already found, process remaining terms
+                    if(passes_proj_validation(term, row))
                     {
-                        if(term->extended) // check if extended term is zero
-                        {
-                            if(!nonzero_extended_bitset(term, subspace[kk])) // extended term is zero so move on to next term
-                            {
-                                continue;
-                            }
-                        }
-                        accum_element(subspace[kk], col_vec,
-                                          &term->indices[0], &term->values[0],
-                                          term->coeff, weight, temp_val);
+                        accum_element(row, col_vec, &term->indices[0], &term->values[0],
+                                  term->coeff, weight, temp_val);
                     }
-                if(!do_col_search)
-                {
-                    val += temp_val * in_vec[col_idx];
-                }
-                } // end loop for this group
+                } // end loop over this group
+                val += temp_val * in_vec[col_idx];
             } // end loop over all groups
             out_vec[kk] += val;
         } // end for-loop over rows

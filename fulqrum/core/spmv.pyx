@@ -56,6 +56,7 @@ cdef class FulqrumSpMV():
         
         if self.oper.type == 2:
             self.group_rowint_length = hamiltonian.group_rowint_length()
+            self.ladder_offset = 2**self.oper.ladder_width
 
         if self.diag_oper.terms.size() > 0:
             self.has_nonzero_diag = 1
@@ -112,7 +113,7 @@ cdef class FulqrumSpMV():
             self.compute_diag_vector()
         cdef double complex[::1] out = np.zeros(x.shape[0], dtype=complex)
         if self.oper.type == 2:
-            omp_matvec2(self.oper,
+            omp_matvec2(self.oper.terms,
                     self.subspace.subspace.bitstrings,
                     &self.diag_vec[0],
                     self.width,
@@ -125,6 +126,7 @@ cdef class FulqrumSpMV():
                     &self.group_rowint_length[0],
                     self.group_offdiag_inds,
                     self.num_groups,
+                    self.ladder_offset,
                     &x[0],
                     &out[0])
         else:

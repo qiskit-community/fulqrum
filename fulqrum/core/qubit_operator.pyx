@@ -810,12 +810,12 @@ cdef class QubitOperator():
         return out
 
     def group_rowint_length(self):
-        """Offdiagonal indices for each group in operator
+        """The length (number of bits) in the row int per group
         """
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
-        if not self.oper.sorted:
-            self.offdiag_term_grouping()
+        if not self.oper.ladder_sorted:
+            raise FulqrumError("Operator be sorted by ladder ints to set ladder_width")
         cdef size_t[::1] group_ptrs = self.group_ptrs()
         cdef size_t kk, jj
         cdef list out = []
