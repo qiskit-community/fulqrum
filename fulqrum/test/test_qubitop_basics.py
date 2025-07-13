@@ -199,3 +199,26 @@ def test_proj_indices4():
     """Validate no proj indices for empty term"""
     op = fq.QubitOperator(5)
     assert not any(op.proj_indices)
+
+
+def test_is_real():
+    """Is real is true for small imag <= 1e-12"""
+    op = fq.QubitOperator.from_label("II++")
+    op = (1 + 1e-12j) * fq.QubitOperator.from_label("II--")
+    op.set_type(2)
+    assert op.is_real()
+
+
+def test_is_real2():
+    """Is real is false for imag > 1e-12"""
+    op = fq.QubitOperator.from_label("II++")
+    op = (1 + 1e-11j) * fq.QubitOperator.from_label("II--")
+    op.set_type(2)
+    assert not op.is_real()
+
+
+def test_is_real3():
+    """Is real is false Pauli-based operators"""
+    op = fq.QubitOperator.from_label("IIXX")
+    op = (1 + 1e-11j) * fq.QubitOperator.from_label("IIYY")
+    assert not op.is_real()
