@@ -12,8 +12,7 @@ from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
 
 _path = Path(__file__).parent / "data/h2o.json"
 FOP = FermionicOperator.from_json(_path)
-OP = FOP.extended_jw_transformation()
-NEW_OP = OP.combine_repeated_terms()
+NEW_OP = FOP.extended_jw_transformation()
 GROUND_ENERGY = -84.20635059  # Answer from direct full-matrix
 
 

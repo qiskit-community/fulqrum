@@ -816,6 +816,8 @@ cdef class QubitOperator():
     def group_term_sort_by_ladder_int(self, unsigned int ladder_width=3):
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
+        if not self.oper.terms.size():
+            return
         if not self.oper.sorted:
             self.offdiag_term_grouping()
         cdef size_t[::1] group_ptrs = self.group_ptrs()
