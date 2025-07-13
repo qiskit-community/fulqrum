@@ -9,6 +9,7 @@ from libcpp.string cimport string
 from libcpp cimport bool
 from libcpp.unordered_map cimport unordered_map
 from libcpp.map cimport map
+from libc.math cimport fabs
 from libcpp.algorithm cimport sort as stdsort
 from cython.operator cimport dereference, preincrement
 from fulqrum.exceptions import FulqrumError
@@ -234,6 +235,25 @@ cdef class QubitOperator():
         out.oper.sorted = self.oper.sorted
         out.oper.weight_sorted = self.oper.weight_sorted
         out.oper.off_weight_sorted = self.oper.off_weight_sorted
+        return out
+
+    def is_real(self):
+        """Can operator be described via a symmetric matrix
+
+        This currently checks only type=2 operators
+
+        Returns:
+            int: Is operator real-valued
+        """
+        cdef size_t kk
+        cdef int out = 1
+        if self.oper.type == 1:
+            out = 0
+        else:
+            for kk in range(self.oper.terms.size()):
+                if fabs(self.oper.terms[kk].coeff.imag) > 1e-12:
+                    out = 0
+                    break
         return out
     
     @cython.boundscheck(False)
