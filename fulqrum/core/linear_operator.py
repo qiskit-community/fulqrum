@@ -32,7 +32,7 @@ class SubspaceHamiltonian(LinearOperator):
                 off_H.group_term_sort_by_ladder_int()
                 self.group_ladder_ptrs = off_H.group_ladder_bin_starts()
 
-        self.spmv = FulqrumSpMV(diag_H, off_H, subspace, self.group_ptrs)
+        self.spmv = FulqrumSpMV(diag_H, off_H, subspace, self.group_ptrs, self.group_ladder_ptrs)
         self._matvec = self.matvec
         self.shape = (len(subspace),) * 2
         self.dtype = np.dtype(complex)

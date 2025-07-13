@@ -35,7 +35,8 @@ ctypedef long long int64
 
 cdef class FulqrumSpMV():
     def __cinit__(self, QubitOperator diag_hamiltonian,
-                  QubitOperator hamiltonian, Subspace subspace, size_t[::1]& group_ptrs):
+                  QubitOperator hamiltonian, Subspace subspace,
+                  size_t[::1]& group_ptrs, size_t[::1]& group_ladder_ptrs):
         cdef size_t kk
         self.diag_oper = diag_hamiltonian.oper
         self.oper = hamiltonian.oper
@@ -47,6 +48,7 @@ cdef class FulqrumSpMV():
         self.num_diag_terms = self.diag_oper.terms.size()
         self.bin_ranges = &self.subspace.subspace.bin_ranges[0]
         self.group_ptrs = group_ptrs
+        self.group_ladder_ptrs = group_ladder_ptrs
         self.num_groups = group_ptrs.shape[0] - 1
         if group_ptrs.shape[0] > 1:
             set_group_offdiag_indices(self.oper.terms, self.group_offdiag_inds,

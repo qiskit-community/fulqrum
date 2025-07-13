@@ -19,6 +19,7 @@ cdef class FulqrumSpMV:
     cdef int has_nonzero_diag
     cdef double complex[::1] diag_vec
     cdef size_t[::1] group_ptrs
+    cdef size_t[::1] group_ladder_ptrs
     cdef int num_groups
     cdef size_t * bin_ranges
     cdef vector[vector[unsigned int]] group_offdiag_inds
