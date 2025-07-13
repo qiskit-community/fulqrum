@@ -16,6 +16,7 @@ cdef extern from "../src/matvec2.hpp":
                 size_t * bin_ranges,
                 size_t * group_ptrs,
                 size_t * group_ladder_ptrs,
+                unsigned int * group_rowint_length,
                 const vector[vector[unsigned int]]& group_offdiag_inds,
                 size_t num_groups,
                 const double complex * in_vec,
