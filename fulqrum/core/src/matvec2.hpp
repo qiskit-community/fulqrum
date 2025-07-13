@@ -17,7 +17,7 @@
 
 void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
     const std::vector<boost::dynamic_bitset<std::size_t> >& subspace,
-    const std::complex<double> * diag_vec,
+    const std::complex<double> *__restrict diag_vec,
     const std::size_t width,
     const std::size_t subspace_dim,
     const int has_nonzero_diag,
@@ -55,9 +55,9 @@ void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
             std::complex<double> temp_val, val=0;
             const OperatorTerm_t * term;
             std::size_t start, stop;
-            std::size_t group_start, group_stop, group;
+            std::size_t group;
             std::size_t group_int_start, group_int_stop;
-            std::size_t idx, weight, col_idx;
+            std::size_t idx, col_idx;
             std::size_t bin_num;
             unsigned int row_int;
             const std::vector<unsigned int> * group_inds;
@@ -65,9 +65,7 @@ void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
             // Loop over all off-diagonal terms in operator
             for(group=0; group < num_groups; group++)
             {
-                group_start = group_ptrs[group];
-                row_int = term_ladder_int(terms[group_start], group_rowint_length[group]);
-                group_stop = group_ptrs[group+1];
+                row_int = term_ladder_int(terms[group_ptrs[group]], group_rowint_length[group]);
                 do_col_search = 1;
                 group_int_start = group_ladder_ptrs[group*ladder_offset+row_int];
                 group_int_stop = group_ladder_ptrs[group*ladder_offset+row_int+1];
@@ -75,8 +73,6 @@ void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
                 temp_val = 0;
                 for(idx=group_int_start; idx < group_int_stop; idx++)
                 {
-                    term = &terms[idx];
-                    weight = term->indices.size();
                     if(do_col_search)
                     {
                         col_vec = row;
@@ -85,16 +81,14 @@ void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
                         start = bin_ranges[bin_num];
                         stop = bin_ranges[bin_num+1];
                         bitset_column_index(start, stop, col_vec, subspace, col_idx);
-                        if(col_idx == MAX_SIZE_T) // column is NOT in the subspace
-                        {
-                            break;
-                        }
+                        if(col_idx == MAX_SIZE_T){break;} // column is NOT in the subspace so break group
                         do_col_search = 0;
                     }
+                    term = &terms[idx];
                     if(passes_proj_validation(term, row))
                     {
                         accum_element(row, col_vec, &term->indices[0], &term->values[0],
-                                  term->coeff, weight, temp_val);
+                                  term->coeff, term->indices.size(), temp_val);
                     }
                 } // end loop over this group
                 val += temp_val * in_vec[col_idx];
