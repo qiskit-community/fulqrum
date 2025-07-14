@@ -371,6 +371,8 @@ cdef class QubitOperator():
                 out.oper.terms.push_back(self.oper.terms[kk])
         else:
             raise FulqrumError(f"Cannot get operator terms using {type(key)}")
+        out.oper.type = self.oper.type
+        
         return out
 
     def __iadd__(self, QubitOperator other):
