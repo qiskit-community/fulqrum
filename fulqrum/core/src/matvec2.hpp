@@ -27,7 +27,7 @@ void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
     const std::size_t *__restrict group_ladder_ptrs,
     const unsigned int *__restrict group_rowint_length,
     const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
-    const std::size_t num_groups,
+    const unsigned int num_groups,
     const unsigned int ladder_offset,
     const std::complex<double> *__restrict in_vec,
     std::complex<double> *__restrict out_vec)
@@ -55,7 +55,7 @@ void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
             std::complex<double> temp_val, val=0;
             const OperatorTerm_t * term;
             std::size_t start, stop;
-            std::size_t group;
+            unsigned int group;
             std::size_t group_int_start, group_int_stop;
             std::size_t idx, col_idx;
             std::size_t bin_num;
@@ -65,11 +65,11 @@ void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
             // Loop over all off-diagonal terms in operator
             for(group=0; group < num_groups; group++)
             {
-                row_int = term_ladder_int(terms[group_ptrs[group]], group_rowint_length[group]);
+                group_inds = &group_offdiag_inds[group];
+                row_int = bitset_ladder_int(row, group_inds->data(), group_rowint_length[group]);
                 do_col_search = 1;
                 group_int_start = group_ladder_ptrs[group*ladder_offset+row_int];
                 group_int_stop = group_ladder_ptrs[group*ladder_offset+row_int+1];
-                group_inds = &group_offdiag_inds[group];
                 temp_val = 0;
                 for(idx=group_int_start; idx < group_int_stop; idx++)
                 {
@@ -91,7 +91,10 @@ void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
                                   term->coeff, term->indices.size(), temp_val);
                     }
                 } // end loop over this group
-                val += temp_val * in_vec[col_idx];
+                if(!do_col_search)
+                {
+                    val += temp_val * in_vec[col_idx];
+                }
             } // end loop over all groups
             out_vec[kk] += val;
         } // end for-loop over rows

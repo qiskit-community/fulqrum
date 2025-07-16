@@ -372,7 +372,7 @@ cdef class QubitOperator():
         else:
             raise FulqrumError(f"Cannot get operator terms using {type(key)}")
         out.oper.type = self.oper.type
-        
+
         return out
 
     def __iadd__(self, QubitOperator other):
@@ -778,7 +778,7 @@ cdef class QubitOperator():
         If no ladder ops present then default int is max(uint32)
 
         Parameters:
-            ladder_width (int): Number of ladder terms to consider, default = 3
+            ladder_width (int): Number of ladder terms to consider, default = 4
 
         Returns:
             ndarray: Array of uint32 integers 
