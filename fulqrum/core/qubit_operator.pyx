@@ -847,15 +847,14 @@ cdef class QubitOperator():
         if not self.oper.ladder_sorted:
             raise FulqrumError("Operator must have groups sorted by ladder ints")
         cdef size_t[::1] group_ptrs = self.group_ptrs()
-        cdef unsigned int num_bins = 2**self.oper.ladder_width
-        cdef unsigned int ptr_size = num_bins + 1
+        cdef unsigned int num_ladder_bins = 2**self.oper.ladder_width
         cdef unsigned int num_groups = group_ptrs.shape[0] - 1
         cdef unsigned int[::1] group_counts
         cdef size_t[::1] group_ranges
-        group_counts = np.zeros(num_bins*num_groups, dtype=np.uint32)
-        group_ranges = np.zeros(ptr_size*num_groups, dtype=np.uintp)
-        ladder_bin_starts(&self.oper.terms[0], &group_ptrs[0], &group_counts[0], &group_ranges[0],
-                        num_groups, num_bins, self.oper.ladder_width)
+        group_counts = np.zeros(num_ladder_bins*num_groups, dtype=np.uint32)
+        group_ranges = np.zeros(num_ladder_bins*num_groups + 1, dtype=np.uintp)
+        ladder_bin_starts(self.oper.terms, &group_ptrs[0], &group_counts[0], &group_ranges[0],
+                        num_groups, num_ladder_bins, self.oper.ladder_width)
         
         return np.asarray(group_ranges)
 
