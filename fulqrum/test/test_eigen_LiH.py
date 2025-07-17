@@ -99,7 +99,7 @@ def test_full_dist_lih_eigen():
 
     # here we use starting vector of all ones to match phase with direct ans
     evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
-    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
 
 def test_full_dist_lih_eigen_csr():
@@ -114,7 +114,7 @@ def test_full_dist_lih_eigen_csr():
 
     # here we use starting vector of all ones to match phase with direct ans
     evals, evecs = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
-    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
 
 def test_grnd_dist_lih_eigen():
@@ -124,7 +124,7 @@ def test_grnd_dist_lih_eigen():
 
     # here we use starting vector of all ones to match phase with direct ans
     evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
-    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
 
 def test_grnd_dist_lih_eigen_csr():
@@ -135,4 +135,4 @@ def test_grnd_dist_lih_eigen_csr():
 
     # here we use starting vector of all ones to match phase with direct ans
     evals, evecs = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
-    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evals, GROUND_ENERGY, 1e-12)
