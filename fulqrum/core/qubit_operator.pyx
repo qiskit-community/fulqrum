@@ -371,6 +371,8 @@ cdef class QubitOperator():
                 out.oper.terms.push_back(self.oper.terms[kk])
         else:
             raise FulqrumError(f"Cannot get operator terms using {type(key)}")
+        out.oper.type = self.oper.type
+
         return out
 
     def __iadd__(self, QubitOperator other):
@@ -776,7 +778,7 @@ cdef class QubitOperator():
         If no ladder ops present then default int is max(uint32)
 
         Parameters:
-            ladder_width (int): Number of ladder terms to consider, default = 3
+            ladder_width (int): Number of ladder terms to consider, default = 4
 
         Returns:
             ndarray: Array of uint32 integers 
@@ -809,6 +811,24 @@ cdef class QubitOperator():
             out.append(np.asarray(temp_inds))
         return out
 
+    def group_rowint_length(self):
+        """The length (number of bits) in the row int per group
+        """
+        if not self.oper.type == 2:
+            raise FulqrumError("Operator must be type=2")
+        if not self.oper.ladder_sorted:
+            raise FulqrumError("Operator be sorted by ladder ints to set ladder_width")
+        cdef size_t[::1] group_ptrs = self.group_ptrs()
+        cdef size_t kk, jj
+        cdef list out = []
+        cdef unsigned int num_groups = group_ptrs.shape[0] - 1
+        cdef unsigned int[::1] group_rowint_length = np.empty(num_groups, dtype=np.uint32)
+        cdef unsigned int temp
+        for kk in range(num_groups):
+            temp = self.oper.terms[group_ptrs[kk]].offdiag_weight
+            group_rowint_length[kk] = min(self.oper.ladder_width, temp)
+        return np.asarray(group_rowint_length)
+
     def group_term_sort_by_ladder_int(self, unsigned int ladder_width=3):
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
@@ -827,15 +847,14 @@ cdef class QubitOperator():
         if not self.oper.ladder_sorted:
             raise FulqrumError("Operator must have groups sorted by ladder ints")
         cdef size_t[::1] group_ptrs = self.group_ptrs()
-        cdef unsigned int num_bins = 2**self.oper.ladder_width
-        cdef unsigned int ptr_size = num_bins + 1
+        cdef unsigned int num_ladder_bins = 2**self.oper.ladder_width
         cdef unsigned int num_groups = group_ptrs.shape[0] - 1
         cdef unsigned int[::1] group_counts
         cdef size_t[::1] group_ranges
-        group_counts = np.zeros(num_bins*num_groups, dtype=np.uint32)
-        group_ranges = np.zeros(ptr_size*num_groups, dtype=np.uintp)
-        ladder_bin_starts(&self.oper.terms[0], &group_ptrs[0], &group_counts[0], &group_ranges[0],
-                        num_groups, num_bins, self.oper.ladder_width)
+        group_counts = np.zeros(num_ladder_bins*num_groups, dtype=np.uint32)
+        group_ranges = np.zeros(num_ladder_bins*num_groups + 1, dtype=np.uintp)
+        ladder_bin_starts(self.oper.terms, &group_ptrs[0], &group_counts[0], &group_ranges[0],
+                        num_groups, num_ladder_bins, self.oper.ladder_width)
         
         return np.asarray(group_ranges)
 

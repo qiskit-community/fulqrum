@@ -29,7 +29,7 @@ class SubspaceHamiltonian(LinearOperator):
             self.group_ptrs = off_H.group_ptrs()
         if off_H.type == 2:
             if off_H.num_terms:
-                off_H.group_term_sort_by_ladder_int()
+                off_H.group_term_sort_by_ladder_int(4)
                 self.group_ladder_ptrs = off_H.group_ladder_bin_starts()
 
         self.spmv = FulqrumSpMV(

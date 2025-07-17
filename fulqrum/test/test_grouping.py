@@ -301,17 +301,36 @@ def test_group_ladder_bin_starts1():
 
     group_ladder_starts = op.group_ladder_bin_starts()
     group_idx = 0
-    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    ladder_starts = group_ladder_starts[8 * group_idx : 8 * (group_idx + 1)]
     # only diffs should be in locations with integers
-    assert np.allclose(np.diff(ladder_starts), [0, 1, 1, 1, 0, 0, 0, 0])
+    assert np.allclose(np.diff(ladder_starts), [0, 1, 1, 1, 0, 0, 0])
+
+    new_op = op[group_ladder_starts[8 * group_idx + 1]]
+    assert new_op.operators == [("+", 0), ("-", 3)]  # group 0, int = 1 term
+    new_op = op[group_ladder_starts[8 * group_idx + 2]]
+    assert new_op.operators == [("-", 0), ("+", 3)]  # group 0, int = 2 term
+    new_op = op[group_ladder_starts[8 * group_idx + 3]]
+    assert new_op.operators == [("+", 0), ("+", 3)]  # group 0, int = 3 term
+
     group_idx = 1
-    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    ladder_starts = group_ladder_starts[8 * group_idx : 8 * (group_idx + 1)]
     # only diffs should be in locations with integers
-    assert np.allclose(np.diff(ladder_starts), [0, 1, 1, 0, 0, 0, 0, 0])
+    assert np.allclose(np.diff(ladder_starts), [0, 1, 1, 0, 0, 0, 0])
+    new_op = op[group_ladder_starts[8 * group_idx + 1]]
+    assert new_op.operators == [("+", 0), ("-", 1)]  # group 1, int = 1 term
+    new_op = op[group_ladder_starts[8 * group_idx + 2]]
+    assert new_op.operators == [("-", 0), ("+", 1)]  # group 1, int = 2 term
+
     group_idx = 2
-    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    ladder_starts = group_ladder_starts[8 * group_idx : 8 * (group_idx + 1)]
     # only diffs should be in locations with integers
-    assert np.allclose(np.diff(ladder_starts), [1, 0, 0, 0, 0, 0, 1, 1])
+    assert np.allclose(np.diff(ladder_starts), [1, 0, 0, 0, 0, 0, 1])
+    new_op = op[group_ladder_starts[8 * group_idx + 0]]
+    assert new_op.operators == [("-", 0), ("-", 1), ("-", 2)]  # group 2, int = 0 term
+    new_op = op[group_ladder_starts[8 * group_idx + 6]]
+    assert new_op.operators == [("-", 0), ("+", 1), ("+", 2)]  # group 2, int = 6 term
+    new_op = op[group_ladder_starts[8 * group_idx + 7]]
+    assert new_op.operators == [("+", 0), ("+", 1), ("+", 2)]  # group 2, int = 7 term
 
 
 def test_group_ladder_bin_starts2():
@@ -333,18 +352,18 @@ def test_group_ladder_bin_starts2():
 
     group_ladder_starts = op.group_ladder_bin_starts()
     group_idx = 0
-    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    ladder_starts = group_ladder_starts[8 * group_idx : 8 * (group_idx + 1)]
     assert ladder_starts[1] == 0
     assert ladder_starts[2] == 1
     assert ladder_starts[3] == 2
 
     group_idx = 1
-    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    ladder_starts = group_ladder_starts[8 * group_idx : 8 * (group_idx + 1)]
     assert ladder_starts[1] == 3
     assert ladder_starts[2] == 4
 
     group_idx = 2
-    ladder_starts = group_ladder_starts[9 * group_idx : 9 * (group_idx + 1)]
+    ladder_starts = group_ladder_starts[8 * group_idx : 8 * (group_idx + 1)]
     assert ladder_starts[0] == 5
     assert ladder_starts[6] == 6
     assert ladder_starts[7] == 7
@@ -386,7 +405,7 @@ def test_group_ladder_bin_starts4():
     group_ladder_starts = op.group_ladder_bin_starts()
     num_terms = np.diff(group_ladder_starts)
     grp0_num_terms = num_terms[:8]
-    grp1_num_terms = num_terms[9:]
+    grp1_num_terms = num_terms[8:]
 
     assert grp0_num_terms[0] == 1
     assert grp0_num_terms[1] == 2
@@ -419,10 +438,11 @@ def test_group_ladder_bin_starts5():
     op.set_type(2)
     op.group_term_sort_by_ladder_int(1)
     group_ladder_starts = op.group_ladder_bin_starts()
+    assert np.allclose(group_ladder_starts, [0, 3, 6, 9, 13])
     num_terms = np.diff(group_ladder_starts)
 
     grp0_num_terms = num_terms[:2]
-    grp1_num_terms = num_terms[3:]
+    grp1_num_terms = num_terms[2:]
     assert np.allclose(grp0_num_terms, [3, 3])
     assert np.allclose(grp1_num_terms, [3, 4])
 
@@ -450,7 +470,7 @@ def test_group_ladder_bin_starts6():
     num_terms = np.diff(group_ladder_starts)
 
     grp0_num_terms = num_terms[:8]
-    grp1_num_terms = num_terms[9:]
+    grp1_num_terms = num_terms[8:]
     assert np.allclose(grp0_num_terms, [3, 4, 0, 0, 0, 0, 0, 0])
     assert np.allclose(grp1_num_terms, [1, 2, 2, 1, 0, 0, 0, 0])
 
@@ -475,7 +495,7 @@ def test_group_ladder_bin_starts7():
     op.set_type(2)
     op.group_term_sort_by_ladder_int()
     group_ladder_starts = op.group_ladder_bin_starts()
-    ptr_size = 2**3 + 1  #  2**ladder_width + 1
+    ptr_size = 2**3  #  2**ladder_width
     idx = 1 * ptr_size + 3  # group 1 + int value = 3
     # should find "+01+"
     assert op[group_ladder_starts[idx]].operators == [

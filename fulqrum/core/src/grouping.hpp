@@ -217,15 +217,15 @@ inline void sort_groups_by_ladder_int(QubitOperator_t& oper,
     }
 
 
-void ladder_bin_starts(const OperatorTerm_t * terms, const std::size_t * group_ptrs,
+void ladder_bin_starts(const std::vector<OperatorTerm_t>& terms, const std::size_t * group_ptrs,
                         unsigned int * group_counts, std::size_t * group_ranges,
-                        unsigned int num_groups, unsigned int num_bins, unsigned int ladder_width)
+                        unsigned int num_groups, unsigned int num_ladder_bins, unsigned int ladder_width)
 {
 
     std::size_t start, stop, kk, mm;
-    unsigned int ptr_size = num_bins + 1;
     unsigned int term_int;
     std::size_t total;
+    total = 0;
     for(kk=0; kk<num_groups; kk++)
     {
         start = group_ptrs[kk];
@@ -234,18 +234,13 @@ void ladder_bin_starts(const OperatorTerm_t * terms, const std::size_t * group_p
         for(mm=start; mm < stop; mm++)
         {
             term_int = term_ladder_int(terms[mm], ladder_width);
-            group_counts[kk*num_bins+term_int] += 1;
+            group_counts[kk*num_ladder_bins+term_int] += 1;
         }
-        group_ranges[kk*ptr_size] = start;
-        total = start + group_counts[kk*num_bins];
-
-        for(mm=1; mm < ptr_size; mm++)
+        group_ranges[kk*num_ladder_bins] = total;
+        for(mm=1; mm < num_ladder_bins+1; mm++)
         {
-            group_ranges[kk*ptr_size+mm] = total;
-            if(mm != num_bins)
-            {
-                total += group_counts[kk*num_bins+mm];
-            }
+            total += group_counts[kk*num_ladder_bins+mm-1];
+            group_ranges[kk*num_ladder_bins+mm] = total;
         }
     }
 }

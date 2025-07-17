@@ -12,7 +12,7 @@
 const std::size_t MAX_SIZE_T = (std::size_t)-1;
 const unsigned int MAX_UINT = (unsigned int)-1;
 const unsigned int BITS_PER_BLOCK = 8 * sizeof(std::size_t);
-unsigned int DEFAULT_LADDER_WIDTH = 3;
+unsigned int DEFAULT_LADDER_WIDTH = 4;
 
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
  *

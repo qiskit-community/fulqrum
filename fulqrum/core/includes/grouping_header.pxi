@@ -17,7 +17,7 @@ cdef extern from "../src/grouping.hpp":
                                  unsigned int num_groups,
                                  unsigned int ladder_width) nogil
 
-    void ladder_bin_starts(const OperatorTerm_t * terms, const size_t * group_ptrs,
+    void ladder_bin_starts(const vector[OperatorTerm_t]& terms, const size_t * group_ptrs,
                             unsigned int * group_counts, size_t * group_ranges,
                             unsigned int num_groups, unsigned int num_bins, unsigned int ladder_width) nogil
 

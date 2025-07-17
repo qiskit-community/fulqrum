@@ -6,7 +6,7 @@ from fulqrum.core.bitset cimport bitset_t
 include "base_header.pxi"
 
 cdef extern from "../src/matvec2.hpp":
-    void omp_matvec2(QubitOperator_t& ham,
+    void omp_matvec2(vector[OperatorTerm_t]& ham,
                 vector[bitset_t]& subspace,
                 double complex * diag_vec,
                 size_t width,
@@ -16,7 +16,9 @@ cdef extern from "../src/matvec2.hpp":
                 size_t * bin_ranges,
                 size_t * group_ptrs,
                 size_t * group_ladder_ptrs,
+                unsigned int * group_rowint_length,
                 const vector[vector[unsigned int]]& group_offdiag_inds,
-                size_t num_groups,
+                unsigned int num_groups,
+                unsigned int ladder_offset,
                 const double complex * in_vec,
                 double complex * out_vec) nogil
