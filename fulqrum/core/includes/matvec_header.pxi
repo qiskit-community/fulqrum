@@ -6,7 +6,7 @@ from fulqrum.core.bitset cimport bitset_t
 include "base_header.pxi"
 
 cdef extern from "../src/matvec.hpp":
-    void omp_matvec(QubitOperator_t& ham,
+    void omp_matvec(vector[OperatorTerm_t]& terms,
                 vector[bitset_t]& subspace,
                 double complex * diag_vec,
                 size_t width,

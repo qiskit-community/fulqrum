@@ -130,7 +130,7 @@ cdef class FulqrumSpMV():
                     &x[0],
                     &out[0])
         else:
-            omp_matvec(self.oper,
+            omp_matvec(self.oper.terms,
                     self.subspace.subspace.bitstrings,
                     &self.diag_vec[0],
                     self.width,
