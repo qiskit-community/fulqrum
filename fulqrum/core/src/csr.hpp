@@ -41,10 +41,10 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
         std::size_t start, stop;
         T row_nnz, elem_start;
         const OperatorTerm_t * term;
-        boost::dynamic_bitset<std::size_t> col_vec;
+        boost::dynamic_bitset<std::size_t> row, col_vec;
+        row = subspace[kk];
         const std::vector<unsigned int> * group_inds;
         std::size_t col_idx;
-        unsigned int weight;
         std::complex<double> val;
         int do_col_search;
         std::size_t bin_num;
@@ -72,55 +72,30 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
             group_inds = &group_offdiag_inds[group];
             for(idx=group_start; idx < group_stop; idx++)
             { // begin loop over terms in this group
-                term = &terms[idx];
-                weight = term->indices.size();
                 if(do_col_search)
                 {
-                    col_vec = subspace[kk];
+                    col_vec = row;
                     flip_bits(col_vec, group_inds->data(), group_inds->size());
                     bin_int(col_vec, bin_width, bin_num);
                     start = bin_ranges[bin_num];
                     stop = bin_ranges[bin_num+1];
                     bitset_column_index(start, stop, col_vec, subspace, col_idx);
-                    if(col_idx < MAX_SIZE_T) // column is in the subspace
-                    {
-                        do_col_search = 0; // do not search again for this group
-                        if(term->extended) // check if extended term is zero
-                        {
-                            if(!nonzero_extended_bitset(term, subspace[kk])) // extended term is zero so move on to next term
-                            {
-                                continue;
-                            }
-                        }
-                        accum_element(subspace[kk], col_vec,
-                                      &term->indices[0], &term->values[0], term->coeff,
-                                      weight, val);
-                    }
-                    else // column is not in the subspace so entire group does nothing, break
-                    {
-                        break;
-                    }
+                    if(col_idx == MAX_SIZE_T){break;} // column is NOT in the subspace so break group
+                    do_col_search = 0;
                 }
-                else // column already found, process remaining terms
+                term = &terms[idx];
+                if(passes_proj_validation(term, row))
                 {
-                    if(term->extended) // check if extended term is zero
-                    {
-                        if(!nonzero_extended_bitset(term, subspace[kk])) // extended term is zero so move on to next term
-                        {
-                            continue;
-                        }
-                    }
-                    accum_element(subspace[kk], col_vec,
-                                  &term->indices[0], &term->values[0], term->coeff,
-                                  weight, val);
+                    accum_element(row, col_vec, &term->indices[0], &term->values[0],
+                                    term->coeff, term->indices.size(), val);
                 }
             } // end loop over terms in this group
             if(val!=0.0)
             {
                 if(compute_values)
                 {
-                indices[elem_start+row_nnz] = col_idx;
-                data[elem_start+row_nnz] = val;
+                    indices[elem_start+row_nnz] = col_idx;
+                    data[elem_start+row_nnz] = val;
                 }
                 row_nnz += 1;
             }
