@@ -24,8 +24,10 @@ template <typename T> void csr_matrix_builder2(const OperatorTerm_t * terms,
                                               const std::size_t * bin_ranges,
                                               const std::size_t * group_ptrs,
                                               const std::size_t *__restrict group_ladder_ptrs,
+                                              const unsigned int *__restrict group_rowint_length,
                                               const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
                                               const std::size_t num_groups,
+                                              const unsigned int ladder_offset,
                                               T * indptr,
                                               T * indices,
                                               std::complex<double> * data,
@@ -33,23 +35,25 @@ template <typename T> void csr_matrix_builder2(const OperatorTerm_t * terms,
 {
     std::size_t kk;
     T temp, _sum;
-    #pragma omp parallel for if(subspace_dim > 128)
+    #pragma omp parallel for schedule(dynamic) if(subspace_dim > 128)
     for(kk=0; kk<subspace_dim; kk++)
     { // begin loop over all rows
         // define variables locally for omp for loop
         std::size_t idx;
-        std::size_t group_start, group_stop, group;
+        std::size_t group;
+        std::size_t group_int_start, group_int_stop;
         std::size_t start, stop;
         T row_nnz, elem_start;
         const OperatorTerm_t * term;
-        boost::dynamic_bitset<std::size_t> col_vec;
+        boost::dynamic_bitset<std::size_t> row, col_vec;
         const std::vector<unsigned int> * group_inds;
         std::size_t col_idx;
-        unsigned int weight;
         std::complex<double> val;
+        unsigned int row_int;
         int do_col_search;
         std::size_t bin_num;
         row_nnz = 0;
+        row = subspace[kk];
         elem_start = indptr[kk];
         // do diagonal first, if any
         if(has_nonzero_diag)
@@ -66,54 +70,31 @@ template <typename T> void csr_matrix_builder2(const OperatorTerm_t * terms,
         }
         for(group=0; group < num_groups; group++)
         { // begin loop over groups
-            group_start = group_ptrs[group];
-            group_stop = group_ptrs[group+1];
+            group_inds = &group_offdiag_inds[group];
+            row_int = bitset_ladder_int(row, group_inds->data(), group_rowint_length[group]);
+            group_int_start = group_ladder_ptrs[group*ladder_offset+row_int];
+            group_int_stop = group_ladder_ptrs[group*ladder_offset+row_int+1];
             do_col_search = 1;
             val = 0;
-            group_inds = &group_offdiag_inds[group];
-            for(idx=group_start; idx < group_stop; idx++)
+            for(idx=group_int_start; idx < group_int_stop; idx++)
             { // begin loop over terms in this group
-                term = &terms[idx];
-                weight = term->indices.size();
                 if(do_col_search)
                 {
-                    col_vec = subspace[kk];
+                    col_vec = row;
                     flip_bits(col_vec, group_inds->data(), group_inds->size());
                     bin_int(col_vec, bin_width, bin_num);
                     start = bin_ranges[bin_num];
                     stop = bin_ranges[bin_num+1];
                     bitset_column_index(start, stop, col_vec, subspace, col_idx);
-                    if(col_idx < MAX_SIZE_T) // column is in the subspace
-                    {
-                        do_col_search = 0; // do not search again for this group
-                        if(term->extended) // check if extended term is zero
-                        {
-                            if(!nonzero_extended_bitset(term, subspace[kk])) // extended term is zero so move on to next term
-                            {
-                                continue;
-                            }
-                        }
-                        accum_element(subspace[kk], col_vec,
-                                      &term->indices[0], &term->values[0], term->coeff,
-                                      weight, val);
-                    }
-                    else // column is not in the subspace so entire group does nothing, break
-                    {
-                        break;
-                    }
+                    if(col_idx == MAX_SIZE_T){break;} // column is NOT in the subspace so break group
+                    do_col_search = 0;
                 }
-                else // column already found, process remaining terms
+                term = &terms[idx];
+                if(passes_proj_validation(term, row))
                 {
-                    if(term->extended) // check if extended term is zero
-                    {
-                        if(!nonzero_extended_bitset(term, subspace[kk])) // extended term is zero so move on to next term
-                        {
-                            continue;
-                        }
-                    }
                     accum_element(subspace[kk], col_vec,
-                                  &term->indices[0], &term->values[0], term->coeff,
-                                  weight, val);
+                                      &term->indices[0], &term->values[0], term->coeff,
+                                      term->indices.size(), val);
                 }
             } // end loop over terms in this group
             if(val!=0.0)
@@ -131,7 +112,7 @@ template <typename T> void csr_matrix_builder2(const OperatorTerm_t * terms,
             indptr[kk] = row_nnz;
         }
     } // end loop over all rows
-    if(!compute_values) // Done all rows so cummulate for correct indptr structure
+    if(!compute_values) // Done with all rows so accumulate for correct indptr structure
     {
         _sum = 0;
         for(kk=0; kk < (subspace_dim+1); kk++)
