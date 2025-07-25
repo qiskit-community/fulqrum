@@ -14,7 +14,7 @@ from fulqrum.exceptions import FulqrumError
 #from fulqrum.core.csr cimport csr_matrix_builder
 
 from cython.parallel cimport prange, parallel
-
+import time
 import numpy as np
 import scipy.sparse as sp
 import psutil
@@ -146,8 +146,11 @@ cdef class FulqrumSpMV():
         return np.asarray(out)
 
     
-    def to_csr_array(self):
+    def to_csr_array(self, int verbose=0):
         """Convert subspace Hamiltonian to a SciPy CSR array
+
+        Parameters:
+            verbose (int): Turn on or off verbose mode, default=0.
 
         Returns:
             csr_array: Sparse representation of subspace Hamiltonian
@@ -167,11 +170,12 @@ cdef class FulqrumSpMV():
 
         if self.diag_vec.shape[0] == 0 and self.has_nonzero_diag:
             self.compute_diag_vector()
-
+        cdef double start, stop
         cdef int compute_values;
         cdef int64 total_bytes;
         cdef int int_64 = 1 # always start with 64bit ints
         for compute_values in range(2):
+            start = time.perf_counter()
             if compute_values:
                 # matrix is empty
                 if indptr64[self.subspace_dim] == 0:
@@ -271,12 +275,21 @@ cdef class FulqrumSpMV():
                                         &indices32[0],
                                         &data[0],
                                         compute_values)
-
+            stop = time.perf_counter()
+            if verbose:
+                if not compute_values:
+                    print('CSR structure time', round(stop-start, 3))
+                else:
+                    print('CSR fill time', round(stop-start, 3))
         if int_64:
             mat = sp.csr_array((data, indices64, indptr64), 
                             shape=(self.subspace_dim,)*2, dtype=complex)
         else:
             mat = sp.csr_array((data, indices32, indptr32), 
                             shape=(self.subspace_dim,)*2, dtype=complex)
+        start = time.perf_counter()
         mat.sort_indices()
+        stop = time.perf_counter()
+        if verbose:
+            print('CSR indices sort time', round(stop-start, 3))
         return mat
