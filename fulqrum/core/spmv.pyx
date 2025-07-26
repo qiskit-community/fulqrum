@@ -27,6 +27,7 @@ include "includes/diag_header.pxi"
 include "includes/matvec_header.pxi"
 include "includes/matvec2_header.pxi"
 include "includes/csr_header.pxi"
+include "includes/csr_utils_header.pxi"
 include "includes/csr2_header.pxi"
 include "includes/grouping_header.pxi"
 
@@ -288,8 +289,29 @@ cdef class FulqrumSpMV():
             mat = sp.csr_array((data, indices32, indptr32), 
                             shape=(self.subspace_dim,)*2, dtype=complex)
         start = time.perf_counter()
-        mat.sort_indices()
+        #mat.sort_indices()
+        quicksort_indices(mat.indices, mat.indptr, mat.data)
         stop = time.perf_counter()
         if verbose:
             print('CSR indices sort time', round(stop-start, 3))
         return mat
+
+ctypedef fused int32_or_int64:
+    int
+    long long
+
+ctypedef fused double_or_complex:
+    double
+    double complex
+
+@cython.boundscheck(False)
+def quicksort_indices(int32_or_int64[::1] indices,
+                      int32_or_int64[::1] indptr,
+                      double_or_complex[::1] data):
+    cdef int32_or_int64 kk, nrows = indptr.shape[0]-1
+    cdef int32_or_int64 start, stop
+    for kk in prange(nrows, nogil=True):
+        start = indptr[kk]
+        stop = indptr[kk+1] - 1
+        quicksort_indices_data(&indices[0], &data[0], start, stop)
+    
