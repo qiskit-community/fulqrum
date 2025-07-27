@@ -39,6 +39,14 @@ class SubspaceHamiltonian(LinearOperator):
         self.shape = (len(subspace),) * 2
         self.dtype = np.dtype(complex)
 
+    def is_real(self):
+        """Flag indicating the problem is real (symmetry) or complex (Hermitian)
+
+        Returns:
+            int: 1 if real, else 0 for complex
+        """
+        return self.spmv.is_real()
+
     def diagonal_vector(self):
         """Return diagonal vector of Hamiltonian in subspace
 

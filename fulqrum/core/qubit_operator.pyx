@@ -251,7 +251,7 @@ cdef class QubitOperator():
             out = 0
         else:
             for kk in range(self.oper.terms.size()):
-                if fabs(self.oper.terms[kk].coeff.imag) > 1e-12:
+                if fabs(self.oper.terms[kk].coeff.imag) > 1e-14:
                     out = 0
                     break
         return out
