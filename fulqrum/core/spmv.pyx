@@ -31,18 +31,6 @@ include "includes/csr_utils_header.pxi"
 include "includes/csr2_header.pxi"
 include "includes/grouping_header.pxi"
 
-ctypedef long long int64
-
-
-ctypedef fused int32_or_int64:
-    int
-    long long
-
-ctypedef fused double_or_complex:
-    double
-    double complex
-
-
 
 cdef class FulqrumSpMV():
     def __cinit__(self, QubitOperator diag_hamiltonian,
@@ -73,12 +61,12 @@ cdef class FulqrumSpMV():
             self.has_nonzero_diag = 1
              # Init diagonal memoryview to None because
              # we only build it when needed
-            self.diag_vec = None
+            self.complex_diag_vec = None
         else:
             self.has_nonzero_diag = 0
             # We have to init something here otherwise
             # grabbing a pointer to the data is going to complain
-            self.diag_vec = np.empty(1, dtype=complex)
+            self.complex_diag_vec = np.empty(1, dtype=complex)
 
     def __repr__(self):
         out = f"<FulqrumSpMV(width={self.width}, "
@@ -88,9 +76,9 @@ cdef class FulqrumSpMV():
 
     @cython.boundscheck(False)
     cdef void compute_diag_vector(self):
-        self.diag_vec = np.empty(self.subspace_dim, dtype=complex)
+        self.complex_diag_vec = np.empty(self.subspace_dim, dtype=complex)
         compute_diag_vector(self.subspace.subspace.bitstrings,
-                            &self.diag_vec[0],
+                            &self.complex_diag_vec[0],
                             self.diag_oper,
                             self.width,
                             self.subspace_dim)
@@ -103,9 +91,9 @@ cdef class FulqrumSpMV():
         """
         if not self.has_nonzero_diag:
             return np.zeros(self.subspace_dim, dtype=complex)
-        if self.diag_vec is None and self.has_nonzero_diag:
+        if self.complex_diag_vec is None and self.has_nonzero_diag:
             self.compute_diag_vector()
-        return np.asarray(self.diag_vec)
+        return np.asarray(self.complex_diag_vec)
 
 
     def matvec(self, const double complex[::1] x):
@@ -120,13 +108,13 @@ cdef class FulqrumSpMV():
         if <size_t>x.shape[0] != self.subspace_dim:
             raise Exception('Incorrect length of input vector.')
         # generate diagonal vector if we have not done so already
-        if self.diag_vec.shape[0] == 0 and self.has_nonzero_diag:
+        if self.complex_diag_vec.shape[0] == 0 and self.has_nonzero_diag:
             self.compute_diag_vector()
         cdef double complex[::1] out = np.zeros(x.shape[0], dtype=complex)
         if self.oper.type == 2:
             omp_matvec2(self.oper.terms,
                     self.subspace.subspace.bitstrings,
-                    &self.diag_vec[0],
+                    &self.complex_diag_vec[0],
                     self.width,
                     self.subspace_dim,
                     self.has_nonzero_diag,
@@ -143,7 +131,7 @@ cdef class FulqrumSpMV():
         else:
             omp_matvec(self.oper.terms,
                     self.subspace.subspace.bitstrings,
-                    &self.diag_vec[0],
+                    &self.complex_diag_vec[0],
                     self.width,
                     self.subspace_dim,
                     self.has_nonzero_diag,
@@ -179,7 +167,7 @@ cdef class FulqrumSpMV():
         indices64 = np.zeros(1, dtype=np.int64)
 
 
-        if self.diag_vec.shape[0] == 0 and self.has_nonzero_diag:
+        if self.complex_diag_vec.shape[0] == 0 and self.has_nonzero_diag:
             self.compute_diag_vector()
         cdef double start, stop
         cdef int compute_values;
@@ -218,7 +206,7 @@ cdef class FulqrumSpMV():
                 if self.oper.type == 2:
                     csr_matrix_builder2[int64](&self.oper.terms[0],
                                         self.subspace.subspace.bitstrings,
-                                        &self.diag_vec[0],
+                                        &self.complex_diag_vec[0],
                                         self.width,
                                         self.subspace_dim,
                                         self.has_nonzero_diag,
@@ -237,7 +225,7 @@ cdef class FulqrumSpMV():
                 else:
                     csr_matrix_builder[int64](&self.oper.terms[0],
                                         self.subspace.subspace.bitstrings,
-                                        &self.diag_vec[0],
+                                        &self.complex_diag_vec[0],
                                         self.width,
                                         self.subspace_dim,
                                         self.has_nonzero_diag,
@@ -254,7 +242,7 @@ cdef class FulqrumSpMV():
                 if self.oper.type == 2:
                     csr_matrix_builder2[int](&self.oper.terms[0],
                                         self.subspace.subspace.bitstrings,
-                                        &self.diag_vec[0],
+                                        &self.complex_diag_vec[0],
                                         self.width,
                                         self.subspace_dim,
                                         self.has_nonzero_diag,
@@ -273,7 +261,7 @@ cdef class FulqrumSpMV():
                 else:
                     csr_matrix_builder[int](&self.oper.terms[0],
                                         self.subspace.subspace.bitstrings,
-                                        &self.diag_vec[0],
+                                        &self.complex_diag_vec[0],
                                         self.width,
                                         self.subspace_dim,
                                         self.has_nonzero_diag,

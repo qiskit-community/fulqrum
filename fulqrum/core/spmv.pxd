@@ -5,7 +5,7 @@ from libcpp.vector cimport vector
 from fulqrum.core.subspace cimport Subspace
 
 include "includes/base_header.pxi"
-
+include "includes/types.pxi"
 
 cdef class FulqrumSpMV:
     cdef QubitOperator_t oper
@@ -17,7 +17,8 @@ cdef class FulqrumSpMV:
     cdef public size_t num_terms
     cdef public unsigned int bin_width
     cdef int has_nonzero_diag
-    cdef double complex[::1] diag_vec
+    cdef double complex[::1] complex_diag_vec
+    cdef double[::1] real_diag_vec
     cdef size_t[::1] group_ptrs
     cdef size_t[::1] group_ladder_ptrs
     cdef unsigned int[::1] group_rowint_length
