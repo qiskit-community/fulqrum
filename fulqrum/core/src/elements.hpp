@@ -79,7 +79,7 @@ inline void accum_element(const boost::dynamic_bitset<std::size_t>& row,
  * @param val The char value for each operator
  * @param coeff The complex coefficient of the term in question
  * @param N The length of the pos and val vector, i.e. number of non-ID operators in term
- * @param out The complex number to accumulate to
+ * @param out The real number to accumulate to
  * @return Column string
  */
 inline void accum_element_real(const boost::dynamic_bitset<std::size_t>& row,
