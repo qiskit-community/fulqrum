@@ -34,6 +34,16 @@ include "includes/grouping_header.pxi"
 ctypedef long long int64
 
 
+ctypedef fused int32_or_int64:
+    int
+    long long
+
+ctypedef fused double_or_complex:
+    double
+    double complex
+
+
+
 cdef class FulqrumSpMV():
     def __cinit__(self, QubitOperator diag_hamiltonian,
                   QubitOperator hamiltonian, Subspace subspace,
@@ -295,13 +305,6 @@ cdef class FulqrumSpMV():
             print('CSR indices sort time', round(stop-start, 3))
         return mat
 
-ctypedef fused int32_or_int64:
-    int
-    long long
-
-ctypedef fused double_or_complex:
-    double
-    double complex
 
 @cython.boundscheck(False)
 def quicksort_indices(int32_or_int64[::1] indices,
@@ -313,4 +316,3 @@ def quicksort_indices(int32_or_int64[::1] indices,
         start = indptr[kk]
         stop = indptr[kk+1] - 1
         quicksort_indices_data(&indices[0], &data[0], start, stop)
-    
