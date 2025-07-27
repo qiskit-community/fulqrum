@@ -8,4 +8,7 @@ from .openfermion import (
     openfermion_fermi_op_to_fulqrum,
     openfermion_qubit_op_to_fulqrum,
 )
-from .qiskit import sparsepauli_to_fulqrum
+from .qiskit import (
+    sparsepauli_to_fulqrum,
+    qiskit_nature_fermi_op_to_fulqrum,
+)
