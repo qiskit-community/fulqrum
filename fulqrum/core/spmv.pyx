@@ -289,7 +289,6 @@ cdef class FulqrumSpMV():
             mat = sp.csr_array((data, indices32, indptr32), 
                             shape=(self.subspace_dim,)*2, dtype=complex)
         start = time.perf_counter()
-        #mat.sort_indices()
         quicksort_indices(mat.indices, mat.indptr, mat.data)
         stop = time.perf_counter()
         if verbose:
