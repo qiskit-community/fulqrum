@@ -75,14 +75,7 @@ cdef class FulqrumSpMV():
         out += f"subspace_dim={self.subspace_dim}, "
         out += f"is_real={self.is_real}>"
         return out
-    
-    def is_real(self):
-        """Flag indicating the problem is real (symmetry) or complex (Hermitian)
 
-        Returns:
-            int: 1 if real, else 0 for complex
-        """
-        return self.is_real
 
     @cython.boundscheck(False)
     cdef void compute_diag_vector(self):
