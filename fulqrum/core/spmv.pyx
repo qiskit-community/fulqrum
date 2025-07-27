@@ -39,6 +39,7 @@ cdef class FulqrumSpMV():
         cdef size_t kk
         self.diag_oper = diag_hamiltonian.oper
         self.oper = hamiltonian.oper
+        self.is_real = diag_hamiltonian.is_real() and hamiltonian.is_real()
         self.subspace = subspace
         self.bin_width = self.subspace.subspace.bin_width
         self.width = self.oper.width
@@ -71,8 +72,17 @@ cdef class FulqrumSpMV():
     def __repr__(self):
         out = f"<FulqrumSpMV(width={self.width}, "
         out += f"num_op_terms={self.num_terms+self.num_diag_terms}({self.num_terms}/{self.num_diag_terms}), "
-        out += f"subspace_dim={self.subspace_dim}>"
+        out += f"subspace_dim={self.subspace_dim}, "
+        out += f"is_real={self.is_real}>"
         return out
+    
+    def is_real(self):
+        """Flag indicating the problem is real (symmetry) or complex (Hermitian)
+
+        Returns:
+            int: 1 if real, else 0 for complex
+        """
+        return self.is_real
 
     @cython.boundscheck(False)
     cdef void compute_diag_vector(self):
