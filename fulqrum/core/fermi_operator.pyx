@@ -348,6 +348,27 @@ cdef class FermionicOperator():
         out.oper.type = 2
         return out.combine_repeated_terms()
 
+    def simplify(self, atol=1e-8, rtol=1e-5):
+        """Simplify FermionicOperator by removing terms with close to zero coefficients.
+
+        Parameters:
+            atol (float): Optional.
+                Absolute tolerance for checking if coefficients are zero (Default: 1e-8).
+            rtol (float): Optional.
+                Relative tolerance for checking if coefficients are zero (Default: 1e-5).
+        
+        Returns:
+            The simplified FermionicOperator with potenially fewer terms.
+        """
+        cdef FermionicOperator out = FermionicOperator(self.width)
+
+        for idx in range(self.num_terms):
+            term = self[idx]
+            if not np.isclose(term.coeff, 0, atol=atol, rtol=rtol):
+                out += term
+
+        return out
+
     @cython.boundscheck(False)
     def to_dict(self):
         """Dictionary represenation of FermionicOperator
