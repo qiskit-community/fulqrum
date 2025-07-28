@@ -37,7 +37,7 @@ class SubspaceHamiltonian(LinearOperator):
         )
         self._matvec = self.matvec
         self.shape = (len(subspace),) * 2
-        self.dtype = np.dtype(complex)
+        self.dtype = np.dtype(float) if self.spmv.is_real else np.dtype(complex)
 
     def diagonal_vector(self):
         """Return diagonal vector of Hamiltonian in subspace
@@ -72,13 +72,13 @@ class SubspaceHamiltonian(LinearOperator):
         return out
 
     def matvec(self, x):
-        """Matrix-free implimentation of SpMV for subspace Hamiltonian
+        """Matrix-free implementation of SpMV for subspace Hamiltonian
 
         Parameters:
-            x (ndarray): Complex-valued input array
+            x (ndarray): Input array
 
         Returns:
-            ndarray: Complex output vector after SpMV on input vector
+            ndarray: Output vector after SpMV on input vector
         """
         col_vec = False
         if len(x.shape) == 2:
@@ -112,15 +112,16 @@ class SubspaceHamiltonian(LinearOperator):
             CSRLinearOperator: LinearOperator wrapping a CSR matrix.
         """
         M = self.spmv.to_csr_array(verbose=verbose)
-        return CSRLinearOperator(M)
+        return CSRLinearOperator(M, self.spmv.is_real)
 
 
 class CSRLinearOperator(LinearOperator):
     _matvec = None
 
-    def __init__(self, mat):
+    def __init__(self, mat, is_real=0):
         self.mat = mat
-        super().__init__(shape=mat.shape, dtype=complex)
+        self.is_real = is_real
+        super().__init__(shape=mat.shape, dtype=float if self.is_real else complex)
 
     def matvec(self, x):
         col_vec = False
@@ -129,7 +130,7 @@ class CSRLinearOperator(LinearOperator):
             x = x.view().reshape(
                 x.shape[0],
             )
-        out = np.zeros_like(x, dtype=complex)
+        out = np.zeros_like(x, dtype=float if self.is_real else complex)
         csr_matvec(self.mat.indptr, self.mat.indices, self.mat.data, x, out, x.shape[0])
         if col_vec:
             out = out.view().reshape(x.shape[0], 1)

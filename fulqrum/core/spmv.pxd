@@ -16,7 +16,8 @@ cdef class FulqrumSpMV:
     cdef public size_t num_diag_terms
     cdef public size_t num_terms
     cdef public unsigned int bin_width
-    cdef int has_nonzero_diag
+    cdef public int has_nonzero_diag
+    cdef int init_diag
     cdef double complex[::1] complex_diag_vec
     cdef double[::1] real_diag_vec # Need to split this due to Cython fused type limitation
     cdef size_t[::1] group_ptrs

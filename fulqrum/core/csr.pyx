@@ -4,16 +4,12 @@
 cimport cython
 
 include "includes/csr_header.pxi"
-
-ctypedef long long int64
-
-ctypedef fused fused_type:
-    int
-    int64
+include "includes/types.pxi"
 
 
-def csr_matvec(fused_type[::1] indptr, fused_type[::1] indices, complex[::1] data, 
-               complex[::1] vec, complex[::1] out, size_t dim):
+
+def csr_matvec(int32_or_int64[::1] indptr, int32_or_int64[::1] indices, double_or_complex[::1] data, 
+               double_or_complex[::1] vec, double_or_complex[::1] out, size_t dim):
     """Perform SpMV using a CSR matrix
 
     Parameters:

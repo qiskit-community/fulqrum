@@ -98,7 +98,8 @@ def test_full_dist_lih_eigen():
     Hsub = fq.SubspaceHamiltonian(OP, S)
 
     # here we use starting vector of all ones to match phase with direct ans
-    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
 
@@ -113,7 +114,8 @@ def test_full_dist_lih_eigen_csr():
     M = Hsub.to_csr_linearoperator()
 
     # here we use starting vector of all ones to match phase with direct ans
-    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
 
@@ -123,7 +125,8 @@ def test_grnd_dist_lih_eigen():
     Hsub = fq.SubspaceHamiltonian(OP, S)
 
     # here we use starting vector of all ones to match phase with direct ans
-    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
 
@@ -134,5 +137,6 @@ def test_grnd_dist_lih_eigen_csr():
     M = Hsub.to_csr_linearoperator()
 
     # here we use starting vector of all ones to match phase with direct ans
-    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)

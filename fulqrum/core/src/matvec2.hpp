@@ -15,22 +15,22 @@
 #include <boost/dynamic_bitset.hpp>
 
 
-void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
-    const std::vector<boost::dynamic_bitset<std::size_t> >& subspace,
-    const std::complex<double> *__restrict diag_vec,
-    const std::size_t width,
-    const std::size_t subspace_dim,
-    const int has_nonzero_diag,
-    const std::size_t bin_width,
-    const std::size_t *__restrict bin_ranges,
-    const std::size_t *__restrict group_ptrs,
-    const std::size_t *__restrict group_ladder_ptrs,
-    const unsigned int *__restrict group_rowint_length,
-    const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
-    const unsigned int num_groups,
-    const unsigned int ladder_offset,
-    const std::complex<double> *__restrict in_vec,
-    std::complex<double> *__restrict out_vec)
+template <typename T> void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
+                                    const std::vector<boost::dynamic_bitset<std::size_t> >& subspace,
+                                    const T *__restrict diag_vec,
+                                    const std::size_t width,
+                                    const std::size_t subspace_dim,
+                                    const int has_nonzero_diag,
+                                    const std::size_t bin_width,
+                                    const std::size_t *__restrict bin_ranges,
+                                    const std::size_t *__restrict group_ptrs,
+                                    const std::size_t *__restrict group_ladder_ptrs,
+                                    const unsigned int *__restrict group_rowint_length,
+                                    const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
+                                    const unsigned int num_groups,
+                                    const unsigned int ladder_offset,
+                                    const T *__restrict in_vec,
+                                    T *__restrict out_vec)
 {
     std::size_t kk;
     #pragma omp parallel if(subspace_dim > 128)
@@ -52,7 +52,7 @@ void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
         {
             boost::dynamic_bitset<std::size_t> row, col_vec;
             row = subspace[kk];
-            std::complex<double> temp_val, val=0;
+            T temp_val, val=0;
             const OperatorTerm_t * term;
             std::size_t start, stop;
             unsigned int group;

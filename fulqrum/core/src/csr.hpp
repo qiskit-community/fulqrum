@@ -14,9 +14,9 @@
 #include <boost/dynamic_bitset.hpp>
 
 
-template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
+template <typename T, typename U> void csr_matrix_builder(const OperatorTerm_t * terms,
                                               const std::vector<boost::dynamic_bitset<std::size_t> >& subspace,
-                                              const std::complex<double> * diag_vec,
+                                              const U * diag_vec,
                                               const unsigned int width,
                                               const std::size_t subspace_dim,
                                               const int has_nonzero_diag,
@@ -27,7 +27,7 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
                                               const std::size_t num_groups,
                                               T * indptr,
                                               T * indices,
-                                              std::complex<double> * data,
+                                              U * data,
                                               const int compute_values)
 {
     std::size_t kk;
@@ -45,7 +45,7 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
         row = subspace[kk];
         const std::vector<unsigned int> * group_inds;
         std::size_t col_idx;
-        std::complex<double> val;
+        U val;
         int do_col_search;
         std::size_t bin_num;
         row_nnz = 0;
@@ -118,10 +118,10 @@ template <typename T> void csr_matrix_builder(const OperatorTerm_t * terms,
 }
 
 
-template <typename T>void csr_spmv(const T *__restrict indptr, const T *__restrict indices,
-                                   const std::complex<double> *__restrict data, 
-                                   const std::complex<double> *__restrict vec, 
-                                   std::complex<double> *__restrict out, std::size_t dim)
+template <typename T, typename U>void csr_spmv(const T *__restrict indptr, const T *__restrict indices,
+                                               const U *__restrict data, 
+                                               const U *__restrict vec, 
+                                               U *__restrict out, std::size_t dim)
     {
         std::size_t row;
         #pragma omp parallel for if(dim > 128)
@@ -129,7 +129,7 @@ template <typename T>void csr_spmv(const T *__restrict indptr, const T *__restri
         {   
             T jj;
             T row_start, row_end;
-            std::complex<double> dot = 0;
+            U dot = 0.0;
             row_start = indptr[row];
             row_end = indptr[row+1];
             for(jj=row_start; jj < row_end; jj++)
