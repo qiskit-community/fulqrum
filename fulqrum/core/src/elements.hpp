@@ -33,7 +33,7 @@ const double REAL_OPER_ELEMENTS[28] = {1, 0, 0, -1,   // Z
 
 
 /**
- * Accumulate the COMPLEX matrix element value for given row and column bit-strings
+ * Accumulate the matrix element value for given row and column bit-strings
  *
  *
  * @param row The row bit-string
