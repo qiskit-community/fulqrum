@@ -14,9 +14,9 @@
 #include <boost/dynamic_bitset.hpp>
 
 
-template <typename T> void csr_matrix_builder2(const OperatorTerm_t * terms,
+template <typename T, typename U> void csr_matrix_builder2(const OperatorTerm_t * terms,
                                               const std::vector<boost::dynamic_bitset<std::size_t> >& subspace,
-                                              const std::complex<double> * diag_vec,
+                                              const U * diag_vec,
                                               const unsigned int width,
                                               const std::size_t subspace_dim,
                                               const int has_nonzero_diag,
@@ -30,7 +30,7 @@ template <typename T> void csr_matrix_builder2(const OperatorTerm_t * terms,
                                               const unsigned int ladder_offset,
                                               T * indptr,
                                               T * indices,
-                                              std::complex<double> * data,
+                                              U * data,
                                               const int compute_values)
 {
     std::size_t kk;
@@ -48,7 +48,7 @@ template <typename T> void csr_matrix_builder2(const OperatorTerm_t * terms,
         boost::dynamic_bitset<std::size_t> row, col_vec;
         const std::vector<unsigned int> * group_inds;
         std::size_t col_idx;
-        std::complex<double> val;
+        U val;
         unsigned int row_int;
         int do_col_search;
         std::size_t bin_num;

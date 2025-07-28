@@ -7,9 +7,9 @@ include "base_header.pxi"
 
 cdef extern from "../src/csr2.hpp":
 
-    void csr_matrix_builder2[T](const OperatorTerm_t * terms,
+    void csr_matrix_builder2[T, U](const OperatorTerm_t * terms,
                               const vector[bitset_t]& subspace,
-                              const double complex * diag_vec,
+                              const U * diag_vec,
                               size_t width,
                               size_t subspace_dim,
                               int has_nonzero_diag,
@@ -23,5 +23,5 @@ cdef extern from "../src/csr2.hpp":
                               unsigned int ladder_offset,
                               T * indptr,
                               T * indices,
-                              double complex * data,
+                              U * data,
                               int compute_values) nogil

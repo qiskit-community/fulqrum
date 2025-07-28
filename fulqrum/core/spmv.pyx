@@ -39,7 +39,7 @@ cdef class FulqrumSpMV():
         cdef size_t kk
         self.diag_oper = diag_hamiltonian.oper
         self.oper = hamiltonian.oper
-        self.is_real = diag_hamiltonian.is_real() and hamiltonian.is_real()
+        self.is_real = diag_hamiltonian.is_real() * hamiltonian.is_real()
         self.subspace = subspace
         self.bin_width = self.subspace.subspace.bin_width
         self.width = self.oper.width
@@ -207,7 +207,7 @@ cdef class FulqrumSpMV():
                 
             if int_64:
                 if self.oper.type == 2:
-                    csr_matrix_builder2[int64](&self.oper.terms[0],
+                    csr_matrix_builder2(&self.oper.terms[0],
                                         self.subspace.subspace.bitstrings,
                                         &self.complex_diag_vec[0],
                                         self.width,
@@ -226,7 +226,7 @@ cdef class FulqrumSpMV():
                                         &data[0],
                                         compute_values)
                 else:
-                    csr_matrix_builder[int64](&self.oper.terms[0],
+                    csr_matrix_builder(&self.oper.terms[0],
                                         self.subspace.subspace.bitstrings,
                                         &self.complex_diag_vec[0],
                                         self.width,
@@ -243,7 +243,7 @@ cdef class FulqrumSpMV():
                                         compute_values)
             else:
                 if self.oper.type == 2:
-                    csr_matrix_builder2[int](&self.oper.terms[0],
+                    csr_matrix_builder2(&self.oper.terms[0],
                                         self.subspace.subspace.bitstrings,
                                         &self.complex_diag_vec[0],
                                         self.width,
@@ -262,7 +262,7 @@ cdef class FulqrumSpMV():
                                         &data[0],
                                         compute_values)
                 else:
-                    csr_matrix_builder[int](&self.oper.terms[0],
+                    csr_matrix_builder(&self.oper.terms[0],
                                         self.subspace.subspace.bitstrings,
                                         &self.complex_diag_vec[0],
                                         self.width,

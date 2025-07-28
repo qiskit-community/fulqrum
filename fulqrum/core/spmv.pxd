@@ -18,7 +18,7 @@ cdef class FulqrumSpMV:
     cdef public unsigned int bin_width
     cdef int has_nonzero_diag
     cdef double complex[::1] complex_diag_vec
-    cdef double[::1] real_diag_vec
+    cdef double[::1] real_diag_vec # Need to split this due to Cython fused type limitation
     cdef size_t[::1] group_ptrs
     cdef size_t[::1] group_ladder_ptrs
     cdef unsigned int[::1] group_rowint_length
