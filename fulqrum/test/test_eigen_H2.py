@@ -36,6 +36,7 @@ def test_full_dist_h2_eigen():
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
     evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY)
     assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
 
@@ -51,6 +52,7 @@ def test_partial_dist_h2_eigen1():
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
     evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY)
     ans_dict = Hsub.interpret_vector(evecs)
     assert abs(ans_dict["1010"] - GROUND_DIST["1010"]) < 1e-14
@@ -88,5 +90,6 @@ def test_full_dist_h2_eigen_csr_linearoperator():
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
     evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY)
     assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
