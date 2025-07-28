@@ -7,9 +7,9 @@ include "base_header.pxi"
 
 cdef extern from "../src/csr.hpp":
 
-    void csr_matrix_builder[T](const OperatorTerm_t * terms,
+    void csr_matrix_builder[T,U](const OperatorTerm_t * terms,
                               const vector[bitset_t]& subspace,
-                              const double complex * diag_vec,
+                              const U * diag_vec,
                               size_t width,
                               size_t subspace_dim,
                               int has_nonzero_diag,
@@ -20,10 +20,9 @@ cdef extern from "../src/csr.hpp":
                               size_t num_groups,
                               T * indptr,
                               T * indices,
-                              double complex * data,
+                              U * data,
                               int compute_values) nogil
 
     
-    void csr_spmv[T](const T * indptr, const T * indices, const double complex * data, 
-                     double complex * vec, double complex * out,
-                     size_t dim) nogil
+    void csr_spmv[T,U](const T * indptr, const T * indices, const U * data, 
+                       U * vec, U * out, size_t dim) nogil

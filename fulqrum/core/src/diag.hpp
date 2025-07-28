@@ -13,18 +13,18 @@
 #include <boost/dynamic_bitset.hpp>
 
 
-void compute_diag_vector(const std::vector<boost::dynamic_bitset<std::size_t> >& data,
-                         std::complex<double> * __restrict diag_vec,
-                         const QubitOperator_t& diag_oper,
-                         const unsigned int width,
-                         const std::size_t subspace_dim){
+template <typename T> void compute_diag_vector(const std::vector<boost::dynamic_bitset<std::size_t> >& data,
+                                               T * __restrict diag_vec,
+                                               const QubitOperator_t& diag_oper,
+                                               const unsigned int width,
+                                               const std::size_t subspace_dim){
         std::size_t kk;
         const std::size_t num_terms = diag_oper.terms.size();
         #pragma omp parallel for if(subspace_dim > 100)
         for(kk=0; kk < subspace_dim; kk++){
             std::size_t ll;
             unsigned int weight;
-            std::complex<double> val = 0;
+            T val = 0;
             OperatorTerm_t term;
             for(ll=0; ll < num_terms; ll++){
                 term = diag_oper.terms[ll];

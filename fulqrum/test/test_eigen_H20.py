@@ -38,6 +38,7 @@ def test_full_dist_h20_eigenenergy_csr():
     S = Subspace(full_dist)
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_array()
+    assert M.dtype == float
 
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
@@ -53,5 +54,6 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator():
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_linearoperator()
 
+    assert M.mat.dtype == float
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)

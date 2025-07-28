@@ -6,9 +6,9 @@ from fulqrum.core.bitset cimport bitset_t
 include "base_header.pxi"
 
 cdef extern from "../src/matvec.hpp":
-    void omp_matvec(vector[OperatorTerm_t]& terms,
+    void omp_matvec[T](vector[OperatorTerm_t]& terms,
                 vector[bitset_t]& subspace,
-                double complex * diag_vec,
+                T * diag_vec,
                 size_t width,
                 size_t subspace_dim,
                 int has_nonzero_diag,
@@ -17,5 +17,5 @@ cdef extern from "../src/matvec.hpp":
                 size_t * group_ptrs,
                 const vector[vector[unsigned int]]& group_offdiag_inds,
                 size_t num_groups,
-                const double complex * in_vec,
-                double complex * out_vec) nogil
+                const T * in_vec,
+                T * out_vec) nogil
