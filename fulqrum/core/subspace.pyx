@@ -18,6 +18,7 @@ from fulqrum.core.bitset_view cimport BitsetView
 
 include "fulqrum/core/includes/base_header.pxi"
 include "fulqrum/core/includes/bitset_utils_header.pxi"
+include "fulqrum/core/includes/types.pxi"
 
 
 cdef size_t intmin(size_t a, size_t b):
@@ -49,7 +50,7 @@ cdef class Subspace():
 
         cdef size_t kk
         cdef string key
-        cdef size_t temp_idx
+        cdef size_t temp_idx = 0
         cdef size_t bin_idx = 0
         cdef bitset_t temp_bits
         
@@ -136,7 +137,7 @@ cdef class Subspace():
 
 
     @cython.boundscheck(False)
-    def interpret_vector(self, double complex[::1] vec, double atol=1e-12, int sort=0):
+    def interpret_vector(self, double_or_complex[::1] vec, double atol=1e-12, int sort=0):
         """Convert solution vector into dict of counts and complex amplitudes
 
         Parameters:
@@ -155,7 +156,7 @@ cdef class Subspace():
         cdef dict out = {}
 
         for kk in range(self.subspace.size):
-            if abs(vec[kk]) <= atol and abs(vec[kk].imag) <= atol:
+            if abs(vec[kk]) <= atol:
                 continue
             to_string(self.subspace.bitstrings[kk], s)
             out[s] = vec[kk]
