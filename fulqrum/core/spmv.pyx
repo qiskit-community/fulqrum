@@ -231,12 +231,8 @@ cdef class FulqrumSpMV():
         indptr64 = np.zeros(self.subspace_dim+1, dtype=np.int64)
         indices64 = np.zeros(1, dtype=np.int64)
 
-
-        if self.has_nonzero_diag:
-            if self.is_real and self.real_diag_vec.shape[0] == 0:
-                self.compute_diag_vector()
-            elif (not self.is_real) and self.complex_diag_vec.shape[0] == 0:
-                self.compute_diag_vector()
+        # Compute diag vec if we have not done so already
+        self.compute_diag_vector()
 
         cdef double start, stop
         cdef int compute_values, data_size
@@ -248,7 +244,6 @@ cdef class FulqrumSpMV():
 
         cdef int int_64 = 1 # always start with 64bit ints
         for compute_values in range(2):
-            start = time.perf_counter()
             if compute_values:
                 # matrix is empty
                 if indptr64[self.subspace_dim] == 0:
@@ -265,8 +260,9 @@ cdef class FulqrumSpMV():
                 else:
                     total_bytes = (self.subspace_dim + 1) * 4  + indptr64[self.subspace_dim] * 4 + indptr64[self.subspace_dim] * data_size
                 if psutil.virtual_memory().available < total_bytes:
-                    raise FulqrumError(f"Sparse matrix of size {round(total_bytes/(1024**3), 3)}Gb does not fit within available memory.")
-
+                    raise FulqrumError(f"Sparse matrix of size {round(total_bytes/(1024**2), 3)}Mb does not fit within available memory.")
+                if verbose:
+                    print(f'Est. matrix size: {round(total_bytes/(1024**2), 3)}Mb')
                 if int_64:
                     indices64 = np.zeros(indptr64[self.subspace_dim], dtype=np.int64)
                     if self.is_real:
@@ -281,7 +277,7 @@ cdef class FulqrumSpMV():
                         real_data = np.zeros(indptr32[self.subspace_dim], dtype=float)
                     else:
                         complex_data = np.zeros(indptr32[self.subspace_dim], dtype=complex)
-                
+            start = time.perf_counter()
             if int_64:
                 if self.oper.type == 2:
                     if self.is_real:
