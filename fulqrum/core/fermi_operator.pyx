@@ -18,10 +18,12 @@ import numpy as np
 cimport numpy as np
 
 include "includes/base_header.pxi"
+include "includes/fermi_header.pxi"
 include "includes/operators_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
-include "includes/fermi_header.pxi"
+include "includes/constants.pxi"
+
 
 cdef const FermionicTerm_t EmptyFermionicTerm
 
@@ -348,25 +350,26 @@ cdef class FermionicOperator():
         out.oper.type = 2
         return out.combine_repeated_terms()
 
-    def simplify(self, atol=1e-8, rtol=1e-5):
-        """Simplify FermionicOperator by removing terms with close to zero coefficients.
+    @cython.boundscheck(False)
+    def simplify(self, double rtol=RTOL, double atol=ATOL):
+        """Truncate operator terms by coefficient value
 
         Parameters:
-            atol (float): Optional.
-                Absolute tolerance for checking if coefficients are zero (Default: 1e-8).
-            rtol (float): Optional.
-                Relative tolerance for checking if coefficients are zero (Default: 1e-5).
-        
+            rtol (float): Relative tolerance
+            atol (float): Absolute tolerance
+
         Returns:
-            The simplified FermionicOperator with potenially fewer terms.
+            FermionicOperator: Truncated operator
         """
+        cdef double thresh, max_coeff = 0
+        cdef size_t kk
+        for kk in range(self.oper.terms.size()):
+            max_coeff = max(max_coeff, abs(self.oper.terms[kk].coeff))
+        thresh = max_coeff*rtol + atol
         cdef FermionicOperator out = FermionicOperator(self.width)
-
-        for idx in range(self.num_terms):
-            term = self[idx]
-            if not np.isclose(term.coeff, 0, atol=atol, rtol=rtol):
-                out += term
-
+        for kk in range(self.oper.terms.size()):
+            if abs(self.oper.terms[kk].coeff) > thresh:
+                out.oper.terms.push_back(self.oper.terms[kk])
         return out
 
     @cython.boundscheck(False)

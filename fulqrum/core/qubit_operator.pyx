@@ -29,6 +29,7 @@ include "includes/operators_header.pxi"
 include "includes/grouping_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
+include "includes/constants.pxi"
 
 cdef const OperatorTerm_t EmptyOperatorTerm
 
@@ -254,6 +255,29 @@ cdef class QubitOperator():
                 if fabs(self.oper.terms[kk].coeff.imag) > 1e-12:
                     out = 0
                     break
+        return out
+    
+    @cython.boundscheck(False)
+    def simplify(self, double rtol=RTOL, double atol=ATOL):
+        """Truncate operator terms by coefficient value
+
+        Parameters:
+            rtol (float): Relative tolerance
+            atol (float): Absolute tolerance
+
+        Returns:
+            QubitOperator: Truncated operator
+        """
+        cdef double thresh, max_coeff = 0
+        cdef size_t kk
+        for kk in range(self.oper.terms.size()):
+            max_coeff = max(max_coeff, abs(self.oper.terms[kk].coeff))
+        thresh = max_coeff*rtol + atol
+        cdef QubitOperator out = QubitOperator(self.width)
+        for kk in range(self.oper.terms.size()):
+            if abs(self.oper.terms[kk].coeff) > thresh:
+                out.oper.terms.push_back(self.oper.terms[kk])
+        out.oper.type = self.oper.type
         return out
     
     @cython.boundscheck(False)
