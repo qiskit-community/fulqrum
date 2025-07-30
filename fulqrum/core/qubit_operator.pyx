@@ -203,6 +203,7 @@ cdef class QubitOperator():
         """
         return self.oper.weight_sorted
 
+
     @property
     def off_weight_sorted(self):
         """Is the operator sorted by off-diagonal weight
@@ -238,24 +239,33 @@ cdef class QubitOperator():
         out.oper.off_weight_sorted = self.oper.off_weight_sorted
         return out
 
+    @cython.boundscheck(False)
     def is_real(self):
         """Can operator be described via a symmetric matrix
-
-        This currently checks only type=2 operators
 
         Returns:
             int: Is operator real-valued
         """
         cdef size_t kk
         cdef int out = 1
-        if self.oper.type == 1:
-            out = 0
-        else:
-            for kk in range(self.oper.terms.size()):
-                if fabs(self.oper.terms[kk].coeff.imag) > 1e-12:
-                    out = 0
-                    break
+        for kk in range(self.oper.terms.size()):
+            if fabs(self.oper.terms[kk].coeff.imag) > ATOL or ( not self.oper.terms[kk].real_phase):
+                out = 0
+                break
         return out
+
+    @cython.boundscheck(False)
+    def real_phases(self):
+        """The real 'phase' of each term in operator
+
+        Returns:
+            ndarray: real phase of each term in operator
+        """
+        cdef size_t kk
+        cdef int[::1] out = np.empty(self.oper.terms.size(), dtype=np.int32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].real_phase
+        return np.asarray(out)
     
     @cython.boundscheck(False)
     def simplify(self, double rtol=RTOL, double atol=ATOL):
@@ -669,7 +679,7 @@ cdef class QubitOperator():
             # Input col string matches that of nonzero column
             if col_vec == nonzero_vec:
                 accum_element(row_vec, nonzero_vec,
-                              &term.indices[0], &term.values[0], term.coeff, weight, out)
+                              &term.indices[0], &term.values[0], term.coeff, term.real_phase, weight, out)
         return out
 
 

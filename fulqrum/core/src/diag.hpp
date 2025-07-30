@@ -30,7 +30,7 @@ template <typename T> void compute_diag_vector(const std::vector<boost::dynamic_
                 term = diag_oper.terms[ll];
                 weight = term.indices.size();
                 accum_element(data[kk], data[kk],
-                              &term.indices[0], &term.values[0], term.coeff,
+                              &term.indices[0], &term.values[0], term.coeff, term.real_phase,
                               weight, val);
                 }
             diag_vec[kk] = val;

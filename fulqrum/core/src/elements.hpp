@@ -26,7 +26,7 @@ const double REAL_OPER_ELEMENTS[28] = {1, 0, 0, -1,   // Z
                                        1, 0, 0, 0,    // 0
                                        0, 0, 0, 1,    // 1
                                        0, 1, 1, 0,    // X
-                                       0, 0, 0, 0,   // Y (placeholder)
+                                       0, -1, 1, 0,   // Y
                                        0, 1, 0, 0,    // -
                                        0, 0, 1, 0     // +
                                        };
@@ -43,13 +43,13 @@ const double REAL_OPER_ELEMENTS[28] = {1, 0, 0, -1,   // Z
  * @param coeff The complex coefficient of the term in question
  * @param N The length of the pos and val vector, i.e. number of non-ID operators in term
  * @param out The complex number to accumulate to
- * @return Column string
  */
 template <typename T> void accum_element(const boost::dynamic_bitset<std::size_t>& row,
                                         const boost::dynamic_bitset<std::size_t>& col,
                                         const unsigned int *__restrict inds,
                                         const unsigned char *__restrict val,
                                         const std::complex<double>& coeff,
+                                        const int real_phase,
                                         const unsigned int N,
                                         T & out)
 {
@@ -76,7 +76,7 @@ template <typename T> void accum_element(const boost::dynamic_bitset<std::size_t
         // accumulate to output value
         if constexpr(std::is_same_v<T, double>)
         {
-            out += coeff.real()*temp;
+            out += real_phase * coeff.real() * temp;
         }
         else
         {

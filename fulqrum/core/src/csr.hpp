@@ -87,7 +87,7 @@ template <typename T, typename U> void csr_matrix_builder(const OperatorTerm_t *
                 if(passes_proj_validation(term, row))
                 {
                     accum_element(row, col_vec, &term->indices[0], &term->values[0],
-                                  term->coeff, term->indices.size(), val);
+                                  term->coeff, term->real_phase, term->indices.size(), val);
                 }
             } // end loop over terms in this group
             if(val!=0.0)

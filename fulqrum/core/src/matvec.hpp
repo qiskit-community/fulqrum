@@ -82,7 +82,7 @@ template <typename T> void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                     if(passes_proj_validation(term, row))
                     {
                         accum_element(row, col_vec, &term->indices[0], &term->values[0],
-                                      term->coeff, term->indices.size(), temp_val);
+                                      term->coeff, term->real_phase, term->indices.size(), temp_val);
                     }
                 } // end loop for this group
                 if(!do_col_search)
