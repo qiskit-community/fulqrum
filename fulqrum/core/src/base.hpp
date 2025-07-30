@@ -29,6 +29,7 @@ typedef struct OperatorTerm{
     std::vector<unsigned int> proj_bits;
     unsigned int offdiag_weight {0};
     int extended {0};
+    int real_phase {1}; // 'phase' of real part (+/- 1), 0 means operator is complex-valued
     int group {-1}; // -1 means unset here
 } OperatorTerm_t;
 

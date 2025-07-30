@@ -14,6 +14,7 @@ cdef extern from "../src/base.hpp":
         vector[unsigned int] proj_bits
         unsigned int offdiag_weight
         int extended
+        int real_phase
         int group
 
 

@@ -203,6 +203,7 @@ cdef class QubitOperator():
         """
         return self.oper.weight_sorted
 
+
     @property
     def off_weight_sorted(self):
         """Is the operator sorted by off-diagonal weight
@@ -238,6 +239,7 @@ cdef class QubitOperator():
         out.oper.off_weight_sorted = self.oper.off_weight_sorted
         return out
 
+    @cython.boundscheck(False)
     def is_real(self):
         """Can operator be described via a symmetric matrix
 
@@ -256,6 +258,19 @@ cdef class QubitOperator():
                     out = 0
                     break
         return out
+
+    @cython.boundscheck(False)
+    def real_phases(self):
+        """The real 'phase' of each term in operator
+
+        Returns:
+            ndarray: real phase of each term in operator
+        """
+        cdef size_t kk
+        cdef int[::1] out = np.empty(self.oper.terms.size(), dtype=np.int32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].real_phase
+        return np.asarray(out)
     
     @cython.boundscheck(False)
     def simplify(self, double rtol=RTOL, double atol=ATOL):

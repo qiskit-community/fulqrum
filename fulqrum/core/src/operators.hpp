@@ -140,19 +140,27 @@ void set_extended_flag(OperatorTerm_t& term){
 
 
 /**
- * In-place set off-diagonal weight
+ * In-place set off-diagonal weight and real_phase
  *
  * @param term Hamiltonian term
  * 
  */
  void set_offdiag_weight(OperatorTerm_t& term){
     std::size_t kk;
-    std::size_t weight = 0;
+    unsigned int weight = 0;
+    unsigned int temp, num_y = 0;
     unsigned char * values = &term.values[0];
     for(kk=0; kk < term.values.size(); kk++){
         weight += (values[kk] > 2);
+        num_y += (values[kk] == 4);
     }
     term.offdiag_weight = weight;
+    // Do the real_phase for checking if operator itself can be cast as symmetric (real)
+    temp = num_y % 4;
+    if(temp)
+    {
+        term.real_phase = (temp % 2) - 1;
+    }
 }
 
 
