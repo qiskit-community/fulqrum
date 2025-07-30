@@ -168,6 +168,15 @@ cdef class QubitOperator():
         return self.oper.type
 
     @property
+    def dtype(self):
+        """ The data type of the operator
+
+        Returns:
+            type: Data type of operator
+        """
+        return np.dtype(float) if self.is_real() else np.dtype(complex)
+
+    @property
     def num_terms(self):
         """Return the number of terms in the operator
 
