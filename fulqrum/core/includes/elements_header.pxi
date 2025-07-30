@@ -10,6 +10,6 @@ cdef extern from "../src/elements.hpp":
                        const unsigned int * inds,
                        const unsigned char * val,
                        const double complex& coeff,
+                       const int real_phase,
                        const unsigned int N,
                        double complex & out)
-
