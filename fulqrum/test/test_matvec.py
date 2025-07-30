@@ -15,13 +15,13 @@ def test_matvec1():
     H += QubitOperator.from_label("YY", -3)
     S = Subspace({"00": 10, "01": 10, "10": 10, "11": 10})
     F = SubspaceHamiltonian(H, S)
-    in_vec = np.ones(len(S), dtype=complex)
+    in_vec = np.ones(len(S), dtype=float)
     perm = [int(key, 2) for key in S.to_dict().keys()]
     perm_vec = in_vec[perm]
     out_vec = F.matvec(perm_vec)
     res = F.interpret_vector(out_vec, -1, sort=True)
     dense_op = kron_str("ZZ") + 5 * kron_str("XX") - 3 * kron_str("YY")
-    ans = dense_op.dot(in_vec)
+    ans = np.real(dense_op).dot(in_vec)
     assert np.allclose(list(res.values()), ans)
 
 
@@ -30,7 +30,7 @@ def test_matvec2():
     H = QubitOperator.from_label("II")
     S = Subspace({"00": 10, "01": 10, "10": 10, "11": 10})
     F = SubspaceHamiltonian(H, S)
-    in_vec = np.arange(len(S), dtype=complex)
+    in_vec = np.arange(len(S), dtype=float)
     perm = [int(key, 2) for key in S.to_dict().keys()]
     perm_vec = in_vec[perm]
     out_vec = F.matvec(perm_vec)
@@ -91,7 +91,7 @@ def test_matvec_bin_width1():
     """Validate that matvec is unchanged with bin_width for diagonal op"""
     counts = {}
     ans_dict = {}
-    in_vec = np.ones(2**3, dtype=complex)
+    in_vec = np.ones(2**3, dtype=float)
     diag = kron_str("ZIZ").dot(in_vec)
     idx = 0
     for kk in range(2**3):
@@ -111,7 +111,7 @@ def test_matvec_bin_width2():
     """Validate that matvec is unchanged with bin_width for diagonal + off_diag op"""
     counts = {}
     ans_dict = {}
-    in_vec = np.ones(2**3, dtype=complex)
+    in_vec = np.ones(2**3, dtype=float)
     diag = (kron_str("ZIZ") + kron_str("XXX")).dot(in_vec)
     idx = 0
     for kk in range(2**3):

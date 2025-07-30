@@ -243,20 +243,15 @@ cdef class QubitOperator():
     def is_real(self):
         """Can operator be described via a symmetric matrix
 
-        This currently checks only type=2 operators
-
         Returns:
             int: Is operator real-valued
         """
         cdef size_t kk
         cdef int out = 1
-        if self.oper.type == 1:
-            out = 0
-        else:
-            for kk in range(self.oper.terms.size()):
-                if fabs(self.oper.terms[kk].coeff.imag) > 1e-12:
-                    out = 0
-                    break
+        for kk in range(self.oper.terms.size()):
+            if fabs(self.oper.terms[kk].coeff.imag) > ATOL or ( not self.oper.terms[kk].real_phase):
+                out = 0
+                break
         return out
 
     @cython.boundscheck(False)
