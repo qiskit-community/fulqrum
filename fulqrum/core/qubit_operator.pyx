@@ -345,18 +345,20 @@ cdef class QubitOperator():
         offdiag.oper.type = self.oper.type
         return diag, offdiag
 
-    @property
-    def coeff(self):
-        """Return the coeff for a single term or empty operator
+    @cython.boundscheck(False)
+    def coefficients(self):
+        """Return the coefficients for each term in the operator
+
+        Returns:
+            ndarray: complex-valued array of coefficients
         """
-        cdef size_t kk, jj
-        cdef OperatorTerm_t * term
-        cdef list out = []
-        if self.oper.terms.size() > 2:
-            raise FulqrumError('Can only grab coeff from operators with < 2 terms')
-        elif self.oper.terms.size() == 0:
-            return 0+0j
-        return self.oper.terms[0].coeff
+        cdef size_t kk
+        if self.oper.terms.size() == 0:
+            raise FulqrumError('QubitOperator has zero terms')
+        cdef double complex[::1] out = np.empty(self.oper.terms.size(), dtype=complex)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].coeff
+        return np.asarray(out)
 
     @property
     def operators(self):
@@ -632,8 +634,9 @@ cdef class QubitOperator():
                 out.oper.terms.push_back(dereference(term_ptr))
             else:
                 val += term_ptr.coeff
+        out.oper.type = self.oper.type
         if return_value:
-            return out, val
+            return out, val.real
         return out
     
     @cython.boundscheck(False)

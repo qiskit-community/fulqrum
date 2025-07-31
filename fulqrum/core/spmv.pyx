@@ -244,6 +244,7 @@ cdef class FulqrumSpMV():
 
         cdef int int_64 = 1 # always start with 64bit ints
         for compute_values in range(2):
+            start = time.perf_counter()
             if compute_values:
                 # matrix is empty
                 if indptr64[self.subspace_dim] == 0:
@@ -277,7 +278,6 @@ cdef class FulqrumSpMV():
                         real_data = np.zeros(indptr32[self.subspace_dim], dtype=float)
                     else:
                         complex_data = np.zeros(indptr32[self.subspace_dim], dtype=complex)
-            start = time.perf_counter()
             if int_64:
                 if self.oper.type == 2:
                     if self.is_real:
