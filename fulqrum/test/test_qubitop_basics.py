@@ -32,14 +32,14 @@ def test_coeff():
     """Test setting coeff for single identity operator"""
     N = 5
     qo = QubitOperator(N, [[1 + 2j]])
-    assert qo.coeff == 1 + 2j
+    assert qo.coefficients()[0] == 1 + 2j
 
 
 def test_coeff2():
     """Test constant helper routiner"""
     N = 5
     qo2 = QubitOperator.from_constant(N, 1 + 2j)
-    assert qo2.coeff == 1 + 2j
+    assert qo2.coefficients()[0] == 1 + 2j
 
 
 def test_simple_multi_operators():
@@ -66,7 +66,7 @@ def test_simple_inplace_add():
 
     for kk in range(N):
         assert op[kk].operators == [("Y", kk)]
-        assert op[kk].coeff == 1.0 / (N + kk)
+        assert op[kk].coefficients()[0] == 1.0 / (N + kk)
 
 
 def test_simple_add():
@@ -79,7 +79,7 @@ def test_simple_add():
 
     for kk in range(N):
         assert op[kk].operators == [("0", kk)]
-        assert op[kk].coeff == 1.0 / (N + kk)
+        assert op[kk].coefficients()[0] == 1.0 / (N + kk)
 
 
 def test_simple_diagonal():
@@ -146,10 +146,10 @@ def test_operator_multiplication():
     new_qo = 5 * qo
     # operator ordering is switched due to internal sort
     assert new_qo.operators == [("X", 0), ("X", 1), ("X", 2), ("X", 3), ("X", 4)]
-    assert new_qo.coeff == -5j
-    assert qo.coeff == -1j
+    assert new_qo.coefficients()[0] == -5j
+    assert qo.coefficients()[0] == -1j
     qo *= 5
-    assert qo.coeff == -5j
+    assert qo.coefficients()[0] == -5j
 
 
 def test_operator_sorting1():
@@ -174,7 +174,7 @@ def test_operator_subtraction():
     H = QubitOperator.from_label("ZZ")
     G = QubitOperator.from_label("XX", 5)
     qo = H - G
-    assert qo[1].coeff == -5.0
+    assert qo[1].coefficients()[0] == -5.0
 
 
 def test_proj_indices1():
