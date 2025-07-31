@@ -611,22 +611,6 @@ cdef class QubitOperator():
         self.oper.sorted = 0
 
     @cython.boundscheck(False)
-    cpdef double complex sum_identity_terms(self):
-        """Sum of identity terms coefficients.
-
-        Returns:
-            double complex: Sum of identities
-        """
-        cdef size_t kk
-        cdef OperatorTerm_t * term_ptr
-        cdef double complex out = 0
-        for kk in range(self.oper.terms.size()):
-            term_ptr = &self.oper.terms[kk]
-            if term_ptr.indices.size() == 0:
-                out += term_ptr.coeff
-        return out
-
-    @cython.boundscheck(False)
     def remove_identity_terms(self, bool return_value=False):
         """Remove identity terms from operator, optionally
         returning the sum of the coefficients

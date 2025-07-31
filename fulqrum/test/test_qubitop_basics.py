@@ -133,10 +133,10 @@ def test_operator_identity_removal():
     for kk, oper in enumerate(diag_ops):
         op += QubitOperator(N, [(oper, 0, 1 / (N + kk))])
 
-    assert abs(op.sum_identity_terms() - 0.25757575757575757) < 1e-15
+    assert abs(op.constant_energy() - 0.25757575757575757) < 1e-15
     new_op = op.remove_identity_terms()
     assert new_op.num_terms == 4
-    assert new_op.sum_identity_terms() == 0
+    assert new_op.constant_energy() == 0
 
 
 def test_operator_multiplication():
