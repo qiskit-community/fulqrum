@@ -19,7 +19,7 @@ def test_combining_terms1():
     new_op = op.combine_repeated_terms()
     assert new_op.num_terms == 3
     assert np.allclose(new_op.weights(), [0, 3, 3])
-    assert new_op[1].coeff == 5.0
+    assert new_op[1].coefficients()[0] == 5.0
 
 
 def test_combining_h2_terms():

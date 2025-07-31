@@ -275,6 +275,20 @@ cdef class QubitOperator():
         for kk in range(self.oper.terms.size()):
             out[kk] = self.oper.terms[kk].real_phase
         return np.asarray(out)
+
+    @cython.boundscheck(False)
+    def constant_energy(self):
+        """Value of the constant energy term(s) in the operator
+
+        Returns:
+            float
+        """
+        cdef size_t kk
+        cdef double complex out = 0
+        for kk in range(self.oper.terms.size()):
+            if (self.oper.terms[kk].indices.size() == 0):
+                out += self.oper.terms[kk].coeff
+        return out.real
     
     @cython.boundscheck(False)
     def simplify(self, double rtol=RTOL, double atol=ATOL):
@@ -331,18 +345,20 @@ cdef class QubitOperator():
         offdiag.oper.type = self.oper.type
         return diag, offdiag
 
-    @property
-    def coeff(self):
-        """Return the coeff for a single term or empty operator
+    @cython.boundscheck(False)
+    def coefficients(self):
+        """Return the coefficients for each term in the operator
+
+        Returns:
+            ndarray: complex-valued array of coefficients
         """
-        cdef size_t kk, jj
-        cdef OperatorTerm_t * term
-        cdef list out = []
-        if self.oper.terms.size() > 2:
-            raise FulqrumError('Can only grab coeff from operators with < 2 terms')
-        elif self.oper.terms.size() == 0:
-            return 0+0j
-        return self.oper.terms[0].coeff
+        cdef size_t kk
+        if self.oper.terms.size() == 0:
+            raise FulqrumError('QubitOperator has zero terms')
+        cdef double complex[::1] out = np.empty(self.oper.terms.size(), dtype=complex)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].coeff
+        return np.asarray(out)
 
     @property
     def operators(self):
@@ -572,7 +588,6 @@ cdef class QubitOperator():
                 if self.oper.terms[kk].values[jj] > 2:
                     return 0
         return 1
-
     
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -598,22 +613,6 @@ cdef class QubitOperator():
         self.oper.sorted = 0
 
     @cython.boundscheck(False)
-    cpdef double complex sum_identity_terms(self):
-        """Sum of identity terms coefficients.
-
-        Returns:
-            double complex: Sum of identities
-        """
-        cdef size_t kk
-        cdef OperatorTerm_t * term_ptr
-        cdef double complex out = 0
-        for kk in range(self.oper.terms.size()):
-            term_ptr = &self.oper.terms[kk]
-            if term_ptr.indices.size() == 0:
-                out += term_ptr.coeff
-        return out
-
-    @cython.boundscheck(False)
     def remove_identity_terms(self, bool return_value=False):
         """Remove identity terms from operator, optionally
         returning the sum of the coefficients
@@ -635,8 +634,9 @@ cdef class QubitOperator():
                 out.oper.terms.push_back(dereference(term_ptr))
             else:
                 val += term_ptr.coeff
+        out.oper.type = self.oper.type
         if return_value:
-            return out, val
+            return out, val.real
         return out
     
     @cython.boundscheck(False)

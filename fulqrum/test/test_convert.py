@@ -28,7 +28,7 @@ def test_openfermion_qubit_op_to_fulqrum():
         label = [(item[0], qubit_reorder_map[int(item[1:])]) for item in label]
         label = sorted(label, key=lambda x: x[1])
         assert fulqrum_qubit_op[idx].operators == label
-        assert fulqrum_qubit_op[idx].coeff == coeffs[idx]
+        assert fulqrum_qubit_op[idx].coefficients()[0] == coeffs[idx]
 
     assert fulqrum_qubit_op.width == 6
 
@@ -73,8 +73,8 @@ def test_openfermion_fermi_op_to_fulqrum():
 
         single_terms = sorted(single_terms, key=lambda x: x[1])
         assert (
-            fulqrum_fermi_op[idx].coeff == coeffs[idx]
-            or fulqrum_fermi_op[idx].coeff == -coeffs[idx]
+            fulqrum_fermi_op[idx].coefficients()[0] == coeffs[idx]
+            or fulqrum_fermi_op[idx].coefficients()[0] == -coeffs[idx]
         )
         assert fulqrum_fermi_op[idx].operators == single_terms
 
