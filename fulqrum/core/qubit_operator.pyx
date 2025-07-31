@@ -275,6 +275,20 @@ cdef class QubitOperator():
         for kk in range(self.oper.terms.size()):
             out[kk] = self.oper.terms[kk].real_phase
         return np.asarray(out)
+
+    @cython.boundscheck(False)
+    def constant_energy(self):
+        """Value of the constant energy term(s) in the operator
+
+        Returns:
+            float
+        """
+        cdef size_t kk
+        cdef double complex out = 0
+        for kk in range(self.oper.terms.size()):
+            if (self.oper.terms[kk].indices.size() == 0):
+                out += self.oper.terms[kk].coeff
+        return out.real
     
     @cython.boundscheck(False)
     def simplify(self, double rtol=RTOL, double atol=ATOL):
@@ -572,7 +586,6 @@ cdef class QubitOperator():
                 if self.oper.terms[kk].values[jj] > 2:
                     return 0
         return 1
-
     
     @cython.boundscheck(False)
     @cython.wraparound(False)
