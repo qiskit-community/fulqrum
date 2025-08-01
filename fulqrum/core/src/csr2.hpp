@@ -16,21 +16,21 @@
 
 template <typename T, typename U> void csr_matrix_builder2(const OperatorTerm_t * terms,
                                               const std::vector<boost::dynamic_bitset<std::size_t> >& subspace,
-                                              const U * diag_vec,
+                                              const U * __restrict diag_vec,
                                               const unsigned int width,
                                               const std::size_t subspace_dim,
                                               const int has_nonzero_diag,
                                               const unsigned int bin_width,
-                                              const std::size_t * bin_ranges,
-                                              const std::size_t * group_ptrs,
+                                              const std::size_t * __restrict bin_ranges,
+                                              const std::size_t * __restrict group_ptrs,
                                               const std::size_t *__restrict group_ladder_ptrs,
                                               const unsigned int *__restrict group_rowint_length,
                                               const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
                                               const std::size_t num_groups,
                                               const unsigned int ladder_offset,
-                                              T * indptr,
-                                              T * indices,
-                                              U * data,
+                                              T * __restrict indptr,
+                                              T * __restrict indices,
+                                              U * __restrict data,
                                               const int compute_values)
 {
     std::size_t kk;
