@@ -25,7 +25,7 @@ inline int jw_phase(unsigned char op)
 }
 
 
-void jw_term(FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
+void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
 {
     int num_elems = fermi_term.indices.size();
     int kk;
@@ -76,7 +76,7 @@ void jw_term(FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
 }
 
 
-void extended_jw_transform(FermionicOperator_t& fermi, QubitOperator_t& out,
+void extended_jw_transform(const FermionicOperator_t& fermi, QubitOperator_t& out,
                            std::size_t num_terms)
 {
     std::size_t kk;

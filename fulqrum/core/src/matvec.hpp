@@ -17,7 +17,7 @@
 
 template <typename T> void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                                         const std::vector<boost::dynamic_bitset<std::size_t> >& subspace,
-                                        const T * diag_vec,
+                                        const T * __restrict diag_vec,
                                         const std::size_t width,
                                         const std::size_t subspace_dim,
                                         const int has_nonzero_diag,

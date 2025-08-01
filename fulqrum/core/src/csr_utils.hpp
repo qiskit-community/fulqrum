@@ -8,7 +8,7 @@
 
 
 
-template <typename T, typename U> T partition(T * indices, U * data, T start, T stop)
+template <typename T, typename U> T partition(T * __restrict indices, U * __restrict data, T start, T stop)
 {
     // rightmost element as pivot
     T pivot = indices[stop];
@@ -42,7 +42,7 @@ template <typename T, typename U> T partition(T * indices, U * data, T start, T 
 }
 
 
-template <typename T, typename U> void quicksort_indices_data(T * indices, U * data, 
+template <typename T, typename U> void quicksort_indices_data(T * __restrict indices, U * __restrict data, 
                                                               T start, T stop)
 {
     T pi;
