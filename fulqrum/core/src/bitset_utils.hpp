@@ -35,7 +35,7 @@ inline void bin_int(const boost::dynamic_bitset<std::size_t>& bitset,
  * @param size The size of the array
  */
 inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
-                      const unsigned int *__restrict arr, unsigned int size)
+                      const unsigned int *__restrict arr, const unsigned int size)
     {
         unsigned int  kk;
         unsigned int block_num, block_idx;
@@ -93,26 +93,6 @@ inline void bitset_column_index(const std::size_t start, const std::size_t stop,
     }
 }
 
-inline int nonzero_extended_bitset(const OperatorTerm_t *__restrict term,
-                                   const boost::dynamic_bitset<std::size_t>& row)
-{
-    std::size_t kk;
-    unsigned int ind, block_num, block_idx, row_int;
-    int out = 1;
-    for(kk=0; kk < term->indices.size(); kk++){
-        ind = term->indices[kk];
-        block_num = ind / BITS_PER_BLOCK;
-        block_idx = ind % BITS_PER_BLOCK;
-        row_int = (row.m_bits[block_num] >> block_idx) & 1;
-        if(!EXT_NZ_MASK[term->values[kk] + row_int])
-        {
-            out = 0;
-            break;
-        }
-    }
-    return out;
-}
-
 
 inline void sort_bitset_vector(std::vector<boost::dynamic_bitset<std::size_t> >& vec,
                                unsigned int bin_width)
@@ -137,7 +117,7 @@ inline void sort_bitset_vector(std::vector<boost::dynamic_bitset<std::size_t> >&
  */
 inline unsigned int bitset_ladder_int(const boost::dynamic_bitset<std::size_t>& row, 
                                       const unsigned int *__restrict inds,
-                                      unsigned int num_bits)
+                                      const unsigned int num_bits)
 {
     unsigned int subset = 0;
     unsigned int kk, pos, block_num, block_idx, row_int, counter=0;
@@ -162,13 +142,13 @@ inline unsigned int bitset_ladder_int(const boost::dynamic_bitset<std::size_t>& 
  * @param proj_indices Pointer to array of indices on which projectors act
  * @param size The size of the proj array
  */
-inline bool passes_proj_validation(const OperatorTerm_t *__restrict term,
-                                   const boost::dynamic_bitset<std::size_t>& bitset)
+inline unsigned int passes_proj_validation(const OperatorTerm_t *__restrict term,
+                                           const boost::dynamic_bitset<std::size_t>& bitset)
 {
     unsigned int  kk;
     unsigned int block_num, block_idx;
     unsigned int pos;
-    bool out = 1;
+    unsigned int out = 1;
     unsigned int bit;
     for(kk=0; kk < term->proj_indices.size(); kk++)
     {
