@@ -50,15 +50,15 @@ def test_extended_nonzero1():
 
 def test_extended_nonzero2():
     """Test extended nonzero check 2"""
-    H = QubitOperator.from_label("-III")
-    # Putting 1 on a - operator gives a zero
+    H = QubitOperator.from_label("0III")
+    # Putting 1 on a 0 operator gives a zero
     bits = Bitset("1000")
     assert not nonzero_extended_value_wrapper(H, bits)
 
 
 def test_extended_nonzero3():
     """Test extended nonzero check 3"""
-    H = QubitOperator.from_label("-III")
+    H = QubitOperator.from_label("0III")
     # Putting 1 on a - operator gives a zero, others dont matter
     bits = Bitset("1101")
     assert not nonzero_extended_value_wrapper(H, bits)
@@ -82,7 +82,7 @@ def test_extended_nonzero6():
     """Test extended nonzero check 6"""
     H = QubitOperator.from_label("-10+")
     bits = Bitset("0100")
-    assert not nonzero_extended_value_wrapper(H, bits)
+    assert nonzero_extended_value_wrapper(H, bits)
 
 
 def test_extended_nonzero7():

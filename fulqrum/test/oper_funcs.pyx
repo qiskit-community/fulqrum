@@ -24,4 +24,4 @@ def nonzero_extended_value_wrapper(QubitOperator ham, Bitset bits):
     if ham.oper.terms.size() != 1:
         raise Exception('Single term operator only')
     cdef OperatorTerm_t * term = &ham.oper.terms[0]
-    return nonzero_extended_bitset(term, bits.bits)
+    return passes_proj_validation(term, bits.bits)
