@@ -30,6 +30,7 @@ void jw_term(FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
     int num_elems = fermi_term.indices.size();
     int kk;
     unsigned int jj;
+    int mm;
     unsigned int current_ind;
     unsigned char current_val;
     qubit_term.coeff = fermi_term.coeff;
@@ -65,9 +66,9 @@ void jw_term(FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
         // add Z operators down to zero
         else if(num_elems==1 && do_z)
         {
-            for(jj=current_ind-1; jj > -1; jj--)
+            for(mm=current_ind-1; mm > -1; mm--)
             {
-                qubit_term.indices.push_back(jj);
+                qubit_term.indices.push_back(mm);
                 qubit_term.values.push_back(0);
             }
         }
