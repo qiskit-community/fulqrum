@@ -711,8 +711,6 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of ints indicating group of each term
         """
-        if not self.oper.sorted:
-            self.offdiag_term_grouping()
         cdef size_t kk
         cdef int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.int32)
         for kk in range(self.oper.terms.size()):
@@ -748,7 +746,21 @@ cdef class QubitOperator():
                 val += 1
         ptrs[idx+1] = self.oper.terms.size()
         return np.asarray(ptrs)
+
+    def terms_by_group(self, int number):
+        cdef size_t kk, ll, start, stop
+        cdef size_t[::1] ptrs = self.group_ptrs()
+        cdef QubitOperator out = QubitOperator(self.width)
+        for kk in range(ptrs.shape[0]-1):
+            if (self.oper.terms[ptrs[kk]].group == number):
+                start = ptrs[kk]
+                stop = ptrs[kk+1]
+                for ll in range(start, stop):
+                    out.oper.terms.push_back(self.oper.terms[ll])
+                break
+        return out
     
+    @cython.boundscheck(False)
     def extended(self):
         """Extended element flag for each term
 
