@@ -89,7 +89,7 @@ void term_group_sort(std::vector<OperatorTerm_t>& terms, std::size_t * __restric
     for(ii=0; ii < terms.size(); ii++)
     {
         terms[ii].group = 0; // diagonals are group 0 by convention
-        if(terms[ii].offdiag_weight > 0)
+        if(terms[ii].indices.size() > 0)
         {
             terms[ii].group = -1;
         }
