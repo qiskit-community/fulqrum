@@ -22,9 +22,9 @@ std::size_t term_offdiag_structure(const OperatorTerm_t& term)
     std::size_t out = 0;
     for(kk=0; kk < term.values.size(); ++kk)
     {
-        out += term.indices[kk] * (term.values[kk] > 2);
+        out += (term.indices[kk]+1) * (term.values[kk] > 2); // need plus one here so that an offdiag on 0 index does not look like a diagonal term
     }
-    return out + 1; // need plus one here so that an offdiag on 0 index does not look like a diagonal term
+    return out;
 }
 
 
@@ -101,14 +101,15 @@ void term_group_sort(std::vector<OperatorTerm_t>& terms, std::size_t * __restric
     {
         std::size_t start = weight_ptrs[ii];
         std::size_t stop = weight_ptrs[ii+1];
-        int group_idx = ii*(max_group_size+1);
+        int group_idx = ii*(max_group_size);
         std::size_t kk, ll, idx;
         OperatorTerm_t * term;
         OperatorTerm_t * term2;
         std::vector<unsigned int>::iterator inds_it;
         int match;
         std::size_t ind_size;
-        if(terms[start].group == 0) // group is a diagonal group
+
+        if(terms[start].group == 0) // group is the diagonal group
         {
             continue;
         }
@@ -167,14 +168,11 @@ void term_group_sort(std::vector<OperatorTerm_t>& terms, std::size_t * __restric
     } // end ii loop
     
      // relabel groups into continuous integers
-    int current_group=1, current_idx=1, next_idx = 2;
+    int current_group = 0; 
+    int current_idx=0, next_idx = 1;
     for(ii=0; ii < terms.size(); ii++)
     {
-        if(terms[ii].group == 0) // diagonal term
-        {
-            continue;
-        }
-        if(terms[ii].group > current_group)
+        if(terms[ii].group != current_group)
         {
             current_group = terms[ii].group;
             current_idx = next_idx;
