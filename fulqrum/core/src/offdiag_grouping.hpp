@@ -24,7 +24,7 @@ std::size_t term_offdiag_structure(const OperatorTerm_t& term)
     {
         out += term.indices[kk] * (term.values[kk] > 2);
     }
-    return out;
+    return out + 1; // need plus one here so that an offdiag on 0 index does not look like a diagonal term
 }
 
 
@@ -89,7 +89,7 @@ void term_group_sort(std::vector<OperatorTerm_t>& terms, std::size_t * __restric
     for(ii=0; ii < terms.size(); ii++)
     {
         terms[ii].group = 0; // diagonals are group 0 by convention
-        if(terms[ii].indices.size() > 0)
+        if(terms[ii].offdiag_weight > 0)
         {
             terms[ii].group = -1;
         }
@@ -101,7 +101,7 @@ void term_group_sort(std::vector<OperatorTerm_t>& terms, std::size_t * __restric
     {
         std::size_t start = weight_ptrs[ii];
         std::size_t stop = weight_ptrs[ii+1];
-        int group_idx = ii*max_group_size;
+        int group_idx = ii*(max_group_size+1);
         std::size_t kk, ll, idx;
         OperatorTerm_t * term;
         OperatorTerm_t * term2;

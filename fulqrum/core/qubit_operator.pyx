@@ -221,6 +221,19 @@ cdef class QubitOperator():
             bool: Operator is sorted by off-diagonal weight
         """
         return self.oper.off_weight_sorted
+
+    @property
+    def groups(self):
+        """Group for each term
+
+        Returns:
+            ndarray: Array of group values
+        """
+        cdef size_t kk
+        cdef int[::1] out = np.empty(self.oper.terms.size(), dtype=np.int32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].group
+        return np.asarray(out)
     
     @property
     def num_groups(self):
