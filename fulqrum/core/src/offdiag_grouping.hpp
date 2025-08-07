@@ -75,7 +75,7 @@ unsigned int _max_offdiag_group_size(std::size_t * __restrict ptrs, std::size_t 
  * 
  * @return comparitor value
  */
-int group_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
+int offdiag_group_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
 {
     return term1.group < term2.group;
 }
@@ -164,7 +164,7 @@ void term_group_sort(std::vector<OperatorTerm_t>& terms, std::size_t * __restric
             } // end ll for-loop
         } // end kk for-loop
         // sort by group index within the start and stop indices
-        std::sort(&terms[start], &terms[stop], group_comp);
+        std::sort(&terms[start], &terms[stop], offdiag_group_comp);
     } // end ii loop
     
      // relabel groups into continuous integers
