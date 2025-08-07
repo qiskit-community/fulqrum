@@ -6,6 +6,7 @@ cimport cython
 from cython.operator cimport dereference
 from libcpp.vector cimport vector
 from libcpp.string cimport string
+from libc.string cimport memcpy 
 from libcpp cimport bool
 from libcpp.unordered_map cimport unordered_map
 from libcpp.map cimport map
@@ -27,6 +28,7 @@ include "includes/elements_header.pxi"
 include "includes/bitset_utils_header.pxi"
 include "includes/operators_header.pxi"
 include "includes/grouping_header.pxi"
+include "includes/offdiag_grouping_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
 include "includes/constants.pxi"
@@ -221,6 +223,19 @@ cdef class QubitOperator():
             bool: Operator is sorted by off-diagonal weight
         """
         return self.oper.off_weight_sorted
+
+    @property
+    def groups(self):
+        """Group for each term
+
+        Returns:
+            ndarray: Array of group values
+        """
+        cdef size_t kk
+        cdef int[::1] out = np.empty(self.oper.terms.size(), dtype=np.int32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].group
+        return np.asarray(out)
     
     @property
     def num_groups(self):
@@ -698,8 +713,6 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of ints indicating group of each term
         """
-        if not self.oper.sorted:
-            self.offdiag_term_grouping()
         cdef size_t kk
         cdef int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.int32)
         for kk in range(self.oper.terms.size()):
@@ -735,7 +748,22 @@ cdef class QubitOperator():
                 val += 1
         ptrs[idx+1] = self.oper.terms.size()
         return np.asarray(ptrs)
+
+    def terms_by_group(self, int number):
+        cdef size_t kk, ll, start, stop
+        cdef size_t[::1] ptrs = self.group_ptrs()
+        cdef QubitOperator out = QubitOperator(self.width)
+        for kk in range(ptrs.shape[0]-1):
+            if (self.oper.terms[ptrs[kk]].group == number):
+                start = ptrs[kk]
+                stop = ptrs[kk+1]
+                for ll in range(start, stop):
+                    out.oper.terms.push_back(self.oper.terms[ll])
+                break
+        out.oper.type = self.oper.type
+        return out
     
+    @cython.boundscheck(False)
     def extended(self):
         """Extended element flag for each term
 
@@ -748,14 +776,34 @@ cdef class QubitOperator():
             out[kk] = self.oper.terms[kk].extended
         return np.asarray(out)
 
+    def offdiag_ptrs(self):
+        cdef size_t kk
+        offdiag_sort(self)
+        cdef vector[size_t] ptrs
+        cdef current_val = term_offdiag_structure(self.oper.terms[0])
+        ptrs.push_back(0)
+        for kk in range(1, self.oper.terms.size()):
+            if term_offdiag_structure(self.oper.terms[kk]) != current_val:
+                ptrs.push_back(kk)
+                current_val = term_offdiag_structure(self.oper.terms[kk])
+        ptrs.push_back(self.oper.terms.size())
+        cdef size_t[::1] out = np.empty(ptrs.size(), dtype=np.uintp)
+        memcpy(&out[0], &ptrs[0], ptrs.size() * sizeof(size_t))
+        return np.asarray(out)
+
     def offdiag_term_grouping(self):
         """Inplace sorting of operator terms according to off-diagonal
         structure.
         """
         if not self.oper.terms.size():
             return
-        offdiag_weight_sort(self.oper)
-        offdiag_term_sort(self.oper)
+        if not self.oper.off_weight_sorted:
+            term_offdiag_sort(self.oper.terms)
+            self.oper.off_weight_sorted = 1
+        cdef size_t[::1] ptrs = self.offdiag_ptrs()
+        cdef unsigned int max_group_size = _max_offdiag_group_size(&ptrs[0], ptrs.shape[0])
+        term_group_sort(self.oper.terms, &ptrs[0], ptrs.shape[0], max_group_size)
+        self.oper.sorted = 1
 
     def offdiag_weight_sort(self):
         """In-place sort terms by their off-diagonal weight
@@ -989,3 +1037,11 @@ cdef class QubitOperator():
             dic = orjson.loads(fd.read())
         out = QubitOperator.from_dict(dic)
         return out
+
+
+
+def offdiag_sort(QubitOperator self):
+    if self.oper.off_weight_sorted:
+        return
+    term_offdiag_sort(self.oper.terms)
+    self.oper.off_weight_sorted = 1

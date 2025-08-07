@@ -75,7 +75,7 @@ void offdiag_term_sort(QubitOperator_t& oper){
                 term->group = group_idx;
             }
             // Loop over all terms from kk+1 on up
-            for(ll=kk+1; ll<oper.terms.size(); ll++){
+            for(ll=kk+1; ll<stop; ll++){
                 term2 = &oper.terms[ll];
                 // term2 is not matched and number of off-diag ops is equal
                 if((term2->group < 0) && (term2->offdiag_weight == term->offdiag_weight)){
