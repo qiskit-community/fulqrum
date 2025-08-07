@@ -760,6 +760,7 @@ cdef class QubitOperator():
                 for ll in range(start, stop):
                     out.oper.terms.push_back(self.oper.terms[ll])
                 break
+        out.oper.type = self.oper.type
         return out
     
     @cython.boundscheck(False)
