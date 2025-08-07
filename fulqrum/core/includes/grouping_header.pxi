@@ -5,8 +5,6 @@ include "base_header.pxi"
 
 cdef extern from "../src/grouping.hpp":
 
-    void offdiag_term_sort(QubitOperator_t& oper) nogil
-
 
     void compute_term_offdiag_inds(const OperatorTerm_t& term, 
                                    unsigned int * offdiag_inds, 

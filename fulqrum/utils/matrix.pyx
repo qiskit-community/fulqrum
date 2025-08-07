@@ -33,7 +33,9 @@ str_matrix_convert = {"I": I, "Z": Z, "0": G, "1": O, "X": X, "Y": Y, "+": P, "-
 def kron_str(operator_string):
     """Performs the kron over a string consisting of qubit operators"""
     mat = str_matrix_convert[operator_string[0].upper()]
-    for kk in range(1, len(operator_string)):
+    cdef unsigned int kk
+    cdef unsigned int str_len = len(operator_string)
+    for kk in range(1, str_len):
         mat = np.kron(mat, str_matrix_convert[operator_string[kk].upper()])
     return mat
 
