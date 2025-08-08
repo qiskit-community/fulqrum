@@ -108,6 +108,7 @@ inline void sort_bitset_vector(std::vector<boost::dynamic_bitset<std::size_t> >&
                                   });
     }
 
+
 /**
  * Convert bits at given indices into an unsigned integer
  *
@@ -119,18 +120,20 @@ inline unsigned int bitset_ladder_int(const boost::dynamic_bitset<std::size_t>& 
                                       const unsigned int *__restrict inds,
                                       const unsigned int num_bits)
 {
-    unsigned int subset = 0;
-    unsigned int kk, pos, block_num, block_idx, row_int, counter=0;
+    std::size_t out_int = 0;
+    std::size_t row_int;
+    std::size_t pow2 = 1;
+    unsigned int kk, pos, block_num, block_idx;
     for(kk=0; kk < num_bits; kk++)
     {
         pos = inds[kk];
         block_num = pos / BITS_PER_BLOCK;
         block_idx = pos % BITS_PER_BLOCK;
         row_int = (row.m_bits[block_num] >> block_idx) & 1;
-        subset = subset | row_int << counter;
-        counter += 1U;
+        out_int += pow2 * row_int;
+        pow2 = pow2 << 1;
     }
-    return subset;
+    return out_int;
 }
 
 
