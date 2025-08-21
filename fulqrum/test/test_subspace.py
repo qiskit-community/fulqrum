@@ -7,7 +7,7 @@ import numpy as np
 from fulqrum import Subspace
 
 
-dic = {"01010": 1, "10101": 1, "111111": 1, "11100": 1}
+dic = {"01010": 1, "10101": 1, "11111": 1, "11100": 1}
 dic2 = {
     "01010": 1,
     "10101": 1,
@@ -20,65 +20,36 @@ dic2 = {
 
 
 def test_subspace_vector_order1():
-    V = Subspace(dic, bin_width=1)
+    V = Subspace(dic)
     # Order is only guarenteed up to first bit
     assert V[0].to_string()[-1] == "0"
-    assert V[1].to_string()[-1] == "0"
+    assert V[1].to_string()[-1] == "1"
     assert V[2].to_string()[-1] == "1"
-    assert V[3].to_string()[-1] == "1"
+    assert V[3].to_string()[-1] == "0"
 
+def test_subspace_vector_order1():
+    V = Subspace(dic2)
+    # Order is only guarenteed up to first bit
+    assert V[0].to_string()[-1] == "0"
+    assert V[1].to_string()[-1] == "1"
+    assert V[2].to_string()[-1] == "1"
+    assert V[3].to_string()[-1] == "0"
+    assert V[4].to_string()[-1] == "1"
+    assert V[5].to_string()[-1] == "0"
+    assert V[6].to_string()[-1] == "1"
 
 def test_subspace_vector_order2():
-    V = Subspace(dic, bin_width=2)
-    assert list(V.to_dict().keys()) == ["11100", "10101", "01010", "11111"]
-
+    V = Subspace(dic)
+    assert list(V.to_dict().keys()) == ["01010", "10101", "11111", "11100"]
 
 def test_subspace_vector_order3():
-    V = Subspace(dic, bin_width=3)
-    assert list(V.to_dict().keys()) == ["01010", "11100", "10101", "11111"]
-
-
-def test_subspace_vector_order4():
-    V = Subspace(dic, bin_width=4)
-    assert list(V.to_dict().keys()) == ["10101", "01010", "11100", "11111"]
-
-
-def test_subspace_vector_order5():
-    V = Subspace(dic, bin_width=5)
-    assert list(V.to_dict().keys()) == ["01010", "10101", "11100", "11111"]
-
-
-def test_subspace_bin_counts1():
-    """"""
-    V = Subspace(dic2, bin_width=1)
-    assert np.allclose(V.bin_sizes(), np.array([3, 4], dtype=np.uintp))
-
-
-def test_subspace_bin_counts2():
-    """Test that the bin sizes are correct"""
-    V = Subspace(dic2, bin_width=2)
-    assert np.allclose(V.bin_sizes(), np.array([2, 1, 1, 3], dtype=np.uintp))
-
-
-def test_subspace_bin_counts3():
-    """Test that the counts per bin are correct"""
-    V = Subspace(dic2, bin_width=3)
-    assert np.allclose(
-        V.bin_sizes(), np.array([0, 0, 1, 0, 2, 1, 0, 3], dtype=np.uintp)
-    )
-
-
-def test_subspace_bin_counts5():
-    """Test that bin sizes are correct"""
-    V = Subspace(dic2, bin_width=5)
-    int_values = [int(kk, 2) for kk in dic2.keys()]
-    res = np.zeros(2**5, dtype=np.uintp)
-    res[int_values] = 1
-    assert np.allclose(V.bin_sizes(), res)
-
-
-def test_subspace_auto_binwidth():
-    """Test that bandwidth auto covers the dim"""
-    temp_dic = {"010010": 10, "100101": 5, "1110111": 1, "101100": 55}
-    V = Subspace(temp_dic)
-    assert V.bin_width == 2
+    V = Subspace(dic2)
+    assert list(V.to_dict().keys()) == [
+        "01010",
+        "10101",
+        "11111",
+        "11100",
+        "01111",
+        "00100",
+        "10111"
+    ]

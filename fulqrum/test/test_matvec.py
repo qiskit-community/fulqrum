@@ -100,11 +100,10 @@ def test_matvec_bin_width1():
         idx += 1
 
     H = QubitOperator.from_label("ZIZ")
-    for bin_width in range(1, 4):
-        S = Subspace(counts, bin_width=bin_width)
-        sub = SubspaceHamiltonian(H, S)
-        res_dict = sub.interpret_vector(sub.matvec(in_vec), -1)
-        assert res_dict == ans_dict
+    S = Subspace(counts)
+    sub = SubspaceHamiltonian(H, S)
+    res_dict = sub.interpret_vector(sub.matvec(in_vec), -1)
+    assert res_dict == ans_dict
 
 
 def test_matvec_bin_width2():
@@ -120,11 +119,10 @@ def test_matvec_bin_width2():
         idx += 1
 
     H = QubitOperator.from_label("ZIZ") + QubitOperator.from_label("XXX")
-    for bin_width in range(1, 4):
-        S = Subspace(counts, bin_width=bin_width)
-        sub = SubspaceHamiltonian(H, S)
-        res_dict = sub.interpret_vector(sub.matvec(in_vec), -1)
-        assert res_dict == ans_dict
+    S = Subspace(counts)
+    sub = SubspaceHamiltonian(H, S)
+    res_dict = sub.interpret_vector(sub.matvec(in_vec), -1)
+    assert res_dict == ans_dict
 
 
 def test_matvec_bin_width3():
@@ -144,11 +142,10 @@ def test_matvec_bin_width3():
         + -1 * QubitOperator.from_label("XXX")
         + QubitOperator.from_label("YYY")
     )
-    for bin_width in range(1, 4):
-        S = Subspace(counts, bin_width=bin_width)
-        sub = SubspaceHamiltonian(H, S)
-        res_dict = sub.interpret_vector(sub.matvec(in_vec), -1)
-        assert res_dict == ans_dict
+    S = Subspace(counts)
+    sub = SubspaceHamiltonian(H, S)
+    res_dict = sub.interpret_vector(sub.matvec(in_vec), -1)
+    assert res_dict == ans_dict
 
 
 def test_matvec_bin_width4():
@@ -169,8 +166,7 @@ def test_matvec_bin_width4():
         + QubitOperator.from_label("XY+")
         + QubitOperator.from_label("XY-")
     )
-    for bin_width in range(1, 4):
-        S = Subspace(counts, bin_width=bin_width)
-        sub = SubspaceHamiltonian(H, S)
-        res_dict = sub.interpret_vector(sub.matvec(np.ones(2**3, dtype=complex)), -1)
-        assert res_dict == ans_dict
+    S = Subspace(counts)
+    sub = SubspaceHamiltonian(H, S)
+    res_dict = sub.interpret_vector(sub.matvec(np.ones(2**3, dtype=complex)), -1)
+    assert res_dict == ans_dict

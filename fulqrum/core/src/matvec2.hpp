@@ -10,19 +10,18 @@
 
 #include "base.hpp"
 #include "bitset_utils.hpp"
+#include "bitset_hashmap.hpp"
 #include "elements.hpp"
 #include "operators.hpp"
 #include <boost/dynamic_bitset.hpp>
 
 
 template <typename T> void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
-                                    const std::vector<boost::dynamic_bitset<std::size_t> >& subspace,
+                                    const bitset_map_namespace::BitsetHashMapWrapper& subspace,
                                     const T *__restrict diag_vec,
                                     const std::size_t width,
                                     const std::size_t subspace_dim,
                                     const int has_nonzero_diag,
-                                    const std::size_t bin_width,
-                                    const std::size_t *__restrict bin_ranges,
                                     const std::size_t *__restrict group_ptrs,
                                     const std::size_t *__restrict group_ladder_ptrs,
                                     const unsigned int *__restrict group_rowint_length,
@@ -33,6 +32,9 @@ template <typename T> void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
                                     T *__restrict out_vec)
 {
     std::size_t kk;
+    const bitset_map_namespace::BitsetMap& subsapce_hash_map = subspace.get_map();
+    const auto* bitsets = subsapce_hash_map.values();
+
     #pragma omp parallel if(subspace_dim > 128)
     {
     // Take care of diagonal term first, if any (usually there is)
@@ -51,14 +53,13 @@ template <typename T> void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
         for(kk=0; kk < subspace_dim; kk++)
         {
             boost::dynamic_bitset<std::size_t> row, col_vec;
-            row = subspace[kk];
+            row = bitsets[kk].first;
             T temp_val, val=0;
             const OperatorTerm_t * term;
-            std::size_t start, stop;
             unsigned int group;
             std::size_t group_int_start, group_int_stop;
-            std::size_t idx, col_idx;
-            std::size_t bin_num;
+            std::size_t idx;
+            std::size_t* col_ptr;
             unsigned int row_int;
             const std::vector<unsigned int> * group_inds;
             int do_col_search;
@@ -77,11 +78,8 @@ template <typename T> void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
                     {
                         col_vec = row;
                         flip_bits(col_vec, group_inds->data(), group_inds->size());
-                        bin_int(col_vec, bin_width, bin_num);
-                        start = bin_ranges[bin_num];
-                        stop = bin_ranges[bin_num+1];
-                        bitset_column_index(start, stop, col_vec, subspace, col_idx);
-                        if(col_idx == MAX_SIZE_T){break;} // column is NOT in the subspace so break group
+                        col_ptr = subspace.get_ptr(col_vec);
+                        if(col_ptr == nullptr){break;} // column is NOT in the subspace so break group
                         do_col_search = 0;
                     }
                     term = &terms[idx];
@@ -93,7 +91,7 @@ template <typename T> void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
                 } // end loop over this group
                 if(!do_col_search) // if at least one element was found
                 {
-                    val += temp_val * in_vec[col_idx];
+                    val += temp_val * in_vec[*col_ptr];
                 }
             } // end loop over all groups
             out_vec[kk] += val;

@@ -10,16 +10,20 @@
 
 #include "base.hpp"
 #include "elements.hpp"
+#include "bitset_hashmap.hpp"
 #include <boost/dynamic_bitset.hpp>
 
 
-template <typename T> void compute_diag_vector(const std::vector<boost::dynamic_bitset<std::size_t> >& data,
+template <typename T> void compute_diag_vector(const bitset_map_namespace::BitsetHashMapWrapper& data,
                                                T * __restrict diag_vec,
                                                const QubitOperator_t& diag_oper,
                                                const unsigned int width,
                                                const std::size_t subspace_dim){
         std::size_t kk;
         const std::size_t num_terms = diag_oper.terms.size();
+        const bitset_map_namespace::BitsetMap& subspace_hash_map = data.get_map();
+        const auto* bitsets = subspace_hash_map.values();
+
         #pragma omp parallel for if(subspace_dim > 100)
         for(kk=0; kk < subspace_dim; kk++){
             std::size_t ll;
@@ -29,7 +33,7 @@ template <typename T> void compute_diag_vector(const std::vector<boost::dynamic_
             for(ll=0; ll < num_terms; ll++){
                 term = diag_oper.terms[ll];
                 weight = term.indices.size();
-                accum_element(data[kk], data[kk],
+                accum_element(bitsets[kk].first, bitsets[kk].first,
                               &term.indices[0], &term.values[0], term.coeff, term.real_phase,
                               weight, val);
                 }

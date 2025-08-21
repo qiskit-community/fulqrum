@@ -3,6 +3,7 @@
 
 from libcpp.vector cimport vector
 from fulqrum.core.bitset cimport bitset_t
+from fulqrum.core.bitset_hashmap cimport BitsetHashMapWrapper
 
 
 cdef extern from "../src/base.hpp":
@@ -30,12 +31,13 @@ cdef extern from "../src/base.hpp":
 
 
     ctypedef struct Subspace_t:
-        vector[bitset_t] bitstrings
-        vector[size_t] bin_counts
-        vector[size_t] bin_ranges
+        # vector[bitset_t] bitstrings
+        BitsetHashMapWrapper bitstrings
+        # vector[size_t] bin_counts
+        # vector[size_t] bin_ranges
         unsigned int num_qubits
-        size_t num_bins
-        size_t bin_width
+        # size_t num_bins
+        # size_t bin_width
         size_t size
 
 

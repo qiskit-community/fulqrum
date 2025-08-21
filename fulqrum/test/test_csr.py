@@ -30,7 +30,7 @@ def test_csr1():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts, 5)
+    S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -57,7 +57,7 @@ def test_csr2():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts, 5)
+    S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -84,7 +84,7 @@ def test_csr3():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts, 5)
+    S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -111,7 +111,7 @@ def test_csr4():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts, 5)
+    S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -138,7 +138,7 @@ def test_csr5():
 
     counts = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
-    S = fq.Subspace(counts, 5)
+    S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -165,7 +165,7 @@ def test_csr6():
 
     counts = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
-    S = fq.Subspace(counts, 5)
+    S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 

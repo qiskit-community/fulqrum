@@ -9,19 +9,18 @@
 
 #include "base.hpp"
 #include "bitset_utils.hpp"
+#include "bitset_hashmap.hpp"
 #include "elements.hpp"
 #include "operators.hpp"
 #include <boost/dynamic_bitset.hpp>
 
 
 template <typename T, typename U> void csr_matrix_builder(const OperatorTerm_t * terms,
-                                              const std::vector<boost::dynamic_bitset<std::size_t> >& subspace,
+                                              const bitset_map_namespace::BitsetHashMapWrapper& subspace,
                                               const U * __restrict diag_vec,
                                               const unsigned int width,
                                               const std::size_t subspace_dim,
                                               const int has_nonzero_diag,
-                                              const unsigned int bin_width,
-                                              const std::size_t * __restrict bin_ranges,
                                               const std::size_t * __restrict group_ptrs,
                                               const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
                                               const std::size_t num_groups,
@@ -32,22 +31,24 @@ template <typename T, typename U> void csr_matrix_builder(const OperatorTerm_t *
 {
     std::size_t kk;
     T temp, _sum;
+    
+    const bitset_map_namespace::BitsetMap& subsapce_hash_map = subspace.get_map();
+    const auto* bitsets = subsapce_hash_map.values();
+
     #pragma omp parallel for if(subspace_dim > 128)
     for(kk=0; kk<subspace_dim; kk++)
     { // begin loop over all rows
         // define variables locally for omp for loop
         std::size_t idx;
         std::size_t group_start, group_stop, group;
-        std::size_t start, stop;
         T row_nnz, elem_start;
         const OperatorTerm_t * term;
         boost::dynamic_bitset<std::size_t> row, col_vec;
-        row = subspace[kk];
+        std::size_t* col_ptr;
+        row = bitsets[kk].first;
         const std::vector<unsigned int> * group_inds;
-        std::size_t col_idx;
         U val;
         int do_col_search;
-        std::size_t bin_num;
         row_nnz = 0;
         elem_start = indptr[kk];
         // do diagonal first, if any
@@ -76,11 +77,8 @@ template <typename T, typename U> void csr_matrix_builder(const OperatorTerm_t *
                 {
                     col_vec = row;
                     flip_bits(col_vec, group_inds->data(), group_inds->size());
-                    bin_int(col_vec, bin_width, bin_num);
-                    start = bin_ranges[bin_num];
-                    stop = bin_ranges[bin_num+1];
-                    bitset_column_index(start, stop, col_vec, subspace, col_idx);
-                    if(col_idx == MAX_SIZE_T){break;} // column is NOT in the subspace so break group
+                    col_ptr = subspace.get_ptr(col_vec);
+                    if(col_ptr == nullptr){break;} // column is NOT in the subspace so break group
                     do_col_search = 0;
                 }
                 term = &terms[idx];
@@ -94,7 +92,7 @@ template <typename T, typename U> void csr_matrix_builder(const OperatorTerm_t *
             {
                 if(compute_values)
                 {
-                    indices[elem_start+row_nnz] = col_idx;
+                    indices[elem_start+row_nnz] = *col_ptr;
                     data[elem_start+row_nnz] = val;
                 }
                 row_nnz += 1;
