@@ -40,7 +40,6 @@ def test_eigen1():
 
     ans_evals, _ = spla.eigsh(B, k=2, which="SA")
 
-    # validate eigenvectors with full binning
     S = Subspace(subspace_dict)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
@@ -74,7 +73,6 @@ def test_eigen2():
 
     ans_evals, _ = spla.eigsh(B, k=2, which="SA")
 
-    # validate eigenvectors with full binning
     S = Subspace(subspace_dict)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
@@ -108,7 +106,6 @@ def test_eigen3():
 
     ans_evals, _ = spla.eigsh(B, k=3, which="SA")
 
-    # validate eigenvectors with full binning
     S = Subspace(subspace_dict)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=3, which="SA")

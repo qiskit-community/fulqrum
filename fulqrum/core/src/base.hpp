@@ -79,18 +79,11 @@ typedef struct QubitOperator{
  * @brief Datastructure for subspace defined by counts
  *
  * @var bitstrings The subspace bit-strings stored in a hash table
- * @var bin_counts number of bit-strings in each bin
  * @var num_qubits The number of qubits, i.e length of bitstrings
- * @var num_bins The number of bins
  * @var size Dimenion / number of bit-strings in the subpsace
  */
  typedef struct Subspace{
-    // std::vector<boost::dynamic_bitset<std::size_t>> bitstrings;
     bitset_map_namespace::BitsetHashMapWrapper bitstrings;
-    // std::vector<std::size_t> bin_counts;
-    // std::vector<std::size_t> bin_ranges;
     unsigned int num_qubits;
-    // std::size_t num_bins;
-    // std::size_t bin_width;
     std::size_t size;
 } Subspace_t;
