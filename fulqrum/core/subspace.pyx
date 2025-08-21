@@ -46,7 +46,7 @@ cdef class Subspace():
         cdef bitset_t bits = self.subspace.bitstrings.get_n_th_bitset(idx)
         # cdef bitset_t* bits_ptr = &bits
         cdef BitsetView view = BitsetView()
-        view.bit_ptr(bits)
+        view.assign_bits(bits)
         return view
 
     def __len__(self):

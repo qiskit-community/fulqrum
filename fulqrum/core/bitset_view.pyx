@@ -11,7 +11,7 @@ include "includes/bitset_utils_header.pxi"
 
 cdef class BitsetView:
         
-    cdef void bit_ptr(self, bitset_t bitset):
+    cdef void assign_bits(self, bitset_t bitset):
         self.bits = bitset
 
     def __len__(self):
