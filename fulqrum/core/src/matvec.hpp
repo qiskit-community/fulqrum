@@ -49,8 +49,8 @@ template <typename T> void omp_matvec(const std::vector<OperatorTerm_t>& terms,
         #pragma omp for schedule(dynamic)
         for(kk=0; kk < subspace_dim; kk++)
         {
-            boost::dynamic_bitset<std::size_t> row, col_vec;
-            row = bitsets[kk].first;
+            const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
+            boost::dynamic_bitset<std::size_t> col_vec;
             T temp_val, val=0;
             const OperatorTerm_t * term;
             std::size_t group_start, group_stop, group;

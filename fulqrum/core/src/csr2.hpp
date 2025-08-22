@@ -99,7 +99,7 @@ template <typename T, typename U> void csr_matrix_builder2(const OperatorTerm_t 
             group_int_stop = group_ladder_ptrs[group*ladder_offset+row_int+1];
             do_col_search = 1;
             val = 0;
-            for(idx=group_int_start; idx < group_int_stop/2; idx++)
+            for(idx=group_int_start; idx < group_int_stop; idx++)
             { // begin loop over terms in this group
                 if(do_col_search)
                 {

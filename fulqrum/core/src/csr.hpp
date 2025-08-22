@@ -43,9 +43,9 @@ template <typename T, typename U> void csr_matrix_builder(const OperatorTerm_t *
         std::size_t group_start, group_stop, group;
         T row_nnz, elem_start;
         const OperatorTerm_t * term;
-        boost::dynamic_bitset<std::size_t> row, col_vec;
+        const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
+        boost::dynamic_bitset<std::size_t> col_vec;
         std::size_t* col_ptr;
-        row = bitsets[kk].first;
         const std::vector<unsigned int> * group_inds;
         U val;
         int do_col_search;

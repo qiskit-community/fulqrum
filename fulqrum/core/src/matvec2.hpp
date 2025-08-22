@@ -55,6 +55,7 @@ template <typename T> void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
         {
             const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
             std::vector<uint8_t> row_set_bits(row.size(), 0);
+            // TODO: Move it to a function as it is re-used in csr2.hpp
             for(size_t block=0; block < row.num_blocks(); block++)
             {
                 auto bitset = row.m_bits[block];
