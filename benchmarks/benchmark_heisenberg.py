@@ -36,11 +36,13 @@ def main(tol=None):
     counts = {}
     for kk in range(int(1e6)):
         counts[bin(kk)[2:].zfill(num_qubits)] = 1
-
+    
+    st = time.perf_counter()
     # Solve eigenproblem (can substitute scipy.sparse.linalg.eigsh)
     S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    st = time.perf_counter()
+    Hsub = Hsub.to_csr_linearoperator(verbose=True)
+    st1 = time.perf_counter()
     evals, _ = spla.eigsh(
         Hsub,
         k=1,
@@ -48,6 +50,8 @@ def main(tol=None):
         tol=0 if not tol else tol,
         v0=np.ones(len(S), dtype=complex),
     )
+    st2 = time.perf_counter()
+    print(f"Eigensolving took: {st2-st1:.4f} seconds")
     return (time.perf_counter() - st), evals[0]
 
 

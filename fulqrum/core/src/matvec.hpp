@@ -11,6 +11,7 @@
 #include "base.hpp"
 #include "bitset_utils.hpp"
 #include "bitset_hashmap.hpp"
+#include "constants.hpp"
 #include "elements.hpp"
 #include "operators.hpp"
 #include <boost/dynamic_bitset.hpp>
@@ -49,13 +50,14 @@ template <typename T> void omp_matvec(const std::vector<OperatorTerm_t>& terms,
         #pragma omp for schedule(dynamic)
         for(kk=0; kk < subspace_dim; kk++)
         {
-            const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
-            boost::dynamic_bitset<std::size_t> col_vec;
+            // const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
+            boost::dynamic_bitset<std::size_t> row, col_vec;
+            row = bitsets[kk].first;
             T temp_val, val=0;
             const OperatorTerm_t * term;
             std::size_t group_start, group_stop, group;
-            std::size_t idx;
-            std::size_t* col_ptr;
+            std::size_t idx, col_idx;
+            // std::size_t* col_ptr;
             const std::vector<unsigned int> * group_inds;
             int do_col_search;
             // Loop over all off-diagonal terms in operator
@@ -72,8 +74,10 @@ template <typename T> void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                     {
                         col_vec = row;
                         flip_bits(col_vec, group_inds->data(), group_inds->size());
-                        col_ptr = subspace.get_ptr(col_vec);
-                        if(col_ptr == nullptr){break;} // column is NOT in the subspace so break group
+                        // col_ptr = subspace.get_ptr(col_vec);
+                        col_idx = subspace.get(col_vec);
+                        // if(col_ptr == nullptr){break;} // column is NOT in the subspace so break group
+                        if(col_idx == MAX_SIZE_T){break;} // column is NOT in the subspace so break group
                         do_col_search = 0;
                     }
                     term = &terms[idx];
@@ -85,7 +89,7 @@ template <typename T> void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                 } // end loop for this group
                 if(!do_col_search)
                 {
-                    val += temp_val * in_vec[*col_ptr];
+                    val += temp_val * in_vec[col_idx];
                 }
             } // end loop over all groups
             out_vec[kk] += val;
