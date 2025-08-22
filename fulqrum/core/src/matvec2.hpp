@@ -11,6 +11,7 @@
 #include "base.hpp"
 #include "bitset_utils.hpp"
 #include "bitset_hashmap.hpp"
+#include "constants.hpp"
 #include "elements.hpp"
 #include "operators.hpp"
 #include <boost/dynamic_bitset.hpp>
@@ -52,8 +53,21 @@ template <typename T> void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
         #pragma omp for schedule(dynamic)
         for(kk=0; kk < subspace_dim; kk++)
         {
-            boost::dynamic_bitset<std::size_t> row, col_vec;
-            row = bitsets[kk].first;
+            const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
+            std::vector<uint8_t> row_set_bits(row.size(), 0);
+            for(size_t block=0; block < row.num_blocks(); block++)
+            {
+                auto bitset = row.m_bits[block];
+                while (bitset != 0)
+                {
+                    uint64_t t = bitset & -bitset;
+                    int r = __builtin_ctzll(bitset);
+                    row_set_bits[block * BITS_PER_BLOCK + r] = 1;
+                    bitset ^= t;
+                }
+            }
+            //
+            boost::dynamic_bitset<std::size_t> col_vec;
             T temp_val, val=0;
             const OperatorTerm_t * term;
             unsigned int group;
@@ -67,7 +81,7 @@ template <typename T> void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
             for(group=0; group < num_groups; group++)
             {
                 group_inds = &group_offdiag_inds[group];
-                row_int = bitset_ladder_int(row, group_inds->data(), group_rowint_length[group]);
+                row_int = bitset_ladder_int(row_set_bits.data(), group_inds->data(), group_rowint_length[group]);
                 do_col_search = 1;
                 group_int_start = group_ladder_ptrs[group*ladder_offset+row_int];
                 group_int_stop = group_ladder_ptrs[group*ladder_offset+row_int+1];

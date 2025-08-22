@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include "base.hpp"
+#include "constants.hpp"
 #include <boost/dynamic_bitset.hpp>
 
 
@@ -43,9 +44,7 @@ inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
         for(kk=0; kk < size; kk++)
         {
             pos = arr[kk];
-            block_num = pos / BITS_PER_BLOCK;
-            block_idx = pos % BITS_PER_BLOCK;
-            bitset.m_bits[block_num] = bitset.m_bits[block_num] ^ (static_cast<std::size_t>(1) << block_idx);
+            bitset.m_bits[pos >> BLOCK_EXPONENT] ^= ((size_t(1) << (pos & BLOCK_SHIFT)));
         }
     }
 
@@ -112,27 +111,24 @@ inline void sort_bitset_vector(std::vector<boost::dynamic_bitset<std::size_t> >&
 /**
  * Convert bits at given indices into an unsigned integer
  *
- * @param row The input row bitset
+ * @param row A pointer to a vector that is an alternate representation of row bitset
  * @param inds Pointer to array of indices as unsigned ints 
  * @param num_bits The number of bits to consider
  */
-inline unsigned int bitset_ladder_int(const boost::dynamic_bitset<std::size_t>& row, 
+inline unsigned int bitset_ladder_int(const uint8_t* row, 
                                       const unsigned int *__restrict inds,
                                       const unsigned int num_bits)
 {
-    std::size_t out_int = 0;
-    std::size_t row_int;
-    std::size_t pow2 = 1;
-    unsigned int kk, pos, block_num, block_idx;
+    std::size_t row_int, out_int = 0;
+    unsigned int kk, pos;
+
     for(kk=0; kk < num_bits; kk++)
     {
         pos = inds[kk];
-        block_num = pos / BITS_PER_BLOCK;
-        block_idx = pos % BITS_PER_BLOCK;
-        row_int = (row.m_bits[block_num] >> block_idx) & 1;
-        out_int += pow2 * row_int;
-        pow2 = pow2 << 1;
+        row_int = row[pos];
+        out_int |= (row_int << kk);
     }
+
     return out_int;
 }
 

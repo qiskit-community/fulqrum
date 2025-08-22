@@ -1,6 +1,8 @@
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 from .bitset cimport bitset_t, to_string
 from libcpp cimport string
+from libc.stdint cimport uint8_t
+from libcpp.vector cimport vector
 
 import numpy as np
 import numbers
@@ -144,5 +146,9 @@ cdef class Bitset:
             that is the new ladder_width
         """
         ladder_width = min(inds.shape[0], ladder_width)
-        return bitset_ladder_int(self.bits, &inds[0], ladder_width)
+        cdef string tmp = self.to_string()
+        row_set_bits = [int(bit) for bit in tmp]
+        cdef vector[uint8_t] c_vec_row_set_bits = <vector[uint8_t]>row_set_bits
+
+        return bitset_ladder_int(c_vec_row_set_bits.data(), &inds[0], ladder_width)
 

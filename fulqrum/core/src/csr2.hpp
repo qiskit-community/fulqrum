@@ -6,9 +6,11 @@
 #include <cstdlib>
 #include <vector>
 #include <complex>
+#include <iostream>
 
 #include "base.hpp"
 #include "bitset_utils.hpp"
+#include "constants.hpp"
 #include "bitset_hashmap.hpp"
 #include "elements.hpp"
 #include "operators.hpp"
@@ -37,24 +39,40 @@ template <typename T, typename U> void csr_matrix_builder2(const OperatorTerm_t 
 
     const bitset_map_namespace::BitsetMap& subsapce_hash_map = subspace.get_map();
     const auto* bitsets = subsapce_hash_map.values();
+    // std::size_t num_bits_in_size_t = 8 * sizeof(std::size_t);
 
-    #pragma omp parallel for schedule(dynamic) if(subspace_dim > 128)
+    std::size_t zero_terms = 0;
+    #pragma omp parallel for schedule(dynamic) if(subspace_dim > 128) //reduction(+:zero_terms)
     for(kk=0; kk<subspace_dim; kk++)
     { // begin loop over all rows
+        
+        const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
+        std::vector<uint8_t> row_set_bits(row.size(), 0);
+        for(size_t block=0; block < row.num_blocks(); block++)
+        {
+            auto bitset = row.m_bits[block];
+            while (bitset != 0)
+            {
+                uint64_t t = bitset & -bitset;
+                int r = __builtin_ctzll(bitset);
+                row_set_bits[block * BITS_PER_BLOCK + r] = 1;
+                bitset ^= t;
+            }
+        }
         // define variables locally for omp for loop
         std::size_t idx;
         std::size_t group;
         std::size_t group_int_start, group_int_stop;
         T row_nnz, elem_start;
         const OperatorTerm_t * term;
-        boost::dynamic_bitset<std::size_t> row, col_vec;
+        boost::dynamic_bitset<std::size_t> col_vec;
         const std::vector<unsigned int> * group_inds;
         std::size_t* col_ptr;
         U val;
         unsigned int row_int;
         int do_col_search;
+        
         row_nnz = 0;
-        row = bitsets[kk].first;
         elem_start = indptr[kk];
         // do diagonal first, if any
         if(has_nonzero_diag)
@@ -72,12 +90,16 @@ template <typename T, typename U> void csr_matrix_builder2(const OperatorTerm_t 
         for(group=0; group < num_groups; group++)
         { // begin loop over groups
             group_inds = &group_offdiag_inds[group];
-            row_int = bitset_ladder_int(row, group_inds->data(), group_rowint_length[group]);
+            row_int = bitset_ladder_int(
+                row_set_bits.data(),
+                group_inds->data(),
+                group_rowint_length[group]
+            );
             group_int_start = group_ladder_ptrs[group*ladder_offset+row_int];
             group_int_stop = group_ladder_ptrs[group*ladder_offset+row_int+1];
             do_col_search = 1;
             val = 0;
-            for(idx=group_int_start; idx < group_int_stop; idx++)
+            for(idx=group_int_start; idx < group_int_stop/2; idx++)
             { // begin loop over terms in this group
                 if(do_col_search)
                 {
@@ -91,8 +113,8 @@ template <typename T, typename U> void csr_matrix_builder2(const OperatorTerm_t 
                 if(passes_proj_validation(term, row))
                 {
                     accum_element(row, col_vec,
-                                      &term->indices[0], &term->values[0], term->coeff, term->real_phase, 
-                                      term->indices.size(), val);
+                                    &term->indices[0], &term->values[0], term->coeff, term->real_phase, 
+                                    term->indices.size(), val);
                 }
             } // end loop over terms in this group
             if(val!=0.0)
@@ -120,4 +142,5 @@ template <typename T, typename U> void csr_matrix_builder2(const OperatorTerm_t 
             _sum = temp;
         }
     }
+    // std::cout << "zero terms: " << zero_terms << std::endl;
 }
