@@ -9,6 +9,7 @@
 #include <boost/functional/hash.hpp>
 #include "constants.hpp"
 #include "./external/hash_table8.hpp"
+#include "./external/rapidhash.h"
 
 
 struct BitsetHasher {
@@ -17,10 +18,18 @@ struct BitsetHasher {
     }
 };
 
+struct BitsetHasherRapid {
+    std::size_t operator()(const boost::dynamic_bitset<std::size_t>& bs) const {
+        const std::size_t num_bytes = bs.num_blocks() * sizeof(std::size_t);
+
+        return rapidhash(bs.m_bits.data(), num_bytes);
+    }
+};
+
 namespace bitset_map_namespace {
 
     using Bitset = boost::dynamic_bitset<std::size_t>;
-    using BitsetMap = emhash8::HashMap<Bitset, std::size_t, BitsetHasher>;
+    using BitsetMap = emhash8::HashMap<Bitset, std::size_t, BitsetHasherRapid>;
 
     class BitsetHashMapWrapper {
     public:
