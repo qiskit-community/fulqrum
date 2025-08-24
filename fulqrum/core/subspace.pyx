@@ -25,15 +25,33 @@ include "fulqrum/core/includes/types.pxi"
 
 cdef class Subspace():
     @cython.boundscheck(False)
-    def __cinit__(self, dict counts, uint32_t reserve_size, bool full_block=True):
+    def __cinit__(self, dict counts, int reserve_multiplier=2, bool use_all_bitset_blocks=True):
+        """
+        args:
+            reserve_multiplier: We reserve a capacity for the Hash table that stores the
+                subspace bitstrings, typically equal to the number of bitstrings. This
+                argument allows a user to reserve more capacity than needed. While it consumes,
+                more memory, it reduces collision during Hash table look-up leading to 
+                minor speed-up.
+                Default: 2.
+            use_all_bitset_blocks: If `use_all_bitset_blocks=False`, only first block of a
+                bitset is used in hashing. If your bitsets are long and rarely share common
+                prefixes, setting it to False speeds up execution. However, it likely that
+                bitsets for practical cases will share common patterns. In that case, set
+                `use_all_bitset_blocks` to True so that the whole bitset is used in the hash
+                function. Although hashing n (> 1) blocks is slower than hashing a single block,
+                full hashing usually leads to fewer collisions during Hash table look-up.
+                Default: `True`.
+        """
         self.subspace.num_qubits = len(next(iter(counts)))
         self.subspace.size = len(counts)
-        if not full_block:
-            self.subspace.bitstrings = BitsetHashMapWrapper(full_block)
-        # reserve_power_of_2_size = 2 **np.ceil(np.log2(self.subspace.size))
-        if reserve_size < self.subspace.size:
-            reserve_size = self.subspace.size * 2
-        self.subspace.bitstrings.reserve(reserve_size)
+        if not use_all_bitset_blocks:
+            self.subspace.bitstrings = BitsetHashMapWrapper(use_all_bitset_blocks)
+        if reserve_multiplier < 1:
+            raise ValueError(
+                f"`reserve_multiplier(={reserve_multiplier})` must be >= 1"
+            )
+        self.subspace.bitstrings.reserve(self.subspace.size * reserve_multiplier)
 
         cdef string key
         cdef bitset_t temp_bits

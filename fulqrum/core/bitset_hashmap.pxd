@@ -5,7 +5,7 @@ from .bitset cimport bitset_t
 cdef extern from "./src/bitset_hashmap.hpp" namespace "bitset_map_namespace":
     cdef cppclass BitsetHashMapWrapper:
         BitsetHashMapWrapper()
-        BitsetHashMapWrapper(bool full_block) except +
+        BitsetHashMapWrapper(bool use_all_bitset_blocks) except +
         void insert_unique(const bitset_t& bs, size_t value)
         void reserve(const uint32_t num_items)
         size_t get(const bitset_t& bs)

@@ -49,6 +49,17 @@ def test_eigen1():
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
             < 1e-13
         )
+    
+    # hashing only the first (`bitset.m_bits[0]`) bitset block
+    S = Subspace(subspace_dict, use_all_bitset_blocks=False)
+    Hsub = SubspaceHamiltonian(H, S)
+    evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
+    assert np.allclose(ans_evals, evals)
+    for kk in range(2):
+        assert (
+            np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
 
 
 def test_eigen2():
@@ -82,6 +93,17 @@ def test_eigen2():
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
             < 1e-13
         )
+    
+    # hashing only the first (`bitset.m_bits[0]`) bitset block
+    S = Subspace(subspace_dict, use_all_bitset_blocks=False)
+    Hsub = SubspaceHamiltonian(H, S)
+    evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
+    assert np.allclose(ans_evals, evals)
+    for kk in range(2):
+        assert (
+            np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
 
 
 def test_eigen3():
@@ -107,6 +129,17 @@ def test_eigen3():
     ans_evals, _ = spla.eigsh(B, k=3, which="SA")
 
     S = Subspace(subspace_dict)
+    Hsub = SubspaceHamiltonian(H, S)
+    evals, evecs = spla.eigsh(Hsub, k=3, which="SA")
+    assert np.allclose(ans_evals, evals)
+    for kk in range(3):
+        assert (
+            np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
+    
+    # hashing only the first (`bitset.m_bits[0]`) bitset block
+    S = Subspace(subspace_dict, use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=3, which="SA")
     assert np.allclose(ans_evals, evals)
@@ -149,6 +182,17 @@ def test_eigen4():
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
             < 1e-13
         )
+    
+    # hashing only the first (`bitset.m_bits[0]`) bitset block
+    S = Subspace(subspace_dict, use_all_bitset_blocks=False)
+    Hsub = SubspaceHamiltonian(H, S)
+    evals, evecs = spla.eigsh(Hsub, k=3, which="SA", v0=v0)
+    assert np.allclose(ans_evals, evals)
+    for kk in range(3):
+        assert (
+            np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
 
 
 def test_eigen5():
@@ -177,6 +221,17 @@ def test_eigen5():
     subspace_dict = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
     S = Subspace(subspace_dict)
+    Hsub = SubspaceHamiltonian(H, S)
+    evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
+    assert np.allclose(ans_evals, evals)
+    for kk in range(num_evals):
+        assert (
+            np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
+    
+    # hashing only the first (`bitset.m_bits[0]`) bitset block
+    S = Subspace(subspace_dict, use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
     assert np.allclose(ans_evals, evals)
@@ -223,6 +278,17 @@ def test_eigen6():
     subspace_dict = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
     S = Subspace(subspace_dict)
+    Hsub = SubspaceHamiltonian(H, S)
+    evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
+    assert np.allclose(ans_evals, evals)
+    for kk in range(num_evals):
+        assert (
+            np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
+    
+    # hashing only the first (`bitset.m_bits[0]`) bitset block
+    S = Subspace(subspace_dict, use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
     assert np.allclose(ans_evals, evals)

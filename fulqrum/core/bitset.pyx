@@ -152,3 +152,17 @@ cdef class Bitset:
 
         return bitset_ladder_int(c_vec_row_set_bits.data(), &inds[0], ladder_width)
 
+    def ladder_int2(self, unsigned int[::1] inds, unsigned int ladder_width=3):
+        """Compute the ladder integer of a bitset for the given indices
+
+        Parameters:
+            inds (ndarray): Unsigned int indices to use
+            ladder_width (int): Number of bits to consider, default = 3
+
+        Notes:
+            If the number of indices is less than the ladder_width then
+            that is the new ladder_width
+        """
+        ladder_width = min(inds.shape[0], ladder_width)
+        return bitset_ladder_int2(self.bits, &inds[0], ladder_width)
+

@@ -39,9 +39,8 @@ def main(tol=None):
     
     st = time.perf_counter()
     # Solve eigenproblem (can substitute scipy.sparse.linalg.eigsh)
-    S = fq.Subspace(counts)
+    S = fq.Subspace(counts, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    Hsub = Hsub.to_csr_linearoperator(verbose=True)
     st1 = time.perf_counter()
     evals, _ = spla.eigsh(
         Hsub,
