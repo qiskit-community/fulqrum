@@ -125,17 +125,5 @@ namespace bitset_map_namespace
             }
             return map2.size();
         }
-
-        void dump_statistics() const
-        {
-            if (use_all_blocks)
-            {
-                map.dump_statics();
-            }
-            else
-            {
-                map2.dump_statics();
-            }
-        }
     };
 }
