@@ -112,46 +112,17 @@ inline unsigned int bitset_ladder_int(const uint8_t *row,
 {
     std::size_t row_int, out_int = 0;
     unsigned int kk, pos;
-    std::size_t pow2 = 1;
 
     for (kk = 0; kk < num_bits; kk++)
     {
         pos = inds[kk];
         row_int = row[pos];
-        // out_int |= (row_int << kk);
-        out_int += pow2 * row_int;
-        pow2 = pow2 << 1;
+        out_int |= (row_int << kk);
     }
 
     return out_int;
 }
 
-/**
- * Convert bits at given indices into an unsigned integer
- *
- * @param row The input row bitset
- * @param inds Pointer to array of indices as unsigned ints 
- * @param num_bits The number of bits to consider
- */
-inline unsigned int bitset_ladder_int2(const boost::dynamic_bitset<std::size_t>& row, 
-                                      const unsigned int *__restrict inds,
-                                      const unsigned int num_bits)
-{
-    std::size_t out_int = 0;
-    std::size_t row_int;
-    std::size_t pow2 = 1;
-    unsigned int kk, pos, block_num, block_idx;
-    for(kk=0; kk < num_bits; kk++)
-    {
-        pos = inds[kk];
-        block_num = pos / BITS_PER_BLOCK;
-        block_idx = pos % BITS_PER_BLOCK;
-        row_int = (row.m_bits[block_num] >> block_idx) & 1;
-        out_int += pow2 * row_int;
-        pow2 = pow2 << 1;
-    }
-    return out_int;
-}
 
 /**
  * verifies that bitstring passes constraints of the term projection operators

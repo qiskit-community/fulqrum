@@ -22,7 +22,7 @@ def test_bitset_int2():
     bits = fq.Bitset("110101" * 20)
     inds = np.array([0, 1, 11, 119], dtype=np.uint32)
     for ladder_width in range(1, 5):
-        assert bits.ladder_int2(inds, ladder_width) == 1 + int(
+        assert bits.ladder_int(inds, ladder_width) == int(
             "".join([str(int(bits[kk])) for kk in inds[:ladder_width][::-1]]), 2
         )
 
@@ -32,7 +32,7 @@ def test_bitset_int3():
     bits = fq.Bitset("110101" * 20)
     for length in range(1, 5):
         inds = np.arange(1, length + 1, dtype=np.uint32)
-        assert bits.ladder_int2(inds) == int(
+        assert bits.ladder_int(inds) == int(
             "".join([str(int(bits[kk])) for kk in inds[:3][::-1]]), 2
         )
 
@@ -42,7 +42,7 @@ def test_bitset_int4():
     bits = fq.Bitset("110101" * 20)
     for length in range(1, 5):
         inds = np.arange(1, length + 1, dtype=np.uint32) + 18
-        assert bits.ladder_int2(inds) == int(
+        assert bits.ladder_int(inds) == int(
             "".join([str(int(bits[kk])) for kk in inds[:3][::-1]]), 2
         )
 

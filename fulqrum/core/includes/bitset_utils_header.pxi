@@ -24,10 +24,6 @@ cdef extern from "../src/bitset_utils.hpp":
     unsigned int bitset_ladder_int(const uint8_t * row, 
                                    const unsigned int * inds,
                                    const unsigned int ladder_width) nogil
-    
-    unsigned int bitset_ladder_int2(const bitset_t& row, 
-                                   const unsigned int * inds,
-                                   const unsigned int ladder_width) nogil
 
     unsigned int passes_proj_validation(const OperatorTerm_t * term,
                                         const bitset_t& row) nogil
