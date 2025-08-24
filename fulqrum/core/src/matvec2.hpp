@@ -33,8 +33,7 @@ template <typename T> void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
                                     T *__restrict out_vec)
 {
     std::size_t kk;
-    const bitset_map_namespace::BitsetMap& subsapce_hash_map = subspace.get_map();
-    const auto* bitsets = subsapce_hash_map.values();
+    const auto* bitsets = subspace.get_bitsets();
 
     #pragma omp parallel if(subspace_dim > 128)
     {

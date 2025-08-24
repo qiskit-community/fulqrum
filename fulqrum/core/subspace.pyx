@@ -4,6 +4,7 @@
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libc.string cimport memcmp
+from libc.stdint cimport uint32_t
 from libc.math cimport abs
 from cython.operator cimport dereference as deref
 
@@ -15,6 +16,7 @@ cimport numpy as np
 from fulqrum.core.subspace cimport Subspace
 from fulqrum.core.bitset cimport bitset_t, to_string
 from fulqrum.core.bitset_view cimport BitsetView
+from fulqrum.core.bitset_hashmap cimport BitsetHashMapWrapper
 
 include "fulqrum/core/includes/base_header.pxi"
 include "fulqrum/core/includes/bitset_utils_header.pxi"
@@ -23,9 +25,15 @@ include "fulqrum/core/includes/types.pxi"
 
 cdef class Subspace():
     @cython.boundscheck(False)
-    def __cinit__(self, dict counts):
+    def __cinit__(self, dict counts, uint32_t reserve_size, bool full_block=True):
         self.subspace.num_qubits = len(next(iter(counts)))
         self.subspace.size = len(counts)
+        if not full_block:
+            self.subspace.bitstrings = BitsetHashMapWrapper(full_block)
+        # reserve_power_of_2_size = 2 **np.ceil(np.log2(self.subspace.size))
+        if reserve_size < self.subspace.size:
+            reserve_size = self.subspace.size * 2
+        self.subspace.bitstrings.reserve(reserve_size)
 
         cdef string key
         cdef bitset_t temp_bits
@@ -44,7 +52,6 @@ cdef class Subspace():
             key = self.subspace.bitstrings.size() + key 
         cdef size_t idx = <size_t>key
         cdef bitset_t bits = self.subspace.bitstrings.get_n_th_bitset(idx)
-        # cdef bitset_t* bits_ptr = &bits
         cdef BitsetView view = BitsetView()
         view.assign_bits(bits)
         return view

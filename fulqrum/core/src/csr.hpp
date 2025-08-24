@@ -31,9 +31,8 @@ template <typename T, typename U> void csr_matrix_builder(const OperatorTerm_t *
 {
     std::size_t kk;
     T temp, _sum;
-    
-    const bitset_map_namespace::BitsetMap& subsapce_hash_map = subspace.get_map();
-    const auto* bitsets = subsapce_hash_map.values();
+
+    const auto* bitsets = subspace.get_bitsets();
 
     #pragma omp parallel for if(subspace_dim > 128)
     for(kk=0; kk<subspace_dim; kk++)
@@ -113,6 +112,8 @@ template <typename T, typename U> void csr_matrix_builder(const OperatorTerm_t *
             _sum = temp;
         }
     }
+    // dump hash map stats
+    subspace.dump_statistics();
 }
 
 

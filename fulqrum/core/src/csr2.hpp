@@ -37,8 +37,7 @@ template <typename T, typename U> void csr_matrix_builder2(const OperatorTerm_t 
     std::size_t kk;
     T temp, _sum;
 
-    const bitset_map_namespace::BitsetMap& subsapce_hash_map = subspace.get_map();
-    const auto* bitsets = subsapce_hash_map.values();
+    const auto* bitsets = subspace.get_bitsets();
     // std::size_t num_bits_in_size_t = 8 * sizeof(std::size_t);
 
     std::size_t zero_terms = 0;
@@ -143,4 +142,6 @@ template <typename T, typename U> void csr_matrix_builder2(const OperatorTerm_t 
         }
     }
     // std::cout << "zero terms: " << zero_terms << std::endl;
+    // dump hash map stats
+    subspace.dump_statistics();
 }

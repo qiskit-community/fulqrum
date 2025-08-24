@@ -7,6 +7,8 @@
 #include <cstddef>
 #include <complex>
 #include <vector>
+#include <iostream>
+#include <typeinfo>
 
 #include "base.hpp"
 #include "elements.hpp"
@@ -21,8 +23,7 @@ template <typename T> void compute_diag_vector(const bitset_map_namespace::Bitse
                                                const std::size_t subspace_dim){
         std::size_t kk;
         const std::size_t num_terms = diag_oper.terms.size();
-        const bitset_map_namespace::BitsetMap& subspace_hash_map = data.get_map();
-        const auto* bitsets = subspace_hash_map.values();
+        const auto* bitsets = data.get_bitsets();
 
         #pragma omp parallel for if(subspace_dim > 100)
         for(kk=0; kk < subspace_dim; kk++){
