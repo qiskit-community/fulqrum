@@ -5,6 +5,7 @@
 #endif
 
 #include <cassert>
+#include <iostream>
 #include <boost/dynamic_bitset.hpp>
 #include "constants.hpp"
 #include "./external/hash_table8.hpp"
@@ -15,7 +16,7 @@ struct BitsetHasherRapid
     std::size_t operator()(const boost::dynamic_bitset<std::size_t> &bs) const
     {
         const std::size_t num_bytes = bs.num_blocks() * sizeof(std::size_t);
-
+        
         return rapidhashMicro(bs.m_bits.data(), num_bytes);
     }
 };
@@ -124,6 +125,27 @@ namespace bitset_map_namespace
                 return map.size();
             }
             return map2.size();
+        }
+
+        void print_private_vars() const
+        {
+            std::size_t mask, num_buckets, num_filled;
+            if (use_all_blocks)
+            {
+                mask = map.get_mask();
+                num_buckets = map.get_num_buckets();
+                num_filled = map.get_num_filled();
+            }
+            else
+            {
+                mask = map2.get_mask();
+                num_buckets = map2.get_num_buckets();
+                num_filled = map2.get_num_filled();
+            }
+
+            std::cout << "mask: " << mask << std::endl;
+            std::cout << "n buckets: " << num_buckets << std::endl;
+            std::cout << "n filled: " << num_filled << std::endl;
         }
     };
 }

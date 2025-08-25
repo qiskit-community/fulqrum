@@ -94,6 +94,7 @@ public:
     using mapped_type = ValueT;
     //using dPolicy = Policy;
 
+
 #ifdef EMH_SMALL_TYPE
     using size_type = uint16_t;
 #elif EMH_SIZE_TYPE == 0
@@ -664,6 +665,19 @@ public:
     {
         const auto slot = find_filled_slot(key);
         return slot != _num_filled ? &_pairs[slot].second : nullptr;
+    }
+
+    // print funcs
+    size_type get_mask() const {
+        return _mask;
+    }
+
+    size_type get_num_buckets() const {
+        return _num_buckets;
+    }
+
+    size_type get_num_filled() const {
+        return _num_filled;
     }
 
     /// set value if key exist

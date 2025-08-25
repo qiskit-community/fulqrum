@@ -3,6 +3,7 @@
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 from libcpp.vector cimport vector
 from libcpp.string cimport string
+from libcpp cimport bool
 from libc.string cimport memcmp
 from libc.stdint cimport uint32_t
 from libc.math cimport abs
@@ -59,6 +60,8 @@ cdef class Subspace():
         for idx, key in enumerate(counts.keys()):
             temp_bits = bitset_t(key, 0, self.subspace.num_qubits)
             self.subspace.bitstrings.insert_unique(temp_bits, <size_t>idx)
+        
+        self.subspace.bitstrings.print_private_vars()
     
     def __dealloc__(self):
         # Clear hash table upon deallocation of class
