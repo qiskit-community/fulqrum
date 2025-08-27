@@ -103,6 +103,16 @@ def test_full_dist_lih_eigen():
     assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
+    # use single bitset block
+    S = fq.Subspace(full_dist, use_all_bitset_blocks=False)
+    Hsub = fq.SubspaceHamiltonian(OP, S)
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
 
 def test_full_dist_lih_eigen_csr():
     """Test full space CSR solution against exact"""
@@ -111,6 +121,18 @@ def test_full_dist_lih_eigen_csr():
         full_dist[bin(kk)[2:].zfill(OP.width)] = None
 
     S = fq.Subspace(full_dist)
+    Hsub = fq.SubspaceHamiltonian(OP, S)
+    M = Hsub.to_csr_linearoperator()
+    assert M.mat.dtype == float
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+    # single bitset block
+    S = fq.Subspace(full_dist, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
     assert M.mat.dtype == float
@@ -133,10 +155,32 @@ def test_grnd_dist_lih_eigen():
     assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
+    #
+    S = fq.Subspace(GROUND_DIST, use_all_bitset_blocks=False)
+    Hsub = fq.SubspaceHamiltonian(OP, S)
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
 
 def test_grnd_dist_lih_eigen_csr():
     """Test grnd space CSR solution against exact"""
     S = fq.Subspace(GROUND_DIST)
+    Hsub = fq.SubspaceHamiltonian(OP, S)
+    M = Hsub.to_csr_linearoperator()
+
+    assert M.mat.dtype == float
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+    # use single bitset block
+    S = fq.Subspace(GROUND_DIST, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
 

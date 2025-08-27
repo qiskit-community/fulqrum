@@ -3,6 +3,6 @@ from .bitset cimport bitset_t
 
 
 cdef class BitsetView:
-    cdef bitset_t * bits
+    cdef bitset_t bits
 
-    cdef void bit_ptr(self, bitset_t *)
+    cdef void assign_bits(self, bitset_t)

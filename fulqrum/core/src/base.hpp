@@ -7,12 +7,8 @@
 #include <vector>
 #include <complex>
 #include <boost/dynamic_bitset.hpp>
-
-
-const std::size_t MAX_SIZE_T = (std::size_t)-1;
-const unsigned int MAX_UINT = (unsigned int)-1;
-const unsigned int BITS_PER_BLOCK = 8 * sizeof(std::size_t);
-unsigned int DEFAULT_LADDER_WIDTH = 4;
+#include "constants.hpp"
+#include "bitset_hashmap.hpp"
 
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
  *
@@ -82,20 +78,12 @@ typedef struct QubitOperator{
 /** @struct subspace
  * @brief Datastructure for subspace defined by counts
  *
- * @var bitstrings The subspace bit-strings sorted by bin_width 
- * @var bin_counts number of bit-strings in each bin
- * @var bin_ranges The range (indices) over which each bin is defined
+ * @var bitstrings The subspace bit-strings stored in a hash table
  * @var num_qubits The number of qubits, i.e length of bitstrings
- * @var num_bins The number of bins
- * @var bin_width The bin_width used in the partial sorting
  * @var size Dimenion / number of bit-strings in the subpsace
  */
  typedef struct Subspace{
-    std::vector<boost::dynamic_bitset<std::size_t> > bitstrings;
-    std::vector<std::size_t> bin_counts;
-    std::vector<std::size_t> bin_ranges;
+    bitset_map_namespace::BitsetHashMapWrapper bitstrings;
     unsigned int num_qubits;
-    std::size_t num_bins;
-    std::size_t bin_width;
     std::size_t size;
 } Subspace_t;

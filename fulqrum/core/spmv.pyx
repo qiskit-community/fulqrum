@@ -41,12 +41,10 @@ cdef class FulqrumSpMV():
         self.oper = hamiltonian.oper
         self.is_real = diag_hamiltonian.is_real() * hamiltonian.is_real()
         self.subspace = subspace
-        self.bin_width = self.subspace.subspace.bin_width
         self.width = self.oper.width
-        self.subspace_dim = self.subspace.subspace.bitstrings.size()
+        self.subspace_dim = self.subspace.subspace.size
         self.num_terms = self.oper.terms.size()
         self.num_diag_terms = self.diag_oper.terms.size()
-        self.bin_ranges = &self.subspace.subspace.bin_ranges[0]
         self.group_ptrs = group_ptrs
         self.group_ladder_ptrs = group_ladder_ptrs
         self.num_groups = group_ptrs.shape[0] - 1
@@ -145,8 +143,6 @@ cdef class FulqrumSpMV():
                             self.width,
                             self.subspace_dim,
                             self.has_nonzero_diag,
-                            self.bin_width,
-                            self.bin_ranges,
                             &self.group_ptrs[0],
                             &self.group_ladder_ptrs[0],
                             &self.group_rowint_length[0],
@@ -163,8 +159,6 @@ cdef class FulqrumSpMV():
                             self.width,
                             self.subspace_dim,
                             self.has_nonzero_diag,
-                            self.bin_width,
-                            self.bin_ranges,
                             &self.group_ptrs[0],
                             &self.group_ladder_ptrs[0],
                             &self.group_rowint_length[0],
@@ -183,8 +177,6 @@ cdef class FulqrumSpMV():
                             self.width,
                             self.subspace_dim,
                             self.has_nonzero_diag,
-                            self.bin_width,
-                            self.bin_ranges,
                             &self.group_ptrs[0],
                             self.group_offdiag_inds,
                             self.num_groups,
@@ -198,8 +190,6 @@ cdef class FulqrumSpMV():
                             self.width,
                             self.subspace_dim,
                             self.has_nonzero_diag,
-                            self.bin_width,
-                            self.bin_ranges,
                             &self.group_ptrs[0],
                             self.group_offdiag_inds,
                             self.num_groups,
@@ -287,8 +277,6 @@ cdef class FulqrumSpMV():
                                             self.width,
                                             self.subspace_dim,
                                             self.has_nonzero_diag,
-                                            self.bin_width,
-                                            self.bin_ranges,
                                             &self.group_ptrs[0],
                                             &self.group_ladder_ptrs[0],
                                             &self.group_rowint_length[0],
@@ -306,8 +294,6 @@ cdef class FulqrumSpMV():
                                             self.width,
                                             self.subspace_dim,
                                             self.has_nonzero_diag,
-                                            self.bin_width,
-                                            self.bin_ranges,
                                             &self.group_ptrs[0],
                                             &self.group_ladder_ptrs[0],
                                             &self.group_rowint_length[0],
@@ -326,8 +312,6 @@ cdef class FulqrumSpMV():
                                             self.width,
                                             self.subspace_dim,
                                             self.has_nonzero_diag,
-                                            self.bin_width,
-                                            self.bin_ranges,
                                             &self.group_ptrs[0],
                                             self.group_offdiag_inds,
                                             self.num_groups,
@@ -342,8 +326,6 @@ cdef class FulqrumSpMV():
                                             self.width,
                                             self.subspace_dim,
                                             self.has_nonzero_diag,
-                                            self.bin_width,
-                                            self.bin_ranges,
                                             &self.group_ptrs[0],
                                             self.group_offdiag_inds,
                                             self.num_groups,
@@ -360,8 +342,6 @@ cdef class FulqrumSpMV():
                                             self.width,
                                             self.subspace_dim,
                                             self.has_nonzero_diag,
-                                            self.bin_width,
-                                            self.bin_ranges,
                                             &self.group_ptrs[0],
                                             &self.group_ladder_ptrs[0],
                                             &self.group_rowint_length[0],
@@ -379,8 +359,6 @@ cdef class FulqrumSpMV():
                                             self.width,
                                             self.subspace_dim,
                                             self.has_nonzero_diag,
-                                            self.bin_width,
-                                            self.bin_ranges,
                                             &self.group_ptrs[0],
                                             &self.group_ladder_ptrs[0],
                                             &self.group_rowint_length[0],
@@ -399,8 +377,6 @@ cdef class FulqrumSpMV():
                                             self.width,
                                             self.subspace_dim,
                                             self.has_nonzero_diag,
-                                            self.bin_width,
-                                            self.bin_ranges,
                                             &self.group_ptrs[0],
                                             self.group_offdiag_inds,
                                             self.num_groups,
@@ -415,8 +391,6 @@ cdef class FulqrumSpMV():
                                             self.width,
                                             self.subspace_dim,
                                             self.has_nonzero_diag,
-                                            self.bin_width,
-                                            self.bin_ranges,
                                             &self.group_ptrs[0],
                                             self.group_offdiag_inds,
                                             self.num_groups,

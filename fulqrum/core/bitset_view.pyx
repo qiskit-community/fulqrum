@@ -11,15 +11,15 @@ include "includes/bitset_utils_header.pxi"
 
 cdef class BitsetView:
         
-    cdef void bit_ptr(self, bitset_t * ptr):
-        self.bits = ptr
+    cdef void assign_bits(self, bitset_t bitset):
+        self.bits = bitset
 
     def __len__(self):
         return self.bits.size()
 
     def __repr__(self):
         cdef string s
-        to_string(deref(self.bits),  s)
+        to_string(self.bits,  s)
         return f"<BitsetView: {s}>"
 
     def size(self):
@@ -31,7 +31,7 @@ cdef class BitsetView:
         return self.bits.size()
 
     def __getitem__(self, size_t idx):
-        return deref(self.bits)[idx]
+        return (self.bits)[idx]
 
     def __eq__(self, BitsetView other):
         return self.bits == other.bits
@@ -49,7 +49,7 @@ cdef class BitsetView:
             str: String representation of Bitset
         """
         cdef string s
-        to_string(deref(self.bits), s)
+        to_string(self.bits, s)
         return s
 
     def to_int(self):
@@ -59,7 +59,7 @@ cdef class BitsetView:
             int: Integer value for Bitset
         """
         cdef string s
-        to_string(deref(self.bits), s)
+        to_string(self.bits, s)
         return int(s, 2)
 
     def bin_width_int(self, unsigned int bin_width):
@@ -74,5 +74,5 @@ cdef class BitsetView:
         if bin_width > self.bits.size():
             raise FulqrumError("bin_width is larger than number of bits")
         cdef size_t out = 0
-        bin_int(deref(self.bits), bin_width, out)
+        bin_int(self.bits, bin_width, out)
         return out

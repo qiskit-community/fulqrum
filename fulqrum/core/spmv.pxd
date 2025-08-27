@@ -15,7 +15,6 @@ cdef class FulqrumSpMV:
     cdef public unsigned int width
     cdef public size_t num_diag_terms
     cdef public size_t num_terms
-    cdef public unsigned int bin_width
     cdef public int has_nonzero_diag
     cdef int init_diag
     cdef double complex[::1] complex_diag_vec
@@ -26,7 +25,6 @@ cdef class FulqrumSpMV:
     cdef int num_groups
     cdef public int is_real
     cdef unsigned int ladder_offset
-    cdef size_t * bin_ranges
     cdef vector[vector[unsigned int]] group_offdiag_inds
 
     cdef void compute_diag_vector(self)

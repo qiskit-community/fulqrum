@@ -6,6 +6,9 @@ import scipy.sparse as sp
 import fulqrum as fq
 from fulqrum.utils import qubitoperator_to_matrix
 
+"""All test names ending with `a` uses `use_all_bitset_blocks=False` which
+    using first (LSB) block of a bitset for hashing.
+"""
 
 def matrix_subspace(A, rows):
     B = A[rows, :]
@@ -30,7 +33,33 @@ def test_csr1():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts, 5)
+    S = fq.Subspace(counts)
+    Hsub = fq.SubspaceHamiltonian(H, S)
+    P = Hsub.to_csr_array()
+
+    assert np.allclose(P.indptr, M.indptr)
+    assert np.allclose(P.indices, M.indices)
+    assert np.allclose(P.data, M.data)
+    assert P.indptr.dtype == np.int32
+
+def test_csr1a():
+    """Test building CSR array from subspace Hamiltonian"""
+    num_qubits = 5
+    strings = ["XIXII", "0101I", "II0II", "XYIYX", "ZZZZZ"]
+    values = np.array([(-1) ** kk * 3.14159 / (kk + 1) for kk in range(len(strings))])
+
+    H = fq.QubitOperator(num_qubits)
+    for idx, string in enumerate(strings):
+        H += fq.QubitOperator.from_label(string, values[idx])
+
+    A = qubitoperator_to_matrix(H)
+    M = sp.csr_array(A)
+
+    counts = {}
+    for kk in range(2**5):
+        counts[bin(kk)[2:].zfill(5)] = None
+
+    S = fq.Subspace(counts, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -57,7 +86,34 @@ def test_csr2():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts, 5)
+    S = fq.Subspace(counts)
+    Hsub = fq.SubspaceHamiltonian(H, S)
+    P = Hsub.to_csr_array()
+
+    assert np.allclose(P.indptr, M.indptr)
+    assert np.allclose(P.indices, M.indices)
+    assert np.allclose(P.data, M.data)
+    assert P.indptr.dtype == np.int32
+
+
+def test_csr2a():
+    """Test building CSR array from subspace Hamiltonian"""
+    num_qubits = 5
+    strings = ["01011", "IIIII", "ZZIZZ"]
+    values = np.array([(-1) ** kk * 3.14159 / (kk + 1) for kk in range(len(strings))])
+
+    H = fq.QubitOperator(num_qubits)
+    for idx, string in enumerate(strings):
+        H += fq.QubitOperator.from_label(string, values[idx])
+
+    A = qubitoperator_to_matrix(H)
+    M = sp.csr_array(A)
+
+    counts = {}
+    for kk in range(2**5):
+        counts[bin(kk)[2:].zfill(5)] = None
+
+    S = fq.Subspace(counts, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -84,7 +140,59 @@ def test_csr3():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts, 5)
+    S = fq.Subspace(counts)
+    Hsub = fq.SubspaceHamiltonian(H, S)
+    P = Hsub.to_csr_array()
+
+    assert np.allclose(P.indptr, M.indptr)
+    assert np.allclose(P.indices, M.indices)
+    assert np.allclose(P.data, M.data)
+    assert P.indptr.dtype == np.int32
+
+def test_csr3():
+    """Test building CSR array from subspace Hamiltonian"""
+    num_qubits = 5
+    strings = ["XXIXX", "YYIYY"]
+    values = np.array([(-1) ** kk * 3.14159 / (kk + 1) for kk in range(len(strings))])
+
+    H = fq.QubitOperator(num_qubits)
+    for idx, string in enumerate(strings):
+        H += fq.QubitOperator.from_label(string, values[idx])
+
+    A = qubitoperator_to_matrix(H)
+    M = sp.csr_array(A)
+
+    counts = {}
+    for kk in range(2**5):
+        counts[bin(kk)[2:].zfill(5)] = None
+
+    S = fq.Subspace(counts)
+    Hsub = fq.SubspaceHamiltonian(H, S)
+    P = Hsub.to_csr_array()
+
+    assert np.allclose(P.indptr, M.indptr)
+    assert np.allclose(P.indices, M.indices)
+    assert np.allclose(P.data, M.data)
+    assert P.indptr.dtype == np.int32
+
+def test_csr3a():
+    """Test building CSR array from subspace Hamiltonian"""
+    num_qubits = 5
+    strings = ["XXIXX", "YYIYY"]
+    values = np.array([(-1) ** kk * 3.14159 / (kk + 1) for kk in range(len(strings))])
+
+    H = fq.QubitOperator(num_qubits)
+    for idx, string in enumerate(strings):
+        H += fq.QubitOperator.from_label(string, values[idx])
+
+    A = qubitoperator_to_matrix(H)
+    M = sp.csr_array(A)
+
+    counts = {}
+    for kk in range(2**5):
+        counts[bin(kk)[2:].zfill(5)] = None
+
+    S = fq.Subspace(counts, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -111,7 +219,33 @@ def test_csr4():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts, 5)
+    S = fq.Subspace(counts)
+    Hsub = fq.SubspaceHamiltonian(H, S)
+    P = Hsub.to_csr_array()
+
+    assert np.allclose(P.indptr, M.indptr)
+    assert np.allclose(P.indices, M.indices)
+    assert np.allclose(P.data, M.data)
+    assert P.indptr.dtype == np.int32
+
+def test_csr4a():
+    """Test building CSR array from subspace Hamiltonian, single block hashing"""
+    num_qubits = 5
+    strings = ["XXIXX", "YYIYY", "-+I+-", "XYZXY", "+-I-+"]
+    values = np.array([(-1) ** kk for kk in range(len(strings))])
+
+    H = fq.QubitOperator(num_qubits)
+    for idx, string in enumerate(strings):
+        H += fq.QubitOperator.from_label(string, values[idx])
+
+    A = qubitoperator_to_matrix(H)
+    M = sp.csr_array(A)
+
+    counts = {}
+    for kk in range(2**5):
+        counts[bin(kk)[2:].zfill(5)] = None
+
+    S = fq.Subspace(counts, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -138,7 +272,35 @@ def test_csr5():
 
     counts = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
-    S = fq.Subspace(counts, 5)
+    S = fq.Subspace(counts)
+    Hsub = fq.SubspaceHamiltonian(H, S)
+    P = Hsub.to_csr_array()
+
+    assert np.allclose(P.indptr, M.indptr)
+    assert np.allclose(P.indices, M.indices)
+    assert np.allclose(P.data, M.data)
+    assert P.indptr.dtype == np.int32
+
+
+def test_csr5a():
+    """Test building CSR array from subspace Hamiltonian with single block hashing
+    - empty result"""
+    num_qubits = 5
+    strings = ["+-X-+", "XZIXX", "0Y+YZ", "X0+1Y", "-+X+-", "X0-1Y", "0Y-YZ"]
+    values = np.array([1 for kk in range(len(strings))])
+    rows = [0, 1, 2, 26, 27, 28]
+
+    H = fq.QubitOperator(num_qubits)
+    for idx, string in enumerate(strings):
+        H += fq.QubitOperator.from_label(string, values[idx])
+
+    A = qubitoperator_to_matrix(H)
+    B = matrix_subspace(A, rows)
+    M = sp.csr_array(B)
+
+    counts = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
+
+    S = fq.Subspace(counts, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -165,7 +327,33 @@ def test_csr6():
 
     counts = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
-    S = fq.Subspace(counts, 5)
+    S = fq.Subspace(counts)
+    Hsub = fq.SubspaceHamiltonian(H, S)
+    P = Hsub.to_csr_array()
+
+    assert np.allclose(P.indptr, M.indptr)
+    assert np.allclose(P.indices, M.indices)
+    assert np.allclose(P.data, M.data)
+    assert P.indptr.dtype == np.int32
+
+def test_csr6a():
+    """Test building CSR array from subspace Hamiltonian with single bitset block hashing"""
+    num_qubits = 5
+    strings = ["+-X-+", "XZIXX", "0Y+YZ", "X0+1Y", "-+X+-", "X0-1Y", "0Y-YZ"]
+    values = np.array([1 for kk in range(len(strings))])
+    rows = [0, 1, 2, 3, 5, 7, 8, 9, 11, 13, 31]
+
+    H = fq.QubitOperator(num_qubits)
+    for idx, string in enumerate(strings):
+        H += fq.QubitOperator.from_label(string, values[idx])
+
+    A = qubitoperator_to_matrix(H)
+    B = matrix_subspace(A, rows)
+    M = sp.csr_array(B)
+
+    counts = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
+
+    S = fq.Subspace(counts, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
