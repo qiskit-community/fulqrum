@@ -142,10 +142,6 @@ namespace bitset_map_namespace
                 num_buckets = map2.get_num_buckets();
                 num_filled = map2.get_num_filled();
             }
-
-            std::cout << "mask: " << mask << std::endl;
-            std::cout << "n buckets: " << num_buckets << std::endl;
-            std::cout << "n filled: " << num_filled << std::endl;
         }
     };
 }
