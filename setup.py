@@ -38,6 +38,7 @@ CYTHON_EXTS = [
     "fermi_operator",
     "spmv",
     "csr",
+    "csrlike",
     "qiskit",
     "openfermion",
     "matrix",
@@ -50,11 +51,13 @@ CYTHON_MODULES = [
     "fulqrum.core",
     "fulqrum.core",
     "fulqrum.core",
+    "fulqrum.core",
     "fulqrum.convert",
     "fulqrum.convert",
     "fulqrum.utils",
 ]
 CYTHON_SOURCE_DIRS = [
+    "fulqrum/core",
     "fulqrum/core",
     "fulqrum/core",
     "fulqrum/core",
