@@ -84,6 +84,7 @@ if os.getenv("FULQRUM_ARCH", False) and sys.platform != "win32":
         OPTIONAL_FLAGS.append("-mcpu=" + os.getenv("FULQRUM_ARCH"))
     else:
         OPTIONAL_FLAGS.append("-march=" + os.getenv("FULQRUM_ARCH"))
+        OPTIONAL_FLAGS.append("-mtune=" + os.getenv("FULQRUM_ARCH"))
 
 INCLUDE_DIRS = [np.get_include()]
 # Extra link args
