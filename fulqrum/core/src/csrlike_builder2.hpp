@@ -29,7 +29,7 @@ void csrlike_builder2(const OperatorTerm_t *terms,
                          const std::vector<std::vector<unsigned int>> &group_offdiag_inds,
                          const std::size_t num_groups,
                          const unsigned int ladder_offset,
-                         U& row_data)
+                         std::deque<U>& row_data)
 {
     std::size_t kk;
     T temp, _sum;
@@ -68,6 +68,7 @@ void csrlike_builder2(const OperatorTerm_t *terms,
         const std::vector<unsigned int> *group_inds;
         std::size_t *col_ptr;
         T val;
+        U * row_vals = &row_data[kk];
         unsigned int row_int;
         int do_col_search;
 
@@ -76,8 +77,8 @@ void csrlike_builder2(const OperatorTerm_t *terms,
         {
             if (diag_vec[kk] != 0.0)
             {
-                row_data[kk].cols.push_back(kk);
-                row_data[kk].data.push_back(diag_vec[kk]);
+                row_vals->cols.push_back(kk);
+                row_vals->data.push_back(diag_vec[kk]);
             }
         }
         for (group = 0; group < num_groups; group++)
@@ -114,8 +115,8 @@ void csrlike_builder2(const OperatorTerm_t *terms,
             } // end loop over terms in this group
             if (val != 0.0)
             {
-                row_data[kk].cols.push_back(*col_ptr);
-                row_data[kk].data.push_back(val);
+                row_vals->cols.push_back(*col_ptr);
+                row_vals->data.push_back(val);
             }
         } // end loop over groups
 
