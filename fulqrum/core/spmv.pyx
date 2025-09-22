@@ -431,7 +431,7 @@ cdef class FulqrumSpMV():
         # Compute diag vec if we have not done so already
         self.compute_diag_vector()
         cdef CSRLike csrlike = CSRLike(self.subspace_dim, self.is_real)
-        if csrlike.dtype == 'd32':
+        if csrlike.type_string == 'd32':
             csrlike_builder2[double, RowData_Real32_t](&self.oper.terms[0],
                             self.subspace.subspace.bitstrings,
                             &self.real_diag_vec[0],
@@ -445,7 +445,7 @@ cdef class FulqrumSpMV():
                             self.num_groups,
                             self.ladder_offset,
                             csrlike.data_d32)
-        elif csrlike.dtype == 'd64':
+        elif csrlike.type_string == 'd64':
             csrlike_builder2[double, RowData_Real64_t](&self.oper.terms[0],
                             self.subspace.subspace.bitstrings,
                             &self.real_diag_vec[0],
@@ -459,7 +459,7 @@ cdef class FulqrumSpMV():
                             self.num_groups,
                             self.ladder_offset,
                             csrlike.data_d64)
-        elif csrlike.dtype == 'z32':
+        elif csrlike.type_string == 'z32':
             csrlike_builder2[complex, RowData_Complex32_t](&self.oper.terms[0],
                             self.subspace.subspace.bitstrings,
                             &self.complex_diag_vec[0],
@@ -473,7 +473,7 @@ cdef class FulqrumSpMV():
                             self.num_groups,
                             self.ladder_offset,
                             csrlike.data_z32)
-        elif csrlike.dtype == 'z64':
+        elif csrlike.type_string == 'z64':
             csrlike_builder2[complex, RowData_Complex64_t](&self.oper.terms[0],
                             self.subspace.subspace.bitstrings,
                             &self.complex_diag_vec[0],
@@ -488,6 +488,7 @@ cdef class FulqrumSpMV():
                             self.ladder_offset,
                             csrlike.data_z64)
 
+        #quicksort_csrlike(csrlike)
         return csrlike
 
 

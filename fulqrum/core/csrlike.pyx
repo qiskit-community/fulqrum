@@ -55,7 +55,7 @@ cdef class CSRLike():
         return num_rows
 
     @property
-    def dtype(self):
+    def type_string(self):
         if self.data_type == 1:
             return 'd32'
         elif self.data_type == 2:
