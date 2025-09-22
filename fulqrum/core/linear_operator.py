@@ -7,6 +7,7 @@ from scipy.sparse.linalg import LinearOperator
 
 from .spmv import FulqrumSpMV
 from .csr import csr_matvec
+from fulqrum.core.csrlike import CSRLike
 
 
 class SubspaceHamiltonian(LinearOperator):

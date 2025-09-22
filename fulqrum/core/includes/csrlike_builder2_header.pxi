@@ -22,5 +22,5 @@ cdef extern from "../src/csrlike_builder2.hpp":
                               const vector[vector[unsigned int]]& group_offdiag_inds,
                               size_t num_groups,
                               unsigned int ladder_offset,
-                              deque[U]& csrlike,
+                              U& row_data,
                               ) nogil

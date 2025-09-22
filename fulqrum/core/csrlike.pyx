@@ -14,19 +14,20 @@ cdef class CSRLike():
         self.is_real = is_real
         self.is_int64 = num_rows > np.iinfo(np.int32).max
         self.data_type = 0
+        cdef size_t kk
         if self.is_real:
             if self.is_int64:
-                self.data_d64.resize(num_rows)
+                self.data_d64.resize(self.num_rows)
                 self.data_type = 2
             else:
-                self.data_d32.resize(num_rows)
+                self.data_d32.resize(self.num_rows)
                 self.data_type = 1
         else:
             if self.is_int64:
-                self.data_z64.resize(num_rows)
+                self.data_z64.resize(self.num_rows)
                 self.data_type = 4
             else:
-                self.data_z32.resize(num_rows)
+                self.data_z32.resize(self.num_rows)
                 self.data_type = 3
 
     def __dealloc__(self):
