@@ -5,6 +5,7 @@ cimport cython
 from libcpp.deque cimport deque
 include "includes/csrlike_header.pxi"
 import numpy as np
+from fulqrum.exceptions import FulqrumError
 
 
 cdef class CSRLike():
@@ -12,21 +13,21 @@ cdef class CSRLike():
         self.num_rows = num_rows
         self.is_real = is_real
         self.is_int64 = num_rows > np.iinfo(np.int32).max
-        self.data_choice = 0
+        self.data_type = 0
         if self.is_real:
             if self.is_int64:
                 self.data_d64.resize(num_rows)
-                self.data_choice = 2
+                self.data_type = 2
             else:
                 self.data_d32.resize(num_rows)
-                self.data_choice = 1
+                self.data_type = 1
         else:
             if self.is_int64:
                 self.data_z64.resize(num_rows)
-                self.data_choice = 4
+                self.data_type = 4
             else:
                 self.data_z32.resize(num_rows)
-                self.data_choice = 3
+                self.data_type = 3
 
     def __dealloc__(self):
         # Clear deque upon deallocation of class
@@ -38,3 +39,16 @@ cdef class CSRLike():
     @property
     def shape(self):
         return (self.num_rows, self.num_rows)
+
+    @property
+    def data_type(self):
+        if self.data_type == 1:
+            return 'd32'
+        elif self.data_type == 2:
+            return 'd64'
+        elif self.data_type == 3:
+            return 'z32'
+        elif self.data_type == 4:
+            return 'z64'
+        else:
+            raise FulqrumError('Invalid data type')

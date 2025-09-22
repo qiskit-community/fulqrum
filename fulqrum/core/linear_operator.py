@@ -113,6 +113,17 @@ class SubspaceHamiltonian(LinearOperator):
         """
         M = self.spmv.to_csr_array(verbose=verbose)
         return CSRLinearOperator(M, self.spmv.is_real)
+    
+    def to_csrlike_linearoperator(self, verbose=False):
+        """Convert subspace Hamiltonian to a CSR-like format LinearOperator
+
+        This saves a matrix-traversal at the expense of a non-standard data type
+
+        Parameters:
+            verbose (bool): Turn on verbose mode, default=False.
+        """
+        out = self.spmv.to_csrlike()
+        return out
 
 
 class CSRLinearOperator(LinearOperator):

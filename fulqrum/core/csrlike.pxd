@@ -10,7 +10,7 @@ cdef class CSRLike:
     cdef size_t num_rows
     cdef public unsigned int is_real
     cdef public unsigned int is_int64
-    cdef unsigned int data_choice
+    cdef unsigned int data_type
     cdef deque[RowData_Real32_t] data_d32
     cdef deque[RowData_Real64_t] data_d64
     cdef deque[RowData_Complex32_t] data_z32
