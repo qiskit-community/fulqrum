@@ -41,6 +41,19 @@ cdef class CSRLike():
         return (self.num_rows, self.num_rows)
 
     @property
+    def num_rows(self):
+        cdef size_t num_rows = 0
+        if self.data_type == 1:
+            num_rows = self.data_d32.size()
+        elif self.data_type == 2:
+            num_rows = self.data_d64.size()
+        elif self.data_type == 3:
+            num_rows = self.data_z32.size()
+        elif self.data_type == 4:
+            num_rows = self.data_z64.size()
+        return num_rows
+
+    @property
     def data_type(self):
         if self.data_type == 1:
             return 'd32'
@@ -52,3 +65,22 @@ cdef class CSRLike():
             return 'z64'
         else:
             raise FulqrumError('Invalid data type')
+
+    @property
+    def nnz(self):
+        cdef size_t nnz = 0
+        cdef size_t kk
+        if self.data_type == 1:
+            for kk in range(self.num_rows):
+                nnz += self.data_d32[kk].data.size()
+        elif self.data_type == 2:
+            for kk in range(self.num_rows):
+                nnz += self.data_d64[kk].data.size()
+        elif self.data_type == 3:
+            for kk in range(self.num_rows):
+                nnz += self.data_z32[kk].data.size()
+        elif self.data_type == 4:
+            for kk in range(self.num_rows):
+                nnz += self.data_z64[kk].data.size()
+        return nnz
+

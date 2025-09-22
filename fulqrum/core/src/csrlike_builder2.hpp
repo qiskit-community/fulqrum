@@ -29,7 +29,7 @@ void csrlike_builder2(const OperatorTerm_t *terms,
                          const std::vector<std::vector<unsigned int>> &group_offdiag_inds,
                          const std::size_t num_groups,
                          const unsigned int ladder_offset,
-                         std::deque<U> csrlike)
+                         std::deque<U>& csrlike)
 {
     std::size_t kk;
     T temp, _sum;
