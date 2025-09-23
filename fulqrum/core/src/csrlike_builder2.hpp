@@ -39,7 +39,7 @@ void csrlike_builder2(const OperatorTerm_t *terms,
 
     const auto *bitsets = subspace.get_bitsets();
 
-#pragma omp parallel for schedule(dynamic) if (subspace_dim > 128)
+    #pragma omp parallel for schedule(dynamic) if (subspace_dim > 128)
     for (kk = 0; kk < subspace_dim; kk++)
     { // begin loop over all rows
 
@@ -141,4 +141,4 @@ void csrlike_builder2(const OperatorTerm_t *terms,
         quicksort_indices_data(row_vals->cols.data(), row_vals->data.data(), sort_start_long, sort_end_long);
     }
     } // end loop over all rows
-}
+} // end function
