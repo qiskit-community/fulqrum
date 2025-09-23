@@ -131,12 +131,12 @@ void csrlike_builder2(const OperatorTerm_t *terms,
     // sort column indices and data in each row
     if constexpr (std::is_same_v<U, RowData_Real32_t> || std::is_same_v<U, RowData_Complex32_t>)
     {
-        sort_end_int = row_vals->cols.size();
+        sort_end_int = row_vals->cols.size() - 1;
         quicksort_indices_data(row_vals->cols.data(), row_vals->data.data(), sort_start_int, sort_end_int);
     }
     else
     {
-        sort_end_long = row_vals->cols.size();
+        sort_end_long = row_vals->cols.size() - 1;
         quicksort_indices_data(row_vals->cols.data(), row_vals->data.data(), sort_start_long, sort_end_long);
     }
     } // end loop over all rows
