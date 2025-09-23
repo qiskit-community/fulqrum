@@ -5,6 +5,7 @@ cimport cython
 from libcpp.vector cimport vector
 include "includes/csrlike_header.pxi"
 import numpy as np
+import scipy.sparse as sp
 from fulqrum.exceptions import FulqrumError
 
 
@@ -85,3 +86,34 @@ cdef class CSRLike():
                 nnz += self.data_z64[kk].data.size()
         return nnz
 
+    def to_csr_array(self):
+        cdef int[::1] ptr32
+        cdef int[::1] inds32
+        cdef long long[::1] ptr64
+        cdef long long[::1] inds64
+        cdef double[::1] real_data
+        cdef complex[::1] complex_data
+        
+        cdef size_t nnz = self.nnz
+        cdef object mat
+
+        if '32' in self.type_string:
+            ptr32 = np.zeros(self.num_rows+1, dtype=np.int32)
+            inds32 = np.empty(nnz, dtype=np.int32)
+        else:
+            ptr64 = np.zeros(self.num_rows+1, dtype=np.int64)
+            inds64 = np.empty(nnz, dtype=np.int64)
+
+        if 'd' in self.type_string:
+            real_data = np.empty(nnz, dtype=float)
+        else:
+            complex_data = np.empty(nnz, dtype=complex)
+
+        if self.type_string == 'd32':
+            set_csr_ptr(self.data_d32, &ptr32[0])
+            set_csr_data(self.data_d32, &ptr32[0], &inds32[0], &real_data[0])
+
+            mat = sp.csr_array((real_data, inds32, ptr32), 
+                                shape=(self.num_rows,)*2, dtype=float)
+
+        return mat

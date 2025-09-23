@@ -26,3 +26,6 @@ cdef extern from "../src/csrlike.hpp":
         vector[double complex] data
 
     void set_csr_ptr[T, U](T& row_data, U * ptrs)
+
+    void set_csr_data[T, U, V](T& row_data, U * ptrs, U * inds, V * data)
+
