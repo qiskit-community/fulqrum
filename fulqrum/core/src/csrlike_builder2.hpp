@@ -14,7 +14,10 @@
 #include "bitset_hashmap.hpp"
 #include "elements.hpp"
 #include "operators.hpp"
+#include "csrlike.hpp"
+#include "csr_utils.hpp"
 #include <boost/dynamic_bitset.hpp>
+
 
 template <typename T, typename U>
 void csrlike_builder2(const OperatorTerm_t *terms,
@@ -72,6 +75,13 @@ void csrlike_builder2(const OperatorTerm_t *terms,
         unsigned int row_int;
         int do_col_search;
 
+        // need two different types for sorting 
+        int sort_start_int = 0;
+        int sort_end_int = 0;
+        long long sort_start_long = 0;
+        long long sort_end_long = 0;
+        
+
         // do diagonal first, if any
         if(has_nonzero_diag)
         {
@@ -119,6 +129,16 @@ void csrlike_builder2(const OperatorTerm_t *terms,
                 row_vals->data.push_back(val);
             }
         } // end loop over groups
-
+    // sort column indices and data in each row
+    if constexpr (std::is_same_v<U, RowData_Real32_t> || std::is_same_v<U, RowData_Complex32_t>)
+    {
+        sort_end_int = row_vals->cols.size();
+        quicksort_indices_data(row_vals->cols.data(), row_vals->data.data(), sort_start_int, sort_end_int);
+    }
+    else
+    {
+        sort_end_long = row_vals->cols.size();
+        quicksort_indices_data(row_vals->cols.data(), row_vals->data.data(), sort_start_long, sort_end_long);
+    }
     } // end loop over all rows
 }

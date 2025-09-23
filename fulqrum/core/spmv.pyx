@@ -488,7 +488,6 @@ cdef class FulqrumSpMV():
                             self.ladder_offset,
                             csrlike.data_z64)
 
-        #quicksort_csrlike(csrlike)
         return csrlike
 
 
