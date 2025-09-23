@@ -2,6 +2,7 @@
 # Copyright (C) 2024, IBM
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 cimport cython
+from libcpp.vector cimport vector
 from libcpp.deque cimport deque
 include "includes/csrlike_header.pxi"
 import numpy as np
@@ -32,10 +33,10 @@ cdef class CSRLike():
 
     def __dealloc__(self):
         # Clear deque upon deallocation of class
-        self.data_d32 = deque[RowData_Real32_t]()
-        self.data_d64 = deque[RowData_Real64_t]()
-        self.data_z32 = deque[RowData_Complex32_t]()
-        self.data_z64 = deque[RowData_Complex64_t]()
+        self.data_d32 = vector[RowData_Real32_t]()
+        self.data_d64 = vector[RowData_Real64_t]()
+        self.data_z32 = vector[RowData_Complex32_t]()
+        self.data_z64 = vector[RowData_Complex64_t]()
 
     @property
     def shape(self):
