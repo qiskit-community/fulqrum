@@ -12,7 +12,6 @@ from fulqrum.core.qubit_operator cimport QubitOperator
 from fulqrum.core.subspace cimport Subspace
 from fulqrum.core.csrlike cimport CSRLike
 from fulqrum.exceptions import FulqrumError
-#from fulqrum.core.csr cimport csr_matrix_builder
 
 from cython.parallel cimport prange, parallel
 import time
@@ -428,6 +427,8 @@ cdef class FulqrumSpMV():
         return mat
 
     def to_csrlike(self):
+        # This is here to prevent a circular import
+        from fulqrum.core.linear_operator import CSRLikeLinearOperator
         # Compute diag vec if we have not done so already
         self.compute_diag_vector()
         cdef CSRLike csrlike = CSRLike(self.subspace_dim, self.is_real)
@@ -488,7 +489,7 @@ cdef class FulqrumSpMV():
                             self.ladder_offset,
                             csrlike.data_z64)
 
-        return csrlike
+        return CSRLikeLinearOperator(csrlike)
 
 
 @cython.boundscheck(False)

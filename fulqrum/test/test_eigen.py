@@ -49,7 +49,7 @@ def test_eigen1():
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
             < 1e-13
         )
-    
+
     # hashing only the first (`bitset.m_bits[0]`) bitset block
     S = Subspace(subspace_dict, use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
@@ -93,7 +93,7 @@ def test_eigen2():
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
             < 1e-13
         )
-    
+
     # hashing only the first (`bitset.m_bits[0]`) bitset block
     S = Subspace(subspace_dict, use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
@@ -137,7 +137,7 @@ def test_eigen3():
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
             < 1e-13
         )
-    
+
     # hashing only the first (`bitset.m_bits[0]`) bitset block
     S = Subspace(subspace_dict, use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
@@ -182,7 +182,7 @@ def test_eigen4():
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
             < 1e-13
         )
-    
+
     # hashing only the first (`bitset.m_bits[0]`) bitset block
     S = Subspace(subspace_dict, use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
@@ -229,7 +229,7 @@ def test_eigen5():
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
             < 1e-13
         )
-    
+
     # hashing only the first (`bitset.m_bits[0]`) bitset block
     S = Subspace(subspace_dict, use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
@@ -286,7 +286,7 @@ def test_eigen6():
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
             < 1e-13
         )
-    
+
     # hashing only the first (`bitset.m_bits[0]`) bitset block
     S = Subspace(subspace_dict, use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)

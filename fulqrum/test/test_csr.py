@@ -10,6 +10,7 @@ from fulqrum.utils import qubitoperator_to_matrix
     using first (LSB) block of a bitset for hashing.
 """
 
+
 def matrix_subspace(A, rows):
     B = A[rows, :]
     B = B[:, rows]
@@ -41,6 +42,7 @@ def test_csr1():
     assert np.allclose(P.indices, M.indices)
     assert np.allclose(P.data, M.data)
     assert P.indptr.dtype == np.int32
+
 
 def test_csr1a():
     """Test building CSR array from subspace Hamiltonian"""
@@ -149,6 +151,7 @@ def test_csr3():
     assert np.allclose(P.data, M.data)
     assert P.indptr.dtype == np.int32
 
+
 def test_csr3():
     """Test building CSR array from subspace Hamiltonian"""
     num_qubits = 5
@@ -174,6 +177,7 @@ def test_csr3():
     assert np.allclose(P.indices, M.indices)
     assert np.allclose(P.data, M.data)
     assert P.indptr.dtype == np.int32
+
 
 def test_csr3a():
     """Test building CSR array from subspace Hamiltonian"""
@@ -227,6 +231,7 @@ def test_csr4():
     assert np.allclose(P.indices, M.indices)
     assert np.allclose(P.data, M.data)
     assert P.indptr.dtype == np.int32
+
 
 def test_csr4a():
     """Test building CSR array from subspace Hamiltonian, single block hashing"""
@@ -335,6 +340,7 @@ def test_csr6():
     assert np.allclose(P.indices, M.indices)
     assert np.allclose(P.data, M.data)
     assert P.indptr.dtype == np.int32
+
 
 def test_csr6a():
     """Test building CSR array from subspace Hamiltonian with single bitset block hashing"""
