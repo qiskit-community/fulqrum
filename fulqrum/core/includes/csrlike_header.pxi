@@ -25,7 +25,11 @@ cdef extern from "../src/csrlike.hpp":
         vector[long long] cols
         vector[double complex] data
 
-    void set_csr_ptr[T, U](T& row_data, U * ptrs)
+    void set_csr_ptr[T, U](const T& row_data, U * ptrs)
 
-    void set_csr_data[T, U, V](T& row_data, U * ptrs, U * inds, V * data)
+    void set_csr_data[T, U, V](const T& row_data, U * ptrs, U * inds, V * data)
+
+    void dcsrlike_spmv[T, U](const T& row_data, const double * vec, double * out, U dim)
+
+    void zcsrlike_spmv[T, U](const T& row_data, const double complex * vec, double complex * out, U dim)
 

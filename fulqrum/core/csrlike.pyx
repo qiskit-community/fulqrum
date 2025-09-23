@@ -4,6 +4,7 @@
 cimport cython
 from libcpp.vector cimport vector
 include "includes/csrlike_header.pxi"
+include "includes/types.pxi"
 import numpy as np
 import scipy.sparse as sp
 from fulqrum.exceptions import FulqrumError
@@ -117,3 +118,22 @@ cdef class CSRLike():
                                 shape=(self.num_rows,)*2, dtype=float)
 
         return mat
+
+    def matvec(self,  double_or_complex[::1] x):
+        if <size_t>x.shape[0] != self.num_rows:
+            raise FulqrumError('Incorrect length of input vector.')
+
+        cdef double_or_complex[::1] out
+        if self.is_real:
+            out = np.zeros(x.shape[0], dtype=float)
+        else:
+            out = np.zeros(x.shape[0], dtype=complex)
+
+        if self.type_string == 'd32':
+            if double_or_complex is double:
+                dcsrlike_spmv(self.data_d32, &x[0], &out[0], <int>self.num_rows)
+        elif self.type_string == 'd64':
+            if double_or_complex is double:
+                dcsrlike_spmv(self.data_d64, &x[0], &out[0], <long long>self.num_rows)
+        
+        return np.asarray(out)

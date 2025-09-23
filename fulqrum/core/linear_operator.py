@@ -159,3 +159,24 @@ class CSRLikeLinearOperator(LinearOperator):
 
     def to_csr_array(self):
         return self.csrlike.to_csr_array()
+    
+    
+    def matvec(self, x):
+        """Matrix-free implementation of SpMV for subspace Hamiltonian
+
+        Parameters:
+            x (ndarray): Input array
+
+        Returns:
+            ndarray: Output vector after SpMV on input vector
+        """
+        col_vec = False
+        if len(x.shape) == 2:
+            col_vec = True
+            x = x.view().reshape(
+                x.shape[0],
+            )
+        out = self.csrlike.matvec(x)
+        if col_vec:
+            out = out.view().reshape(x.shape[0], 1)
+        return out

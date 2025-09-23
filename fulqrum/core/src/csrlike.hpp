@@ -43,7 +43,7 @@ typedef struct RowData_Complex32{
  * 
  */
 template <typename T, typename U>
-void set_csr_ptr(T& row_data, U * __restrict ptrs)
+void set_csr_ptr(const T& row_data, U * __restrict ptrs)
 {
     std::size_t num_rows = row_data.size();
     std::size_t kk;
@@ -69,7 +69,7 @@ void set_csr_ptr(T& row_data, U * __restrict ptrs)
  * 
  */
 template <typename T, typename U, typename V>
-void set_csr_data(T& row_data, U * __restrict ptrs, U * __restrict inds, V * __restrict data)
+void set_csr_data(const T& row_data, U * __restrict ptrs, U * __restrict inds, V * __restrict data)
 {
     std::size_t num_rows = row_data.size();
     std::size_t kk;
@@ -81,5 +81,48 @@ void set_csr_data(T& row_data, U * __restrict ptrs, U * __restrict inds, V * __r
         stop = ptrs[kk+1];
         std::memcpy(&inds[start], row_data[kk].cols.data(), (stop-start)*sizeof(U));
         std::memcpy(&data[start], row_data[kk].data.data(), (stop-start)*sizeof(V));
+    }
+}
+
+
+
+template <typename T, typename U>
+void dcsrlike_spmv(const T& row_data, const double *__restrict vec, double *__restrict out, U dim)
+{
+    U row;
+    #pragma omp parallel for if(dim > 128) schedule(dynamic)
+    for (row = 0; row < dim; row++)
+    {
+        const double * data = row_data[row].data.data();
+        const U * cols = row_data[row].cols.data();
+        double dot = 0.0;
+        std::size_t jj, row_end;
+        row_end = row_data[row].cols.size();
+        for (jj = 0; jj < row_end; jj++)
+        {
+            dot += data[jj] * vec[cols[jj]];
+        }
+        out[row] += dot;
+    }
+}
+
+
+template <typename T, typename U>
+void zcsrlike_spmv(const T& row_data, const std::complex<double> *__restrict vec, std::complex<double> *__restrict out, U dim)
+{
+    U row;
+    #pragma omp parallel for if(dim > 128) schedule(dynamic)
+    for (row = 0; row < dim; row++)
+    {
+        const std::complex<double> * data = row_data[row].data.data();
+        const U * cols = row_data[row].cols.data();
+        std::complex<double> dot = 0.0;
+        std::size_t jj, row_end;
+        row_end = row_data[row].cols.size();
+        for (jj = 0; jj < row_end; jj++)
+        {
+            dot += data[jj] * vec[cols[jj]];
+        }
+        out[row] += dot;
     }
 }
