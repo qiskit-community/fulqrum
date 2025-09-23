@@ -32,4 +32,3 @@ cdef extern from "../src/csrlike.hpp":
     void dcsrlike_spmv[T, U](const T& row_data, const double * vec, double * out, U dim)
 
     void zcsrlike_spmv[T, U](const T& row_data, const double complex * vec, double complex * out, U dim)
-

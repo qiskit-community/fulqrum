@@ -85,6 +85,12 @@ void set_csr_data(const T& row_data, U * __restrict ptrs, U * __restrict inds, V
 }
 
 
+/** 
+These are the SpMV routines for the CSRLike structures.  There are two functions here because the
+templating was getting a bit out of hand as we template on the row_data which has other types
+with in it.  This made the type matching for templating cranky
+*/
+
 
 template <typename T, typename U>
 void dcsrlike_spmv(const T& row_data, const double *__restrict vec, double *__restrict out, U dim)
