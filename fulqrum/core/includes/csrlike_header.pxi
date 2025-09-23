@@ -24,3 +24,5 @@ cdef extern from "../src/csrlike.hpp":
     ctypedef struct RowData_Complex64_t:
         vector[long long] cols
         vector[double complex] data
+
+    void set_csr_ptr[T, U](T& row_data, U * ptrs)
