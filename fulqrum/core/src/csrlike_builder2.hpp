@@ -5,7 +5,6 @@
 #pragma once
 #include <cstdlib>
 #include <vector>
-#include <deque>
 #include <complex>
 
 #include "base.hpp"

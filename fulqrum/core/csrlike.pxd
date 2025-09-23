@@ -3,7 +3,6 @@
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 include "includes/csrlike_header.pxi"
 from libcpp.vector cimport vector
-from libcpp.deque cimport deque
 import numpy as np
 
 

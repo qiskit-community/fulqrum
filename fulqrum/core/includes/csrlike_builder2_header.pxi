@@ -1,7 +1,6 @@
 # Fulqrum
 # Copyright (C) 2024, IBM
 from libcpp.vector cimport vector
-from libcpp.deque cimport deque
 from fulqrum.core.bitset cimport bitset_t
 from fulqrum.core.bitset_hashmap cimport BitsetHashMapWrapper
 include "base_header.pxi"
