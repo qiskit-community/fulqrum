@@ -12,26 +12,26 @@
 // Data types for CSR-like matrix structure
 
 typedef struct RowData_Real64{
-    std::vector<long long> cols;
-    std::vector<double> data;
+    std::vector<std::vector<long long> > cols;
+    std::vector<std::vector<double> > data;
 } RowData_Real64_t;
 
 
 typedef struct RowData_Real32{
-    std::vector<int> cols;
-    std::vector<double> data;
+    std::vector<std::vector<int> > cols;
+    std::vector<std::vector<double> > data;
 } RowData_Real32_t;
 
 
 typedef struct RowData_Complex64{
-    std::vector<long long> cols;
-    std::vector<std::complex<double> > data;
+    std::vector<std::vector<long long> > cols;
+    std::vector<std::vector<std::complex<double> > > data;
 } RowData_Complex64_t;
 
 
 typedef struct RowData_Complex32{
-    std::vector<int> cols;
-    std::vector<std::complex<double> > data;
+    std::vector<std::vector<int> > cols;
+    std::vector<std::vector<std::complex<double> > > data;
 } RowData_Complex32_t;
 
 
@@ -42,15 +42,15 @@ typedef struct RowData_Complex32{
  * @param ptrs A pointer to the indptr array for a CSR matrix of length num_rows+1
  * 
  */
-template <typename T, typename U>
-void set_csr_ptr(const T& row_data, U * __restrict ptrs)
+template <typename T>
+void set_csr_ptr(const std::vector<std::vector<T>>& cols, T * __restrict ptrs)
 {
-    std::size_t num_rows = row_data.size();
+    std::size_t num_rows = cols.size();
     std::size_t kk;
     std::size_t temp, _sum = 0;
     for(kk=0; kk < num_rows; kk++)
     {
-        ptrs[kk] = row_data[kk].cols.size();
+        ptrs[kk] = cols[kk].size();
         temp = _sum + ptrs[kk];
         ptrs[kk] = _sum;
         _sum = temp;
@@ -62,16 +62,18 @@ void set_csr_ptr(const T& row_data, U * __restrict ptrs)
 /**
  * Set the indices and data arrays for a CSR matrix from a CSRLike struct
  *
- * @param row_data The data for each row in the matrix
+ * @param in_data The data for each row in the matrix
+ * @param in_data The columns for the data in each row in the matrix
  * @param ptrs A pointer to the indptr array for a CSR matrix of length num_rows+1
  * @param inds A pointer to the indices array for a CSR matrix of length nnz
- * @param data A pointer to the data array for a CSR matrix of length nnz
+ * @param out_data A pointer to the output data array for a CSR matrix of length nnz
  * 
  */
-template <typename T, typename U, typename V>
-void set_csr_data(const T& row_data, U * __restrict ptrs, U * __restrict inds, V * __restrict data)
+template <typename T, typename U>
+void set_csr_data(const std::vector<std::vector<T> >& in_data, const std::vector<std::vector<U> >& cols, 
+                  U * __restrict ptrs, U * __restrict inds, T * __restrict out_data)
 {
-    std::size_t num_rows = row_data.size();
+    std::size_t num_rows = in_data.size();
     std::size_t kk;
     #pragma parallel omp for schedule(dynamic)
     for(kk=0; kk < num_rows; kk++)
@@ -79,55 +81,29 @@ void set_csr_data(const T& row_data, U * __restrict ptrs, U * __restrict inds, V
         U start, stop;
         start = ptrs[kk];
         stop = ptrs[kk+1];
-        std::memcpy(&inds[start], row_data[kk].cols.data(), (stop-start)*sizeof(U));
-        std::memcpy(&data[start], row_data[kk].data.data(), (stop-start)*sizeof(V));
+        std::memcpy(&inds[start], cols[kk].data(), (stop-start)*sizeof(U));
+        std::memcpy(&out_data[start], in_data[kk].data(), (stop-start)*sizeof(T));
     }
 }
 
 
-/** 
-These are the SpMV routines for the CSRLike structures.  There are two functions here because the
-templating was getting a bit out of hand as we template on the row_data which has other types
-with in it.  This made the type matching for templating cranky
-*/
-
 
 template <typename T, typename U>
-void dcsrlike_spmv(const T& row_data, const double *__restrict vec, double *__restrict out, U dim)
+void csrlike_spmv(const std::vector<std::vector<T>>& data, const std::vector<std::vector<U>>& cols, 
+                   const T *__restrict vec, T *__restrict out, U dim)
 {
     U row;
     #pragma omp parallel for if(dim > 128) schedule(dynamic)
     for (row = 0; row < dim; row++)
     {
-        const double * data = row_data[row].data.data();
-        const U * cols = row_data[row].cols.data();
-        double dot = 0.0;
+        T dot = 0.0;
         std::size_t jj, row_end;
-        row_end = row_data[row].cols.size();
+        const T * row_data = data[row].data();
+        const U * row_cols = cols[row].data();
+        row_end = data[row].size();
         for (jj = 0; jj < row_end; jj++)
         {
-            dot += data[jj] * vec[cols[jj]];
-        }
-        out[row] += dot;
-    }
-}
-
-
-template <typename T, typename U>
-void zcsrlike_spmv(const T& row_data, const std::complex<double> *__restrict vec, std::complex<double> *__restrict out, U dim)
-{
-    U row;
-    #pragma omp parallel for if(dim > 128) schedule(dynamic)
-    for (row = 0; row < dim; row++)
-    {
-        const std::complex<double> * data = row_data[row].data.data();
-        const U * cols = row_data[row].cols.data();
-        std::complex<double> dot = 0.0;
-        std::size_t jj, row_end;
-        row_end = row_data[row].cols.size();
-        for (jj = 0; jj < row_end; jj++)
-        {
-            dot += data[jj] * vec[cols[jj]];
+            dot += row_data[jj] * vec[row_cols[jj]];
         }
         out[row] += dot;
     }

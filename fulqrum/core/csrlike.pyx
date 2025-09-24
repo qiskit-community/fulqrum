@@ -19,25 +19,34 @@ cdef class CSRLike():
         cdef size_t kk
         if self.is_real:
             if self.is_int64:
-                self.data_d64.resize(self.num_rows)
+                self.data_d64.cols.resize(self.num_rows)
+                self.data_d64.data.resize(self.num_rows)
                 self.data_type = 2
             else:
-                self.data_d32.resize(self.num_rows)
+                self.data_d32.cols.resize(self.num_rows)
+                self.data_d32.data.resize(self.num_rows)
                 self.data_type = 1
         else:
             if self.is_int64:
-                self.data_z64.resize(self.num_rows)
+                self.data_z64.cols.resize(self.num_rows)
+                self.data_z64.data.resize(self.num_rows)
                 self.data_type = 4
             else:
-                self.data_z32.resize(self.num_rows)
+                self.data_z32.cols.resize(self.num_rows)
+                self.data_z32.data.resize(self.num_rows)
                 self.data_type = 3
 
     def __dealloc__(self):
-        # Clear deque upon deallocation of class
-        self.data_d32 = vector[RowData_Real32_t]()
-        self.data_d64 = vector[RowData_Real64_t]()
-        self.data_z32 = vector[RowData_Complex32_t]()
-        self.data_z64 = vector[RowData_Complex64_t]()
+        # Clear cols and data vectors upon deallocation of class
+        self.data_d32.cols = vector[vector[int]]()
+        self.data_d64.cols = vector[vector[int64]]()
+        self.data_z32.cols = vector[vector[int]]()
+        self.data_z64.cols = vector[vector[int64]]()
+        
+        self.data_d32.data = vector[vector[double]]()
+        self.data_d32.data = vector[vector[double]]()
+        self.data_z32.data = vector[vector[complex]]()
+        self.data_z64.data = vector[vector[complex]]()
 
     @property
     def shape(self):
@@ -47,13 +56,13 @@ cdef class CSRLike():
     def num_rows(self):
         cdef size_t num_rows = 0
         if self.data_type == 1:
-            num_rows = self.data_d32.size()
+            num_rows = self.data_d32.cols.size()
         elif self.data_type == 2:
-            num_rows = self.data_d64.size()
+            num_rows = self.data_d64.cols.size()
         elif self.data_type == 3:
-            num_rows = self.data_z32.size()
+            num_rows = self.data_z32.cols.size()
         elif self.data_type == 4:
-            num_rows = self.data_z64.size()
+            num_rows = self.data_z64.cols.size()
         return num_rows
 
     @property
@@ -75,16 +84,16 @@ cdef class CSRLike():
         cdef size_t kk
         if self.data_type == 1:
             for kk in range(self.num_rows):
-                nnz += self.data_d32[kk].data.size()
+                nnz += self.data_d32.data[kk].size()
         elif self.data_type == 2:
             for kk in range(self.num_rows):
-                nnz += self.data_d64[kk].data.size()
+                nnz += self.data_d64.data[kk].size()
         elif self.data_type == 3:
             for kk in range(self.num_rows):
-                nnz += self.data_z32[kk].data.size()
+                nnz += self.data_z32.data[kk].size()
         elif self.data_type == 4:
             for kk in range(self.num_rows):
-                nnz += self.data_z64[kk].data.size()
+                nnz += self.data_z64.data[kk].size()
         return nnz
 
     def to_csr_array(self):
@@ -111,8 +120,8 @@ cdef class CSRLike():
             complex_data = np.empty(nnz, dtype=complex)
 
         if self.type_string == 'd32':
-            set_csr_ptr(self.data_d32, &ptr32[0])
-            set_csr_data(self.data_d32, &ptr32[0], &inds32[0], &real_data[0])
+            set_csr_ptr(self.data_d32.cols, &ptr32[0])
+            set_csr_data(self.data_d32.data, self.data_d32.cols, &ptr32[0], &inds32[0], &real_data[0])
 
             mat = sp.csr_array((real_data, inds32, ptr32), 
                                 shape=(self.num_rows,)*2, dtype=float)
@@ -131,9 +140,6 @@ cdef class CSRLike():
 
         if self.type_string == 'd32':
             if double_or_complex is double:
-                dcsrlike_spmv(self.data_d32, &x[0], &out[0], <int>self.num_rows)
-        elif self.type_string == 'd64':
-            if double_or_complex is double:
-                dcsrlike_spmv(self.data_d64, &x[0], &out[0], <long long>self.num_rows)
+                csrlike_spmv(self.data_d32.data, self.data_d32.cols, &x[0], &out[0], <int>self.num_rows)
         
         return np.asarray(out)

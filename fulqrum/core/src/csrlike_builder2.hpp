@@ -18,6 +18,7 @@
 #include <boost/dynamic_bitset.hpp>
 
 
+// T is the data type, U is in the index type, e.g (complex, int)
 template <typename T, typename U>
 void csrlike_builder2(const OperatorTerm_t *terms,
                          const bitset_map_namespace::BitsetHashMapWrapper &subspace,
@@ -31,7 +32,8 @@ void csrlike_builder2(const OperatorTerm_t *terms,
                          const std::vector<std::vector<unsigned int>> &group_offdiag_inds,
                          const std::size_t num_groups,
                          const unsigned int ladder_offset,
-                         std::vector<U>& row_data)
+                         std::vector<std::vector<U>>& cols,
+                         std::vector<std::vector<T>>& data)
 {
     std::size_t kk;
     T temp, _sum;
@@ -70,7 +72,8 @@ void csrlike_builder2(const OperatorTerm_t *terms,
         const std::vector<unsigned int> *group_inds;
         std::size_t *col_ptr;
         T val;
-        U * row_vals = &row_data[kk];
+        std::vector<U> * row_cols = &cols[kk];
+        std::vector<T> * row_data = &data[kk];
         unsigned int row_int;
         int do_col_search;
 
@@ -86,8 +89,8 @@ void csrlike_builder2(const OperatorTerm_t *terms,
         {
             if (diag_vec[kk] != 0.0)
             {
-                row_vals->cols.push_back(kk);
-                row_vals->data.push_back(diag_vec[kk]);
+                row_cols->push_back(kk);
+                row_data->push_back(diag_vec[kk]);
             }
         }
         for (group = 0; group < num_groups; group++)
@@ -124,20 +127,20 @@ void csrlike_builder2(const OperatorTerm_t *terms,
             } // end loop over terms in this group
             if (val != 0.0)
             {
-                row_vals->cols.push_back(*col_ptr);
-                row_vals->data.push_back(val);
+                row_cols->push_back(*col_ptr);
+                row_data->push_back(val);
             }
         } // end loop over groups
     // sort column indices and data in each row
-    if constexpr (std::is_same_v<U, RowData_Real32_t> || std::is_same_v<U, RowData_Complex32_t>)
+    if constexpr (std::is_same_v<U, int>)
     {
-        sort_end_int = row_vals->cols.size() - 1;
-        quicksort_indices_data(row_vals->cols.data(), row_vals->data.data(), sort_start_int, sort_end_int);
+        sort_end_int = row_cols->size() - 1;
+        quicksort_indices_data(row_cols->data(), row_data->data(), sort_start_int, sort_end_int);
     }
     else
     {
-        sort_end_long = row_vals->cols.size() - 1;
-        quicksort_indices_data(row_vals->cols.data(), row_vals->data.data(), sort_start_long, sort_end_long);
+        sort_end_long = row_cols->size() - 1;
+        quicksort_indices_data(row_cols->data(), row_data->data(), sort_start_long, sort_end_long);
     }
     } // end loop over all rows
 } // end function
