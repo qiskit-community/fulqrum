@@ -132,6 +132,7 @@ void csr_spmv(const T *__restrict indptr, const T *__restrict indices,
         U dot = 0.0;
         row_start = indptr[row];
         row_end = indptr[row + 1];
+
         for (jj = row_start; jj < row_end; jj++)
         {
             dot += data[jj] * vec[indices[jj]];

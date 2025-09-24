@@ -433,7 +433,7 @@ cdef class FulqrumSpMV():
         self.compute_diag_vector()
         cdef CSRLike csrlike = CSRLike(self.subspace_dim, self.is_real)
         if csrlike.type_string == 'd32':
-            csrlike_builder2[double, RowData_Real32_t](&self.oper.terms[0],
+            csrlike_builder2(&self.oper.terms[0],
                             self.subspace.subspace.bitstrings,
                             &self.real_diag_vec[0],
                             self.width,
@@ -445,9 +445,10 @@ cdef class FulqrumSpMV():
                             self.group_offdiag_inds,
                             self.num_groups,
                             self.ladder_offset,
-                            csrlike.data_d32)
+                            csrlike.data_d32.cols,
+                            csrlike.data_d32.data)
         elif csrlike.type_string == 'd64':
-            csrlike_builder2[double, RowData_Real64_t](&self.oper.terms[0],
+            csrlike_builder2(&self.oper.terms[0],
                             self.subspace.subspace.bitstrings,
                             &self.real_diag_vec[0],
                             self.width,
@@ -459,9 +460,10 @@ cdef class FulqrumSpMV():
                             self.group_offdiag_inds,
                             self.num_groups,
                             self.ladder_offset,
-                            csrlike.data_d64)
+                            csrlike.data_d64.cols,
+                            csrlike.data_d64.data)
         elif csrlike.type_string == 'z32':
-            csrlike_builder2[complex, RowData_Complex32_t](&self.oper.terms[0],
+            csrlike_builder2(&self.oper.terms[0],
                             self.subspace.subspace.bitstrings,
                             &self.complex_diag_vec[0],
                             self.width,
@@ -473,9 +475,10 @@ cdef class FulqrumSpMV():
                             self.group_offdiag_inds,
                             self.num_groups,
                             self.ladder_offset,
-                            csrlike.data_z32)
+                            csrlike.data_z32.cols,
+                            csrlike.data_z32.data)
         elif csrlike.type_string == 'z64':
-            csrlike_builder2[complex, RowData_Complex64_t](&self.oper.terms[0],
+            csrlike_builder2(&self.oper.terms[0],
                             self.subspace.subspace.bitstrings,
                             &self.complex_diag_vec[0],
                             self.width,
@@ -487,7 +490,8 @@ cdef class FulqrumSpMV():
                             self.group_offdiag_inds,
                             self.num_groups,
                             self.ladder_offset,
-                            csrlike.data_z64)
+                            csrlike.data_z64.cols,
+                            csrlike.data_z64.data)
 
         return CSRLikeLinearOperator(csrlike)
 
