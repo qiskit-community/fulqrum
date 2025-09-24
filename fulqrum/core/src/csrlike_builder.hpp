@@ -46,6 +46,13 @@ void csrlike_builder(const OperatorTerm_t *terms,
         T val;
         std::vector<U> * row_cols = &cols[kk];
         std::vector<T> * row_data = &data[kk];
+
+        // need two different types for sorting 
+        int sort_start_int = 0;
+        int sort_end_int = 0;
+        long long sort_start_long = 0;
+        long long sort_end_long = 0;
+        
         int do_col_search;
         // do diagonal first, if any
         if (has_nonzero_diag)
@@ -89,5 +96,16 @@ void csrlike_builder(const OperatorTerm_t *terms,
                 row_data->push_back(val);
             }
         } // end loop over groups
+        // sort column indices and data in each row
+        if constexpr (std::is_same_v<U, int>)
+        {
+            sort_end_int = row_cols->size() - 1;
+            quicksort_indices_data(row_cols->data(), row_data->data(), sort_start_int, sort_end_int);
+        }
+        else
+        {
+            sort_end_long = row_cols->size() - 1;
+            quicksort_indices_data(row_cols->data(), row_data->data(), sort_start_long, sort_end_long);
+        }
     } // end loop over all rows
 }
