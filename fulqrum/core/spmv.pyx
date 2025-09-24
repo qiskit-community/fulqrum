@@ -29,6 +29,7 @@ include "includes/matvec2_header.pxi"
 include "includes/csr_header.pxi"
 include "includes/csr_utils_header.pxi"
 include "includes/csr2_header.pxi"
+include "includes/csrlike_builder_header.pxi"
 include "includes/csrlike_builder2_header.pxi"
 include "includes/grouping_header.pxi"
 
@@ -433,7 +434,21 @@ cdef class FulqrumSpMV():
         self.compute_diag_vector()
         cdef CSRLike csrlike = CSRLike(self.subspace_dim, self.is_real)
         if csrlike.type_string == 'd32':
-            csrlike_builder2(&self.oper.terms[0],
+            if self.oper.type == 1:
+                csrlike_builder(&self.oper.terms[0],
+                            self.subspace.subspace.bitstrings,
+                            &self.real_diag_vec[0],
+                            self.width,
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_ptrs[0],
+                            self.group_offdiag_inds,
+                            self.num_groups,
+                            csrlike.data_d32.cols,
+                            csrlike.data_d32.data)
+
+            else:
+                csrlike_builder2(&self.oper.terms[0],
                             self.subspace.subspace.bitstrings,
                             &self.real_diag_vec[0],
                             self.width,
@@ -448,7 +463,21 @@ cdef class FulqrumSpMV():
                             csrlike.data_d32.cols,
                             csrlike.data_d32.data)
         elif csrlike.type_string == 'd64':
-            csrlike_builder2(&self.oper.terms[0],
+            if self.oper.type == 1:
+                csrlike_builder(&self.oper.terms[0],
+                            self.subspace.subspace.bitstrings,
+                            &self.real_diag_vec[0],
+                            self.width,
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_ptrs[0],
+                            self.group_offdiag_inds,
+                            self.num_groups,
+                            csrlike.data_d64.cols,
+                            csrlike.data_d64.data)
+
+            else:
+                csrlike_builder2(&self.oper.terms[0],
                             self.subspace.subspace.bitstrings,
                             &self.real_diag_vec[0],
                             self.width,
@@ -463,7 +492,21 @@ cdef class FulqrumSpMV():
                             csrlike.data_d64.cols,
                             csrlike.data_d64.data)
         elif csrlike.type_string == 'z32':
-            csrlike_builder2(&self.oper.terms[0],
+            if self.oper.type == 1:
+                csrlike_builder(&self.oper.terms[0],
+                            self.subspace.subspace.bitstrings,
+                            &self.complex_diag_vec[0],
+                            self.width,
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_ptrs[0],
+                            self.group_offdiag_inds,
+                            self.num_groups,
+                            csrlike.data_z32.cols,
+                            csrlike.data_z32.data)
+
+            else:
+                csrlike_builder2(&self.oper.terms[0],
                             self.subspace.subspace.bitstrings,
                             &self.complex_diag_vec[0],
                             self.width,
@@ -478,7 +521,21 @@ cdef class FulqrumSpMV():
                             csrlike.data_z32.cols,
                             csrlike.data_z32.data)
         elif csrlike.type_string == 'z64':
-            csrlike_builder2(&self.oper.terms[0],
+            if self.oper.type == 1:
+                csrlike_builder(&self.oper.terms[0],
+                            self.subspace.subspace.bitstrings,
+                            &self.complex_diag_vec[0],
+                            self.width,
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_ptrs[0],
+                            self.group_offdiag_inds,
+                            self.num_groups,
+                            csrlike.data_z64.cols,
+                            csrlike.data_z64.data)
+
+            else:
+                csrlike_builder2(&self.oper.terms[0],
                             self.subspace.subspace.bitstrings,
                             &self.complex_diag_vec[0],
                             self.width,

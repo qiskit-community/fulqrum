@@ -126,6 +126,27 @@ cdef class CSRLike():
             mat = sp.csr_array((real_data, inds32, ptr32), 
                                 shape=(self.num_rows,)*2, dtype=float)
 
+        elif self.type_string == 'd64':
+            set_csr_ptr(self.data_d64.cols, &ptr64[0])
+            set_csr_data(self.data_d64.data, self.data_d64.cols, &ptr64[0], &inds64[0], &real_data[0])
+
+            mat = sp.csr_array((real_data, inds64, ptr64), 
+                                shape=(self.num_rows,)*2, dtype=float)
+
+        elif self.type_string == 'z32':
+            set_csr_ptr(self.data_z32.cols, &ptr32[0])
+            set_csr_data(self.data_z32.data, self.data_z32.cols, &ptr32[0], &inds32[0], &complex_data[0])
+
+            mat = sp.csr_array((complex_data, inds32, ptr32), 
+                                shape=(self.num_rows,)*2, dtype=complex)
+        
+        elif self.type_string == 'z64':
+            set_csr_ptr(self.data_z64.cols, &ptr64[0])
+            set_csr_data(self.data_z64.data, self.data_z64.cols, &ptr64[0], &inds64[0], &complex_data[0])
+
+            mat = sp.csr_array((complex_data, inds64, ptr64), 
+                                shape=(self.num_rows,)*2, dtype=complex)
+
         return mat
 
     def matvec(self,  double_or_complex[::1] x):

@@ -1,0 +1,23 @@
+# Fulqrum
+# Copyright (C) 2024, IBM
+from libcpp.vector cimport vector
+from fulqrum.core.bitset cimport bitset_t
+from fulqrum.core.bitset_hashmap cimport BitsetHashMapWrapper
+include "base_header.pxi"
+include "csrlike_header.pxi"
+
+
+cdef extern from "../src/csrlike_builder.hpp":
+
+    void csrlike_builder[T, U](const OperatorTerm_t * terms,
+                              const BitsetHashMapWrapper& subspace,
+                              const T * diag_vec,
+                              size_t width,
+                              size_t subspace_dim,
+                              int has_nonzero_diag,
+                              const size_t * group_ptrs,
+                              const vector[vector[unsigned int]]& group_offdiag_inds,
+                              size_t num_groups,
+                              vector[vector[U]]& cols,
+                              vector[vector[T]]& data,
+                              ) nogil
