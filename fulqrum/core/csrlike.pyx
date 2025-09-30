@@ -107,6 +107,12 @@ cdef class CSRLike():
         cdef size_t nnz = self.nnz
         cdef object mat
 
+        # break early if no elements
+        if nnz == 0:
+            _dtype=np.int64 if self.is_int64 else np.int32
+            return  sp.csr_array((np.empty(0, dtype=_dtype), np.empty(0, dtype=_dtype), np.zeros(self.num_rows+1, dtype=_dtype)), 
+                                shape=(self.num_rows,)*2, dtype=float if self.is_real else complex)
+
         if '32' in self.type_string:
             ptr32 = np.zeros(self.num_rows+1, dtype=np.int32)
             inds32 = np.empty(nnz, dtype=np.int32)
