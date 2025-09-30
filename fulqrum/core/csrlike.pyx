@@ -160,7 +160,19 @@ cdef class CSRLike():
             out = np.zeros(x.shape[0], dtype=complex)
 
         if self.type_string == 'd32':
-            if double_or_complex is double:
+            if double_or_complex is double: #This is here to allow for us to specialize type
                 csrlike_spmv(self.data_d32.data, self.data_d32.cols, &x[0], &out[0], <int>self.num_rows)
+
+        elif self.type_string == 'd64':
+            if double_or_complex is double:
+                csrlike_spmv(self.data_d64.data, self.data_d64.cols, &x[0], &out[0], <long long>self.num_rows)
+
+        if self.type_string == 'z32':
+            if double_or_complex is complex:
+                csrlike_spmv(self.data_z32.data, self.data_z32.cols, &x[0], &out[0], <int>self.num_rows)
+
+        elif self.type_string == 'z64':
+            if double_or_complex is complex:
+                csrlike_spmv(self.data_z64.data, self.data_z64.cols, &x[0], &out[0], <long long>self.num_rows)
         
         return np.asarray(out)
