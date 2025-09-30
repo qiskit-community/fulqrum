@@ -52,7 +52,7 @@ class SubspaceHamiltonian(LinearOperator):
         """Convert solution vector into dict of counts and complex amplitudes
 
         Parameters:
-            vec (ndarray): Complex solution vector
+            vec (ndarray): Complex or real solution vector
             atol (double): Absolute tolerance for truncation, default=1e-12
             sort (int): Sort output dict by integer representation.
 
@@ -115,7 +115,16 @@ class SubspaceHamiltonian(LinearOperator):
         M = self.spmv.to_csr_array(verbose=verbose)
         return CSRLinearOperator(M, self.spmv.is_real)
 
-    def to_csrlike_linearoperator(self, verbose=False):
+    def to_csr_linearoperator_fast(self, verbose=False):
+        """Convert subspace Hamiltonian to a CSR LinearOperator faster but with a copy
+
+        Parameters:
+            verbose (bool): Turn on verbose mode, default=False.
+        """
+        M = self.spmv.to_csrlike().to_csr_array()
+        return CSRLinearOperator(M, self.spmv.is_real)
+
+    def to_linearoperator(self, verbose=False):
         """Convert subspace Hamiltonian to a CSR-like format LinearOperator
 
         This saves a matrix-traversal at the expense of a non-standard data type
