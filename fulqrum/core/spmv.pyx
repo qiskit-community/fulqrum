@@ -10,8 +10,8 @@ from libc.math cimport floor, sqrt
 
 from fulqrum.core.qubit_operator cimport QubitOperator
 from fulqrum.core.subspace cimport Subspace
+from fulqrum.core.csrlike cimport CSRLike
 from fulqrum.exceptions import FulqrumError
-#from fulqrum.core.csr cimport csr_matrix_builder
 
 from cython.parallel cimport prange, parallel
 import time
@@ -29,6 +29,8 @@ include "includes/matvec2_header.pxi"
 include "includes/csr_header.pxi"
 include "includes/csr_utils_header.pxi"
 include "includes/csr2_header.pxi"
+include "includes/csrlike_builder_header.pxi"
+include "includes/csrlike_builder2_header.pxi"
 include "includes/grouping_header.pxi"
 
 
@@ -424,6 +426,131 @@ cdef class FulqrumSpMV():
         if verbose:
             print('CSR indices sort time', round(stop-start, 3))
         return mat
+
+    def to_csrlike(self):
+        # This is here to prevent a circular import
+        from fulqrum.core.linear_operator import CSRLikeLinearOperator
+        # Compute diag vec if we have not done so already
+        self.compute_diag_vector()
+        cdef CSRLike csrlike = CSRLike(self.subspace_dim, self.is_real)
+        if csrlike.type_string == 'd32':
+            if self.oper.type == 1:
+                csrlike_builder(&self.oper.terms[0],
+                            self.subspace.subspace.bitstrings,
+                            &self.real_diag_vec[0],
+                            self.width,
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_ptrs[0],
+                            self.group_offdiag_inds,
+                            self.num_groups,
+                            csrlike.data_d32.cols,
+                            csrlike.data_d32.data)
+
+            else:
+                csrlike_builder2(&self.oper.terms[0],
+                            self.subspace.subspace.bitstrings,
+                            &self.real_diag_vec[0],
+                            self.width,
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_ptrs[0],
+                            &self.group_ladder_ptrs[0],
+                            &self.group_rowint_length[0],
+                            self.group_offdiag_inds,
+                            self.num_groups,
+                            self.ladder_offset,
+                            csrlike.data_d32.cols,
+                            csrlike.data_d32.data)
+        elif csrlike.type_string == 'd64':
+            if self.oper.type == 1:
+                csrlike_builder(&self.oper.terms[0],
+                            self.subspace.subspace.bitstrings,
+                            &self.real_diag_vec[0],
+                            self.width,
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_ptrs[0],
+                            self.group_offdiag_inds,
+                            self.num_groups,
+                            csrlike.data_d64.cols,
+                            csrlike.data_d64.data)
+
+            else:
+                csrlike_builder2(&self.oper.terms[0],
+                            self.subspace.subspace.bitstrings,
+                            &self.real_diag_vec[0],
+                            self.width,
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_ptrs[0],
+                            &self.group_ladder_ptrs[0],
+                            &self.group_rowint_length[0],
+                            self.group_offdiag_inds,
+                            self.num_groups,
+                            self.ladder_offset,
+                            csrlike.data_d64.cols,
+                            csrlike.data_d64.data)
+        elif csrlike.type_string == 'z32':
+            if self.oper.type == 1:
+                csrlike_builder(&self.oper.terms[0],
+                            self.subspace.subspace.bitstrings,
+                            &self.complex_diag_vec[0],
+                            self.width,
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_ptrs[0],
+                            self.group_offdiag_inds,
+                            self.num_groups,
+                            csrlike.data_z32.cols,
+                            csrlike.data_z32.data)
+
+            else:
+                csrlike_builder2(&self.oper.terms[0],
+                            self.subspace.subspace.bitstrings,
+                            &self.complex_diag_vec[0],
+                            self.width,
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_ptrs[0],
+                            &self.group_ladder_ptrs[0],
+                            &self.group_rowint_length[0],
+                            self.group_offdiag_inds,
+                            self.num_groups,
+                            self.ladder_offset,
+                            csrlike.data_z32.cols,
+                            csrlike.data_z32.data)
+        elif csrlike.type_string == 'z64':
+            if self.oper.type == 1:
+                csrlike_builder(&self.oper.terms[0],
+                            self.subspace.subspace.bitstrings,
+                            &self.complex_diag_vec[0],
+                            self.width,
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_ptrs[0],
+                            self.group_offdiag_inds,
+                            self.num_groups,
+                            csrlike.data_z64.cols,
+                            csrlike.data_z64.data)
+
+            else:
+                csrlike_builder2(&self.oper.terms[0],
+                            self.subspace.subspace.bitstrings,
+                            &self.complex_diag_vec[0],
+                            self.width,
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_ptrs[0],
+                            &self.group_ladder_ptrs[0],
+                            &self.group_rowint_length[0],
+                            self.group_offdiag_inds,
+                            self.num_groups,
+                            self.ladder_offset,
+                            csrlike.data_z64.cols,
+                            csrlike.data_z64.data)
+
+        return CSRLikeLinearOperator(csrlike)
 
 
 @cython.boundscheck(False)

@@ -76,7 +76,7 @@ typedef struct QubitOperator{
 
 
 /** @struct subspace
- * @brief Datastructure for subspace defined by counts
+ * @brief Data structure for subspace defined by counts
  *
  * @var bitstrings The subspace bit-strings stored in a hash table
  * @var num_qubits The number of qubits, i.e length of bitstrings
@@ -87,3 +87,4 @@ typedef struct QubitOperator{
     unsigned int num_qubits;
     std::size_t size;
 } Subspace_t;
+

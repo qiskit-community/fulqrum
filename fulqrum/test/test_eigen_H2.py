@@ -142,3 +142,67 @@ def test_full_dist_h2_eigen_csr_linearoperator():
     assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY)
     assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+
+def test_full_dist_h2_eigen_csr_linearoperator_fast():
+    """Test full space solution against exact for CSR linearoperator fast"""
+    full_dist = {}
+    for kk in range(2**4):
+        full_dist[bin(kk)[2:].zfill(4)] = None
+
+    S = Subspace(full_dist)
+    Hsub = SubspaceHamiltonian(OP, S)
+    M = Hsub.to_csr_linearoperator()
+    assert M.mat.dtype == float
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+    # use single bitset block for hashing
+    S = Subspace(full_dist, use_all_bitset_blocks=False)
+    Hsub = SubspaceHamiltonian(OP, S)
+    M = Hsub.to_csr_linearoperator_fast()
+    assert M.mat.dtype == float
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+
+def test_full_dist_h2_eigen_csr_linearoperator_fast():
+    """Test full space solution against exact for CSR linearoperator fast"""
+    full_dist = {}
+    for kk in range(2**4):
+        full_dist[bin(kk)[2:].zfill(4)] = None
+
+    S = Subspace(full_dist)
+    Hsub = SubspaceHamiltonian(OP, S)
+    M = Hsub.to_csr_linearoperator()
+    assert M.mat.dtype == float
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+    # use single bitset block for hashing
+    S = Subspace(full_dist, use_all_bitset_blocks=False)
+    Hsub = SubspaceHamiltonian(OP, S)
+    M = Hsub.to_csr_linearoperator_fast()
+    assert M.mat.dtype == float
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])

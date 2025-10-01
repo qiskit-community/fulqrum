@@ -17,7 +17,7 @@ def matrix_subspace(A, rows):
     return B
 
 
-def test_csr1():
+def test_csrlike_csr1():
     """Test building CSR array from subspace Hamiltonian"""
     num_qubits = 5
     strings = ["XIXII", "0101I", "II0II", "XYIYX", "ZZZZZ"]
@@ -36,7 +36,7 @@ def test_csr1():
 
     S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_array()
+    P = Hsub.to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -44,7 +44,7 @@ def test_csr1():
     assert P.indptr.dtype == np.int32
 
 
-def test_csr1a():
+def test_csrlike_csr1a():
     """Test building CSR array from subspace Hamiltonian"""
     num_qubits = 5
     strings = ["XIXII", "0101I", "II0II", "XYIYX", "ZZZZZ"]
@@ -63,7 +63,7 @@ def test_csr1a():
 
     S = fq.Subspace(counts, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_array()
+    P = Hsub.to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -71,7 +71,7 @@ def test_csr1a():
     assert P.indptr.dtype == np.int32
 
 
-def test_csr2():
+def test_csrlike_csr2():
     """Test building CSR array from subspace Hamiltonian"""
     num_qubits = 5
     strings = ["01011", "IIIII", "ZZIZZ"]
@@ -90,7 +90,7 @@ def test_csr2():
 
     S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_array()
+    P = Hsub.to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -98,7 +98,7 @@ def test_csr2():
     assert P.indptr.dtype == np.int32
 
 
-def test_csr2a():
+def test_csrlike_csr2a():
     """Test building CSR array from subspace Hamiltonian"""
     num_qubits = 5
     strings = ["01011", "IIIII", "ZZIZZ"]
@@ -117,7 +117,7 @@ def test_csr2a():
 
     S = fq.Subspace(counts, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_array()
+    P = Hsub.to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -125,7 +125,7 @@ def test_csr2a():
     assert P.indptr.dtype == np.int32
 
 
-def test_csr3():
+def test_csrlike_csr3():
     """Test building CSR array from subspace Hamiltonian"""
     num_qubits = 5
     strings = ["XXIXX", "YYIYY"]
@@ -144,7 +144,7 @@ def test_csr3():
 
     S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_array()
+    P = Hsub.to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -152,7 +152,7 @@ def test_csr3():
     assert P.indptr.dtype == np.int32
 
 
-def test_csr3():
+def test_csrlike_csr3():
     """Test building CSR array from subspace Hamiltonian"""
     num_qubits = 5
     strings = ["XXIXX", "YYIYY"]
@@ -171,7 +171,7 @@ def test_csr3():
 
     S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_array()
+    P = Hsub.to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -179,7 +179,7 @@ def test_csr3():
     assert P.indptr.dtype == np.int32
 
 
-def test_csr3a():
+def test_csrlike_csr3a():
     """Test building CSR array from subspace Hamiltonian"""
     num_qubits = 5
     strings = ["XXIXX", "YYIYY"]
@@ -198,7 +198,7 @@ def test_csr3a():
 
     S = fq.Subspace(counts, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_array()
+    P = Hsub.to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -206,7 +206,7 @@ def test_csr3a():
     assert P.indptr.dtype == np.int32
 
 
-def test_csr4():
+def test_csrlike_csr4():
     """Test building CSR array from subspace Hamiltonian"""
     num_qubits = 5
     strings = ["XXIXX", "YYIYY", "-+I+-", "XYZXY", "+-I-+"]
@@ -225,7 +225,7 @@ def test_csr4():
 
     S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_array()
+    P = Hsub.to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -233,7 +233,7 @@ def test_csr4():
     assert P.indptr.dtype == np.int32
 
 
-def test_csr4a():
+def test_csrlike_csr4a():
     """Test building CSR array from subspace Hamiltonian, single block hashing"""
     num_qubits = 5
     strings = ["XXIXX", "YYIYY", "-+I+-", "XYZXY", "+-I-+"]
@@ -252,7 +252,7 @@ def test_csr4a():
 
     S = fq.Subspace(counts, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_array()
+    P = Hsub.to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -260,7 +260,7 @@ def test_csr4a():
     assert P.indptr.dtype == np.int32
 
 
-def test_csr5():
+def test_csrlike_csr5():
     """Test building CSR array from subspace Hamiltonian, empty result"""
     num_qubits = 5
     strings = ["+-X-+", "XZIXX", "0Y+YZ", "X0+1Y", "-+X+-", "X0-1Y", "0Y-YZ"]
@@ -279,7 +279,7 @@ def test_csr5():
 
     S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_array()
+    P = Hsub.to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -287,7 +287,7 @@ def test_csr5():
     assert P.indptr.dtype == np.int32
 
 
-def test_csr5a():
+def test_csrlike_csr5a():
     """Test building CSR array from subspace Hamiltonian with single block hashing
     - empty result"""
     num_qubits = 5
@@ -307,7 +307,7 @@ def test_csr5a():
 
     S = fq.Subspace(counts, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_array()
+    P = Hsub.to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -315,7 +315,7 @@ def test_csr5a():
     assert P.indptr.dtype == np.int32
 
 
-def test_csr6():
+def test_csrlike_csr6():
     """Test building CSR array from subspace Hamiltonian"""
     num_qubits = 5
     strings = ["+-X-+", "XZIXX", "0Y+YZ", "X0+1Y", "-+X+-", "X0-1Y", "0Y-YZ"]
@@ -334,7 +334,7 @@ def test_csr6():
 
     S = fq.Subspace(counts)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_array()
+    P = Hsub.to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -342,7 +342,7 @@ def test_csr6():
     assert P.indptr.dtype == np.int32
 
 
-def test_csr6a():
+def test_csrlike_csr6a():
     """Test building CSR array from subspace Hamiltonian with single bitset block hashing"""
     num_qubits = 5
     strings = ["+-X-+", "XZIXX", "0Y+YZ", "X0+1Y", "-+X+-", "X0-1Y", "0Y-YZ"]
@@ -361,7 +361,7 @@ def test_csr6a():
 
     S = fq.Subspace(counts, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_array()
+    P = Hsub.to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)

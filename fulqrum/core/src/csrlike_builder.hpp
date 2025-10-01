@@ -15,19 +15,17 @@
 #include <boost/dynamic_bitset.hpp>
 
 template <typename T, typename U>
-void csr_matrix_builder(const OperatorTerm_t *terms,
-                        const bitset_map_namespace::BitsetHashMapWrapper &subspace,
-                        const U *__restrict diag_vec,
-                        const unsigned int width,
-                        const std::size_t subspace_dim,
-                        const int has_nonzero_diag,
-                        const std::size_t *__restrict group_ptrs,
-                        const std::vector<std::vector<unsigned int>> &group_offdiag_inds,
-                        const std::size_t num_groups,
-                        T *__restrict indptr,
-                        T *__restrict indices,
-                        U *__restrict data,
-                        const int compute_values)
+void csrlike_builder(const OperatorTerm_t *terms,
+                     const bitset_map_namespace::BitsetHashMapWrapper &subspace,
+                     const T *__restrict diag_vec,
+                     const unsigned int width,
+                     const std::size_t subspace_dim,
+                     const int has_nonzero_diag,
+                     const std::size_t *__restrict group_ptrs,
+                     const std::vector<std::vector<unsigned int>> &group_offdiag_inds,
+                     const std::size_t num_groups,
+                     std::vector<std::vector<U>>& cols,
+                     std::vector<std::vector<T>>& data)
 {
     std::size_t kk;
     T temp, _sum;
@@ -40,27 +38,29 @@ void csr_matrix_builder(const OperatorTerm_t *terms,
         // define variables locally for omp for loop
         std::size_t idx;
         std::size_t group_start, group_stop, group;
-        T row_nnz, elem_start;
         const OperatorTerm_t *term;
         const boost::dynamic_bitset<size_t> &row = bitsets[kk].first;
         boost::dynamic_bitset<std::size_t> col_vec;
         std::size_t *col_ptr;
         const std::vector<unsigned int> *group_inds;
-        U val;
+        T val;
+        std::vector<U> * row_cols = &cols[kk];
+        std::vector<T> * row_data = &data[kk];
+
+        // need two different types for sorting 
+        int sort_start_int = 0;
+        int sort_end_int = 0;
+        long long sort_start_long = 0;
+        long long sort_end_long = 0;
+        
         int do_col_search;
-        row_nnz = 0;
-        elem_start = indptr[kk];
         // do diagonal first, if any
         if (has_nonzero_diag)
         {
             if (diag_vec[kk] != 0.0)
             {
-                if (compute_values)
-                {
-                    indices[elem_start + row_nnz] = kk;
-                    data[elem_start + row_nnz] = diag_vec[kk];
-                }
-                row_nnz += 1;
+                row_cols->push_back(kk);
+                row_data->push_back(diag_vec[kk]);
             }
         }
         for (group = 0; group < num_groups; group++)
@@ -92,51 +92,20 @@ void csr_matrix_builder(const OperatorTerm_t *terms,
             } // end loop over terms in this group
             if (val != 0.0)
             {
-                if (compute_values)
-                {
-                    indices[elem_start + row_nnz] = *col_ptr;
-                    data[elem_start + row_nnz] = val;
-                }
-                row_nnz += 1;
+                row_cols->push_back(*col_ptr);
+                row_data->push_back(val);
             }
         } // end loop over groups
-        if (!compute_values) // done with row, add row_nnz to indptr
+        // sort column indices and data in each row
+        if constexpr (std::is_same_v<U, int>)
         {
-            indptr[kk] = row_nnz;
+            sort_end_int = row_cols->size() - 1;
+            quicksort_indices_data(row_cols->data(), row_data->data(), sort_start_int, sort_end_int);
+        }
+        else
+        {
+            sort_end_long = row_cols->size() - 1;
+            quicksort_indices_data(row_cols->data(), row_data->data(), sort_start_long, sort_end_long);
         }
     } // end loop over all rows
-    if (!compute_values) // Done all rows so cummulate for correct indptr structure
-    {
-        _sum = 0;
-        for (kk = 0; kk < (subspace_dim + 1); kk++)
-        {
-            temp = _sum + indptr[kk];
-            indptr[kk] = _sum;
-            _sum = temp;
-        }
-    }
-}
-
-template <typename T, typename U>
-void csr_spmv(const T *__restrict indptr, const T *__restrict indices,
-              const U *__restrict data,
-              const U *__restrict vec,
-              U *__restrict out, std::size_t dim)
-{
-    std::size_t row;
-#pragma omp parallel for if (dim > 128)
-    for (row = 0; row < dim; row++)
-    {
-        T jj;
-        T row_start, row_end;
-        U dot = 0.0;
-        row_start = indptr[row];
-        row_end = indptr[row + 1];
-
-        for (jj = row_start; jj < row_end; jj++)
-        {
-            dot += data[jj] * vec[indices[jj]];
-        }
-        out[row] += dot;
-    }
 }

@@ -7,6 +7,7 @@ from scipy.sparse.linalg import LinearOperator
 
 from .spmv import FulqrumSpMV
 from .csr import csr_matvec
+from fulqrum.core.csrlike import CSRLike
 
 
 class SubspaceHamiltonian(LinearOperator):
@@ -51,7 +52,7 @@ class SubspaceHamiltonian(LinearOperator):
         """Convert solution vector into dict of counts and complex amplitudes
 
         Parameters:
-            vec (ndarray): Complex solution vector
+            vec (ndarray): Complex or real solution vector
             atol (double): Absolute tolerance for truncation, default=1e-12
             sort (int): Sort output dict by integer representation.
 
@@ -114,6 +115,26 @@ class SubspaceHamiltonian(LinearOperator):
         M = self.spmv.to_csr_array(verbose=verbose)
         return CSRLinearOperator(M, self.spmv.is_real)
 
+    def to_csr_linearoperator_fast(self, verbose=False):
+        """Convert subspace Hamiltonian to a CSR LinearOperator faster but with a copy
+
+        Parameters:
+            verbose (bool): Turn on verbose mode, default=False.
+        """
+        M = self.spmv.to_csrlike().to_csr_array()
+        return CSRLinearOperator(M, self.spmv.is_real)
+
+    def to_linearoperator(self, verbose=False):
+        """Convert subspace Hamiltonian to a CSR-like format LinearOperator
+
+        This saves a matrix-traversal at the expense of a non-standard data type
+
+        Parameters:
+            verbose (bool): Turn on verbose mode, default=False.
+        """
+        out = self.spmv.to_csrlike()
+        return out
+
 
 class CSRLinearOperator(LinearOperator):
     _matvec = None
@@ -132,6 +153,38 @@ class CSRLinearOperator(LinearOperator):
             )
         out = np.zeros_like(x, dtype=float if self.is_real else complex)
         csr_matvec(self.mat.indptr, self.mat.indices, self.mat.data, x, out, x.shape[0])
+        if col_vec:
+            out = out.view().reshape(x.shape[0], 1)
+        return out
+
+
+class CSRLikeLinearOperator(LinearOperator):
+    _matvec = None
+
+    def __init__(self, csrlike):
+        self.csrlike = csrlike
+        self.is_real = csrlike.is_real
+        super().__init__(shape=csrlike.shape, dtype=float if self.is_real else complex)
+
+    def to_csr_array(self):
+        return self.csrlike.to_csr_array()
+
+    def matvec(self, x):
+        """Matrix-free implementation of SpMV for subspace Hamiltonian
+
+        Parameters:
+            x (ndarray): Input array
+
+        Returns:
+            ndarray: Output vector after SpMV on input vector
+        """
+        col_vec = False
+        if len(x.shape) == 2:
+            col_vec = True
+            x = x.view().reshape(
+                x.shape[0],
+            )
+        out = self.csrlike.matvec(x)
         if col_vec:
             out = out.view().reshape(x.shape[0], 1)
         return out
