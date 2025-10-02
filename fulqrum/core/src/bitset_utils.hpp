@@ -8,22 +8,7 @@
 #include "constants.hpp"
 #include <boost/dynamic_bitset.hpp>
 
-// Mask for checking if extended operator term
-// has a nonzero value at the given row bit-string
-const int EXT_NZ_MASK[8] = {1, 1, 0, 1, 1, 1, 0, 1};
 
-/**
- * Compute the integer corresponding to the bin-width of a bitset
- *
- * @param bitset The target bitset
- * @param bin_width The bin-width
- * @param res The resulting integer
- */
-inline void bin_int(const boost::dynamic_bitset<std::size_t> &bitset,
-                    const unsigned int bin_width, std::size_t &res)
-{
-    res = bitset.m_bits[0] & ((static_cast<std::size_t>(1) << bin_width) - 1);
-}
 
 /**
  * Flip a series of bits in a bitset
@@ -87,17 +72,6 @@ inline void bitset_column_index(const std::size_t start, const std::size_t stop,
     }
 }
 
-inline void sort_bitset_vector(std::vector<boost::dynamic_bitset<std::size_t>> &vec,
-                               unsigned int bin_width)
-{
-
-    std::sort(vec.begin(), vec.end(), [=](const boost::dynamic_bitset<std::size_t> a, const boost::dynamic_bitset<std::size_t> b)
-              {
-                                    std::size_t res_a, res_b;  
-                                    bin_int(a, bin_width, res_a);
-                                    bin_int(b, bin_width, res_b);
-                                    return res_a < res_b; });
-}
 
 /**
  * Convert bits at given indices into an unsigned integer
