@@ -76,21 +76,6 @@ cdef class Bitset:
         to_string(self.bits, s)
         return int(s, 2)
 
-    def bin_width_int(self, unsigned int bin_width):
-        """Compute the integer for a given bin-width
-
-        Parameters:
-            bin_width (int): Bin-width to compute
-
-        Returns:
-            int: Computed bin-width
-        """
-        if bin_width > self.bits.size():
-            raise FulqrumError("bin_width is larger than number of bits")
-        cdef size_t out = 0
-        bin_int(self.bits, bin_width, out)
-        return out
-
     def flip(self, object bits):
         """Flip one or more bits inplace
 
