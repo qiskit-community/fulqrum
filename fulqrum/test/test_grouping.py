@@ -240,7 +240,7 @@ def test_group_terms_ladder_int_width1():
     op += fq.QubitOperator.from_label("------")
     op += fq.QubitOperator.from_label("IIIZZI")
     op.set_type(2)
-    op.group_term_sort_by_ladder_int()
+    op.group_term_sort_by_ladder_int(3)
     assert np.allclose(
         op.ladder_ints(), np.array([np.iinfo(np.uint32).max, 0, 7], dtype=np.uint32)
     )
@@ -359,7 +359,7 @@ def test_group_ladder_bin_starts4():
     op += fq.QubitOperator.from_label("Z00+")  # int = 1
     op += fq.QubitOperator.from_label("ZII+")  # int = 1
     op.set_type(2)
-    op.group_term_sort_by_ladder_int()
+    op.group_term_sort_by_ladder_int(3)
     group_ladder_starts = op.group_ladder_bin_starts()
     num_terms = np.diff(group_ladder_starts)
 
@@ -387,7 +387,7 @@ def test_group_ladder_bin_starts5():
     op += fq.QubitOperator.from_label("Z00+")  # int = 1
     op += fq.QubitOperator.from_label("ZII+")  # int = 1
     op.set_type(2)
-    op.group_term_sort_by_ladder_int()
+    op.group_term_sort_by_ladder_int(3)
     group_ladder_starts = op.group_ladder_bin_starts()
     ptr_size = 2**3  #  2**ladder_width
     idx = 1 * ptr_size + 3  # group 1 + int value = 3

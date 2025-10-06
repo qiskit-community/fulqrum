@@ -119,7 +119,7 @@ cdef class Bitset:
         return out
 
 
-    def ladder_int(self, unsigned int[::1] inds, unsigned int ladder_width=3):
+    def ladder_int(self, unsigned int[::1] inds, unsigned int ladder_width=4):
         """Compute the ladder integer of a bitset for the given indices
 
         Parameters:

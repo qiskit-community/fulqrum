@@ -249,6 +249,16 @@ cdef class QubitOperator():
         if not self.oper.sorted:
             self.offdiag_term_grouping()
         return self.group_ptrs().shape[0] - 1
+
+    @property
+    def ladder_width(self):
+        """Ladder with
+
+        Returns:
+            int : Ladder width
+        """
+        
+        return self.oper.ladder_width
     
     def copy(self):
         """Copy QubitOperator
@@ -920,7 +930,7 @@ cdef class QubitOperator():
             group_rowint_length[kk] = min(self.oper.ladder_width, temp)
         return np.asarray(group_rowint_length)
 
-    def group_term_sort_by_ladder_int(self, unsigned int ladder_width=3):
+    def group_term_sort_by_ladder_int(self, unsigned int ladder_width=4):
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
         if not self.oper.terms.size():
