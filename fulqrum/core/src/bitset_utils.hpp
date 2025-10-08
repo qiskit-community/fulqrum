@@ -21,7 +21,6 @@ inline void flip_bits(boost::dynamic_bitset<std::size_t> &bitset,
                       const unsigned int *__restrict arr, const unsigned int size)
 {
     unsigned int kk;
-    unsigned int block_num, block_idx;
     unsigned int pos;
     for (kk = 0; kk < size; kk++)
     {
