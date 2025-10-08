@@ -47,7 +47,7 @@ class SubspaceHamiltonian(LinearOperator):
             ndarray: Complex vector for diagonal of Hamiltonian
         """
         return self.spmv.diagonal_vector()
-    
+
     def minimum_diagonal_energy(self):
         """Return the minimum diagonal energy
 
