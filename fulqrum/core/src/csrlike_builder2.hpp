@@ -73,7 +73,7 @@ void csrlike_builder2(const OperatorTerm_t *terms,
         std::vector<U> * row_cols = &cols[kk];
         std::vector<T> * row_data = &data[kk];
         unsigned int row_int;
-        int did_inner_loop;
+        int do_col_search;
 
         // need two different types for sorting 
         int sort_start_int = 0;
@@ -100,32 +100,28 @@ void csrlike_builder2(const OperatorTerm_t *terms,
                 group_rowint_length[group]);
             group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
             group_int_stop = group_ladder_ptrs[group * ladder_offset + row_int + 1];
-            did_inner_loop = 0;
+            do_col_search = 1;
             val = 0;
             for (idx = group_int_start; idx < group_int_stop; idx++)
             { // begin loop over terms in this group
-                if (!did_inner_loop)
+                if (do_col_search)
                 {
                     col_vec = row;
                     flip_bits(col_vec, group_inds->data(), group_inds->size());
-                    did_inner_loop = 1;
+                    col_ptr = subspace.get_ptr(col_vec);
+                    if (col_ptr == nullptr)
+                    {
+                        break;
+                    } // column is NOT in the subspace so break group
+                    do_col_search = 0;
                 }
                 term = &terms[idx];
                 if (passes_proj_validation(term, row))
                 {
-                    accum_element(row, col_vec,
-                                  &term->indices[0], &term->values[0], term->coeff,
-                                  term->real_phase, term->indices.size(), val);
+                    accum_element(row, col_vec, &term->indices[0], &term->values[0],
+                                  term->coeff, term->real_phase, term->indices.size(), val);
                 }
             } // end loop over terms in this group
-            if(did_inner_loop)
-            {
-                col_ptr = subspace.get_ptr(col_vec);
-                if (col_ptr == nullptr)
-                {
-                   continue;
-                }
-            }
             if (val != 0.0)
             {
                 row_cols->push_back(*col_ptr);
