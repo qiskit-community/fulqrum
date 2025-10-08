@@ -48,6 +48,14 @@ class SubspaceHamiltonian(LinearOperator):
         """
         return self.spmv.diagonal_vector()
 
+    def minimum_diagonal_energy(self):
+        """Return the minimum diagonal energy
+
+        Returns:
+            double: Lowest energy value
+        """
+        return self.spmv.minimum_diagonal_energy()
+
     def interpret_vector(self, vec, atol=1e-12, sort=0):
         """Convert solution vector into dict of counts and complex amplitudes
 

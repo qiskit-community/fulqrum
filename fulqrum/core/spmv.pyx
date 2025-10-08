@@ -99,6 +99,7 @@ cdef class FulqrumSpMV():
                                 self.subspace_dim)
         self.init_diag = 1
 
+
     def diagonal_vector(self):
         """Diagonal vector of subspace Hamitlonian
 
@@ -114,6 +115,15 @@ cdef class FulqrumSpMV():
         if self.is_real:
             return np.asarray(self.real_diag_vec)
         return np.asarray(self.complex_diag_vec)
+
+
+    def minimum_diagonal_energy(self):
+        """Return the minimum diagonal energy
+
+        Returns:
+            double: Lowest energy value
+        """
+        return <double>(self.diagonal_vector().min())
 
 
     def matvec(self, double_or_complex[::1] x):

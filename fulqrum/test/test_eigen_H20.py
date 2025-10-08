@@ -25,14 +25,14 @@ def test_full_dist_h20_eigenenergy_matrix_free():
     S = Subspace(full_dist)
     Hsub = SubspaceHamiltonian(NEW_OP, S)
 
-    evals, _ = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    evals, _ = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     # single bitset block
     S = Subspace(full_dist, use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(NEW_OP, S)
 
-    evals, _ = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    evals, _ = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
 
@@ -47,7 +47,7 @@ def test_full_dist_h20_eigenenergy_csr():
     M = Hsub.to_csr_array()
     assert M.dtype == float
 
-    evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     # single bitset block
@@ -56,7 +56,7 @@ def test_full_dist_h20_eigenenergy_csr():
     M = Hsub.to_csr_array()
     assert M.dtype == float
 
-    evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
 
@@ -71,7 +71,7 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator():
     M = Hsub.to_csr_linearoperator()
 
     assert M.mat.dtype == float
-    evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     # single bitset block
@@ -80,7 +80,7 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator():
     M = Hsub.to_csr_linearoperator()
 
     assert M.mat.dtype == float
-    evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
 
@@ -92,10 +92,10 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator_fast():
 
     S = Subspace(full_dist)
     Hsub = SubspaceHamiltonian(NEW_OP, S)
-    M = Hsub.to_csr_linearoperator()
+    M = Hsub.to_csr_linearoperator_fast()
 
     assert M.mat.dtype == float
-    evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     # single bitset block
@@ -104,5 +104,5 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator_fast():
     M = Hsub.to_csr_linearoperator_fast()
 
     assert M.mat.dtype == float
-    evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=complex))
+    evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
