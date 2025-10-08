@@ -209,7 +209,7 @@ def test_eigen5():
         A += weight * kron_str(op)
     assert np.allclose(A, A.conj().T)
 
-    v0 = np.ones(len(rows), dtype=complex)
+    v0 = np.ones(len(rows), dtype=float)
     B = grab_subspace(A, rows)
     ans_evals, ans_evecs = spla.eigsh(B, k=num_evals, which="SA", v0=v0)
 
