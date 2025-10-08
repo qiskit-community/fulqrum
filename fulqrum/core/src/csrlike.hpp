@@ -75,7 +75,7 @@ void set_csr_data(const std::vector<std::vector<T> >& in_data, const std::vector
 {
     std::size_t num_rows = in_data.size();
     std::size_t kk;
-    #pragma parallel omp for schedule(dynamic)
+    #pragma omp parallel for schedule(dynamic)
     for(kk=0; kk < num_rows; kk++)
     {
         U start, stop;
