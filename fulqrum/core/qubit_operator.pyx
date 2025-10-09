@@ -179,6 +179,13 @@ cdef class QubitOperator():
         return np.dtype(float) if self.is_real() else np.dtype(complex)
 
     @property
+    def coeff(self):
+        if self.oper.terms.size() == 1:
+            return self.oper.terms[0].coeff
+        else:
+            raise FulqrumError("Operator must have a single-term to get coeff.  Otherwise use op.coefficients()")
+
+    @property
     def num_terms(self):
         """Return the number of terms in the operator
 
