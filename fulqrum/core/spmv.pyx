@@ -80,9 +80,9 @@ cdef class FulqrumSpMV():
 
 
     @cython.boundscheck(False)
-    cdef void compute_diag_vector(self):
+    cdef int compute_diag_vector(self):
         if self.init_diag:
-            return
+            return 0
         if self.is_real:
             self.real_diag_vec = np.empty(self.subspace_dim, dtype=float)
             compute_diag_vector(self.subspace.subspace.bitstrings,
@@ -98,14 +98,17 @@ cdef class FulqrumSpMV():
                                 self.width,
                                 self.subspace_dim)
         self.init_diag = 1
+        return 1
 
 
-    def diagonal_vector(self):
+    def diagonal_vector(self, int verbose=False):
         """Diagonal vector of subspace Hamitlonian
 
         Returns:
-            ndarray: Aray of complex numbers representating diagonal
+            ndarray: Array of complex numbers representating diagonal
         """
+        if verbose:
+            st = time.perf_counter()
         if not self.has_nonzero_diag:
             if self.is_real:
                 return np.zeros(self.subspace_dim, dtype=float)
@@ -114,6 +117,8 @@ cdef class FulqrumSpMV():
         self.compute_diag_vector()
         if self.is_real:
             return np.asarray(self.real_diag_vec)
+        if verbose:
+            print("Diagonal vector build time: ", time.perf_counter() - st)
         return np.asarray(self.complex_diag_vec)
 
 
@@ -234,7 +239,12 @@ cdef class FulqrumSpMV():
         indices64 = np.zeros(1, dtype=np.int64)
 
         # Compute diag vec if we have not done so already
-        self.compute_diag_vector()
+        cdef int did_diag_build = 0
+        if verbose:
+            st = time.perf_counter()
+        did_diag_build = self.compute_diag_vector()
+        if verbose and did_diag_build:
+            print("Diagonal vector build time", round(time.perf_counter() - st, 3))
 
         cdef double start, stop
         cdef int compute_values, data_size
