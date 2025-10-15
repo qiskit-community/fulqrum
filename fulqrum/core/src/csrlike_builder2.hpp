@@ -38,7 +38,7 @@ void csrlike_builder2(const OperatorTerm_t *terms,
     std::size_t kk;
     const auto *bitsets = subspace.get_bitsets();
 
-    #pragma omp parallel for schedule(dynamic) if (subspace_dim > 128)
+    #pragma omp parallel for schedule(dynamic) if (subspace_dim > 4096)
     for (kk = 0; kk < subspace_dim; kk++)
     { // begin loop over all rows
 

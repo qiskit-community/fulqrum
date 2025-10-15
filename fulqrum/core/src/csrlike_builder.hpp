@@ -32,7 +32,7 @@ void csrlike_builder(const OperatorTerm_t *terms,
 
     const auto *bitsets = subspace.get_bitsets();
 
-#pragma omp parallel for if (subspace_dim > 128)
+    #pragma omp parallel for if (subspace_dim > 4096)
     for (kk = 0; kk < subspace_dim; kk++)
     { // begin loop over all rows
         // define variables locally for omp for loop
