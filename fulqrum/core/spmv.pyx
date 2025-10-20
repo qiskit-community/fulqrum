@@ -271,9 +271,9 @@ cdef class FulqrumSpMV():
                 # check if matrix will fit into memory
                 if int_64:
                     # indptr + indices + data sizes
-                    total_bytes = (self.subspace_dim + 1) * 8  + indices64.shape[0] * 8 + indices64.shape[0] * data_size
+                    total_bytes = (self.subspace_dim + 1) * 8  + indptr64[self.subspace_dim] * 8 + indptr64[self.subspace_dim] * data_size
                 else:
-                    total_bytes = (self.subspace_dim + 1) * 4  + indices32.shape[0] * 4 + indices32.shape[0] * data_size
+                    total_bytes = (self.subspace_dim + 1) * 4  + indptr32[self.subspace_dim] * 4 + indptr32[self.subspace_dim] * data_size
                 if psutil.virtual_memory().available < total_bytes:
                     raise FulqrumError(f"Sparse matrix of size {round(total_bytes/(1024**2), 3)}Mb does not fit within available memory.")
                 if verbose:
