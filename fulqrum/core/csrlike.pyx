@@ -8,6 +8,7 @@ include "includes/types.pxi"
 import numpy as np
 import scipy.sparse as sp
 from fulqrum.exceptions import FulqrumError
+import psutil
 
 
 cdef class CSRLike():
@@ -113,6 +114,22 @@ cdef class CSRLike():
             return  sp.csr_array((np.empty(0, dtype=_dtype), np.empty(0, dtype=_dtype), np.zeros(self.num_rows+1, dtype=_dtype)), 
                                 shape=(self.num_rows,)*2, dtype=float if self.is_real else complex)
 
+        cdef int data_size
+        cdef int64 total_bytes
+        if self.is_real:
+            data_size = 8 # size of double
+        else:
+            data_size = 16 # size of double complex
+        # check if matrix will fit into memory
+        if self.is_int64:
+            # indptr + indices + data sizes
+            total_bytes = (self.num_rows+1) * 8  + nnz * 8 + nnz * data_size
+        else:
+            total_bytes = (self.num_rows+1) * 4  + nnz * 4 + nnz * data_size
+        
+        if psutil.virtual_memory().available < total_bytes:
+            raise FulqrumError(f"Sparse matrix copy of size {round(total_bytes/(1024**2), 3)} Mb does not fit within available memory.")
+        
         if '32' in self.type_string:
             ptr32 = np.zeros(self.num_rows+1, dtype=np.int32)
             inds32 = np.empty(nnz, dtype=np.int32)
