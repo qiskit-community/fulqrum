@@ -286,7 +286,7 @@ cdef class FulqrumSpMV():
                         complex_data = np.zeros(nnz, dtype=complex)
                 else:
                     indptr32 = np.asarray(indptr64, dtype=np.int32)
-                    indptr64 = np.zeros(1, dtype=np.int64)
+                    indptr64 = np.zeros(1, dtype=np.int64) # reset indptr64 since we do not need it anymore
                     indices32 = np.zeros(nnz, dtype=np.int32)
                     if self.is_real:
                         real_data = np.zeros(nnz, dtype=float)
