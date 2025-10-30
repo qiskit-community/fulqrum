@@ -152,6 +152,10 @@ class CSRLinearOperator(LinearOperator):
         self.is_real = is_real
         super().__init__(shape=mat.shape, dtype=float if self.is_real else complex)
 
+    @property
+    def nnz(self):
+        return self.mat.nnz
+
     def matvec(self, x):
         col_vec = False
         if len(x.shape) == 2:
@@ -176,6 +180,10 @@ class CSRLikeLinearOperator(LinearOperator):
 
     def to_csr_array(self):
         return self.csrlike.to_csr_array()
+    
+    @property
+    def nnz(self):
+        return self.csrlike.nnz
 
     def matvec(self, x):
         """Matrix-free implementation of SpMV for subspace Hamiltonian
