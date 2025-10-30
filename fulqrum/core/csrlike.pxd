@@ -7,6 +7,7 @@ import numpy as np
 
 cdef class CSRLike:
     cdef size_t num_rows
+    cdef size_t _nnz
     cdef public unsigned int is_real
     cdef public unsigned int is_int64
     cdef unsigned int data_type

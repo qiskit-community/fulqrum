@@ -121,7 +121,7 @@ def test_full_dist_h2_eigen_csr_linearoperator():
     S = Subspace(full_dist)
     Hsub = SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
 
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
@@ -134,7 +134,7 @@ def test_full_dist_h2_eigen_csr_linearoperator():
     S = Subspace(full_dist, use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
 
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
@@ -166,7 +166,7 @@ def test_full_dist_h2_eigen_csr_linearoperator_fast():
     S = Subspace(full_dist, use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator_fast()
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
 
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
@@ -185,7 +185,7 @@ def test_full_dist_h2_eigen_csr_linearoperator_fast():
     S = Subspace(full_dist)
     Hsub = SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
 
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
@@ -198,7 +198,7 @@ def test_full_dist_h2_eigen_csr_linearoperator_fast():
     S = Subspace(full_dist, use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator_fast()
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
 
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)

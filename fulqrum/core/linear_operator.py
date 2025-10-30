@@ -56,12 +56,12 @@ class SubspaceHamiltonian(LinearOperator):
         """
         return self.spmv.minimum_diagonal_energy()
 
-    def interpret_vector(self, vec, atol=1e-12, sort=0):
+    def interpret_vector(self, vec, atol=1e-14, sort=0):
         """Convert solution vector into dict of counts and complex amplitudes
 
         Parameters:
             vec (ndarray): Complex or real solution vector
-            atol (double): Absolute tolerance for truncation, default=1e-12
+            atol (double): Absolute tolerance for truncation, default=1e-14
             sort (int): Sort output dict by integer representation.
 
         Returns:
@@ -147,10 +147,36 @@ class SubspaceHamiltonian(LinearOperator):
 class CSRLinearOperator(LinearOperator):
     _matvec = None
 
-    def __init__(self, mat, is_real=0):
-        self.mat = mat
+    def __init__(self, matrix, is_real=0):
+        self.matrix = matrix
         self.is_real = is_real
-        super().__init__(shape=mat.shape, dtype=float if self.is_real else complex)
+        super().__init__(shape=matrix.shape, dtype=float if self.is_real else complex)
+
+    @property
+    def nnz(self):
+        """Number of nonzero elements in the underlying CSR matrix
+
+        Returns:
+            int
+        """
+        return self.matrix.nnz
+
+    @property
+    def memory_size(self):
+        """An estimate of the raw memeory size of the underlying
+        CSR matrix in bytes
+
+        Returns:
+            int: Memory size in bytes
+        """
+        nnz = self.nnz
+        inds_size = 4
+        data_size = 8
+        if self.matrix.indices.dtype == np.int64:
+            inds_size = 8
+        if self.matrix.data.dtype in [complex, np.complex128]:
+            data_size = 16
+        return inds_size * (self.shape[0] + 1) + nnz * (inds_size + data_size)
 
     def matvec(self, x):
         col_vec = False
@@ -160,7 +186,14 @@ class CSRLinearOperator(LinearOperator):
                 x.shape[0],
             )
         out = np.zeros_like(x, dtype=float if self.is_real else complex)
-        csr_matvec(self.mat.indptr, self.mat.indices, self.mat.data, x, out, x.shape[0])
+        csr_matvec(
+            self.matrix.indptr,
+            self.matrix.indices,
+            self.matrix.data,
+            x,
+            out,
+            x.shape[0],
+        )
         if col_vec:
             out = out.view().reshape(x.shape[0], 1)
         return out
@@ -176,6 +209,32 @@ class CSRLikeLinearOperator(LinearOperator):
 
     def to_csr_array(self):
         return self.csrlike.to_csr_array()
+
+    @property
+    def nnz(self):
+        """Number of nonzero elements in the underlying data structure
+
+        Returns:
+            int
+        """
+        return self.csrlike.nnz
+
+    @property
+    def memory_size(self):
+        """An estimate of the raw memeory size of the underlying
+        date structure in bytes
+
+        Returns:
+            int: Memory size in bytes
+        """
+        nnz = self.nnz
+        inds_size = 4
+        data_size = 8
+        if "64" in self.csrlike.type_string:
+            inds_size = 8
+        if "z" in self.csrlike.type_string:
+            data_size = 16
+        return inds_size * (self.shape[0] + 1) + nnz * (inds_size + data_size)
 
     def matvec(self, x):
         """Matrix-free implementation of SpMV for subspace Hamiltonian

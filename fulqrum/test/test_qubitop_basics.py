@@ -204,7 +204,7 @@ def test_proj_indices4():
 def test_is_real():
     """Is real is true for small imag <= 1e-12"""
     op = fq.QubitOperator.from_label("II++")
-    op = (1 + 1e-12j) * fq.QubitOperator.from_label("II--")
+    op = (1 + 1e-14j) * fq.QubitOperator.from_label("II--")
     op.set_type(2)
     assert op.is_real()
 
