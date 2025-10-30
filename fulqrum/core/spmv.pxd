@@ -27,4 +27,4 @@ cdef class FulqrumSpMV:
     cdef unsigned int ladder_offset
     cdef vector[vector[unsigned int]] group_offdiag_inds
 
-    cdef void compute_diag_vector(self)
+    cdef int compute_diag_vector(self)

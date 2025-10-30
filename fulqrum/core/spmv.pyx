@@ -80,9 +80,9 @@ cdef class FulqrumSpMV():
 
 
     @cython.boundscheck(False)
-    cdef void compute_diag_vector(self):
+    cdef int compute_diag_vector(self):
         if self.init_diag:
-            return
+            return 0
         if self.is_real:
             self.real_diag_vec = np.empty(self.subspace_dim, dtype=float)
             compute_diag_vector(self.subspace.subspace.bitstrings,
@@ -98,14 +98,17 @@ cdef class FulqrumSpMV():
                                 self.width,
                                 self.subspace_dim)
         self.init_diag = 1
+        return 1
 
 
-    def diagonal_vector(self):
+    def diagonal_vector(self, int verbose=False):
         """Diagonal vector of subspace Hamitlonian
 
         Returns:
-            ndarray: Aray of complex numbers representating diagonal
+            ndarray: Array of complex numbers representating diagonal
         """
+        if verbose:
+            st = time.perf_counter()
         if not self.has_nonzero_diag:
             if self.is_real:
                 return np.zeros(self.subspace_dim, dtype=float)
@@ -114,6 +117,8 @@ cdef class FulqrumSpMV():
         self.compute_diag_vector()
         if self.is_real:
             return np.asarray(self.real_diag_vec)
+        if verbose:
+            print("Diagonal vector build time: ", time.perf_counter() - st)
         return np.asarray(self.complex_diag_vec)
 
 
@@ -231,56 +236,62 @@ cdef class FulqrumSpMV():
         cdef double[::1] real_data = np.zeros(1, dtype=float)
 
         # Compute diag vec if we have not done so already
-        self.compute_diag_vector()
+        cdef int did_diag_build = 0
+        if verbose:
+            st = time.perf_counter()
+        did_diag_build = self.compute_diag_vector()
+        if verbose and did_diag_build:
+            print("Diagonal vector build time", round(time.perf_counter() - st, 3))
 
         cdef double start, stop
         cdef int compute_values, data_size
         cdef int64 total_bytes
+        cdef int64 nnz
         if self.is_real:
             data_size = 8 # size of double
         else:
             data_size = 16 # size of double complex
 
-        cdef int int_64 = self.subspace_dim > max_int #check if we need 64bit indices
-
-        if int_64:
-            indptr64 = np.zeros(self.subspace_dim+1, dtype=np.int64)
-            indices64 = np.zeros(1, dtype=np.int64)
-        else:
-            indptr32 = np.zeros(self.subspace_dim+1, dtype=np.int32)
-            indices32 = np.zeros(1, dtype=np.int32)
+        cdef int int_64 = 1 # Always start with int64 since we do not know how many nnz there will be in the matrix
+        indptr64 = np.zeros(self.subspace_dim+1, dtype=np.int64)
+        indices64 = np.zeros(1, dtype=np.int64)
 
         for compute_values in range(2):
             start = time.perf_counter()
             if compute_values:
                 # matrix is empty
-                if int_64 and indptr64[self.subspace_dim] == 0:
+                if indptr64[self.subspace_dim] == 0:
                     return sp.csr_array((self.subspace_dim, self.subspace_dim), dtype=float if self.is_real else complex)
-                elif (not int_64) and indptr32[self.subspace_dim] == 0:
-                    return sp.csr_array((self.subspace_dim, self.subspace_dim), dtype=float if self.is_real else complex)
+
+                # if num_elem < max_int and subspace_dim + 1 < max_int then problem is int32 type
+                if (indptr64[self.subspace_dim] < max_int) and ((self.subspace_dim + 1) < max_int):
+                    int_64 = 0
+                nnz = indptr64[self.subspace_dim]
                 # check if matrix will fit into memory
                 if int_64:
                     # indptr + indices + data sizes
-                    total_bytes = (self.subspace_dim + 1) * 8  + indptr64[self.subspace_dim] * 8 + indptr64[self.subspace_dim] * data_size
+                    total_bytes = (self.subspace_dim + 1) * 8  + nnz * 8 + nnz * data_size
                 else:
-                    total_bytes = (self.subspace_dim + 1) * 4  + indptr32[self.subspace_dim] * 4 + indptr32[self.subspace_dim] * data_size
+                    total_bytes = (self.subspace_dim + 1) * 4  + nnz * 4 + nnz * data_size
                 if psutil.virtual_memory().available < total_bytes:
                     raise FulqrumError(f"Sparse matrix of size {round(total_bytes/(1024**2), 3)}Mb does not fit within available memory.")
                 if verbose:
                     print(f'Est. matrix size: {round(total_bytes/(1024**2), 3)}Mb')
                 
                 if int_64:
-                    indices64 = np.zeros(indptr64[self.subspace_dim], dtype=np.int64)
+                    indices64 = np.zeros(nnz, dtype=np.int64)
                     if self.is_real:
-                        real_data = np.zeros(indptr64[self.subspace_dim], dtype=float)
+                        real_data = np.zeros(nnz, dtype=float)
                     else:
-                        complex_data = np.zeros(indptr64[self.subspace_dim], dtype=complex)
+                        complex_data = np.zeros(nnz, dtype=complex)
                 else:
-                    indices32 = np.zeros(indptr32[self.subspace_dim], dtype=np.int32)
+                    indptr32 = np.asarray(indptr64, dtype=np.int32)
+                    indptr64 = np.zeros(1, dtype=np.int64) # reset indptr64 since we do not need it anymore
+                    indices32 = np.zeros(nnz, dtype=np.int32)
                     if self.is_real:
-                        real_data = np.zeros(indptr32[self.subspace_dim], dtype=float)
+                        real_data = np.zeros(nnz, dtype=float)
                     else:
-                        complex_data = np.zeros(indptr32[self.subspace_dim], dtype=complex)
+                        complex_data = np.zeros(nnz, dtype=complex)
             if int_64:
                 if self.oper.type == 2:
                     if self.is_real:

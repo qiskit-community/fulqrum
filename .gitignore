@@ -163,3 +163,9 @@ cython_debug/
 fulqrum/version.py
 fulqrum/version.py
 fulqrum/version.py
+*.aux
+*.bbl
+*.blg
+*.out
+*.gz
+mainNotes.bib

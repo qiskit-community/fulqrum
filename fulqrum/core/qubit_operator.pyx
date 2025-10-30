@@ -179,6 +179,13 @@ cdef class QubitOperator():
         return np.dtype(float) if self.is_real() else np.dtype(complex)
 
     @property
+    def coeff(self):
+        if self.oper.terms.size() == 1:
+            return self.oper.terms[0].coeff
+        else:
+            raise FulqrumError("Operator must have a single-term to get coeff.  Otherwise use op.coefficients()")
+
+    @property
     def num_terms(self):
         """Return the number of terms in the operator
 
@@ -268,9 +275,10 @@ cdef class QubitOperator():
         """
         cdef QubitOperator out = QubitOperator(self.width)
         out.oper.terms = self.oper.terms
-        out.oper.sorted = self.oper.sorted
-        out.oper.weight_sorted = self.oper.weight_sorted
-        out.oper.off_weight_sorted = self.oper.off_weight_sorted
+        #out.oper.sorted = self.oper.sorted
+        #out.oper.weight_sorted = self.oper.weight_sorted
+        #out.oper.off_weight_sorted = self.oper.off_weight_sorted
+        out.oper.type = self.oper.type
         return out
 
     @cython.boundscheck(False)
@@ -356,16 +364,16 @@ cdef class QubitOperator():
             else:
                 offdiag.oper.terms.push_back(term)
         # set sorted flag
-        diag.oper.sorted = self.oper.sorted
-        offdiag.oper.sorted = self.oper.sorted
-        diag.oper.weight_sorted = self.oper.weight_sorted
-        offdiag.oper.weight_sorted = self.oper.weight_sorted
-        diag.oper.off_weight_sorted = self.oper.off_weight_sorted
-        offdiag.oper.off_weight_sorted = self.oper.off_weight_sorted
-        diag.oper.ladder_sorted = self.oper.ladder_sorted
-        offdiag.oper.ladder_sorted = self.oper.ladder_sorted
-        diag.oper.ladder_width = self.oper.ladder_width
-        offdiag.oper.ladder_width = self.oper.ladder_width
+        #diag.oper.sorted = self.oper.sorted
+        #offdiag.oper.sorted = self.oper.sorted
+        #diag.oper.weight_sorted = self.oper.weight_sorted
+        #offdiag.oper.weight_sorted = self.oper.weight_sorted
+        #diag.oper.off_weight_sorted = self.oper.off_weight_sorted
+        #offdiag.oper.off_weight_sorted = self.oper.off_weight_sorted
+        #diag.oper.ladder_sorted = self.oper.ladder_sorted
+        #offdiag.oper.ladder_sorted = self.oper.ladder_sorted
+        #diag.oper.ladder_width = self.oper.ladder_width
+        #offdiag.oper.ladder_width = self.oper.ladder_width
         diag.oper.type = self.oper.type
         offdiag.oper.type = self.oper.type
         return diag, offdiag
@@ -456,7 +464,6 @@ cdef class QubitOperator():
         else:
             raise FulqrumError(f"Cannot get operator terms using {type(key)}")
         out.oper.type = self.oper.type
-
         return out
 
     def __iadd__(self, QubitOperator other):
@@ -481,11 +488,14 @@ cdef class QubitOperator():
         Returns:
             QubitOperator
         """
+        if self.oper.type != other.oper.type:
+            raise FulqrumError("Operator types do not match")
         cdef size_t kk
         cdef QubitOperator out = QubitOperator(self.oper.width)
         out.oper.terms = self.oper.terms
         for kk in range(other.oper.terms.size()):
             out.oper.terms.push_back(other.oper.terms[kk])
+        out.oper.type = self.oper.type
         return out
 
     @cython.boundscheck(False)
@@ -567,6 +577,8 @@ cdef class QubitOperator():
     @cython.boundscheck(False)
     cpdef void append(self, QubitOperator other):
         cdef size_t kk
+        if self.oper.type != other.oper.type:
+            raise FulqrumError("Operator types do not match")
         if self.oper.width != other.oper.width:
             raise FulqrumError('Appending number of qubits does not match current number')
         for kk in range(other.oper.terms.size()):

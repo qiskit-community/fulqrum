@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
+#include <algorithm>
 #include <complex>
 
 
@@ -42,8 +43,8 @@ typedef struct RowData_Complex32{
  * @param ptrs A pointer to the indptr array for a CSR matrix of length num_rows+1
  * 
  */
-template <typename T>
-void set_csr_ptr(const std::vector<std::vector<T>>& cols, T * __restrict ptrs)
+template <typename T, typename U>
+void set_csr_ptr(const std::vector<std::vector<T>>& cols, U * __restrict ptrs)
 {
     std::size_t num_rows = cols.size();
     std::size_t kk;
@@ -69,20 +70,21 @@ void set_csr_ptr(const std::vector<std::vector<T>>& cols, T * __restrict ptrs)
  * @param out_data A pointer to the output data array for a CSR matrix of length nnz
  * 
  */
-template <typename T, typename U>
+template <typename T, typename U, typename V>
 void set_csr_data(const std::vector<std::vector<T> >& in_data, const std::vector<std::vector<U> >& cols, 
-                  U * __restrict ptrs, U * __restrict inds, T * __restrict out_data)
+                  V * __restrict ptrs, V * __restrict inds, T * __restrict out_data)
 {
     std::size_t num_rows = in_data.size();
     std::size_t kk;
     #pragma omp parallel for schedule(dynamic)
     for(kk=0; kk < num_rows; kk++)
     {
-        U start, stop;
+        V start, stop, diff;
         start = ptrs[kk];
         stop = ptrs[kk+1];
-        std::memcpy(&inds[start], cols[kk].data(), (stop-start)*sizeof(U));
-        std::memcpy(&out_data[start], in_data[kk].data(), (stop-start)*sizeof(T));
+        diff = stop - start;
+        std::copy(cols[kk].data(), cols[kk].data()+diff, &inds[start]); 
+        std::copy(in_data[kk].data(), in_data[kk].data()+diff, &out_data[start]);
     }
 }
 

@@ -116,12 +116,15 @@ cdef class CSRLike():
 
         cdef int data_size
         cdef int64 total_bytes
+        # does output CSR matrix require int64 indices?
+        cdef size_t max_int = np.iinfo(np.int32).max
+        cdef int needs_int64 = (self.num_rows+1) > max_int or nnz > max_int
         if self.is_real:
             data_size = 8 # size of double
         else:
             data_size = 16 # size of double complex
         # check if matrix will fit into memory
-        if self.is_int64:
+        if needs_int64:
             # indptr + indices + data sizes
             total_bytes = (self.num_rows+1) * 8  + nnz * 8 + nnz * data_size
         else:
@@ -130,7 +133,7 @@ cdef class CSRLike():
         if psutil.virtual_memory().available < total_bytes:
             raise FulqrumError(f"Sparse matrix copy of size {round(total_bytes/(1024**2), 3)} Mb does not fit within available memory.")
         
-        if '32' in self.type_string:
+        if '32' in self.type_string and not needs_int64:
             ptr32 = np.zeros(self.num_rows+1, dtype=np.int32)
             inds32 = np.empty(nnz, dtype=np.int32)
         else:
@@ -143,11 +146,17 @@ cdef class CSRLike():
             complex_data = np.empty(nnz, dtype=complex)
 
         if self.type_string == 'd32':
-            set_csr_ptr(self.data_d32.cols, &ptr32[0])
-            set_csr_data(self.data_d32.data, self.data_d32.cols, &ptr32[0], &inds32[0], &real_data[0])
+            if not needs_int64:
+                set_csr_ptr(self.data_d32.cols, &ptr32[0])
+                set_csr_data(self.data_d32.data, self.data_d32.cols, &ptr32[0], &inds32[0], &real_data[0])
 
-            mat = sp.csr_array((real_data, inds32, ptr32), 
-                                shape=(self.num_rows,)*2, dtype=float)
+                mat = sp.csr_array((real_data, inds32, ptr32), 
+                                    shape=(self.num_rows,)*2, dtype=float)
+            else:
+                set_csr_ptr(self.data_d32.cols, &ptr64[0])
+                set_csr_data(self.data_d32.data, self.data_d32.cols, &ptr64[0], &inds64[0], &real_data[0])
+                mat = sp.csr_array((real_data, inds64, ptr64), 
+                                    shape=(self.num_rows,)*2, dtype=float)
 
         elif self.type_string == 'd64':
             set_csr_ptr(self.data_d64.cols, &ptr64[0])
@@ -157,11 +166,18 @@ cdef class CSRLike():
                                 shape=(self.num_rows,)*2, dtype=float)
 
         elif self.type_string == 'z32':
-            set_csr_ptr(self.data_z32.cols, &ptr32[0])
-            set_csr_data(self.data_z32.data, self.data_z32.cols, &ptr32[0], &inds32[0], &complex_data[0])
+            if not needs_int64:
+                set_csr_ptr(self.data_z32.cols, &ptr32[0])
+                set_csr_data(self.data_z32.data, self.data_z32.cols, &ptr32[0], &inds32[0], &complex_data[0])
 
-            mat = sp.csr_array((complex_data, inds32, ptr32), 
-                                shape=(self.num_rows,)*2, dtype=complex)
+                mat = sp.csr_array((complex_data, inds32, ptr32), 
+                                   shape=(self.num_rows,)*2, dtype=complex)
+            else:
+                set_csr_ptr(self.data_z32.cols, &ptr64[0])
+                set_csr_data(self.data_z32.data, self.data_z32.cols, &ptr64[0], &inds64[0], &complex_data[0])
+
+                mat = sp.csr_array((complex_data, inds64, ptr64), 
+                                   shape=(self.num_rows,)*2, dtype=complex)
         
         elif self.type_string == 'z64':
             set_csr_ptr(self.data_z64.cols, &ptr64[0])

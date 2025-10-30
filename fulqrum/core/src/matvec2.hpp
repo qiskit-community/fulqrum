@@ -35,12 +35,12 @@ void omp_matvec2(const std::vector<OperatorTerm_t> &terms,
     std::size_t kk;
     const auto *bitsets = subspace.get_bitsets();
 
-#pragma omp parallel if (subspace_dim > 128)
+    #pragma omp parallel if (subspace_dim > 4096)
     {
         // Take care of diagonal term first, if any (usually there is)
         if (has_nonzero_diag)
         {
-#pragma omp for
+            #pragma omp for
             for (kk = 0; kk < subspace_dim; kk++)
             {
                 out_vec[kk] = diag_vec[kk] * in_vec[kk];
@@ -51,7 +51,7 @@ void omp_matvec2(const std::vector<OperatorTerm_t> &terms,
         // Take care of off-diagonal terms
         if (num_terms)
         {
-#pragma omp for schedule(dynamic)
+            #pragma omp for schedule(dynamic)
             for (kk = 0; kk < subspace_dim; kk++)
             {
                 const boost::dynamic_bitset<size_t> &row = bitsets[kk].first;
