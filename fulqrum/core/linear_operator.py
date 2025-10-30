@@ -129,7 +129,7 @@ class SubspaceHamiltonian(LinearOperator):
         Parameters:
             verbose (bool): Turn on verbose mode, default=False.
         """
-        M = self.spmv.to_csrlike().to_csr_array()
+        M = self.spmv.to_csrlike(verbose).to_csr_array(verbose)
         return CSRLinearOperator(M, self.spmv.is_real)
 
     def to_linearoperator(self, verbose=False):
@@ -140,7 +140,7 @@ class SubspaceHamiltonian(LinearOperator):
         Parameters:
             verbose (bool): Turn on verbose mode, default=False.
         """
-        out = self.spmv.to_csrlike()
+        out = self.spmv.to_csrlike(verbose)
         return out
 
 
@@ -207,8 +207,8 @@ class CSRLikeLinearOperator(LinearOperator):
         self.is_real = csrlike.is_real
         super().__init__(shape=csrlike.shape, dtype=float if self.is_real else complex)
 
-    def to_csr_array(self):
-        return self.csrlike.to_csr_array()
+    def to_csr_array(self, verbose=False):
+        return self.csrlike.to_csr_array(verbose)
 
     @property
     def nnz(self):

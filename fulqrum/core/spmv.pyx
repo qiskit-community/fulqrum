@@ -101,7 +101,7 @@ cdef class FulqrumSpMV():
         return 1
 
 
-    def diagonal_vector(self, int verbose=False):
+    def diagonal_vector(self, int verbose=0):
         """Diagonal vector of subspace Hamitlonian
 
         Returns:
@@ -241,7 +241,7 @@ cdef class FulqrumSpMV():
             st = time.perf_counter()
         did_diag_build = self.compute_diag_vector()
         if verbose and did_diag_build:
-            print("Diagonal vector build time", round(time.perf_counter() - st, 3))
+            print("Diagonal vector build time:", round(time.perf_counter() - st, 3))
 
         cdef double start, stop
         cdef int compute_values, data_size
@@ -449,12 +449,18 @@ cdef class FulqrumSpMV():
             print('CSR indices sort time', round(stop-start, 3))
         return mat
 
-    def to_csrlike(self):
+    def to_csrlike(self, int verbose=0):
         # This is here to prevent a circular import
         from fulqrum.core.linear_operator import CSRLikeLinearOperator
         # Compute diag vec if we have not done so already
+        cdef double stop, start
+        start = time.perf_counter()
         self.compute_diag_vector()
+        stop = time.perf_counter()
+        if verbose:
+            print(f"Diagonal vector build time: {round(stop-start, 3)}")
         cdef CSRLike csrlike = CSRLike(self.subspace_dim, self.is_real)
+        start = time.perf_counter()
         if csrlike.type_string == 'd32':
             if self.oper.type == 1:
                 csrlike_builder(&self.oper.terms[0],
@@ -572,6 +578,9 @@ cdef class FulqrumSpMV():
                             csrlike.data_z64.cols,
                             csrlike.data_z64.data)
 
+        stop = time.perf_counter()
+        if verbose:
+            print(f'LinearOperator build time: {round(stop-start, 3)}')
         return CSRLikeLinearOperator(csrlike)
 
 

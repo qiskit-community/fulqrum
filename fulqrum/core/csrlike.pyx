@@ -5,6 +5,7 @@ cimport cython
 from libcpp.vector cimport vector
 include "includes/csrlike_header.pxi"
 include "includes/types.pxi"
+import time
 import numpy as np
 import scipy.sparse as sp
 from fulqrum.exceptions import FulqrumError
@@ -104,7 +105,7 @@ cdef class CSRLike():
         self._nnz = nnz
         return nnz
 
-    def to_csr_array(self):
+    def to_csr_array(self, int verbose=0):
         cdef int[::1] ptr32
         cdef int[::1] inds32
         cdef long long[::1] ptr64
@@ -114,10 +115,13 @@ cdef class CSRLike():
         
         cdef size_t nnz = self.nnz
         cdef object mat
-
+        cdef double stop, start = time.perf_counter()
         # break early if no elements
         if nnz == 0:
             _dtype=np.int64 if self.is_int64 else np.int32
+            stop = time.perf_counter()
+            if verbose:
+                print(f'CSR Conversion time: {round(stop-start, 3)}')
             return  sp.csr_array((np.empty(0, dtype=_dtype), np.empty(0, dtype=_dtype), np.zeros(self.num_rows+1, dtype=_dtype)), 
                                 shape=(self.num_rows,)*2, dtype=float if self.is_real else complex)
 
@@ -193,6 +197,9 @@ cdef class CSRLike():
             mat = sp.csr_array((complex_data, inds64, ptr64), 
                                 shape=(self.num_rows,)*2, dtype=complex)
 
+        stop = time.perf_counter()
+        if verbose:
+            print(f'CSR Conversion time: {round(stop-start, 3)}')
         return mat
 
     def matvec(self,  double_or_complex[::1] x):
