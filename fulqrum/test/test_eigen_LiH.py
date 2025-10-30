@@ -123,7 +123,7 @@ def test_full_dist_lih_eigen_csr():
     S = fq.Subspace(full_dist)
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
 
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
@@ -135,7 +135,7 @@ def test_full_dist_lih_eigen_csr():
     S = fq.Subspace(full_dist, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
 
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
@@ -153,7 +153,7 @@ def test_full_dist_lih_eigen_csr_fast():
     S = fq.Subspace(full_dist)
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
 
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
@@ -165,7 +165,7 @@ def test_full_dist_lih_eigen_csr_fast():
     S = fq.Subspace(full_dist, use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator_fast()
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
 
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
@@ -202,7 +202,7 @@ def test_grnd_dist_lih_eigen_csr():
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
 
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
     evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
@@ -214,7 +214,7 @@ def test_grnd_dist_lih_eigen_csr():
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
 
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
     evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
@@ -228,7 +228,7 @@ def test_grnd_dist_lih_eigen_csr_fast():
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
 
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
     evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
@@ -240,7 +240,7 @@ def test_grnd_dist_lih_eigen_csr_fast():
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator_fast()
 
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
     # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
     evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)

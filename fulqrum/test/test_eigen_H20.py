@@ -70,7 +70,7 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator():
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_linearoperator()
 
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
@@ -79,7 +79,7 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator():
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_linearoperator()
 
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
@@ -94,7 +94,7 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator_fast():
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_linearoperator_fast()
 
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
@@ -103,6 +103,6 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator_fast():
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_linearoperator_fast()
 
-    assert M.mat.dtype == float
+    assert M.matrix.dtype == float
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
