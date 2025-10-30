@@ -140,7 +140,7 @@ class SubspaceHamiltonian(LinearOperator):
         Parameters:
             verbose (bool): Turn on verbose mode, default=False.
         """
-        out = self.spmv.to_csrlike()
+        out = self.spmv.to_csrlike(verbose)
         return out
 
 
