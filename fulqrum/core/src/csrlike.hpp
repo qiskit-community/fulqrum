@@ -79,7 +79,7 @@ void set_csr_data(const std::vector<std::vector<T> >& in_data, const std::vector
     #pragma omp parallel for schedule(dynamic)
     for(kk=0; kk < num_rows; kk++)
     {
-        U start, stop, diff;
+        V start, stop, diff;
         start = ptrs[kk];
         stop = ptrs[kk+1];
         diff = stop - start;

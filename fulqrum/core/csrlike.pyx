@@ -116,20 +116,19 @@ cdef class CSRLike():
 
         cdef int data_size
         cdef int64 total_bytes
+        # does output CSR matrix require int64 indices?
+        cdef size_t max_int = np.iinfo(np.int32).max
+        cdef int needs_int64 = (self.num_rows+1) > max_int or nnz > max_int
         if self.is_real:
             data_size = 8 # size of double
         else:
             data_size = 16 # size of double complex
         # check if matrix will fit into memory
-        if self.is_int64:
+        if needs_int64:
             # indptr + indices + data sizes
             total_bytes = (self.num_rows+1) * 8  + nnz * 8 + nnz * data_size
         else:
             total_bytes = (self.num_rows+1) * 4  + nnz * 4 + nnz * data_size
-        
-        # does output CSR matrix require int64 indices?
-        cdef size_t max_int = np.iinfo(np.int32).max
-        cdef int needs_int64 = (self.num_rows+1) > max_int or nnz > max_int
         
         if psutil.virtual_memory().available < total_bytes:
             raise FulqrumError(f"Sparse matrix copy of size {round(total_bytes/(1024**2), 3)} Mb does not fit within available memory.")
@@ -158,7 +157,6 @@ cdef class CSRLike():
                 set_csr_data(self.data_d32.data, self.data_d32.cols, &ptr64[0], &inds64[0], &real_data[0])
                 mat = sp.csr_array((real_data, inds64, ptr64), 
                                     shape=(self.num_rows,)*2, dtype=float)
-
 
         elif self.type_string == 'd64':
             set_csr_ptr(self.data_d64.cols, &ptr64[0])
