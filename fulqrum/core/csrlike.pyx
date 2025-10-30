@@ -10,11 +10,14 @@ import scipy.sparse as sp
 from fulqrum.exceptions import FulqrumError
 import psutil
 
+cdef size_t MAX_SIZE_T = -1
+
 
 cdef class CSRLike():
     def __cinit__(self, size_t num_rows, unsigned int is_real=1):
         self.num_rows = num_rows
         self.is_real = is_real
+        self._nnz = MAX_SIZE_T
         self.is_int64 = num_rows > np.iinfo(np.int32).max
         self.data_type = 0
         cdef size_t kk
@@ -81,6 +84,9 @@ cdef class CSRLike():
 
     @property
     def nnz(self):
+        # If nnz is already computed do not calculate again
+        if self._nnz != MAX_SIZE_T:
+            return self._nnz
         cdef size_t nnz = 0
         cdef size_t kk
         if self.data_type == 1:
@@ -95,6 +101,7 @@ cdef class CSRLike():
         elif self.data_type == 4:
             for kk in range(self.num_rows):
                 nnz += self.data_z64.data[kk].size()
+        self._nnz = nnz
         return nnz
 
     def to_csr_array(self):
