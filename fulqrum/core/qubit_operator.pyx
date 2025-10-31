@@ -13,6 +13,7 @@ from libcpp.map cimport map
 from libc.math cimport fabs
 from libcpp.algorithm cimport sort as stdsort
 from cython.operator cimport dereference, preincrement
+from fulqrum import __version__ as VERSION
 from fulqrum.exceptions import FulqrumError
 from fulqrum.core.bitset cimport Bitset
 
@@ -989,7 +990,7 @@ cdef class QubitOperator():
         """
         cdef dict out = {'operator-type': 'qubit',
                         'format-version': FORMAT_VERSION,
-                        'fulqrum-version': fversion,
+                        'fulqrum-version': VERSION,
                         'width': self.width,
                         'type':self.oper.type,
                         }
