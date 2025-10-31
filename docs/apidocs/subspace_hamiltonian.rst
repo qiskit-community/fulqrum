@@ -1,7 +1,7 @@
 .. _fulqrum-subspacehamiltonian:
 
-Subspace
-========
+Subspace Hamiltonian
+====================
 
 .. automodule:: fulqrum.core.linear_operator
    :members:
