@@ -10,11 +10,6 @@ import setuptools
 import numpy as np
 from Cython.Build import cythonize
 
-MAJOR = 0
-MINOR = 0
-MICRO = 3
-
-VERSION = "%d.%d.%d" % (MAJOR, MINOR, MICRO)
 
 with open("requirements.txt") as f:
     REQUIREMENTS = f.read().splitlines()
@@ -24,11 +19,6 @@ PACKAGE_DATA = {
     "fulqrum/core": ["*.pxd"],
     "fulqrum/core/src": ["*.hpp"],
 }
-DOCLINES = __doc__.split("\n")
-DESCRIPTION = DOCLINES[0]
-this_dir = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(this_dir, "README.md"), encoding="utf-8") as readme:
-    LONG_DESCRIPTION = readme.read()
 
 CYTHON_EXTS = [
     "subspace",
@@ -121,6 +111,7 @@ for idx, ext in enumerate(CYTHON_EXTS):
 setuptools.setup(
     install_requires=REQUIREMENTS,
     package_data=PACKAGE_DATA,
+    packages=PACKAGES,
     ext_modules=cythonize(
         EXT_MODULES, language_level=3, force=True, compiler_directives={"embedsignature": True}
     )
