@@ -1,7 +1,5 @@
-.. _fulqrum-qubitop:
+.. _fulqrum-qubit-operator:
 
-QubitOperator
-=============
 
 .. automodule:: fulqrum.core.qubit_operator
    :members:

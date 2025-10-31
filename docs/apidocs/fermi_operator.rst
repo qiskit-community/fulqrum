@@ -1,7 +1,6 @@
-.. _fulqrum-fermiop:
+.. _fulqrum-fermi-operator:
 
-FermionicOperator
-=================
+
 
 .. automodule:: fulqrum.core.fermi_operator
    :members:

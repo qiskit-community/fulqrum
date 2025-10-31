@@ -13,8 +13,6 @@ This is very much a work in progress, and not suitable for human or animal consu
 
 ## Installation
 
-> [!IMPORTANT]
-> For some reason clang gives markedly better performance than gcc. Vendor specific compilers also give added performance, if available.
 
 ## Requirements
 
@@ -26,7 +24,7 @@ If using `conda` then adding Boost can be done using:
 conda install boost
 ```
 
-and the required include files should be automatically found.
+and the required include files should be automatically found on Linux and OSX.
 
 
 ## Building files locally
@@ -36,7 +34,7 @@ In order to run the unittests locally, it is only necessary to build the Cython 
 ```bash
 python setup.py build_ext --inplace
 ```
-you can add also use env flags such as `FULQRUM_ARCH=znver4` (or whatever you arch is) if you like.
+you can add also use env flags such as `CC=clang CXX=clang++` or set the target architecture using `FULQRUM_ARCH=znver4` (or whatever you have)
 
 ## Installation on Linux
 
@@ -60,7 +58,7 @@ Then installation of Fulqrum with openmp can be accomplished using a call like:
 CC=clang CXX=clang++ pip install .
 ```
 
-### Installation on Windows
+### Installation on Windows [Currently not working]
 
 I have no idea how to set env vars on Windows, so I just do:
 
