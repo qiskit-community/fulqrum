@@ -121,7 +121,7 @@ void csr_matrix_builder2(const OperatorTerm_t *terms,
                                   term->real_phase, term->indices.size(), val);
                 }
             } // end loop over terms in this group
-            if (val != 0.0)
+            if (std::abs(val) > ATOL)
             {
                 if (compute_values)
                 {

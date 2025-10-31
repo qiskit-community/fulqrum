@@ -12,6 +12,7 @@
 #include "bitset_hashmap.hpp"
 #include "elements.hpp"
 #include "operators.hpp"
+#include "constants.hpp"
 #include <boost/dynamic_bitset.hpp>
 
 template <typename T, typename U>
@@ -90,7 +91,7 @@ void csr_matrix_builder(const OperatorTerm_t *terms,
                                   term->coeff, term->real_phase, term->indices.size(), val);
                 }
             } // end loop over terms in this group
-            if (val != 0.0)
+            if (std::abs(val) > ATOL)
             {
                 if (compute_values)
                 {
