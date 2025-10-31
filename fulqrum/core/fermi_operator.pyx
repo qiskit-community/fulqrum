@@ -9,6 +9,7 @@ from libcpp.pair cimport pair
 
 from collections.abc import Iterable
 import numbers
+from fulqrum import __version__ as VERSION
 from fulqrum.core.qubit_operator cimport QubitOperator
 from fulqrum.exceptions import FulqrumError
 
@@ -395,7 +396,7 @@ cdef class FermionicOperator():
         """
         cdef dict out = {'operator-type': 'fermi',
                         'format-version': FORMAT_VERSION,
-                        'fulqrum-version': fversion,
+                        'fulqrum-version': VERSION,
                         'width': self.width
                         }
         cdef FermionicTerm_t * term

@@ -1,7 +1,3 @@
 [build-system]
-requires = ["setuptools", "numpy", "cython"]
+requires = ["setuptools", "wheel", "numpy", "cython"]
 build-backend = "setuptools.build_meta"
-
-
-[install]
-use_pep517 = true
