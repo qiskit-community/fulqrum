@@ -109,7 +109,7 @@ void omp_matvec2(const std::vector<OperatorTerm_t> &terms,
                                           term->coeff, term->real_phase, term->indices.size(), temp_val);
                         }
                     } // end loop over this group
-                    if (!do_col_search) // if at least one element was found
+                    if (std::abs(temp_val) > ATOL) // if at least one element was found
                     {
                         val += temp_val * in_vec[*col_ptr];
                     }
