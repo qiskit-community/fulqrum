@@ -3,7 +3,6 @@
 
 from libcpp.vector cimport vector
 
-
 cdef extern from "../src/csrlike.hpp":
     # CSR like matrix data structures
     ctypedef struct RowData_Real32_t:
@@ -32,4 +31,13 @@ cdef extern from "../src/csrlike.hpp":
 
     void csrlike_spmv[T, U](const vector[vector[T]]& data, const vector[vector[U]]& cols,
                             const T * vec, T * out, U dim)
+
+    void clear_csrlike_data(vector[vector[int]]& data_d32_cols,
+                            vector[vector[double]]& data_d32_data,
+                            vector[vector[long long]]& data_d64_cols,
+                            vector[vector[double]]& data_d64_data,
+                            vector[vector[int]]& data_z32_cols,
+                            vector[vector[complex]]& data_z32_data,
+                            vector[vector[long long]]& data_z64_cols,
+                            vector[vector[complex]]& data_z64_data)
 

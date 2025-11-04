@@ -83,7 +83,7 @@ inline unsigned int bitset_ladder_int(const uint8_t *row,
                                       const unsigned int *__restrict inds,
                                       const unsigned int num_bits)
 {
-    std::size_t row_int, out_int = 0;
+    unsigned int row_int, out_int = 0;
     unsigned int kk, pos;
 
     for (kk = 0; kk < num_bits; kk++)
@@ -112,6 +112,7 @@ inline unsigned int passes_proj_validation(const OperatorTerm_t *__restrict term
     unsigned int block_num, block_idx;
     unsigned int pos;
     unsigned int bit;
+    unsigned int out = 1;
     for (kk = 0; kk < term->proj_indices.size(); kk++)
     {
         pos = term->proj_indices[kk];
@@ -120,8 +121,9 @@ inline unsigned int passes_proj_validation(const OperatorTerm_t *__restrict term
         bit = ((bitset.m_bits[block_num] >> block_idx) & std::size_t(1));
         if (bit != term->proj_bits[kk])
         {
-            return 0;
+            out = 0;
+            break;
         }
     }
-    return 1;
+    return out;
 }

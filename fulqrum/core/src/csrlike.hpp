@@ -110,3 +110,23 @@ void csrlike_spmv(const std::vector<std::vector<T>>& data, const std::vector<std
         out[row] += dot;
     }
 }
+
+
+void clear_csrlike_data(std::vector<std::vector<int>>& data_d32_cols,
+                        std::vector<std::vector<double>>& data_d32_data,
+                        std::vector<std::vector<long long>>& data_d64_cols,
+                        std::vector<std::vector<double>>& data_d64_data,
+                        std::vector<std::vector<int>>& data_z32_cols,
+                        std::vector<std::vector<std::complex<double>>>& data_z32_data,
+                        std::vector<std::vector<long long>>& data_z64_cols,
+                        std::vector<std::vector<std::complex<double>>>& data_z64_data)
+{
+    std::vector<std::vector<int>>().swap(data_d32_cols);
+    std::vector<std::vector<double>>().swap(data_d32_data);
+    std::vector<std::vector<long long>>().swap(data_d64_cols);
+    std::vector<std::vector<double>>().swap(data_d64_data);
+    std::vector<std::vector<int>>().swap(data_z32_cols);
+    std::vector<std::vector<std::complex<double>>>().swap(data_z32_data);
+    std::vector<std::vector<long long>>().swap(data_z64_cols);
+    std::vector<std::vector<std::complex<double>>>().swap(data_z64_data);
+}

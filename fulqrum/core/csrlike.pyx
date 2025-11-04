@@ -43,16 +43,14 @@ cdef class CSRLike():
 
     def __dealloc__(self):
         # Clear cols and data vectors upon deallocation of class
-        self.data_d32.cols = vector[vector[int]]()
-        self.data_d64.cols = vector[vector[int64]]()
-        self.data_z32.cols = vector[vector[int]]()
-        self.data_z64.cols = vector[vector[int64]]()
-        
-        self.data_d32.data = vector[vector[double]]()
-        self.data_d32.data = vector[vector[double]]()
-        self.data_z32.data = vector[vector[complex]]()
-        self.data_z64.data = vector[vector[complex]]()
-
+        clear_csrlike_data(self.data_d32.cols,
+                           self.data_d32.data,
+                           self.data_d64.cols,
+                           self.data_d64.data,
+                           self.data_z32.cols,
+                           self.data_z32.data,
+                           self.data_z64.cols,
+                           self.data_z64.data)
     @property
     def shape(self):
         return (self.num_rows, self.num_rows)
