@@ -122,7 +122,7 @@ void csrlike_builder2(const OperatorTerm_t *terms,
                                   term->coeff, term->real_phase, term->indices.size(), val);
                 }
             } // end loop over terms in this group
-            if (val != 0.0)
+            if (std::abs(val) > ATOL)
             {
                 row_cols->push_back(*col_ptr);
                 row_data->push_back(val);
