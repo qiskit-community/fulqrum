@@ -68,7 +68,7 @@ cdef class FermionicOperator():
     
     def __dealloc__(self):
         # Clear vectors upon deallocation of class
-        self.oper.terms = vector[FermionicTerm_t]()
+        (vector[FermionicTerm_t]()).swap(self.oper.terms)
     
     def __len__(self):
         """Number of terms in operator

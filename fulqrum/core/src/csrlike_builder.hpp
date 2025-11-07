@@ -108,5 +108,7 @@ void csrlike_builder(const OperatorTerm_t *terms,
             sort_end_long = row_cols->size() - 1;
             quicksort_indices_data(row_cols->data(), row_data->data(), sort_start_long, sort_end_long);
         }
+    row_cols->shrink_to_fit();
+    row_data->shrink_to_fit();
     } // end loop over all rows
 }
