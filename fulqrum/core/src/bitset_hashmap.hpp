@@ -85,9 +85,9 @@ namespace bitset_map_namespace
         {
             if (use_all_blocks)
             {
-                return map.try_get(bs);
+                return map.try_get_using_bucket_occ(bs);
             }
-            return map2.try_get(bs);
+            return map2.try_get_using_bucket_occ(bs);
         }
 
         std::size_t get(const Bitset &bs) const
