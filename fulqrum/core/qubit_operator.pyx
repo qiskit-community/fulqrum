@@ -981,6 +981,52 @@ cdef class QubitOperator():
         return np.asarray(out)
 
 
+    def worst_case_offdiag_group_amplitudes(self):
+        """Compute the worst case amplitude of off-diagonal groups.
+        
+        Requires input operator to be purely off-diagonal
+
+        Parameters:
+            off (QubitOperator): Off-diagonal qubit operator
+
+        Returns:
+            ndarray: Worse case amplitudes of groups
+        """
+        diag_op, _ = self.split_diagonal()
+        if diag_op.num_terms != 0:
+            raise FulqrumError('Operator must contain off-diagonal terms only')
+        cdef size_t[::1] group_ptrs = self.group_ptrs()
+        cdef size_t[::1] ladder_starts
+        cdef list out = []
+        cdef double max_val, temp_val
+        cdef size_t max_ladder_int
+        cdef size_t idx, kk, jj, start, stop
+        if self.type == 2:
+            max_ladder_int = 2**self.ladder_width
+            self.group_term_sort_by_ladder_int()
+            ladder_starts = self.group_ladder_bin_starts()
+            for idx in range(self.num_groups):
+                max_val = 0
+                for kk in range(idx*max_ladder_int, (idx+1)*max_ladder_int):
+                    start = ladder_starts[kk]
+                    stop = ladder_starts[kk+1]
+                    temp_val = 0
+                    for jj in range(start, stop):
+                        temp_val += abs(self[jj].coeff)
+                    if temp_val > max_val:
+                        max_val = temp_val
+                out.append(max_val)
+        else:
+            for idx in range(self.num_groups):
+                start = group_ptrs[idx]
+                stop = group_ptrs[idx+1]
+                temp_val = 0
+                for jj in range(start, stop):
+                    temp_val += abs(self[jj].coeff)
+                out.append(temp_val)
+        return np.asarray(out)
+
+
     @cython.boundscheck(False)
     def to_dict(self):
         """Dictionary represenation of QubitOperator
