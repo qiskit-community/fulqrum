@@ -112,6 +112,20 @@ cdef class Subspace():
             out = {k: v for k, v in sorted(out.items(), key=lambda item: int(item[0], 2))}
         return out
     
+    def get_n_th_bitstring(self, size_t n):
+        """Return n-th bitstring in the Subspace
+
+        Parameters:
+            n (size_t): Index of the expected bitstring.
+
+        Returns:
+            str: N-th bitstring in the subspace. Note that, both Python
+                dictionary and emhash8::HashMap retains the insertion order.
+        """
+        cdef string s
+        to_string(self.subspace.bitstrings.get_n_th_bitset(n), s)
+        return s
+    
     @cython.boundscheck(False)
     def to_dict(self):
         """Converts Subspace to a dictionary

@@ -56,3 +56,15 @@ def test_subspace_vector_order3():
         "00100",
         "10111",
     ]
+
+
+def test_get_n_th_bitstring():
+    """Test get_n_th_bitstring() method returns the correct bitstring
+    Both Python and Fulqrum's emhash8::HashMap dictionaries retain
+    the insertion order, and this test checks in that order.
+    """
+    V = Subspace(dic)
+    assert V.get_n_th_bitstring(0) == "01010"
+    assert V.get_n_th_bitstring(1) == "10101"
+    assert V.get_n_th_bitstring(2) == "11111"
+    assert V.get_n_th_bitstring(3) == "11100"

@@ -74,6 +74,26 @@ class SubspaceHamiltonian(LinearOperator):
             vec = vec.view().reshape(vec.shape[0])
         return self.spmv.subspace.interpret_vector(vec, atol, sort)
 
+    def get_n_th_bitstring(self, n):
+        """Return n-th bitstring in the SubspaceHamiltonian
+
+        Parameters:
+            n (int): Index of the expected bitstring.
+
+        Returns:
+            str: N-th bitstring in the subspace. Note that, both Python
+                dictionary and emhash8::HashMap retains the insertion order.
+
+        Raises:
+            ValueError: If ``n`` is >= to the number of bitstrings in the subspace.
+        """
+        if n >= self.spmv.subspace.size():
+            raise ValueError(
+                f"Value of n ({n}) >= subspace size {self.spmv.subspace.size()}"
+            )
+
+        return self.spmv.subspace.get_n_th_bitstring(n)
+
     def __repr__(self):
         out = f"<SubspaceHamiltonian(width={self.spmv.width}, "
         out += f"num_op_terms={self.spmv.num_diag_terms+self.spmv.num_terms}({self.spmv.num_diag_terms}/{self.spmv.num_terms}), "
