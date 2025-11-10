@@ -68,6 +68,9 @@ python setup.py install
 
 ## Examples
 
+> :warning: **Warning**: The SciPy sparse `eigs` and `eigsh` solvers can conflict with the OpenMP used by Fulqrum if the underlying blas library is based on OpenBlas.  In these cases one needs to set the follwoing env variable, `OPENBLAS_NUM_THREADS=1`, before executing anything.  If this is not set then the eigensolving proceeds very slowly due to over-threading.
+
+
 ### 1541 qubit spin-lattice
 
 | Processor  | Platform    | Time (sec)  | Time w/grouping (sec)  | Time w/bitset (sec)  |
