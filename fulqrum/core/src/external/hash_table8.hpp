@@ -24,6 +24,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE
 
+
+// Fulqrum-specific edtis:
+// This file is an edited version of the original emhash8::HashMap.
+// It includes a new variable ``boost::dynamic_bitset<size_t> _bucket_occupancy``.
+// The variable has ``_num_buckets`` number of bits, all initialized as 0s. During
+// insertion, if an item is inserted into a bucket, the corresponding bit will be
+// set to 1.
+// During lookup, first this bitset will be inspected to check whether the bit
+// corresponding the bucket is occupied (1) or empty (0). If empty, the search will
+// return immediately.
+// Inspecting ``_bucket_occupancy[bucket]`` is faster than (better cache hit rates?)
+// than inspecting the Index struct as ``_index[bucket]``.
+// For example, for a 64 bytes cache-line load, bitset-based  ``_bucket_occupancy``
+// brings occupancy information about 64 x 8 = 512 buckets in the cache. On the other
+// hand, ``_index`` struct, which consists of two size_t items, can bring 64/(2x8) = 4
+// buckets in the cache.
+// Note that if a bucket is not empty, we have to load ``_index`` but ``_bucket_occupancy``
+// gives us a faster way to reject empty buckets.
+// Also note that, the changes only works for Fulqrum's way of the HashMap use.
+// Specifically, we call hashmap.reserve() which fixes the number of buckets, and
+// thus, allowing us to resize the ``_bucket_occupancy`` with right number of bits.
+// Next, the bits are set only when ``insert_unique()`` or ``emplace_unique()``
+// methods are used to insert items in the hashmap.
+// Finally, only ``try_get_from_precomp_hash_bucket()`` uses the cheaper empty bucket
+// check during lookup.
+
 #pragma once
 
 #include <cstring>
@@ -37,6 +63,8 @@
 #include <iterator>
 #include <algorithm>
 #include <memory>
+
+#include <boost/dynamic_bitset.hpp>
 
 #if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__x86_64__)
 #include <xmmintrin.h>
@@ -667,6 +695,32 @@ public:
         return slot != _num_filled ? &_pairs[slot].second : nullptr;
     }
 
+    /// Returns the matching ValueT or nullptr if k isn't found.
+    ValueT* try_get_using_bucket_occ(const KeyT& key) noexcept
+    {
+        const auto key_hash = hash_key(key);
+        const auto bucket = size_type(key_hash & _mask);
+        if (!_bucket_occupancy.test(bucket))
+        {
+            return nullptr;
+        }
+        const auto slot = find_filled_slot_from_precomp_hash_bucket(key, key_hash, bucket);
+        return slot != _num_filled ? &_pairs[slot].second : nullptr;
+    }
+
+    /// Const version of the above
+    ValueT* try_get_using_bucket_occ(const KeyT& key) const noexcept
+    {
+        const auto key_hash = hash_key(key);
+        const auto bucket = size_type(key_hash & _mask);
+        if (!_bucket_occupancy.test(bucket))
+        {
+            return nullptr;
+        }
+        const auto slot = find_filled_slot_from_precomp_hash_bucket(key, key_hash, bucket);
+        return slot != _num_filled ? &_pairs[slot].second : nullptr;
+    }
+
     // print funcs
     size_type get_mask() const {
         return _mask;
@@ -812,6 +866,7 @@ public:
         const auto key_hash = hash_key(key);
         auto bucket = find_unique_bucket(key_hash);
         EMH_NEW(std::forward<K>(key), std::forward<V>(val), bucket, key_hash);
+        _bucket_occupancy.set(bucket);
         return bucket;
     }
 
@@ -1107,6 +1162,7 @@ public:
 
         //assert(required_buckets < max_size());
         rehash(required_buckets + 2);
+        _bucket_occupancy.resize(_num_buckets);
         return true;
     }
 
@@ -1386,6 +1442,41 @@ private:
         auto next_bucket = _index[bucket].next;
         if ((int)next_bucket < 0)
             return _num_filled;
+
+        const auto slot = _index[bucket].slot & _mask;
+        //prefetch_heap_block((char*)&_pairs[slot]);
+        if (EMH_EQHASH(bucket, key_hash)) {
+            if (EMH_LIKELY(_eq(key, _pairs[slot].first)))
+                return slot;
+        }
+        if (next_bucket == bucket)
+            return _num_filled;
+
+        while (true) {
+            if (EMH_EQHASH(next_bucket, key_hash)) {
+                const auto eslot = _index[next_bucket].slot & _mask;
+                if (EMH_LIKELY(_eq(key, _pairs[eslot].first)))
+                    return eslot;
+            }
+
+            const auto nbucket = _index[next_bucket].next;
+            if (nbucket == next_bucket)
+                return _num_filled;
+            next_bucket = nbucket;
+        }
+
+        return _num_filled;
+    }
+
+    // Find the slot with this key, or return bucket size
+    template<typename K=KeyT>
+    size_type find_filled_slot_from_precomp_hash_bucket(
+        const K& key,
+        const size_type& key_hash,
+        const size_type& bucket
+    ) const noexcept
+    {
+        auto next_bucket = _index[bucket].next;
 
         const auto slot = _index[bucket].slot & _mask;
         //prefetch_heap_block((char*)&_pairs[slot]);
@@ -1845,6 +1936,7 @@ private:
     size_type _num_buckets;
     size_type _num_filled;
     size_type _last;
+    boost::dynamic_bitset<size_t> _bucket_occupancy;
 #if EMH_HIGH_LOAD
     size_type _ehead;
 #endif
