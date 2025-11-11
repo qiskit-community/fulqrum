@@ -48,7 +48,8 @@ def openfermion_qubit_op_to_fulqrum(object op):
     """
     cdef str label
     cdef complex coeff
-    cdef size_t num_qubits, max_idx = 0
+    cdef size_t max_idx = 0
+    cdef int num_qubits
     cdef tuple paulis
     cdef list chars, data, b_half, a_half, interleaved
     cdef dict mapper
