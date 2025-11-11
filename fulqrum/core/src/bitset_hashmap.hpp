@@ -126,22 +126,5 @@ namespace bitset_map_namespace
             }
             return map2.size();
         }
-
-        void print_private_vars() const
-        {
-            std::size_t mask, num_buckets, num_filled;
-            if (use_all_blocks)
-            {
-                mask = map.get_mask();
-                num_buckets = map.get_num_buckets();
-                num_filled = map.get_num_filled();
-            }
-            else
-            {
-                mask = map2.get_mask();
-                num_buckets = map2.get_num_buckets();
-                num_filled = map2.get_num_filled();
-            }
-        }
     };
 }

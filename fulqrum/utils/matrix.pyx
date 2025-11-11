@@ -56,7 +56,7 @@ def qubitoperator_to_matrix(QubitOperator op):
     if op.width > 10:
         raise FulqrumError('Casting to dense matrix works for <= 10 qubits only')
     A = np.zeros((2**op.width,)*2, dtype=complex)
-    cdef size_t width = op.width
+    cdef int width = op.width
     cdef size_t num_terms = op.oper.terms.size()
     cdef OperatorTerm_t * term
     cdef size_t kk, jj

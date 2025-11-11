@@ -29,7 +29,6 @@ void csrlike_builder(const OperatorTerm_t *terms,
                      std::vector<std::vector<T>>& data)
 {
     std::size_t kk;
-    T temp, _sum;
 
     const auto *bitsets = subspace.get_bitsets();
 

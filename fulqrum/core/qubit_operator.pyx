@@ -776,7 +776,7 @@ cdef class QubitOperator():
         cdef size_t kk, ll, start, stop
         cdef size_t[::1] ptrs = self.group_ptrs()
         cdef QubitOperator out = QubitOperator(self.width)
-        for kk in range(ptrs.shape[0]-1):
+        for kk in range(<size_t>(ptrs.shape[0]-1)):
             if (self.oper.terms[ptrs[kk]].group == number):
                 start = ptrs[kk]
                 stop = ptrs[kk+1]
@@ -1005,7 +1005,7 @@ cdef class QubitOperator():
             max_ladder_int = 2**self.ladder_width
             self.group_term_sort_by_ladder_int()
             ladder_starts = self.group_ladder_bin_starts()
-            for idx in range(self.num_groups):
+            for idx in range(<size_t>self.num_groups):
                 max_val = 0
                 for kk in range(idx*max_ladder_int, (idx+1)*max_ladder_int):
                     start = ladder_starts[kk]
@@ -1017,7 +1017,7 @@ cdef class QubitOperator():
                         max_val = temp_val
                 out.append(max_val)
         else:
-            for idx in range(self.num_groups):
+            for idx in range(<size_t>self.num_groups):
                 start = group_ptrs[idx]
                 stop = group_ptrs[idx+1]
                 temp_val = 0
