@@ -225,7 +225,7 @@ cdef class FulqrumSpMV():
         Returns:
             csr_array: Sparse representation of subspace Hamiltonian
         """
-        cdef size_t max_int = np.iinfo(np.int32).max
+        cdef int64 max_int = np.iinfo(np.int32).max
         cdef size_t num_terms = self.oper.terms.size()
         
         cdef int[::1] indptr32
@@ -264,7 +264,7 @@ cdef class FulqrumSpMV():
                     return sp.csr_array((self.subspace_dim, self.subspace_dim), dtype=float if self.is_real else complex)
 
                 # if num_elem < max_int and subspace_dim + 1 < max_int then problem is int32 type
-                if (indptr64[self.subspace_dim] < max_int) and ((self.subspace_dim + 1) < max_int):
+                if (indptr64[self.subspace_dim] < max_int) and (<int64>(self.subspace_dim + 1) < max_int):
                     int_64 = 0
                 nnz = indptr64[self.subspace_dim]
                 # check if matrix will fit into memory
@@ -273,7 +273,7 @@ cdef class FulqrumSpMV():
                     total_bytes = (self.subspace_dim + 1) * 8  + nnz * 8 + nnz * data_size
                 else:
                     total_bytes = (self.subspace_dim + 1) * 4  + nnz * 4 + nnz * data_size
-                if psutil.virtual_memory().available < total_bytes:
+                if <int64>(psutil.virtual_memory().available) < total_bytes:
                     raise FulqrumError(f"Sparse matrix of size {round(total_bytes/(1024**2), 3)}Mb does not fit within available memory.")
                 if verbose:
                     print(f'Est. matrix size: {round(total_bytes/(1024**2), 3)}Mb')
