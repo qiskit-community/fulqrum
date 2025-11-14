@@ -23,7 +23,6 @@ def test_interpret_renormalization():
     S = fq.Subspace(full_dist)
     Hsub = fq.SubspaceHamiltonian(OP, S)
 
-    # here we use starting vector of all ones to match phase with direct ans
     x0 = np.ones(len(S), dtype=Hsub.dtype)
     _, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
 
