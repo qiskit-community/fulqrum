@@ -82,29 +82,39 @@ cdef class Subspace():
         return self.subspace.size
 
     @cython.boundscheck(False)
-    def interpret_vector(self, double_or_complex[::1] vec, double atol=1e-12, int sort=0):
+    def interpret_vector(self, double_or_complex[::1] vec, double atol=1e-12, int sort=0, int renormalize=True):
         """Convert solution vector into dict of counts and complex amplitudes
 
         Parameters:
             vec (ndarray): Complex solution vector
             atol (double): Absolute tolerance for truncation, default=1e-12
             sort (int): Sort output dict by integer representation.
+            renormalize (bool): Renormalize values such that probabilities sum to one, default = True
 
         Returns:
             dict: Dictionary with bit-string keys and complex values
 
         Notes:
-            Truncation can be disabled by calling `atol=-1`
+            Truncation can be disabled by calling `atol=0`
         """
         cdef size_t kk, idx
+        cdef double abs_val
+        cdef double reduced_prob = 0
         cdef string s
         cdef dict out = {}
 
         for kk in range(self.subspace.size):
-            if abs(vec[kk]) <= atol:
+            abs_val = abs(vec[kk])
+            if abs_val <= atol:
                 continue
             to_string(self.subspace.bitstrings.get_n_th_bitset(kk), s)
             out[s] = vec[kk]
+            reduced_prob += abs_val * abs_val
+
+        if renormalize:
+            reduced_prob = math.sqrt(reduced_prob)
+            for key in out:
+                out[key] /= reduced_prob
 
         if sort:
             out = {k: v for k, v in sorted(out.items(), key=lambda item: int(item[0], 2))}
