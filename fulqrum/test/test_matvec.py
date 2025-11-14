@@ -19,7 +19,7 @@ def test_matvec1():
     perm = [int(key, 2) for key in S.to_dict().keys()]
     perm_vec = in_vec[perm]
     out_vec = F.matvec(perm_vec)
-    res = F.interpret_vector(out_vec, -1, sort=True)
+    res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
     dense_op = kron_str("ZZ") + 5 * kron_str("XX") - 3 * kron_str("YY")
     ans = np.real(dense_op).dot(in_vec)
     assert np.allclose(list(res.values()), ans)
@@ -34,7 +34,7 @@ def test_matvec2():
     perm = [int(key, 2) for key in S.to_dict().keys()]
     perm_vec = in_vec[perm]
     out_vec = F.matvec(perm_vec)
-    res = F.interpret_vector(out_vec, -1, sort=True)
+    res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
     dense_op = kron_str("II")
     ans = dense_op.dot(in_vec)
     assert np.allclose(list(res.values()), ans)
@@ -51,7 +51,7 @@ def test_matvec3():
     perm = [int(key, 2) for key in S.to_dict().keys()]
     perm_vec = in_vec[perm]
     out_vec = F.matvec(perm_vec)
-    res = F.interpret_vector(out_vec, -1, sort=True)
+    res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
     dense_op = kron_str("YX") + 4 / 5 * kron_str("+I") + 4 / 5 * kron_str("-I")
     ans = dense_op.dot(in_vec)
     assert np.allclose(list(res.values()), ans)
@@ -66,7 +66,7 @@ def test_matvec4():
     F = SubspaceHamiltonian(H, S)
     in_vec = np.ones(len(S), dtype=complex)
     out_vec = F.matvec(in_vec)
-    res = F.interpret_vector(out_vec, -1, sort=True)
+    res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
     dense_op = kron_str("YX") + 4 / 5 * kron_str("+I") + 4 / 5 * kron_str("-I")
     ans = dense_op[0:3:2, 0:3:2].dot(in_vec)
     assert np.allclose(list(res.values()), ans)
@@ -81,7 +81,7 @@ def test_matvec5():
     F = SubspaceHamiltonian(H, S)
     in_vec = np.ones(len(S), dtype=complex)
     out_vec = F.matvec(in_vec)
-    res = F.interpret_vector(out_vec, -1, sort=True)
+    res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
     dense_op = kron_str("YX") + 4 / 5 * kron_str("+I") + 4 / 5 * kron_str("-I")
     ans = dense_op[0:4:3, 0:4:3].dot(in_vec)
     assert np.allclose(list(res.values()), ans)
@@ -102,7 +102,7 @@ def test_matvec_bin_width1():
     H = QubitOperator.from_label("ZIZ")
     S = Subspace(counts)
     sub = SubspaceHamiltonian(H, S)
-    res_dict = sub.interpret_vector(sub.matvec(in_vec), -1)
+    res_dict = sub.interpret_vector(sub.matvec(in_vec), -1, renormalize=False)
     assert res_dict == ans_dict
 
 
@@ -121,7 +121,7 @@ def test_matvec_bin_width2():
     H = QubitOperator.from_label("ZIZ") + QubitOperator.from_label("XXX")
     S = Subspace(counts)
     sub = SubspaceHamiltonian(H, S)
-    res_dict = sub.interpret_vector(sub.matvec(in_vec), -1)
+    res_dict = sub.interpret_vector(sub.matvec(in_vec), -1, renormalize=False)
     assert res_dict == ans_dict
 
 
@@ -144,7 +144,7 @@ def test_matvec_bin_width3():
     )
     S = Subspace(counts)
     sub = SubspaceHamiltonian(H, S)
-    res_dict = sub.interpret_vector(sub.matvec(in_vec), -1)
+    res_dict = sub.interpret_vector(sub.matvec(in_vec), -1, renormalize=False)
     assert res_dict == ans_dict
 
 
@@ -168,7 +168,9 @@ def test_matvec_bin_width4():
     )
     S = Subspace(counts)
     sub = SubspaceHamiltonian(H, S)
-    res_dict = sub.interpret_vector(sub.matvec(np.ones(2**3, dtype=complex)), -1)
+    res_dict = sub.interpret_vector(
+        sub.matvec(np.ones(2**3, dtype=complex)), -1, renormalize=False
+    )
     assert res_dict == ans_dict
 
 
@@ -184,7 +186,7 @@ def test_csrlike_matvec1():
     perm = [int(key, 2) for key in S.to_dict().keys()]
     perm_vec = in_vec[perm]
     out_vec = M.matvec(perm_vec)
-    res = F.interpret_vector(out_vec, -1, sort=True)
+    res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
     dense_op = kron_str("ZZ") + 5 * kron_str("XX") - 3 * kron_str("YY")
     ans = np.real(dense_op).dot(in_vec)
     assert np.allclose(list(res.values()), ans)
@@ -200,7 +202,7 @@ def test_csrlike_matvec2():
     perm = [int(key, 2) for key in S.to_dict().keys()]
     perm_vec = in_vec[perm]
     out_vec = M.matvec(perm_vec)
-    res = F.interpret_vector(out_vec, -1, sort=True)
+    res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
     dense_op = kron_str("II")
     ans = dense_op.dot(in_vec)
     assert np.allclose(list(res.values()), ans)
@@ -218,7 +220,7 @@ def test_csrlike_matvec3():
     perm = [int(key, 2) for key in S.to_dict().keys()]
     perm_vec = in_vec[perm]
     out_vec = M.matvec(perm_vec)
-    res = F.interpret_vector(out_vec, -1, sort=True)
+    res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
     dense_op = kron_str("YX") + 4 / 5 * kron_str("+I") + 4 / 5 * kron_str("-I")
     ans = dense_op.dot(in_vec)
     assert np.allclose(list(res.values()), ans)
@@ -234,7 +236,7 @@ def test_csrlike_matvec4():
     M = F.to_linearoperator()
     in_vec = np.ones(len(S), dtype=complex)
     out_vec = M.matvec(in_vec)
-    res = F.interpret_vector(out_vec, -1, sort=True)
+    res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
     dense_op = kron_str("YX") + 4 / 5 * kron_str("+I") + 4 / 5 * kron_str("-I")
     ans = dense_op[0:3:2, 0:3:2].dot(in_vec)
     assert np.allclose(list(res.values()), ans)
@@ -250,7 +252,7 @@ def test_csrlike_matvec5():
     M = F.to_linearoperator()
     in_vec = np.ones(len(S), dtype=complex)
     out_vec = M.matvec(in_vec)
-    res = F.interpret_vector(out_vec, -1, sort=True)
+    res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
     dense_op = kron_str("YX") + 4 / 5 * kron_str("+I") + 4 / 5 * kron_str("-I")
     ans = dense_op[0:4:3, 0:4:3].dot(in_vec)
     assert np.allclose(list(res.values()), ans)

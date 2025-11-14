@@ -56,13 +56,14 @@ class SubspaceHamiltonian(LinearOperator):
         """
         return self.spmv.minimum_diagonal_energy()
 
-    def interpret_vector(self, vec, atol=1e-14, sort=0):
-        """Convert solution vector into dict of counts and complex amplitudes
+    def interpret_vector(self, vec, atol=1e-14, sort=False, renormalize=True):
+        """Convert solution vector into dict of counts and real or complex amplitudes
 
         Parameters:
             vec (ndarray): Complex or real solution vector
             atol (double): Absolute tolerance for truncation, default=1e-14
-            sort (int): Sort output dict by integer representation.
+            sort (bool): Sort output dict by integer representation, default=False.
+            renormalize (bool): Renormalize values such that probabilities sum to one, default = True
 
         Returns:
             dict: Dictionary with bit-string keys and complex values
@@ -72,7 +73,7 @@ class SubspaceHamiltonian(LinearOperator):
         """
         if len(vec.shape) == 2:
             vec = vec.view().reshape(vec.shape[0])
-        return self.spmv.subspace.interpret_vector(vec, atol, sort)
+        return self.spmv.subspace.interpret_vector(vec, atol, sort, renormalize)
 
     def get_n_th_bitstring(self, n):
         """Return n-th bitstring in the SubspaceHamiltonian
