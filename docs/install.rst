@@ -22,6 +22,7 @@ Required
    "numpy", 1.25, "Used as array interface between Python and C++"
    "orjson", "any", "IO for saving operators"
    "psutil", "any", "Get system information such as available memory"
+   "scipy", "1.11.1", "Needed for `scipy.sparse.linalg.LinearOperator` class"
 
 
 Optional
