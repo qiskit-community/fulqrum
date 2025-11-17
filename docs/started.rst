@@ -17,30 +17,29 @@ To begin, we import the required libraries, and build our Hamiltonian as a ``Qub
     from qiskit.transpiler import CouplingMap
     import fulqrum as fq
 
-    # Build 25-qubit coupling map
-    cmap = CouplingMap.from_grid(5, 5)
+    # Build 16-qubit coupling map
+    cmap = CouplingMap.from_grid(4, 4)
     num_qubits = cmap.size()
 
     # Generate Hamiltonian
     H = fq.QubitOperator(num_qubits, [])
     touched_edges = set({})
-    coeffs = [1/2, 1/2, 1]
+    coeffs = [-1/2, -1/2, -1]
     for edge in cmap.get_edges():
         if edge[::-1] not in touched_edges:
-            H += fq.QubitOperator(num_qubits, [("XX", edge, coeffs[0]), 
-                                            ("YY", edge, coeffs[1]), 
-                                            ("ZZ", edge, coeffs[2])])
             touched_edges.add(edge)
+            H += fq.QubitOperator(num_qubits, [("XX", edge, coeffs[0]), 
+                                               ("YY", edge, coeffs[1]), 
+                                               ("ZZ", edge, coeffs[2])])
 
 
 The subspace in which our Hamiltonian will be defined is derived from the counts sampled from a quantum computer
-and stored as a ``Subspace`` object:
+and stored as a ``Subspace`` object (note that we do not use the counts data itself):
 
 .. jupyter-execute::
 
-    #100k pseudo counts
     counts = {}
-    for kk in range(int(1e5)):
+    for kk in range(2**num_qubits):
         counts[bin(kk)[2:].zfill(num_qubits)] = 1
 
     S = fq.Subspace(counts)
@@ -56,6 +55,8 @@ to the eigensolver:
     evals, evecs = spla.eigsh(Hsub, k=1, which='SA')
 
 
+In passing the ``SubspaceHamiltonian`` object directly we have solved the problem using a matrix-free method,
+but one can build a collection of different, more performant, matrix-representations from this object.
 The found eigenenergy is:
 
 .. jupyter-execute::
@@ -65,7 +66,7 @@ The found eigenenergy is:
 
 there is of course an associated eigenvector, but because of the way Fulqrum solves the problem, it is not
 immediately usable.  Instead, we can use ``SubspaceHamiltonian.interpret_vector()`` to cast the solution
-as a dictionary with complex values:
+as a dictionary the statevector amplitudes as values:
 
 .. jupyter-execute::
 

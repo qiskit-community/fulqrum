@@ -801,7 +801,7 @@ cdef class QubitOperator():
 
     def offdiag_ptrs(self):
         cdef size_t kk
-        offdiag_sort(self)
+        _offdiag_sort(self)
         cdef vector[size_t] ptrs
         cdef current_val = term_offdiag_structure(self.oper.terms[0])
         ptrs.push_back(0)
@@ -1109,7 +1109,7 @@ cdef class QubitOperator():
 
 
 
-def offdiag_sort(QubitOperator self):
+def _offdiag_sort(QubitOperator self):
     if self.oper.off_weight_sorted:
         return
     term_offdiag_sort(self.oper.terms)
