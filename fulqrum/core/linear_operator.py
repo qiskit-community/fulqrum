@@ -20,6 +20,9 @@ class SubspaceHamiltonian(LinearOperator):
     _matvec = None
 
     def __init__(self, hamiltonian, subspace):
+        """A SciPy `LinearOperator` that represents a Hamiltonian restricted to the given
+        subspace.  
+        """
         diag_H, off_H = hamiltonian.split_diagonal()
         # if there are no off-diagonal terms then we pass a dummy empty array of len=1
         off_H.offdiag_term_grouping()
@@ -171,6 +174,9 @@ class CSRLinearOperator(LinearOperator):
     _matvec = None
 
     def __init__(self, matrix, is_real=0):
+        """A SciPy `LinearOperator` wrapper for a CSR array.  Allows for parallel
+        computation of the sparse-matrix vector product needed for eigensolving.
+        """
         self.matrix = matrix
         self.is_real = is_real
         super().__init__(shape=matrix.shape, dtype=float if self.is_real else complex)
@@ -186,8 +192,8 @@ class CSRLinearOperator(LinearOperator):
 
     @property
     def memory_size(self):
-        """An estimate of the raw memeory size of the underlying
-        CSR matrix in bytes
+        """An estimate of the raw memory size of the underlying
+        CSR array in bytes
 
         Returns:
             int: Memory size in bytes
@@ -226,6 +232,11 @@ class CSRLikeLinearOperator(LinearOperator):
     _matvec = None
 
     def __init__(self, csrlike):
+        """A SciPy `LinearOperator` wrapper for a CSR like object consisting of a vector of objects,
+         each comprised of two vectors for column indices and data .  Can be quickly converted to a CSR array,
+         and Allows for parallel computation of the sparse-matrix vector product needed for eigensolving,
+         but is less efficient than canonical CSR format.
+        """
         self.csrlike = csrlike
         self.is_real = csrlike.is_real
         super().__init__(shape=csrlike.shape, dtype=float if self.is_real else complex)
