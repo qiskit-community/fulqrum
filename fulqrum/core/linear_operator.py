@@ -68,8 +68,8 @@ class SubspaceHamiltonian(LinearOperator):
         Returns:
             dict: Dictionary with bit-string keys and complex values
 
-        Notes:
-            Truncation can be disabled by calling `atol=-1`
+        Note:
+            Truncation can be disabled by calling `atol=0`
         """
         if len(vec.shape) == 2:
             vec = vec.view().reshape(vec.shape[0])
@@ -82,11 +82,13 @@ class SubspaceHamiltonian(LinearOperator):
             n (int): Index of the expected bitstring.
 
         Returns:
-            str: N-th bitstring in the subspace. Note that, both Python
-                dictionary and emhash8::HashMap retains the insertion order.
+            str: N-th bitstring in the subspace.
+
+        Note:
+            Both Python dictionaries and `emhash8::HashMap` retain insertion order.
 
         Raises:
-            ValueError: If ``n`` is >= to the number of bitstrings in the subspace.
+            ValueError: If ``n`` is >= to the number of bit-strings in the subspace.
         """
         if n >= self.spmv.subspace.size():
             raise ValueError(
