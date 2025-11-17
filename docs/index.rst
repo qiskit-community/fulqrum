@@ -6,7 +6,7 @@ Fulqrum
     :align: center
 
 
-Fulqrum is a set of tools for enabling the solution to general large-scale Hamiltonian subpspace eigenproblems over subspaces defined by samples returned from executing circuits on quantum devices.  Such methods work if the target eigenstate has compact support over the underlying full Hilbert space; the target state has nonzero components in a polynomial number of bit-strings.
+Fulqrum is a set of tools for enabling the solution to general large-scale Hamiltonian subspace eigenproblems over subspaces defined by samples returned from executing circuits on quantum devices.  Such methods work if the target eigenstate has compact support over the underlying full Hilbert space; the target state has nonzero components in a polynomial number of bit-strings.
 Fulqrum works over an extended alphabet of operators that includes projector and ladder operators in addition to the usually Pauli set, and because of this, Fulqrum is able to solve both fermionic and spin systems using the same code base.  Moreover, there is no intrinsic limit on the number of qubits that Fulqrum can handle, allowing users to go up to the full-scale of current and future quantum systems.
 
 
@@ -29,7 +29,4 @@ Fulqrum works over an extended alphabet of operators that includes projector and
     :caption: API Documentation
     :hidden:
     
-    QubitOperator <apidocs/qubit_operator>
-    FermiOperator <apidocs/fermi_operator>
-    Subspace <apidocs/subspace>
-    SubspaceHamiltonian <apidocs/subspace_hamiltonian>
+    Core <apidocs/core>

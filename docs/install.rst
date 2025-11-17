@@ -10,15 +10,29 @@ Fulqrum is a mix of C++ and Python, glued together by a Cython interface.
 Python
 ~~~~~~
 
+Required
+********
+
 .. csv-table::
    :header: "Package", "Minimum version", "Description"
    :widths: 15, 10, 30
 
    "boost", 1.85, "We use the ``dynamic_bitset`` types for storing bit-strings"
-   "NumPy", 1.25, "Used as array interface between Python and C++"
-   "Cython", 3.0.5, "The glue between C++ and Python"
-   "psutil", "any", "Get system information such as free memory"
+   "cython", 3.0.5, "The glue between C++ and Python"
+   "numpy", 1.25, "Used as array interface between Python and C++"
    "orjson", "any", "IO for saving operators"
+   "psutil", "any", "Get system information such as available memory"
+
+
+Optional
+********
+
+.. csv-table::
+   :header: "Package", "Minimum version", "Description"
+   :widths: 15, 10, 30
+
+   "qiskit", 1.0, "Conversion between Qiskit operators and Fulqrum types"
+   "openfermion", 1.6.1, "Conversion between OpenFermion operators and Fulqrum types"
 
 C++
 ~~~~

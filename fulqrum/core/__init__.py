@@ -1,7 +1,33 @@
 # Fulqrum
 # Copyright (C) 2024, IBM
 
-"""Fulqrum core module"""
+"""
+Operators
+---------
+
+.. autosummary::
+   :toctree: ../stubs/
+
+   QubitOperator
+   FermionicOperator
+
+Subspaces
+---------
+
+.. autosummary::
+   :toctree: ../stubs/
+
+   Subspace
+   Bitset
+
+Subspace Hamiltonian
+--------------------
+
+.. autosummary::
+   :toctree: ../stubs/
+
+   SubspaceHamiltonian
+"""
 
 from .qubit_operator import QubitOperator
 
