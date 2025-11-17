@@ -293,6 +293,7 @@ cdef class FermionicOperator():
 
 
     @property
+    @cython.boundscheck(False)
     def operators(self):
         """Return the operators for a single term or empty operator
 
@@ -364,28 +365,6 @@ cdef class FermionicOperator():
         extended_jw_transform(fermi.oper, out.oper, num_terms)
         out.oper.type = 2
         return out.combine_repeated_terms()
-
-    @cython.boundscheck(False)
-    def simplify(self, double rtol=RTOL, double atol=ATOL):
-        """Truncate operator terms by coefficient value
-
-        Parameters:
-            rtol (float): Relative tolerance
-            atol (float): Absolute tolerance
-
-        Returns:
-            FermionicOperator: Truncated operator
-        """
-        cdef double thresh, max_coeff = 0
-        cdef size_t kk
-        for kk in range(self.oper.terms.size()):
-            max_coeff = max(max_coeff, abs(self.oper.terms[kk].coeff))
-        thresh = max_coeff*rtol + atol
-        cdef FermionicOperator out = FermionicOperator(self.width)
-        for kk in range(self.oper.terms.size()):
-            if abs(self.oper.terms[kk].coeff) > thresh:
-                out.oper.terms.push_back(self.oper.terms[kk])
-        return out
 
     @cython.boundscheck(False)
     def to_dict(self):
