@@ -47,4 +47,8 @@ from .fermi_operator import FermionicOperator
 from .bitset import Bitset
 from .subspace import Subspace
 
-from .linear_operator import SubspaceHamiltonian, CSRLinearOperator, CSRLikeLinearOperator
+from .linear_operator import (
+    SubspaceHamiltonian,
+    CSRLinearOperator,
+    CSRLikeLinearOperator,
+)
