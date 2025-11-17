@@ -169,3 +169,4 @@ fulqrum/version.py
 *.out
 *.gz
 mainNotes.bib
+/docs/stubs
