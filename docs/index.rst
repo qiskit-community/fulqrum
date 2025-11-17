@@ -2,7 +2,7 @@
 Fulqrum
 #######
 
-.. figure:: images/fulqrum.png
+.. figure:: images/fulqrum_logo.png
     :align: center
 
 
