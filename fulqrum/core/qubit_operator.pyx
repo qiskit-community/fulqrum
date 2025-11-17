@@ -325,29 +325,6 @@ cdef class QubitOperator():
         return out.real
     
     @cython.boundscheck(False)
-    def simplify(self, double rtol=RTOL, double atol=ATOL):
-        """Truncate operator terms by coefficient value
-
-        Parameters:
-            rtol (float): Relative tolerance
-            atol (float): Absolute tolerance
-
-        Returns:
-            QubitOperator: Truncated operator
-        """
-        cdef double thresh, max_coeff = 0
-        cdef size_t kk
-        for kk in range(self.oper.terms.size()):
-            max_coeff = max(max_coeff, abs(self.oper.terms[kk].coeff))
-        thresh = max_coeff*rtol + atol
-        cdef QubitOperator out = QubitOperator(self.width)
-        for kk in range(self.oper.terms.size()):
-            if abs(self.oper.terms[kk].coeff) > thresh:
-                out.oper.terms.push_back(self.oper.terms[kk])
-        out.oper.type = self.oper.type
-        return out
-    
-    @cython.boundscheck(False)
     def split_diagonal(self):
         """Spit an operator into diagonal and non-diagonal components
 
@@ -729,7 +706,7 @@ cdef class QubitOperator():
                               &term.indices[0], &term.values[0], term.coeff, term.real_phase, weight, out)
         return out
 
-
+    @cython.boundscheck(False)
     def groups(self):
         """Off-diagonal group structure of terms in operator
 
@@ -772,6 +749,7 @@ cdef class QubitOperator():
         ptrs[idx+1] = self.oper.terms.size()
         return np.asarray(ptrs)
 
+    @cython.boundscheck(False)
     def terms_by_group(self, int number):
         cdef size_t kk, ll, start, stop
         cdef size_t[::1] ptrs = self.group_ptrs()
@@ -799,6 +777,7 @@ cdef class QubitOperator():
             out[kk] = self.oper.terms[kk].extended
         return np.asarray(out)
 
+    @cython.boundscheck(False)
     def offdiag_ptrs(self):
         cdef size_t kk
         _offdiag_sort(self)
@@ -838,6 +817,7 @@ cdef class QubitOperator():
         """
         weight_sort(self.oper)
 
+    @cython.boundscheck(False)
     def offdiag_weight_ptrs(self):
         """Off-diagonal weight pointers for the operator
 
@@ -886,6 +866,7 @@ cdef class QubitOperator():
         out.oper.type = self.oper.type
         return out
 
+    @cython.boundscheck(False)
     def ladder_ints(self):
         """Compute the ladder operator integer for each term
 
@@ -905,6 +886,7 @@ cdef class QubitOperator():
             out[kk] = term_ladder_int(self.oper.terms[kk], self.oper.ladder_width)
         return np.asarray(out)
     
+    @cython.boundscheck(False)
     def group_offdiag_indices(self):
         """Offdiagonal indices for each group in operator
         """
@@ -925,6 +907,7 @@ cdef class QubitOperator():
             out.append(np.asarray(temp_inds))
         return out
 
+    @cython.boundscheck(False)
     def group_rowint_length(self):
         """The length (number of bits) in the row int per group
         """
@@ -972,6 +955,7 @@ cdef class QubitOperator():
         
         return np.asarray(group_ranges)
 
+    @cython.boundscheck(False)
     def projector_oper_validation(self, Bitset bits):
         cdef size_t num_terms = self.oper.terms.size()
         cdef int[::1] out = np.zeros(num_terms, dtype=np.int32)
@@ -981,6 +965,7 @@ cdef class QubitOperator():
         return np.asarray(out)
 
 
+    @cython.boundscheck(False)
     def worst_case_offdiag_group_amplitudes(self):
         """Compute the worst case amplitude of off-diagonal groups.
         
