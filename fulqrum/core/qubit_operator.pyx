@@ -290,9 +290,6 @@ cdef class QubitOperator():
         """
         cdef QubitOperator out = QubitOperator(self.width)
         out.oper.terms = self.oper.terms
-        #out.oper.sorted = self.oper.sorted
-        #out.oper.weight_sorted = self.oper.weight_sorted
-        #out.oper.off_weight_sorted = self.oper.off_weight_sorted
         out.oper.type = self.oper.type
         return out
 
@@ -905,7 +902,7 @@ cdef class QubitOperator():
     
     @cython.boundscheck(False)
     def group_offdiag_indices(self):
-        """Offdiagonal indices for each group in operator
+        """Off-diagonal indices for each group in operator
         """
         if not self.oper.sorted:
             self.offdiag_term_grouping()
@@ -1044,7 +1041,7 @@ cdef class QubitOperator():
 
     @cython.boundscheck(False)
     def to_dict(self):
-        """Dictionary represenation of QubitOperator
+        """Dictionary representation of QubitOperator
         
         Returns:
             dict: Dictionary representation of QubitOperator
