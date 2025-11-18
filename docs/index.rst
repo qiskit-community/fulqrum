@@ -23,7 +23,7 @@ Fulqrum works over an extended alphabet of operators that includes projector and
     :hidden:
     
     Getting started  <started>
-    Using QubitOperators  <qubit_operators>
+    Using QubitOperators  <qubit_operators.ipynb>
 
 .. toctree::
     :maxdepth: 1
