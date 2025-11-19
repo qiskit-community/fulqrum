@@ -342,23 +342,23 @@ cdef class FermionicOperator():
 
 
     @cython.boundscheck(False)
-    def collapse_indices(self):
-        """collapse repeated indices into singles and remove zero terms
+    def deflate_repeated_indices(self):
+        """Collapse repeated indices into singles and remove zero terms
 
         Returns:
-            FermionicOperator: Collapsed operator
+            FermionicOperator: Deflated operator
         """
         cdef size_t kk
         cdef FermionicOperator out = FermionicOperator(self.width)
         for kk in range(self.oper.terms.size()):
-            collapse_term_indicies(&self.oper.terms[kk], &out.oper.terms)
+            deflate_term_indicies(&self.oper.terms[kk], &out.oper.terms)
         return out
     
     def extended_jw_transformation(self):
         """Jordan-Wigner transformation over extended alphabet 
         from Fermionic -> Qubit operator
         """
-        cdef FermionicOperator fermi = self.collapse_indices()
+        cdef FermionicOperator fermi = self.deflate_repeated_indices()
         cdef size_t num_terms = fermi.oper.terms.size()
         cdef QubitOperator out = QubitOperator(fermi.width)
         out.oper.terms.resize(num_terms)
@@ -494,7 +494,7 @@ cdef int collapse_value(unsigned char x):
         return 3
 
 
-cdef void collapse_term_indicies(FermionicTerm_t * term, vector[FermionicTerm_t] * out_terms):
+cdef void deflate_term_indicies(FermionicTerm_t * term, vector[FermionicTerm_t] * out_terms):
     cdef size_t num_elems = term.indices.size()
     cdef size_t kk 
     cdef size_t start, num_touched
