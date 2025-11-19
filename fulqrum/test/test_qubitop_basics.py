@@ -134,7 +134,7 @@ def test_operator_identity_removal():
         op += QubitOperator(N, [(oper, 0, 1 / (N + kk))])
 
     assert abs(op.constant_energy() - 0.25757575757575757) < 1e-15
-    new_op = op.remove_identity_terms()
+    new_op, _ = op.remove_constant_terms()
     assert new_op.num_terms == 4
     assert new_op.constant_energy() == 0
 

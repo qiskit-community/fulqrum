@@ -154,6 +154,15 @@ cdef class QubitOperator():
         return self.oper.terms.size()
 
     def set_type(self, unsigned int value):
+        """Manually set the type of the operator
+
+        Parameters:
+            value (int): Set `1` for a standard qubit Hamiltonian, and `2` for fermionic
+
+        Note:
+            This is usually automatically set for you, with `type=2` being set during the
+            conversion from `FermionicOperator` to `QubitOperator`
+        """
         if (value != 1 and value != 2):
             raise FulqrumError("Type of operator must be '1' or '2'")
         self.oper.type = value
@@ -181,6 +190,11 @@ cdef class QubitOperator():
 
     @property
     def coeff(self):
+        """Return the coefficient of a Hamiltonian comprised from a single term
+
+        Returns:
+            complex
+        """
         if self.oper.terms.size() == 1:
             return self.oper.terms[0].coeff
         else:
@@ -276,9 +290,6 @@ cdef class QubitOperator():
         """
         cdef QubitOperator out = QubitOperator(self.width)
         out.oper.terms = self.oper.terms
-        #out.oper.sorted = self.oper.sorted
-        #out.oper.weight_sorted = self.oper.weight_sorted
-        #out.oper.off_weight_sorted = self.oper.off_weight_sorted
         out.oper.type = self.oper.type
         return out
 
@@ -341,17 +352,7 @@ cdef class QubitOperator():
                 diag.oper.terms.push_back(term)
             else:
                 offdiag.oper.terms.push_back(term)
-        # set sorted flag
-        #diag.oper.sorted = self.oper.sorted
-        #offdiag.oper.sorted = self.oper.sorted
-        #diag.oper.weight_sorted = self.oper.weight_sorted
-        #offdiag.oper.weight_sorted = self.oper.weight_sorted
-        #diag.oper.off_weight_sorted = self.oper.off_weight_sorted
-        #offdiag.oper.off_weight_sorted = self.oper.off_weight_sorted
-        #diag.oper.ladder_sorted = self.oper.ladder_sorted
-        #offdiag.oper.ladder_sorted = self.oper.ladder_sorted
-        #diag.oper.ladder_width = self.oper.ladder_width
-        #offdiag.oper.ladder_width = self.oper.ladder_width
+
         diag.oper.type = self.oper.type
         offdiag.oper.type = self.oper.type
         return diag, offdiag
@@ -628,12 +629,12 @@ cdef class QubitOperator():
         self.oper.sorted = 0
 
     @cython.boundscheck(False)
-    def remove_identity_terms(self, bool return_value=False):
-        """Remove identity terms from operator, optionally
+    def remove_constant_terms(self, bool return_value=True):
+        """Remove constant (identity) terms from operator, optionally
         returning the sum of the coefficients
 
         Parameters:
-            return_value (bool): Return the sum of identity coefficients
+            return_value (bool): Return the sum of constant term coefficients, default=True
         
         Returns:
             QubitOperator: Operator with no identity terms
@@ -751,6 +752,14 @@ cdef class QubitOperator():
 
     @cython.boundscheck(False)
     def terms_by_group(self, int number):
+        """Return terms in operator that correspond to input group number
+
+        Parameters:
+            number (int): Group number
+
+        Returns:
+            QubitOperator
+        """
         cdef size_t kk, ll, start, stop
         cdef size_t[::1] ptrs = self.group_ptrs()
         cdef QubitOperator out = QubitOperator(self.width)
@@ -779,6 +788,11 @@ cdef class QubitOperator():
 
     @cython.boundscheck(False)
     def offdiag_ptrs(self):
+        """Pointers for off-diagonal term sorting
+
+        Returns:
+            ndarray: Array of type size_t
+        """
         cdef size_t kk
         _offdiag_sort(self)
         cdef vector[size_t] ptrs
@@ -888,7 +902,7 @@ cdef class QubitOperator():
     
     @cython.boundscheck(False)
     def group_offdiag_indices(self):
-        """Offdiagonal indices for each group in operator
+        """Off-diagonal indices for each group in operator
         """
         if not self.oper.sorted:
             self.offdiag_term_grouping()
@@ -927,6 +941,11 @@ cdef class QubitOperator():
         return np.asarray(group_rowint_length)
 
     def group_term_sort_by_ladder_int(self, unsigned int ladder_width=4):
+        """Sort groups by ladder integer if operator is type=2
+
+        Raises:
+            FulqrumError: Operator is NOT type=2
+        """
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
         if not self.oper.terms.size():
@@ -957,6 +976,14 @@ cdef class QubitOperator():
 
     @cython.boundscheck(False)
     def projector_oper_validation(self, Bitset bits):
+        """Return array indicating which terms pass projector validation for a given bit-string
+
+        Parameters:
+            bits (Bitset): bit-string of interest
+
+        Returns:
+            ndarray
+        """
         cdef size_t num_terms = self.oper.terms.size()
         cdef int[::1] out = np.zeros(num_terms, dtype=np.int32)
         cdef size_t kk
@@ -1014,7 +1041,7 @@ cdef class QubitOperator():
 
     @cython.boundscheck(False)
     def to_dict(self):
-        """Dictionary represenation of QubitOperator
+        """Dictionary representation of QubitOperator
         
         Returns:
             dict: Dictionary representation of QubitOperator
