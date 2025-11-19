@@ -629,12 +629,12 @@ cdef class QubitOperator():
         self.oper.sorted = 0
 
     @cython.boundscheck(False)
-    def remove_identity_terms(self, bool return_value=False):
-        """Remove identity terms from operator, optionally
+    def remove_constant_terms(self, bool return_value=True):
+        """Remove constant (identity) terms from operator, optionally
         returning the sum of the coefficients
 
         Parameters:
-            return_value (bool): Return the sum of identity coefficients
+            return_value (bool): Return the sum of constant term coefficients, default=True
         
         Returns:
             QubitOperator: Operator with no identity terms
