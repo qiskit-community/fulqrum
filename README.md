@@ -1,4 +1,5 @@
-![fulqrum_logo](https://github.ibm.com/user-attachments/assets/8f43fa5a-5c8e-4e11-867a-43213857c0b3)
+
+![fulqrum_logo](https://github.ibm.com/user-attachments/assets/889bc5f1-93e7-46c4-91e1-aa64ab8c3391)
 
 
 # fulqrum
