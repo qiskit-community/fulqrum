@@ -94,6 +94,7 @@ void accum_element(const boost::dynamic_bitset<std::size_t> &row,
     // accumulate to output value
     if constexpr (std::is_same_v<T, double>)
     {
+        std::cout << "Temp: " << temp << std::endl;
         out += real_phase * coeff.real() * temp;
     }
     else
