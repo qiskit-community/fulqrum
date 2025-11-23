@@ -13,8 +13,6 @@ path = "data/ch4_dimer.json"
 fop = fq.FermionicOperator.from_json(path)
 op = fop.extended_jw_transformation()
 
-num_samples = 1_000_000
-
 
 counts = {"000000000000000011111111000000000000000011111111":1,
 "000000000000000111110111000000000000000011111111":1,
@@ -57,12 +55,13 @@ good_groups = np.where(max_energy_contribution > energy_atol)[0]
 off_group_ptrs = off.group_ptrs()
 
 new_op = diag.copy()
-for idx in good_groups:
-    start = off_group_ptrs[idx]
-    stop = off_group_ptrs[idx+1]
-    for kk in range(start, stop):
-        new_op += off[kk]
-    break # first good group only
+#for idx in good_groups:
+#    start = off_group_ptrs[idx]
+#    stop = off_group_ptrs[idx+1]
+#    for kk in range(start, stop):
+#        new_op += off[kk]
+new_op = new_op[0]
+print(new_op)
 
 
 Hsub2 = fq.SubspaceHamiltonian(new_op, S)
