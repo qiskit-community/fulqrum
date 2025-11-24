@@ -85,11 +85,6 @@ void accum_element(const boost::dynamic_bitset<std::size_t> &row,
         if constexpr (std::is_same_v<T, double>)
         {
             temp *= REAL_OPER_ELEMENTS[4 * val[kk] + offset];
-            if(temp == 0.0){
-                //std::cout << "val: " << (int)val[kk] << std::endl;
-                //std::cout << "offset: " << offset << std::endl;
-                //std::cout << "" << std::endl;
-            }
         }
         else
         {
@@ -99,7 +94,6 @@ void accum_element(const boost::dynamic_bitset<std::size_t> &row,
     // accumulate to output value
     if constexpr (std::is_same_v<T, double>)
     {
-        //std::cout << "Temp: " << temp << std::endl;
         out += real_phase * coeff.real() * temp;
     }
     else

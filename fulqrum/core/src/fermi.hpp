@@ -86,5 +86,6 @@ void extended_jw_transform(const FermionicOperator_t& fermi, QubitOperator_t& ou
         jw_term(fermi.terms[kk], out.terms[kk]);
         sort_term_data(out.terms[kk].indices, out.terms[kk].values);
         set_offdiag_weight(out.terms[kk]);
+        set_proj_indices(out.terms[kk]);
     }
 }
