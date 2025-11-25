@@ -105,14 +105,14 @@ inline unsigned int bitset_ladder_int(const uint8_t *row,
  * @param proj_indices Pointer to array of indices on which projectors act
  * @param size The size of the proj array
  */
-inline unsigned int passes_proj_validation(const OperatorTerm_t *__restrict term,
-                                           const boost::dynamic_bitset<std::size_t> &bitset)
+inline bool passes_proj_validation(const OperatorTerm_t *__restrict term,
+                                   const boost::dynamic_bitset<std::size_t> &bitset)
 {
-    unsigned int kk;
+    std::size_t kk;
     unsigned int block_num, block_idx;
     unsigned int pos;
-    std::size_t bit;
-    unsigned int out = 1;
+    unsigned int bit;
+    bool out = 1;
     for (kk = 0; kk < term->proj_indices.size(); kk++)
     {
         pos = term->proj_indices[kk];
