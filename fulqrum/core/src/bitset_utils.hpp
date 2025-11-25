@@ -111,7 +111,7 @@ inline unsigned int passes_proj_validation(const OperatorTerm_t *__restrict term
     unsigned int kk;
     unsigned int block_num, block_idx;
     unsigned int pos;
-    unsigned int bit;
+    std::size_t bit;
     unsigned int out = 1;
     for (kk = 0; kk < term->proj_indices.size(); kk++)
     {
