@@ -47,20 +47,6 @@ cdef inline int diagonal_term(OperatorTerm_t * term):
     return term.offdiag_weight == 0
 
 
-@cython.boundscheck(False)
-cdef void set_proj_indices(OperatorTerm_t& term):
-    cdef size_t kk
-    cdef unsigned char val
-    term.proj_indices.resize(0)
-    term.proj_bits.resize(0)
-    for kk in range(term.values.size()):
-        val = term.values[kk]
-        if val == 1 or val == 2:
-            term.proj_indices.push_back(term.indices[kk])
-            term.proj_bits.push_back(val-1)
-
-
-
 cdef class QubitOperator():
     """Operator class for qubit terms consisting of Pauli
     operators,projection operators, and ladder operators

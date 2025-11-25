@@ -246,3 +246,17 @@ def test_grnd_dist_lih_eigen_csr_fast():
     evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
     assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+
+def test_proj_indices_set():
+    """Test that projector indices set properly after JW transform"""
+    for kk in range(OP.num_terms):
+        has_proj_ops = 0
+        for op_idx_pair in OP[kk].operators:
+            if op_idx_pair[0] in ["0", "1"]:
+                has_proj_ops = 1
+                break
+        if has_proj_ops:
+            assert OP[kk].proj_indices.shape[0] > 0
+        else:
+            assert OP[kk].proj_indices.shape[0] == 0

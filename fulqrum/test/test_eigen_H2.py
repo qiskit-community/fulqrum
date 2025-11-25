@@ -153,38 +153,6 @@ def test_full_dist_h2_eigen_csr_linearoperator_fast():
     S = Subspace(full_dist)
     Hsub = SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
-    assert M.mat.dtype == float
-
-    # here we use starting vector of all ones to match phase with direct ans
-    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
-    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
-    assert evecs.dtype == float
-    assert np.allclose(evals, GROUND_ENERGY)
-    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
-
-    # use single bitset block for hashing
-    S = Subspace(full_dist, use_all_bitset_blocks=False)
-    Hsub = SubspaceHamiltonian(OP, S)
-    M = Hsub.to_csr_linearoperator_fast()
-    assert M.matrix.dtype == float
-
-    # here we use starting vector of all ones to match phase with direct ans
-    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
-    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
-    assert evecs.dtype == float
-    assert np.allclose(evals, GROUND_ENERGY)
-    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
-
-
-def test_full_dist_h2_eigen_csr_linearoperator_fast():
-    """Test full space solution against exact for CSR linearoperator fast"""
-    full_dist = {}
-    for kk in range(2**4):
-        full_dist[bin(kk)[2:].zfill(4)] = None
-
-    S = Subspace(full_dist)
-    Hsub = SubspaceHamiltonian(OP, S)
-    M = Hsub.to_csr_linearoperator()
     assert M.matrix.dtype == float
 
     # here we use starting vector of all ones to match phase with direct ans
@@ -206,3 +174,17 @@ def test_full_dist_h2_eigen_csr_linearoperator_fast():
     assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY)
     assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+
+def test_proj_indices_set():
+    """Test that projector indices set properly after JW transform"""
+    for kk in range(OP.num_terms):
+        has_proj_ops = 0
+        for op_idx_pair in OP[kk].operators:
+            if op_idx_pair[0] in ["0", "1"]:
+                has_proj_ops = 1
+                break
+        if has_proj_ops:
+            assert OP[kk].proj_indices.shape[0] > 0
+        else:
+            assert OP[kk].proj_indices.shape[0] == 0

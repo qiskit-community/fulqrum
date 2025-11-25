@@ -106,3 +106,17 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator_fast():
     assert M.matrix.dtype == float
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+
+def test_proj_indices_set():
+    """Test that projector indices set properly after JW transform"""
+    for kk in range(NEW_OP.num_terms):
+        has_proj_ops = 0
+        for op_idx_pair in NEW_OP[kk].operators:
+            if op_idx_pair[0] in ["0", "1"]:
+                has_proj_ops = 1
+                break
+        if has_proj_ops:
+            assert NEW_OP[kk].proj_indices.shape[0] > 0
+        else:
+            assert NEW_OP[kk].proj_indices.shape[0] == 0

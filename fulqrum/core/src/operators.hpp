@@ -38,6 +38,29 @@ void sort_term_data(std::vector<unsigned int>& inds, std::vector<unsigned char>&
     }
 }
 
+
+/**
+ * Set the projector indices and bits for each term
+ *
+ * @param term OperatorTerm to add projector information to
+ */
+void set_proj_indices(OperatorTerm_t& term)
+{
+    std::size_t kk;
+    unsigned int val;
+    term.proj_indices.resize(0);
+    term.proj_bits.resize(0);
+    for(kk=0; kk < term.values.size(); kk++)
+    {
+        val = term.values[kk];
+        if(val == 1 || val == 2)
+        {
+            term.proj_indices.push_back(term.indices[kk]);
+            term.proj_bits.push_back(val-1);
+        }
+    }
+}
+
 /**
  * Comparitor for off-diagonal weight grouping
  *
