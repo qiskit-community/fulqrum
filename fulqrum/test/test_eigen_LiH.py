@@ -1,7 +1,7 @@
 # Fulqrum
 # Copyright (C) 2024, IBM
 # pylint: disable=no-name-in-module
-"""Test eigen functionality on H2"""
+"""Test eigen functionality on LiH"""
 from pathlib import Path
 import numpy as np
 import scipy.linalg as la
