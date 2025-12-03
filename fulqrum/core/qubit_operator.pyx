@@ -21,6 +21,7 @@ from collections.abc import Iterable
 from pathlib import Path
 import numbers
 import orjson
+import lzma
 import numpy as np
 cimport numpy as np
 
@@ -1076,7 +1077,9 @@ cdef class QubitOperator():
     
 
     def to_json(self, filename, overwrite=False):
-        """Save operator to a JSON file.
+        """Save operator to a JSON or XZ file. File extension can be 'json'
+        or 'xz', the latter or which does LZMA compression which is
+        recommended for large operators.
 
         Parameters:
             filename (str): File to store to
@@ -1085,14 +1088,23 @@ cdef class QubitOperator():
         file = Path(filename)
         if file.is_file() and not overwrite:
             raise Exception("File already exists, set overwrite=True")
-        dic = self.to_dict()
-        with open(filename, "wb") as fd:
-            fd.write(orjson.dumps(dic))
+        file_type = filename.split('.')[-1].lower()
+        if file_type == 'json':
+            with open(filename, "wb") as fd:
+                fd.write(orjson.dumps(self.to_dict()))
+        elif file_type == 'xz':
+            compressor = lzma.LZMACompressor()
+            json_data = orjson.dumps(self.to_dict())
+            lzma_data = compressor.compress(json_data) + compressor.flush()
+            with open(filename, "wb") as fd:
+                fd.write(lzma_data)
+        else:
+            raise FulqrumError("File type must be 'json' or 'xz'")
 
 
     @classmethod
     def from_json(self, filename):
-        """Load operator from a JSON file.
+        """Load operator from a JSON or XZ file.
 
         Parameters:
             filename (str): File to load from
@@ -1100,11 +1112,19 @@ cdef class QubitOperator():
         Returns:
             QubitOperator
         """
-        with open(filename, "r", encoding="utf-8") as fd:
-            dic = orjson.loads(fd.read())
+        filename = str(filename)  # convert PosixPath
+        file_type = filename.split('.')[-1].lower()
+        if file_type == 'json':
+            with open(filename, "r", encoding="utf-8") as fd:
+                dic = orjson.loads(fd.read())
+        elif file_type == 'xz':
+            lzma_file = lzma.open(filename)
+            data = lzma_file.readlines()
+            dic = orjson.loads(data[0])
+        else:
+            raise FulqrumError("File type must be 'json' or 'xz'")
         out = QubitOperator.from_dict(dic)
         return out
-
 
 
 def _offdiag_sort(QubitOperator self):
