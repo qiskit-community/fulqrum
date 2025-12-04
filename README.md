@@ -9,8 +9,6 @@ Fulqrum is a set of tools for enabling the solution to large-scale Hamiltonian s
 
 Working over extended (i.e. non-Pauli) alphabets allows Fulqrum to work for both Bosonic and Fermionic problems.  Fermionic problems can be cast into Bosonic ones in a one-to-one manner using an extended Jordan-Wigner transformation, and the properties of extended operators can be used to further reduce the computational costs.
 
-This is very much a work in progress, and not suitable for human or animal consumption.
-
 
 ## Installation
 
@@ -69,17 +67,11 @@ python setup.py install
 
 ## Examples
 
-> :warning: **Warning**: The SciPy sparse `eigs` and `eigsh` solvers can conflict with the OpenMP used by Fulqrum if the underlying blas library is based on OpenBlas.  In these cases one needs to set the follwoing env variable, `OPENBLAS_NUM_THREADS=1`, before executing anything.  If this is not set then the eigensolving proceeds very slowly due to over-threading.
+> [!CAUTION]
+> The SciPy sparse `eigs` and `eigsh` solvers can conflict with the OpenMP used by Fulqrum if the underlying blas library is based on OpenBlas.  In these cases one should try to set the env variable: `OPENBLAS_NUM_THREADS=1` to begin with.  Increasing this number higher than this might increase the overall runtime on some machines.
 
 
 ### 1541 qubit spin-lattice
-
-| Processor  | Platform    | Time (sec)  | Time w/grouping (sec)  | Time w/bitset (sec)  |
-| :--------: | :---------: | :---------: | :--------------------: | :------------------: |
-| AMD 7900   | Linux       | 335         | 187                    | 72                   |
-| Intel 256v | Linux       | 937         | 521                    | 186                  |
-| M1         | OSX         | 1569        | 876                    | 262                  |
-| M1 Pro     | OSX         | 1170        | 652                    | 179                  |
 
 ```python
 import time
