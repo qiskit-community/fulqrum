@@ -3,8 +3,10 @@
 # pylint: disable=no-name-in-module
 """Test string to vector conversion"""
 
+import pytest
 import numpy as np
 from fulqrum import Subspace
+from fulqrum.exceptions import FulqrumError
 
 
 dic = {"01010": 1, "10101": 1, "11111": 1, "11100": 1}
@@ -68,3 +70,9 @@ def test_get_n_th_bitstring():
     assert V.get_n_th_bitstring(1) == "10101"
     assert V.get_n_th_bitstring(2) == "11111"
     assert V.get_n_th_bitstring(3) == "11100"
+
+
+def test_subspace_dim_raises():
+    """Test that subspace raises error for dim < 2"""
+    with pytest.raises(FulqrumError) as err:
+        _ = Subspace({"0101": 1})

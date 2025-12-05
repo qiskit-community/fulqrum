@@ -14,6 +14,7 @@ cimport cython
 import numpy as np
 cimport numpy as np
 
+from fulqrum.exceptions import FulqrumError
 from fulqrum.core.subspace cimport Subspace
 from fulqrum.core.bitset cimport bitset_t, to_string
 from fulqrum.core.bitset_view cimport BitsetView
@@ -51,6 +52,10 @@ cdef class Subspace():
     def __cinit__(self, dict counts, int reserve_multiplier=2, bool use_all_bitset_blocks=True):
         self.subspace.num_qubits = len(next(iter(counts)))
         self.subspace.size = len(counts)
+
+        if self.subspace.size < 2:
+            raise FulqrumError("Subspace dimension must be > 1")
+
         if not use_all_bitset_blocks:
             self.subspace.bitstrings = BitsetHashMapWrapper(use_all_bitset_blocks)
         if reserve_multiplier < 1:
