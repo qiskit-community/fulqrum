@@ -55,8 +55,12 @@ cdef class FulqrumSpMV():
                                       &self.group_ptrs[0], self.num_groups)
         
         if self.oper.type == 2:
-            self.group_rowint_length = hamiltonian.group_rowint_length()
-            self.ladder_offset = 2**self.oper.ladder_width
+            if self.oper.terms.size():
+                self.group_rowint_length = hamiltonian.group_rowint_length()
+                self.ladder_offset = 2**self.oper.ladder_width
+            else:
+                # Need to set memoryview but not used
+                self.group_rowint_length = np.zeros(1, dtype=np.uint32)
 
         if self.diag_oper.terms.size() > 0:
             self.has_nonzero_diag = 1
