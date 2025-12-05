@@ -297,3 +297,17 @@ def test_eigen6():
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
             < 1e-13
         )
+
+
+def test_diagonal_type2():
+    """Test that a diagonal type=2 Hamiltionian can generate CSR"""
+    op = QubitOperator.from_label("IZIZZ")
+    op.set_type(2)
+
+    S = Subspace({"00000": 1, "11111": 1})
+
+    Hsub = SubspaceHamiltonian(op, S)
+
+    M = Hsub.to_csr_linearoperator_fast().matrix
+    assert M.nnz == 2
+    assert np.allclose(M.data, np.array([1, -1], dtype=float))
