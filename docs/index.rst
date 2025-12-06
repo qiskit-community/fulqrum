@@ -26,6 +26,7 @@ Fulqrum works over an extended alphabet of operators that includes projector and
     Using QubitOperators  <qubit_operators.ipynb>
     Using FermionicOperators  <fermi_operators.ipynb>
     Defining Subspaces <subspaces.ipynb>
+    Operator IO <operator_io.ipynb>
 
 
 .. toctree::
