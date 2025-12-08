@@ -6,4 +6,5 @@ include "includes/base_header.pxi"
 
 cdef class FermionicOperator:
     cdef FermionicOperator_t oper
+    cdef unsigned int _iter_index
     cpdef void append(self, FermionicOperator other)
