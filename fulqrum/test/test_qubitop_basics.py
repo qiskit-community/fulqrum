@@ -222,3 +222,13 @@ def test_is_real3():
     op = fq.QubitOperator.from_label("IIXX")
     op = (1 + 1e-11j) * fq.QubitOperator.from_label("IIYY")
     assert not op.is_real()
+
+
+def test_qubitop_iter():
+    """Verify that QubitOperator iterates properly"""
+    op = fq.QubitOperator.from_label("IIXXII")
+    op += fq.QubitOperator.from_label("YIXXIY")
+    op += fq.QubitOperator.from_label("ZZZZZZ")
+
+    for idx, item in enumerate(op):
+        assert item.operators == op[idx].operators

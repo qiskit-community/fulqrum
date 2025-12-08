@@ -79,6 +79,20 @@ cdef class FermionicOperator():
         """
         return self.oper.terms.size()
 
+    def __iter__(self):
+        self._iter_index = 0
+        return self
+    
+    def __next__(self):
+        cdef FermionicOperator out
+        if self._iter_index < self.oper.terms.size():
+            self._iter_index += 1
+            out = FermionicOperator(self.oper.width)
+            out.oper.terms.push_back(self.oper.terms[self._iter_index - 1])
+            return out
+        else:
+            raise StopIteration
+
     @cython.boundscheck(False)
     def __add__(self, FermionicOperator other):
         """Addition of QubitOperators with copy

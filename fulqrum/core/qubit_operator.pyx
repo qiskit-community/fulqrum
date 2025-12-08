@@ -432,6 +432,20 @@ cdef class QubitOperator():
         out.oper.type = self.oper.type
         return out
 
+    def __iter__(self):
+        self._iter_index = 0
+        return self
+    
+    def __next__(self):
+        cdef QubitOperator out
+        if self._iter_index < self.oper.terms.size():
+            self._iter_index += 1
+            out = QubitOperator(self.oper.width)
+            out.oper.terms.push_back(self.oper.terms[self._iter_index - 1])
+            return out
+        else:
+            raise StopIteration
+
     def __iadd__(self, QubitOperator other):
         """Inplace addition of QubitOperators
         """
