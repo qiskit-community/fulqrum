@@ -53,23 +53,22 @@ cdef class Subspace():
         self.subspace.num_qubits = len(next(iter(counts)))
         self.subspace.size = len(counts)
 
-        if self.subspace.size < 2:
-            raise FulqrumError("Subspace dimension must be > 1")
-
         if not use_all_bitset_blocks:
             self.subspace.bitstrings = BitsetHashMapWrapper(use_all_bitset_blocks)
         if reserve_multiplier < 1:
             raise ValueError(
                 f"`reserve_multiplier(={reserve_multiplier})` must be >= 1"
             )
-        self.subspace.bitstrings.reserve(self.subspace.size * reserve_multiplier)
+        # The +1 is here because insertion would fail for a dim=1 subspace otherwise
+        self.subspace.bitstrings.reserve(self.subspace.size * reserve_multiplier + 1)
 
+        cdef size_t idx
         cdef string key
         cdef bitset_t temp_bits
         
         for idx, key in enumerate(counts.keys()):
             temp_bits = bitset_t(key, 0, self.subspace.num_qubits)
-            self.subspace.bitstrings.insert_unique(temp_bits, <size_t>idx)
+            self.subspace.bitstrings.insert_unique(temp_bits, idx)
     
     def __dealloc__(self):
         # Clear hash table upon deallocation of class
