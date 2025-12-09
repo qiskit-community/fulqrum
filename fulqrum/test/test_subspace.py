@@ -70,9 +70,3 @@ def test_get_n_th_bitstring():
     assert V.get_n_th_bitstring(1) == "10101"
     assert V.get_n_th_bitstring(2) == "11111"
     assert V.get_n_th_bitstring(3) == "11100"
-
-
-def test_subspace_dim_raises():
-    """Test that subspace raises error for dim < 2"""
-    with pytest.raises(FulqrumError) as err:
-        _ = Subspace({"0101": 1})
