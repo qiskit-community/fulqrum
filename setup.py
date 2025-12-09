@@ -32,6 +32,7 @@ CYTHON_EXTS = [
     "qiskit",
     "openfermion",
     "matrix",
+    "simple"
 ]
 CYTHON_MODULES = [
     "fulqrum.core",
@@ -45,6 +46,7 @@ CYTHON_MODULES = [
     "fulqrum.convert",
     "fulqrum.convert",
     "fulqrum.utils",
+    "fulqrum.ramps"
 ]
 CYTHON_SOURCE_DIRS = [
     "fulqrum/core",
@@ -58,6 +60,7 @@ CYTHON_SOURCE_DIRS = [
     "fulqrum/convert",
     "fulqrum/convert",
     "fulqrum/utils",
+    "fulqrum/ramps"
 ]
 
 # Add openmp flags

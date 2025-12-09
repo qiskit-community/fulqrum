@@ -3,3 +3,4 @@
 
 """Recursive Algorithm for a Minimally Perturbed Subspace (RAMPS)"""
 
+from .simple import ramps_simple_refinement
