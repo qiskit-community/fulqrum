@@ -57,7 +57,7 @@ namespace bitset_map_namespace
             return map2.values();
         }
 
-        void reserve(const uint32_t num_items)
+        void reserve(const uint64_t num_items)
         {
             if (use_all_blocks)
             {
