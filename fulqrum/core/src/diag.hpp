@@ -23,18 +23,29 @@ void compute_diag_vector(const bitset_map_namespace::BitsetHashMapWrapper &data,
                          const std::size_t subspace_dim)
 {
     std::size_t kk;
-    const std::size_t num_terms = diag_oper.terms.size();
     const auto *bitsets = data.get_bitsets();
 
     #pragma omp parallel for if (subspace_dim > 4096)
     for (kk = 0; kk < subspace_dim; kk++)
     {
-        std::size_t ll;
-        unsigned int weight;
         T val = 0;
-        const OperatorTerm_t *term;
         const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
-        for (ll = 0; ll < num_terms; ll++)
+        single_bitstring_diagonal(row, diag_oper, val);
+        diag_vec[kk] = val;
+    }
+}
+
+
+template <typename T>
+inline void single_bitstring_diagonal(const boost::dynamic_bitset<size_t>& row,
+                                      const QubitOperator_t &diag_oper,
+                                      T& val)
+{
+    const std::size_t num_terms = diag_oper.terms.size();
+    const OperatorTerm_t *term;
+    unsigned int weight;
+    std::size_t ll;
+    for (ll = 0; ll < num_terms; ll++)
         {
             term = &diag_oper.terms[ll];
             weight = term->indices.size();
@@ -45,6 +56,4 @@ void compute_diag_vector(const bitset_map_namespace::BitsetHashMapWrapper &data,
                               weight, val);
             }
         }
-        diag_vec[kk] = val;
-    }
 }
