@@ -14,4 +14,11 @@ cdef extern from "../src/simple.hpp":
                           const bitset_t start,
                           const BitsetHashMapWrapper& subspace,
                           BitsetHashMapWrapper& out_subspace,
-                         ) nogil
+                          unsigned max_recursion,
+                          const size_t * group_ptrs,
+                          const size_t * group_ladder_ptrs,
+                          unsigned int * group_rowint_length,
+                          const vector[vector[unsigned int]]& group_offdiag_inds,
+                          size_t num_groups,
+                          unsigned int ladder_offset,
+                           ) nogil
