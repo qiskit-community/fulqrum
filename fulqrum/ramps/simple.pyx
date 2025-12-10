@@ -15,5 +15,6 @@ def ramps_simple_refinement(QubitOperator H, Subspace S, Bitset start,
     cdef Subspace out = Subspace({start.to_string(): 0})
     cdef QubitOperator diag_op, off_op
     diag_op, off_op = H.split_diagonal()
-    
+    simple_refinement(&diag_op.oper.terms[0], &off_op.oper.terms[0], 
+                      S.subspace.bitstrings, out.subspace.bitstrings)
     return 0
