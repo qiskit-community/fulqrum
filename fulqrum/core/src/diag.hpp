@@ -65,14 +65,14 @@ inline void single_bitstring_diagonal(const boost::dynamic_bitset<size_t>& row,
     unsigned int weight;
     std::size_t ll;
     for (ll = 0; ll < num_terms; ll++)
+    {
+        term = &diag_oper.terms[ll];
+        weight = term->indices.size();
+        if (passes_proj_validation(term, row))
         {
-            term = &diag_oper.terms[ll];
-            weight = term->indices.size();
-            if (passes_proj_validation(term, row))
-            {
-                accum_element(row, row,
-                              &term->indices[0], &term->values[0], term->coeff, term->real_phase,
-                              weight, val);
-            }
+            accum_element(row, row,
+                            &term->indices[0], &term->values[0], term->coeff, term->real_phase,
+                            weight, val);
         }
+    }
 }
