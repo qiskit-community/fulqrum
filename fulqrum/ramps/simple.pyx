@@ -35,4 +35,12 @@ def ramps_simple_refinement(QubitOperator H, Subspace S, Bitset start,
                                             spmv.num_groups,
                                             spmv.ladder_offset,
                                             max_recursion)    
-    return out, energy
+    temp_out = {}
+    cdef size_t n
+    for n in range(out.size()):
+        bs = out.get_n_th_bitstring(n)
+        temp_out[bs] = 1
+    
+    cdef Subspace final_out = Subspace(temp_out)
+    
+    return final_out, energy

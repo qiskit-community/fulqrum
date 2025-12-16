@@ -86,10 +86,14 @@ cdef class Subspace():
         return out
 
     def __len__(self):
-        return self.subspace.size
+        cdef size_t size = self.subspace.bitstrings.size()
+        return size
 
     def size(self):
-        return self.subspace.size
+        # return self.subspace.size
+        cdef size_t size = self.subspace.bitstrings.size()
+        return size
+        
 
     @cython.boundscheck(False)
     def interpret_vector(self, double_or_complex[::1] vec, double atol=1e-12, int sort=0, int renormalize=True):
@@ -113,7 +117,7 @@ cdef class Subspace():
         cdef string s
         cdef dict out = {}
 
-        for kk in range(self.subspace.size):
+        for kk in range(self.subspace.bitstrings.size()):
             abs_val = abs(vec[kk])
             if abs_val <= atol:
                 continue
@@ -165,7 +169,7 @@ cdef class Subspace():
         cdef string s
         cdef dict out = {}
 
-        for kk in range(self.subspace.size):
+        for kk in range(self.subspace.bitstrings.size()):
             to_string(self.subspace.bitstrings.get_n_th_bitset(kk), s)
             out[s] = None
         return out

@@ -4,6 +4,7 @@
  */
 #pragma once
 #include <cstdlib>
+#include <iostream>
 #include <vector>
 #include <complex>
 #include <boost/dynamic_bitset.hpp>
@@ -21,6 +22,7 @@ template <typename U>
 double simple_refinement(const OperatorTerm_t *terms,
                          const bitset_map_namespace::BitsetHashMapWrapper& subspace,
                          bitset_map_namespace::BitsetHashMapWrapper& out_subspace,
+                        // std::vector<boost::dynamic_bitset<size_t>>& out_subspace,
                          const U *__restrict diag_vec,
                          const unsigned int width,
                          const std::size_t subspace_dim,
@@ -59,6 +61,7 @@ double simple_refinement(const OperatorTerm_t *terms,
     std::size_t idx;
     std::size_t group;
     std::size_t group_int_start, group_int_stop;
+    std::size_t num_inserted_bitsets = 0;
     U val = 0;
     unsigned int row_int;
     int do_col_search;
@@ -129,18 +132,21 @@ double simple_refinement(const OperatorTerm_t *terms,
                         //if col not in out_subspace then add the column to the output subspace
                         // and add the col_ptr to the next rows array and add a new prefactor
                         // to the next_prefactors
-                        out_col_ptr = out_subspace.get_ptr(col_vec);
+                        out_col_ptr = out_subspace.get_ptr2(col_vec);
                         if (out_col_ptr == nullptr)
                         {
                             est_energy += min_energy*energy_amp;
                             next_rows.push_back(*col_ptr);
                             next_prefactors.push_back(energy_amp/(min_energy-col_energy+1e-15));
-                            //out_subspace.insert_unique(col_vec, kk);
+                            out_subspace.emplace(col_vec, kk);
+                            num_inserted_bitsets += 1;
                         }
                     }
                 }
             }
         }
     }
+    std::cout << "Out size: " << out_subspace.size() << std::endl;
+    std::cout << "Num inserted bitsets: " << num_inserted_bitsets << std::endl;
     return est_energy;
 }
