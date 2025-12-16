@@ -41,7 +41,6 @@ double simple_refinement(const OperatorTerm_t *terms,
     auto * output_bitsets = out_subspace.get_bitsets();
 
     double min_energy = diag_vec[*subspace.get_ptr(output_bitsets[0].first)];
-    std::cout << min_energy;
 
     std::vector<std::size_t> current_rows;
     std::vector<std::size_t> next_rows = {*subspace.get_ptr(output_bitsets[0].first)};
@@ -61,7 +60,7 @@ double simple_refinement(const OperatorTerm_t *terms,
     std::size_t idx;
     std::size_t group;
     std::size_t group_int_start, group_int_stop;
-    std::size_t num_inserted_bitsets = 0;
+    std::size_t num_inserted_bitsets = 1;
     U val = 0;
     unsigned int row_int;
     int do_col_search;
@@ -138,7 +137,7 @@ double simple_refinement(const OperatorTerm_t *terms,
                             est_energy += min_energy*energy_amp;
                             next_rows.push_back(*col_ptr);
                             next_prefactors.push_back(energy_amp/(min_energy-col_energy+1e-15));
-                            out_subspace.emplace(col_vec, kk);
+                            out_subspace.emplace(col_vec, num_inserted_bitsets);
                             num_inserted_bitsets += 1;
                         }
                     }
@@ -146,7 +145,5 @@ double simple_refinement(const OperatorTerm_t *terms,
             }
         }
     }
-    std::cout << "Out size: " << out_subspace.size() << std::endl;
-    std::cout << "Num inserted bitsets: " << num_inserted_bitsets << std::endl;
     return est_energy;
 }

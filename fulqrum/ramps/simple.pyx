@@ -15,7 +15,7 @@ import numpy as np
 
 
 def ramps_simple_refinement(QubitOperator H, Subspace S, Bitset start, 
-                            unsigned int max_recursion=4, double tol=1e-14):
+                            unsigned int max_recursion=3, double tol=1e-14):
     
     cdef Subspace out = Subspace({start.to_string(): 0})
     Hsub = SubspaceHamiltonian(H, S)
@@ -35,12 +35,5 @@ def ramps_simple_refinement(QubitOperator H, Subspace S, Bitset start,
                                             spmv.num_groups,
                                             spmv.ladder_offset,
                                             max_recursion)    
-    temp_out = {}
-    cdef size_t n
-    for n in range(out.size()):
-        bs = out.get_n_th_bitstring(n)
-        temp_out[bs] = 1
-    
-    cdef Subspace final_out = Subspace(temp_out)
-    
-    return final_out, energy
+   
+    return out, energy
