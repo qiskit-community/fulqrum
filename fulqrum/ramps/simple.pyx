@@ -20,11 +20,10 @@ def ramps_simple_refinement(QubitOperator H, Subspace S, Bitset start,
     cdef Subspace out = Subspace({start.to_string(): 0})
     Hsub = SubspaceHamiltonian(H, S)
     cdef FulqrumSpMV spmv = Hsub.spmv
-    spmv.compute_diag_vector()
-    cdef double energy = simple_refinement[double](&spmv.oper.terms[0],
+    cdef double energy = simple_refinement(&spmv.oper.terms[0],
                                            spmv.subspace.subspace.bitstrings,
                                            out.subspace.bitstrings,
-                                            &spmv.real_diag_vec[0],
+                                            spmv.diag_oper.terms,
                                             spmv.width,
                                             spmv.subspace_dim,
                                             spmv.has_nonzero_diag,
@@ -42,7 +41,7 @@ def ramps_simple_refinement(QubitOperator H, Subspace S, Bitset start,
     cdef dict temp_out = {}
     cdef size_t n
     cdef str bs
-    for n in range(out.size()):
+    for n in range(<size_t>out.size()):
         bs = out.get_n_th_bitstring(n)
         temp_out[bs] = 1
     

@@ -18,12 +18,10 @@
 #include "../../core/src/diag.hpp"
 
 
-template <typename U>
 double simple_refinement(const OperatorTerm_t *terms,
                          const bitset_map_namespace::BitsetHashMapWrapper& subspace,
                          bitset_map_namespace::BitsetHashMapWrapper& out_subspace,
-                        // std::vector<boost::dynamic_bitset<size_t>>& out_subspace,
-                         const U *__restrict diag_vec,
+                         const std::vector<OperatorTerm_t>& diag_terms,
                          const unsigned int width,
                          const std::size_t subspace_dim,
                          const int has_nonzero_diag,
@@ -40,7 +38,8 @@ double simple_refinement(const OperatorTerm_t *terms,
     const auto * input_bitsets = subspace.get_bitsets();
     auto * output_bitsets = out_subspace.get_bitsets();
 
-    double min_energy = diag_vec[*subspace.get_ptr(output_bitsets[0].first)];
+    double min_energy = 0;
+    single_bitstring_diagonal(output_bitsets[0].first, diag_terms, min_energy); 
 
     std::vector<std::size_t> current_rows;
     std::vector<std::size_t> next_rows = {*subspace.get_ptr(output_bitsets[0].first)};
@@ -61,7 +60,7 @@ double simple_refinement(const OperatorTerm_t *terms,
     std::size_t group;
     std::size_t group_int_start, group_int_stop;
     std::size_t num_inserted_bitsets = 1;
-    U val = 0;
+    std::complex<double> val = 0;
     unsigned int row_int;
     int do_col_search;
 
@@ -123,7 +122,7 @@ double simple_refinement(const OperatorTerm_t *terms,
                 if (!do_col_search)
                 {
                     // If this column is in the subspace we need to compute the columns diagonal energy
-                    col_energy = diag_vec[*col_ptr];
+                    single_bitstring_diagonal(input_bitsets[*col_ptr].first, diag_terms, col_energy);
                     energy_amp = current_prefactors[kk] * std::pow(std::abs(val), 2) / (min_energy-col_energy+1e-15);
                     // If the amplitude is larger than tol
                     if (std::abs(energy_amp) > tol)

@@ -60,6 +60,7 @@ inline void single_bitstring_diagonal(const boost::dynamic_bitset<size_t>& row,
                                       const std::vector<OperatorTerm_t>& diag_terms,
                                       T& val)
 {
+    val = 0;
     const std::size_t num_terms = diag_terms.size();
     const OperatorTerm_t *term;
     unsigned int weight;

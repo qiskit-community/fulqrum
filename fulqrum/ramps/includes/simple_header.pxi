@@ -9,10 +9,10 @@ include "../../core/includes/base_header.pxi"
 
 cdef extern from "../src/simple.hpp":
 
-    double simple_refinement[U](const OperatorTerm_t * terms,
+    double simple_refinement(const OperatorTerm_t * terms,
                              const BitsetHashMapWrapper &subspace,
                              BitsetHashMapWrapper& out_subspace,
-                             const U * diag_vec,
+                             const vector[OperatorTerm_t]& diag_terms,
                              const unsigned int width,
                              const size_t subspace_dim,
                              const int has_nonzero_diag,
