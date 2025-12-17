@@ -139,6 +139,18 @@ namespace bitset_map_namespace
             return keys[n].first;
         }
 
+        void set_bucket_occupancy()
+        {
+            if (use_all_blocks)
+            {
+                map.set_bucket_occupancy();
+            }
+            else
+            {
+                map2.set_bucket_occupancy();
+            }
+        }
+
         std::size_t size() const
         {
             if (use_all_blocks)

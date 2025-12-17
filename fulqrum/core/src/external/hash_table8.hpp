@@ -721,6 +721,22 @@ public:
         return slot != _num_filled ? &_pairs[slot].second : nullptr;
     }
 
+    // utility func
+    void set_bucket_occupancy()
+    {
+        _bucket_occupancy.resize(_num_buckets);
+        _bucket_occupancy.reset();
+
+        for (size_t bucket=0; bucket < _num_buckets; bucket++)
+        {
+            const auto bempty = EMH_EMPTY(bucket);
+            if (!bempty)
+            {
+                _bucket_occupancy.set(bucket);
+            }
+        }
+    }
+
     // print funcs
     size_type get_mask() const {
         return _mask;
