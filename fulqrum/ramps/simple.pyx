@@ -5,7 +5,7 @@
 from fulqrum.core.qubit_operator cimport QubitOperator
 from fulqrum.core.subspace cimport Subspace
 from fulqrum.core.bitset cimport Bitset
-from fulqrum.core.bitset cimport Bitset
+from fulqrum.core.bitset cimport bitset_t
 from fulqrum.core.linear_operator import SubspaceHamiltonian
 from fulqrum.core.spmv cimport FulqrumSpMV
 
@@ -34,6 +34,18 @@ def ramps_simple_refinement(QubitOperator H, Subspace S, Bitset start,
                                             spmv.group_offdiag_inds,
                                             spmv.num_groups,
                                             spmv.ladder_offset,
-                                            max_recursion)    
-   
-    return out, energy
+                                            max_recursion,
+                                            tol)    
+    
+    # This is a temp workaround for issues with iteratively expanded
+    # subspaces.  This should be removed once those are resolved
+    cdef dict temp_out = {}
+    cdef size_t n
+    cdef str bs
+    for n in range(out.size()):
+        bs = out.get_n_th_bitstring(n)
+        temp_out[bs] = 1
+    
+    cdef Subspace final_out = Subspace(temp_out)
+    
+    return final_out, energy

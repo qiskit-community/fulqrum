@@ -22,5 +22,6 @@ cdef extern from "../src/simple.hpp":
                              vector[vector[unsigned int]]& group_offdiag_inds,
                              const size_t num_groups,
                              const unsigned int ladder_offset,
-                             unsigned int max_recursion
+                             unsigned int max_recursion,
+                             double tol
                                ) nogil

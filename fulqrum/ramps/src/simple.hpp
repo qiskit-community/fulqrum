@@ -33,9 +33,9 @@ double simple_refinement(const OperatorTerm_t *terms,
                          const std::vector<std::vector<unsigned int>> &group_offdiag_inds,
                          const std::size_t num_groups,
                          const unsigned int ladder_offset,
-                         unsigned int max_recursion)
+                         unsigned int max_recursion,
+                         double tol)
 {
-    double tol = 1e-14; // add to signature later
     std::size_t recur, kk;
     const auto * input_bitsets = subspace.get_bitsets();
     auto * output_bitsets = out_subspace.get_bitsets();

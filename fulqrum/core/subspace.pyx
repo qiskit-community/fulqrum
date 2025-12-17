@@ -90,7 +90,6 @@ cdef class Subspace():
         return size
 
     def size(self):
-        # return self.subspace.size
         cdef size_t size = self.subspace.bitstrings.size()
         return size
         
