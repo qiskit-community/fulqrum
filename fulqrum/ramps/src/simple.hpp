@@ -145,5 +145,6 @@ double simple_refinement(const OperatorTerm_t *terms,
             }
         }
     }
+    out_subspace.set_bucket_occupancy();
     return est_energy;
 }
