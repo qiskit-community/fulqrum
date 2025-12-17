@@ -7,6 +7,7 @@ cdef extern from "./src/bitset_hashmap.hpp" namespace "bitset_map_namespace":
         BitsetHashMapWrapper()
         BitsetHashMapWrapper(bool use_all_bitset_blocks) except +
         void insert_unique(const bitset_t& bs, size_t value)
+        void emplace(const bitset_t& bs, size_t value)
         void reserve(const uint64_t num_items)
         size_t get(const bitset_t& bs)
         bitset_t get_n_th_bitset(size_t n)

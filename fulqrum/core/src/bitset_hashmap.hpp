@@ -81,6 +81,18 @@ namespace bitset_map_namespace
             }
         }
 
+        void emplace(const Bitset &bs, std::size_t value)
+        {
+            if (use_all_blocks)
+            {
+                map.emplace(std::make_pair(bs, value));
+            }
+            else
+            {
+                map2.emplace(std::make_pair(bs, value));
+            }
+        }
+
         std::size_t *get_ptr(const Bitset &bs) const
         {
             if (use_all_blocks)
@@ -88,6 +100,15 @@ namespace bitset_map_namespace
                 return map.try_get_using_bucket_occ(bs);
             }
             return map2.try_get_using_bucket_occ(bs);
+        }
+
+        std::size_t *get_ptr2(const Bitset &bs) const
+        {
+            if (use_all_blocks)
+            {
+                return map.try_get(bs);
+            }
+            return map2.try_get(bs);
         }
 
         std::size_t get(const Bitset &bs) const
@@ -116,6 +137,18 @@ namespace bitset_map_namespace
             assert(n < map2.size());
             const auto *keys = map2.values();
             return keys[n].first;
+        }
+
+        void set_bucket_occupancy()
+        {
+            if (use_all_blocks)
+            {
+                map.set_bucket_occupancy();
+            }
+            else
+            {
+                map2.set_bucket_occupancy();
+            }
         }
 
         std::size_t size() const

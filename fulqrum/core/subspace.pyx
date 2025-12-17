@@ -18,6 +18,7 @@ from fulqrum.exceptions import FulqrumError
 from fulqrum.core.subspace cimport Subspace
 from fulqrum.core.bitset cimport bitset_t, to_string
 from fulqrum.core.bitset_view cimport BitsetView
+from fulqrum.core.bitset cimport Bitset
 from fulqrum.core.bitset_hashmap cimport BitsetHashMapWrapper
 
 include "fulqrum/core/includes/base_header.pxi"
@@ -80,15 +81,18 @@ cdef class Subspace():
             key = self.subspace.bitstrings.size() + key 
         cdef size_t idx = <size_t>key
         cdef bitset_t bits = self.subspace.bitstrings.get_n_th_bitset(idx)
-        cdef BitsetView view = BitsetView()
-        view.assign_bits(bits)
-        return view
+        cdef Bitset out = Bitset()
+        out.bits = bits
+        return out
 
     def __len__(self):
-        return self.subspace.size
+        cdef size_t size = self.subspace.bitstrings.size()
+        return size
 
     def size(self):
-        return self.subspace.size
+        cdef size_t size = self.subspace.bitstrings.size()
+        return size
+        
 
     @cython.boundscheck(False)
     def interpret_vector(self, double_or_complex[::1] vec, double atol=1e-12, int sort=0, int renormalize=True):
@@ -112,7 +116,7 @@ cdef class Subspace():
         cdef string s
         cdef dict out = {}
 
-        for kk in range(self.subspace.size):
+        for kk in range(self.subspace.bitstrings.size()):
             abs_val = abs(vec[kk])
             if abs_val <= atol:
                 continue
@@ -142,6 +146,16 @@ cdef class Subspace():
         cdef string s
         to_string(self.subspace.bitstrings.get_n_th_bitset(n), s)
         return s
+
+    def get_bitstring_index(self, Bitset bitstring):
+        """Return the index of the given bitstring.
+
+        Return value is max(size_t) if bitstring not in subspace
+
+        Returns:
+            size_t: Index
+        """
+        return self.subspace.bitstrings.get(bitstring.bits)
     
     @cython.boundscheck(False)
     def to_dict(self):
@@ -154,7 +168,7 @@ cdef class Subspace():
         cdef string s
         cdef dict out = {}
 
-        for kk in range(self.subspace.size):
+        for kk in range(self.subspace.bitstrings.size()):
             to_string(self.subspace.bitstrings.get_n_th_bitset(kk), s)
             out[s] = None
         return out

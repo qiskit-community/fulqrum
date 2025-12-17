@@ -39,7 +39,7 @@ cdef class FulqrumSpMV():
                   QubitOperator hamiltonian, Subspace subspace,
                   size_t[::1]& group_ptrs, size_t[::1]& group_ladder_ptrs):
 
-        if subspace.subspace.size < 2:
+        if subspace.size() < 2:
             raise FulqrumError("Subspace dimension must be > 1 for solving")
         cdef size_t kk
         self.diag_oper = diag_hamiltonian.oper
@@ -47,7 +47,7 @@ cdef class FulqrumSpMV():
         self.is_real = diag_hamiltonian.is_real() * hamiltonian.is_real()
         self.subspace = subspace
         self.width = self.oper.width
-        self.subspace_dim = self.subspace.subspace.size
+        self.subspace_dim = self.subspace.size()
         self.num_terms = self.oper.terms.size()
         self.num_diag_terms = self.diag_oper.terms.size()
         self.group_ptrs = group_ptrs

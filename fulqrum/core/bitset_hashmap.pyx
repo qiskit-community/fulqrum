@@ -11,11 +11,11 @@ cdef class PyBitsetHashMap:
         del self.c_map
 
     def insert_unique(self, bitstring: str, value: int):
-        bs = bitset_t(bitstring, 0, len(bitstring))
+        cdef bitset_t bs = bitset_t(bitstring, 0, len(bitstring))
         self.c_map.insert(bs, <size_t>value)
 
     def get(self, bitstring: str) -> int:
-        bs = bitset_t(bitstring, 0, len(bitstring))
+        cdef bitset_t bs = bitset_t(bitstring, 0, len(bitstring))
         return self.c_map.get(bs)
     
     def size(self) -> int:
