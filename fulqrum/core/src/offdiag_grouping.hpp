@@ -96,7 +96,7 @@ void term_group_sort(std::vector<OperatorTerm_t>& terms, std::size_t * __restric
     } // end reset
 
     std::ptrdiff_t dist;
-    //#pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
+#pragma omp parallel for schedule(dynamic) if(terms.size() > 1024)
     for(ii=0; ii < len_ptrs-1; ii++)
     {
         std::size_t start = weight_ptrs[ii];

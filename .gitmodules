@@ -1,0 +1,3 @@
+[submodule "qiskit-addon-sqd-hpc"]
+	path = qiskit-addon-sqd-hpc
+	url = https://github.com/Qiskit/qiskit-addon-sqd-hpc.git

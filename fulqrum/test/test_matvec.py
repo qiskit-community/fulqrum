@@ -13,7 +13,8 @@ def test_matvec1():
     H = QubitOperator.from_label("ZZ")
     H += QubitOperator.from_label("XX", 5)
     H += QubitOperator.from_label("YY", -3)
-    S = Subspace({"00": 10, "01": 10, "10": 10, "11": 10})
+    counts = {"00": 10, "01": 10, "10": 10, "11": 10}
+    S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
     in_vec = np.ones(len(S), dtype=float)
     perm = [int(key, 2) for key in S.to_dict().keys()]
@@ -28,7 +29,8 @@ def test_matvec1():
 def test_matvec2():
     """Test simple matvec over full subspace for ID ops"""
     H = QubitOperator.from_label("II")
-    S = Subspace({"00": 10, "01": 10, "10": 10, "11": 10})
+    counts = {"00": 10, "01": 10, "10": 10, "11": 10}
+    S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
     in_vec = np.arange(len(S), dtype=float)
     perm = [int(key, 2) for key in S.to_dict().keys()]
@@ -45,7 +47,8 @@ def test_matvec3():
     H = QubitOperator.from_label("YX")
     H += 4 / 5 * QubitOperator.from_label("+I")
     H += 4 / 5 * QubitOperator.from_label("-I")
-    S = Subspace({"00": 10, "01": 10, "10": 10, "11": 10})
+    counts = {"00": 10, "01": 10, "10": 10, "11": 10}
+    S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
     in_vec = np.arange(len(S), dtype=complex)
     perm = [int(key, 2) for key in S.to_dict().keys()]
@@ -62,7 +65,8 @@ def test_matvec4():
     H = QubitOperator.from_label("YX")
     H += 4 / 5 * QubitOperator.from_label("+I")
     H += 4 / 5 * QubitOperator.from_label("-I")
-    S = Subspace({"00": 10, "10": 10})
+    counts = {"00": 10, "10": 10}
+    S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
     in_vec = np.ones(len(S), dtype=complex)
     out_vec = F.matvec(in_vec)
@@ -77,7 +81,8 @@ def test_matvec5():
     H = QubitOperator.from_label("YX")
     H += 4 / 5 * QubitOperator.from_label("+I")
     H += 4 / 5 * QubitOperator.from_label("-I")
-    S = Subspace({"00": 10, "11": 10})
+    counts = {"00": 10, "11": 10}
+    S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
     in_vec = np.ones(len(S), dtype=complex)
     out_vec = F.matvec(in_vec)
@@ -100,7 +105,7 @@ def test_matvec_bin_width1():
         idx += 1
 
     H = QubitOperator.from_label("ZIZ")
-    S = Subspace(counts)
+    S = Subspace([list(counts.keys())])
     sub = SubspaceHamiltonian(H, S)
     res_dict = sub.interpret_vector(sub.matvec(in_vec), -1, renormalize=False)
     assert res_dict == ans_dict
@@ -119,7 +124,7 @@ def test_matvec_bin_width2():
         idx += 1
 
     H = QubitOperator.from_label("ZIZ") + QubitOperator.from_label("XXX")
-    S = Subspace(counts)
+    S = Subspace([list(counts.keys())])
     sub = SubspaceHamiltonian(H, S)
     res_dict = sub.interpret_vector(sub.matvec(in_vec), -1, renormalize=False)
     assert res_dict == ans_dict
@@ -142,7 +147,7 @@ def test_matvec_bin_width3():
         + -1 * QubitOperator.from_label("XXX")
         + QubitOperator.from_label("YYY")
     )
-    S = Subspace(counts)
+    S = Subspace([list(counts.keys())])
     sub = SubspaceHamiltonian(H, S)
     res_dict = sub.interpret_vector(sub.matvec(in_vec), -1, renormalize=False)
     assert res_dict == ans_dict
@@ -166,7 +171,7 @@ def test_matvec_bin_width4():
         + QubitOperator.from_label("XY+")
         + QubitOperator.from_label("XY-")
     )
-    S = Subspace(counts)
+    S = Subspace([list(counts.keys())])
     sub = SubspaceHamiltonian(H, S)
     res_dict = sub.interpret_vector(
         sub.matvec(np.ones(2**3, dtype=complex)), -1, renormalize=False
@@ -179,7 +184,8 @@ def test_csrlike_matvec1():
     H = QubitOperator.from_label("ZZ")
     H += QubitOperator.from_label("XX", 5)
     H += QubitOperator.from_label("YY", -3)
-    S = Subspace({"00": 10, "01": 10, "10": 10, "11": 10})
+    counts = {"00": 10, "01": 10, "10": 10, "11": 10}
+    S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
     M = F.to_linearoperator()
     in_vec = np.ones(len(S), dtype=float)
@@ -195,7 +201,8 @@ def test_csrlike_matvec1():
 def test_csrlike_matvec2():
     """Test simple matvec over full subspace for ID ops"""
     H = QubitOperator.from_label("II")
-    S = Subspace({"00": 10, "01": 10, "10": 10, "11": 10})
+    counts = {"00": 10, "01": 10, "10": 10, "11": 10}
+    S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
     M = F.to_linearoperator()
     in_vec = np.arange(len(S), dtype=float)
@@ -213,7 +220,8 @@ def test_csrlike_matvec3():
     H = QubitOperator.from_label("YX")
     H += 4 / 5 * QubitOperator.from_label("+I")
     H += 4 / 5 * QubitOperator.from_label("-I")
-    S = Subspace({"00": 10, "01": 10, "10": 10, "11": 10})
+    counts = {"00": 10, "01": 10, "10": 10, "11": 10}
+    S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
     M = F.to_linearoperator()
     in_vec = np.arange(len(S), dtype=complex)
@@ -231,7 +239,8 @@ def test_csrlike_matvec4():
     H = QubitOperator.from_label("YX")
     H += 4 / 5 * QubitOperator.from_label("+I")
     H += 4 / 5 * QubitOperator.from_label("-I")
-    S = Subspace({"00": 10, "10": 10})
+    counts = {"00": 10, "10": 10}
+    S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
     M = F.to_linearoperator()
     in_vec = np.ones(len(S), dtype=complex)
@@ -247,7 +256,8 @@ def test_csrlike_matvec5():
     H = QubitOperator.from_label("YX")
     H += 4 / 5 * QubitOperator.from_label("+I")
     H += 4 / 5 * QubitOperator.from_label("-I")
-    S = Subspace({"00": 10, "11": 10})
+    counts = {"00": 10, "11": 10}
+    S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
     M = F.to_linearoperator()
     in_vec = np.ones(len(S), dtype=complex)

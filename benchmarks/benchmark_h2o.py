@@ -26,7 +26,7 @@ def main(tol=None):
 
     dist = full_subspace(new_op.width)
 
-    S = fq.Subspace(dist)
+    S = fq.Subspace([list(dist.keys())])
     Hsub = fq.SubspaceHamiltonian(new_op, S)
 
     st = time.perf_counter()

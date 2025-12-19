@@ -34,7 +34,7 @@ def test_csr1():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts)
+    S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -61,7 +61,7 @@ def test_csr1a():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts, use_all_bitset_blocks=False)
+    S = fq.Subspace([list(counts.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -88,7 +88,7 @@ def test_csr2():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts)
+    S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -115,7 +115,7 @@ def test_csr2a():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts, use_all_bitset_blocks=False)
+    S = fq.Subspace([list(counts.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -142,7 +142,7 @@ def test_csr3():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts)
+    S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -169,7 +169,7 @@ def test_csr3():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts)
+    S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -196,7 +196,7 @@ def test_csr3a():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts, use_all_bitset_blocks=False)
+    S = fq.Subspace([list(counts.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -223,7 +223,7 @@ def test_csr4():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts)
+    S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -250,7 +250,7 @@ def test_csr4a():
     for kk in range(2**5):
         counts[bin(kk)[2:].zfill(5)] = None
 
-    S = fq.Subspace(counts, use_all_bitset_blocks=False)
+    S = fq.Subspace([list(counts.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -277,7 +277,7 @@ def test_csr5():
 
     counts = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
-    S = fq.Subspace(counts)
+    S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -305,7 +305,7 @@ def test_csr5a():
 
     counts = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
-    S = fq.Subspace(counts, use_all_bitset_blocks=False)
+    S = fq.Subspace([list(counts.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -332,7 +332,7 @@ def test_csr6():
 
     counts = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
-    S = fq.Subspace(counts)
+    S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 
@@ -359,7 +359,7 @@ def test_csr6a():
 
     counts = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
-    S = fq.Subspace(counts, use_all_bitset_blocks=False)
+    S = fq.Subspace([list(counts.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
     P = Hsub.to_csr_array()
 

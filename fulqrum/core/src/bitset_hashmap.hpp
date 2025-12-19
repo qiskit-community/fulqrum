@@ -5,11 +5,11 @@
 #endif
 
 #include <cassert>
-#include <iostream>
 #include <boost/dynamic_bitset.hpp>
 #include "constants.hpp"
 #include "./external/hash_table8.hpp"
 #include "./external/rapidhash.h"
+
 
 struct BitsetHasherRapid
 {

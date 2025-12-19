@@ -94,7 +94,7 @@ def test_full_dist_lih_eigen():
     for kk in range(2**OP.width):
         full_dist[bin(kk)[2:].zfill(OP.width)] = None
 
-    S = fq.Subspace(full_dist)
+    S = fq.Subspace([list(full_dist.keys())])
     Hsub = fq.SubspaceHamiltonian(OP, S)
 
     # here we use starting vector of all ones to match phase with direct ans
@@ -104,7 +104,7 @@ def test_full_dist_lih_eigen():
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     # use single bitset block
-    S = fq.Subspace(full_dist, use_all_bitset_blocks=False)
+    S = fq.Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(OP, S)
 
     # here we use starting vector of all ones to match phase with direct ans
@@ -120,7 +120,7 @@ def test_full_dist_lih_eigen_csr():
     for kk in range(2**OP.width):
         full_dist[bin(kk)[2:].zfill(OP.width)] = None
 
-    S = fq.Subspace(full_dist)
+    S = fq.Subspace([list(full_dist.keys())])
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
     assert M.matrix.dtype == float
@@ -132,7 +132,7 @@ def test_full_dist_lih_eigen_csr():
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     # single bitset block
-    S = fq.Subspace(full_dist, use_all_bitset_blocks=False)
+    S = fq.Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
     assert M.matrix.dtype == float
@@ -150,7 +150,7 @@ def test_full_dist_lih_eigen_csr_fast():
     for kk in range(2**OP.width):
         full_dist[bin(kk)[2:].zfill(OP.width)] = None
 
-    S = fq.Subspace(full_dist)
+    S = fq.Subspace([list(full_dist.keys())])
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
     assert M.matrix.dtype == float
@@ -162,7 +162,7 @@ def test_full_dist_lih_eigen_csr_fast():
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     # single bitset block
-    S = fq.Subspace(full_dist, use_all_bitset_blocks=False)
+    S = fq.Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator_fast()
     assert M.matrix.dtype == float
@@ -176,7 +176,7 @@ def test_full_dist_lih_eigen_csr_fast():
 
 def test_grnd_dist_lih_eigen():
     """Test grnd state space solution against exact"""
-    S = fq.Subspace(GROUND_DIST)
+    S = fq.Subspace([list(GROUND_DIST.keys())])
     Hsub = fq.SubspaceHamiltonian(OP, S)
 
     # here we use starting vector of all ones to match phase with direct ans
@@ -186,7 +186,7 @@ def test_grnd_dist_lih_eigen():
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     #
-    S = fq.Subspace(GROUND_DIST, use_all_bitset_blocks=False)
+    S = fq.Subspace([list(GROUND_DIST.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(OP, S)
 
     # here we use starting vector of all ones to match phase with direct ans
@@ -198,7 +198,7 @@ def test_grnd_dist_lih_eigen():
 
 def test_grnd_dist_lih_eigen_csr():
     """Test grnd space CSR solution against exact"""
-    S = fq.Subspace(GROUND_DIST)
+    S = fq.Subspace([list(GROUND_DIST.keys())])
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
 
@@ -210,7 +210,7 @@ def test_grnd_dist_lih_eigen_csr():
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     # use single bitset block
-    S = fq.Subspace(GROUND_DIST, use_all_bitset_blocks=False)
+    S = fq.Subspace([list(GROUND_DIST.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
 
@@ -224,7 +224,7 @@ def test_grnd_dist_lih_eigen_csr():
 
 def test_grnd_dist_lih_eigen_csr_fast():
     """Test grnd space CSR fast solution against exact"""
-    S = fq.Subspace(GROUND_DIST)
+    S = fq.Subspace([list(GROUND_DIST.keys())])
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator()
 
@@ -236,7 +236,7 @@ def test_grnd_dist_lih_eigen_csr_fast():
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     # use single bitset block
-    S = fq.Subspace(GROUND_DIST, use_all_bitset_blocks=False)
+    S = fq.Subspace([list(GROUND_DIST.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(OP, S)
     M = Hsub.to_csr_linearoperator_fast()
 

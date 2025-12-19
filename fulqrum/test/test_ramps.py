@@ -16,11 +16,11 @@ NEW_OP = FOP.extended_jw_transformation()
 NEW_OP, _ = NEW_OP.remove_constant_terms()
 
 # Build full Hilbert space
-DIST = {}
+DIST = []
 for kk in range(2**12):
-    DIST[bin(kk)[2:].zfill(NEW_OP.width)] = 1
+    DIST.append(bin(kk)[2:].zfill(NEW_OP.width))
 
-S = Subspace(DIST)
+S = Subspace([DIST])
 HSUB = SubspaceHamiltonian(NEW_OP, S)
 EXACT_ENERGY = spla.eigsh(HSUB.to_csr_linearoperator_fast(), k=1, which="SA")[0][0]
 

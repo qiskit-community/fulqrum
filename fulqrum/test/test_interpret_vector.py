@@ -16,11 +16,11 @@ OP = FOP.extended_jw_transformation()
 
 def test_interpret_renormalization():
     """Validate that renormalization returns vectors with probabilities sum to one"""
-    full_dist = {}
+    full_dist = []
     for kk in range(2**OP.width):
-        full_dist[bin(kk)[2:].zfill(OP.width)] = None
+        full_dist.append(bin(kk)[2:].zfill(OP.width))
 
-    S = fq.Subspace(full_dist)
+    S = fq.Subspace([full_dist])
     Hsub = fq.SubspaceHamiltonian(OP, S)
 
     x0 = np.ones(len(S), dtype=Hsub.dtype)

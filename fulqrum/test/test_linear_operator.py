@@ -23,7 +23,7 @@ def test_get_n_th_bitstring():
         full_dist[bin(kk)[2:].zfill(14)] = None
 
     keys = list(full_dist.keys())
-    S = Subspace(full_dist)
+    S = Subspace([list(full_dist.keys())])
     Hsub = SubspaceHamiltonian(NEW_OP, S)
 
     for n in range(len(S)):
@@ -37,7 +37,7 @@ def test_get_n_th_bitstring_out_of_range():
     for kk in range(2**14):
         full_dist[bin(kk)[2:].zfill(14)] = None
 
-    S = Subspace(full_dist)
+    S = Subspace([list(full_dist.keys())])
     Hsub = SubspaceHamiltonian(NEW_OP, S)
 
     with pytest.raises(ValueError):

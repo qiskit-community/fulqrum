@@ -71,7 +71,7 @@ void set_csr_ptr(const std::vector<std::vector<T>>& cols, U * __restrict ptrs)
  * 
  */
 template <typename T, typename U, typename V>
-void set_csr_data(const std::vector<std::vector<T> >& in_data, const std::vector<std::vector<U> >& cols, 
+void set_csr_data(std::vector<std::vector<T> >& in_data, std::vector<std::vector<U> >& cols, 
                   V * __restrict ptrs, V * __restrict inds, T * __restrict out_data)
 {
     std::size_t num_rows = in_data.size();
@@ -85,6 +85,12 @@ void set_csr_data(const std::vector<std::vector<T> >& in_data, const std::vector
         diff = stop - start;
         std::copy(cols[kk].data(), cols[kk].data()+diff, &inds[start]); 
         std::copy(in_data[kk].data(), in_data[kk].data()+diff, &out_data[start]);
+        
+        // dealloc after each inner vector is copied into main CSR
+        // structure. ``cols[kk]`` and ``in_data[kk]`` are note used
+        // after this.
+        std::vector<U>().swap(cols[kk]);
+        std::vector<T>().swap(in_data[kk]);
     }
 }
 

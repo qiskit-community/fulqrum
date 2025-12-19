@@ -40,4 +40,3 @@ cdef extern from "../src/csrlike.hpp":
                             vector[vector[complex]]& data_z32_data,
                             vector[vector[long long]]& data_z64_cols,
                             vector[vector[complex]]& data_z64_data)
-

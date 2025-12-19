@@ -17,7 +17,7 @@ import numpy as np
 def ramps_simple_refinement(QubitOperator H, Subspace S, Bitset start, 
                             unsigned int max_recursion=3, double tol=1e-14):
     
-    cdef Subspace out = Subspace({start.to_string(): 0})
+    cdef Subspace out = Subspace([[start.to_string()]])
     Hsub = SubspaceHamiltonian(H, S)
     cdef FulqrumSpMV spmv = Hsub.spmv
     cdef double energy = simple_refinement(&spmv.oper.terms[0],
@@ -38,13 +38,13 @@ def ramps_simple_refinement(QubitOperator H, Subspace S, Bitset start,
     
     # This is a temp workaround for issues with iteratively expanded
     # subspaces.  This should be removed once those are resolved
-    cdef dict temp_out = {}
+    cdef list temp_out = []
     cdef size_t n
     cdef str bs
     for n in range(<size_t>out.size()):
         bs = out.get_n_th_bitstring(n)
-        temp_out[bs] = 1
+        temp_out.append(bs)
     
-    cdef Subspace final_out = Subspace(temp_out)
+    cdef Subspace final_out = Subspace([temp_out])
     
     return final_out, energy

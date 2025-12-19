@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <vector>
 #include <complex>
+#include <mutex>
 
 #include "base.hpp"
 #include "bitset_utils.hpp"
@@ -31,13 +32,19 @@ void omp_matvec(const std::vector<OperatorTerm_t> &terms,
 {
     std::size_t kk;
     const auto *bitsets = subspace.get_bitsets();
+    const auto smallest_bitset = bitsets[0].first;
 
-    #pragma omp parallel if (subspace_dim > 4096)
+    std::vector<std::mutex> mutex1(subspace_dim);
+
+    std::vector<uint16_t> grp_max_inds(num_groups, width);
+    get_group_max_inds(grp_max_inds, group_offdiag_inds, num_groups);
+
+#pragma omp parallel if (subspace_dim > 4096)
     {
         // Take care of diagonal term first, if any (usually there is)
         if (has_nonzero_diag)
         {
-            #pragma omp for
+#pragma omp for
             for (kk = 0; kk < subspace_dim; kk++)
             {
                 out_vec[kk] = diag_vec[kk] * in_vec[kk];
@@ -48,38 +55,52 @@ void omp_matvec(const std::vector<OperatorTerm_t> &terms,
         // Take care of off-diagonal terms
         if (num_terms)
         {
-            #pragma omp for schedule(dynamic)
+#pragma omp for schedule(dynamic)
             for (kk = 0; kk < subspace_dim; kk++)
             {
-                const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
+                const boost::dynamic_bitset<size_t> &row = bitsets[kk].first;
+
+                std::vector<uint8_t> row_set_bits(row.size(), 0);
+                bitset_to_bitvec(row, row_set_bits);
+
                 boost::dynamic_bitset<std::size_t> col_vec;
-                T temp_val, val = 0;
+                T temp_val;
                 const OperatorTerm_t *term;
                 std::size_t group_start, group_stop, group;
+                std::size_t *col_ptr;
                 std::size_t idx, col_idx;
                 const std::vector<unsigned int> *group_inds;
-                int do_col_search;
                 // Loop over all off-diagonal terms in operator
                 for (group = 0; group < num_groups; group++)
                 {
+                    if (!row_set_bits[grp_max_inds[group]])
+                    {
+                        continue;
+                    }
+
                     group_start = group_ptrs[group];
                     group_stop = group_ptrs[group + 1];
-                    do_col_search = 1;
                     group_inds = &group_offdiag_inds[group];
                     temp_val = 0;
+                    if (group_start < group_stop)
+                    {
+                        col_vec = row;
+                        flip_bits(col_vec, group_inds->data(), group_inds->size());
+
+                        if (col_vec < smallest_bitset)
+                        {
+                            continue;
+                        }
+                        //
+                        col_ptr = subspace.get_ptr(col_vec);
+                        if (col_ptr == nullptr)
+                        {
+                            continue;
+                        } // column is NOT in the subspace so break group
+                        col_idx = *col_ptr;
+                    }
                     for (idx = group_start; idx < group_stop; idx++)
                     {
-                        if (do_col_search)
-                        {
-                            col_vec = row;
-                            flip_bits(col_vec, group_inds->data(), group_inds->size());
-                            col_idx = subspace.get(col_vec);
-                            if (col_idx == MAX_SIZE_T)
-                            {
-                                break;
-                            } // column is NOT in the subspace so break group
-                            do_col_search = 0;
-                        }
                         term = &terms[idx];
                         if (passes_proj_validation(term, row))
                         {
@@ -89,10 +110,24 @@ void omp_matvec(const std::vector<OperatorTerm_t> &terms,
                     } // end loop for this group
                     if (std::abs(temp_val) > ATOL)
                     {
-                        val += temp_val * in_vec[col_idx];
+                        {
+                            std::lock_guard<std::mutex> lock1(mutex1[kk]);
+                            out_vec[kk] += (temp_val * in_vec[col_idx]);
+                        }
+
+                        {
+                            std::lock_guard<std::mutex> lock2(mutex1[col_idx]);
+                            if constexpr (std::is_same_v<T, double>)
+                            {
+                                out_vec[col_idx] += (temp_val * in_vec[kk]);
+                            }
+                            else
+                            {
+                                out_vec[col_idx] += (std::conj(temp_val) * in_vec[kk]);
+                            }
+                        }
                     }
                 } // end loop over all groups
-                out_vec[kk] += val;
             } // end for-loop over rows
         } // end if num_terms
     } // end parallel region

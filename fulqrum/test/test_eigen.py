@@ -40,7 +40,7 @@ def test_eigen1():
 
     ans_evals, _ = spla.eigsh(B, k=2, which="SA")
 
-    S = Subspace(subspace_dict)
+    S = Subspace([list(subspace_dict.keys())])
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
     assert np.allclose(ans_evals, evals)
@@ -51,7 +51,7 @@ def test_eigen1():
         )
 
     # hashing only the first (`bitset.m_bits[0]`) bitset block
-    S = Subspace(subspace_dict, use_all_bitset_blocks=False)
+    S = Subspace([list(subspace_dict.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
     assert np.allclose(ans_evals, evals)
@@ -84,7 +84,7 @@ def test_eigen2():
 
     ans_evals, _ = spla.eigsh(B, k=2, which="SA")
 
-    S = Subspace(subspace_dict)
+    S = Subspace([list(subspace_dict.keys())])
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
     assert np.allclose(ans_evals, evals)
@@ -95,7 +95,7 @@ def test_eigen2():
         )
 
     # hashing only the first (`bitset.m_bits[0]`) bitset block
-    S = Subspace(subspace_dict, use_all_bitset_blocks=False)
+    S = Subspace([list(subspace_dict.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
     assert np.allclose(ans_evals, evals)
@@ -128,7 +128,7 @@ def test_eigen3():
 
     ans_evals, _ = spla.eigsh(B, k=3, which="SA")
 
-    S = Subspace(subspace_dict)
+    S = Subspace([list(subspace_dict.keys())])
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=3, which="SA")
     assert np.allclose(ans_evals, evals)
@@ -139,7 +139,7 @@ def test_eigen3():
         )
 
     # hashing only the first (`bitset.m_bits[0]`) bitset block
-    S = Subspace(subspace_dict, use_all_bitset_blocks=False)
+    S = Subspace([list(subspace_dict.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=3, which="SA")
     assert np.allclose(ans_evals, evals)
@@ -173,7 +173,7 @@ def test_eigen4():
 
     subspace_dict = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
-    S = Subspace(subspace_dict)
+    S = Subspace([list(subspace_dict.keys())])
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=3, which="SA", v0=v0)
     assert np.allclose(ans_evals, evals)
@@ -184,7 +184,7 @@ def test_eigen4():
         )
 
     # hashing only the first (`bitset.m_bits[0]`) bitset block
-    S = Subspace(subspace_dict, use_all_bitset_blocks=False)
+    S = Subspace([list(subspace_dict.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=3, which="SA", v0=v0)
     assert np.allclose(ans_evals, evals)
@@ -220,7 +220,7 @@ def test_eigen5():
 
     subspace_dict = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
-    S = Subspace(subspace_dict)
+    S = Subspace([list(subspace_dict.keys())])
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
     assert np.allclose(ans_evals, evals)
@@ -231,7 +231,7 @@ def test_eigen5():
         )
 
     # hashing only the first (`bitset.m_bits[0]`) bitset block
-    S = Subspace(subspace_dict, use_all_bitset_blocks=False)
+    S = Subspace([list(subspace_dict.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
     assert np.allclose(ans_evals, evals)
@@ -277,7 +277,7 @@ def test_eigen6():
 
     subspace_dict = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
-    S = Subspace(subspace_dict)
+    S = Subspace([list(subspace_dict.keys())])
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
     assert np.allclose(ans_evals, evals)
@@ -288,7 +288,7 @@ def test_eigen6():
         )
 
     # hashing only the first (`bitset.m_bits[0]`) bitset block
-    S = Subspace(subspace_dict, use_all_bitset_blocks=False)
+    S = Subspace([list(subspace_dict.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
     assert np.allclose(ans_evals, evals)
@@ -304,7 +304,7 @@ def test_diagonal_type2():
     op = QubitOperator.from_label("IZIZZ")
     op.set_type(2)
 
-    S = Subspace({"00000": 1, "11111": 1})
+    S = Subspace([["00000", "11111"]])
 
     Hsub = SubspaceHamiltonian(op, S)
 

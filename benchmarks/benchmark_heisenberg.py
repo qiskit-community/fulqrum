@@ -33,13 +33,13 @@ def main(tol=None):
             touched_edges.add(edge)
 
     # 1 million Pseudo counts
-    counts = {}
+    counts = []
     for kk in range(int(1e6)):
-        counts[bin(kk)[2:].zfill(num_qubits)] = 1
+        counts.append(bin(kk)[2:].zfill(num_qubits))
     
     st = time.perf_counter()
     # Solve eigenproblem (can substitute scipy.sparse.linalg.eigsh)
-    S = fq.Subspace(counts, use_all_bitset_blocks=False)
+    S = fq.Subspace([counts], use_all_bitset_blocks=True)
     Hsub = fq.SubspaceHamiltonian(H, S)
     st1 = time.perf_counter()
     evals, _ = spla.eigsh(

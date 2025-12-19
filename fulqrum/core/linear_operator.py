@@ -2,6 +2,7 @@
 # Copyright (C) 2024, IBM
 
 """Fulqrum linearoperator module"""
+
 import numpy as np
 from scipy.sparse.linalg import LinearOperator
 
@@ -23,25 +24,34 @@ class SubspaceHamiltonian(LinearOperator):
         """A SciPy `LinearOperator` that represents a Hamiltonian restricted to the given
         subspace.
         """
-        diag_H, off_H = hamiltonian.split_diagonal()
+        self.diag_H, self.off_H = hamiltonian.split_diagonal()
         # if there are no off-diagonal terms then we pass a dummy empty array of len=1
-        off_H.offdiag_term_grouping()
+        self.off_H.offdiag_term_grouping()
         self.group_ptrs = np.zeros(1, dtype=np.uintp)
         self.group_ladder_ptrs = np.zeros(1, dtype=np.uintp)
 
-        if off_H.num_terms:
-            self.group_ptrs = off_H.group_ptrs()
-        if off_H.type == 2:
-            if off_H.num_terms:
-                off_H.group_term_sort_by_ladder_int(4)
-                self.group_ladder_ptrs = off_H.group_ladder_bin_starts()
+        if self.off_H.num_terms:
+            self.group_ptrs = self.off_H.group_ptrs()
+        if self.off_H.type == 2:
+            if self.off_H.num_terms:
+                self.off_H.group_term_sort_by_ladder_int(4)
+                self.group_ladder_ptrs = self.off_H.group_ladder_bin_starts()
 
         self.spmv = FulqrumSpMV(
-            diag_H, off_H, subspace, self.group_ptrs, self.group_ladder_ptrs
+            self.diag_H, self.off_H, subspace, self.group_ptrs, self.group_ladder_ptrs
         )
         self._matvec = self.matvec
         self.shape = (len(subspace),) * 2
         self.dtype = np.dtype(float) if self.spmv.is_real else np.dtype(complex)
+
+    @property
+    def num_groups(self):
+        """Number of off-diagonal groupings
+
+        Returns:
+            int : Number of groups in operator
+        """
+        return self.off_H.num_groups
 
     def diagonal_vector(self):
         """Return diagonal vector of Hamiltonian in subspace
@@ -157,6 +167,7 @@ class SubspaceHamiltonian(LinearOperator):
         """
         M = self.spmv.to_csrlike(verbose).to_csr_array(verbose)
         return CSRLinearOperator(M, self.spmv.is_real)
+
 
     def to_linearoperator(self, verbose=False):
         """Convert subspace Hamiltonian to a CSR-like format LinearOperator

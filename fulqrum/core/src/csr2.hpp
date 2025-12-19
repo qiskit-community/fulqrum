@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <vector>
 #include <complex>
+#include <mutex>
 
 #include "base.hpp"
 #include "bitset_utils.hpp"
@@ -37,48 +38,25 @@ void csr_matrix_builder2(const OperatorTerm_t *terms,
     T temp, _sum;
 
     const auto *bitsets = subspace.get_bitsets();
+    const auto smallest_bitset = bitsets[0].first;
 
-    #pragma omp parallel for schedule(dynamic) if (subspace_dim > 4096)
-    for (kk = 0; kk < subspace_dim; kk++)
-    { // begin loop over all rows
+    std::vector<std::mutex> mutex1(subspace_dim);
+    std::vector<std::mutex> mutex2(subspace_dim);
+    std::vector<std::mutex> mutex3(subspace_dim);
 
-        const boost::dynamic_bitset<size_t> &row = bitsets[kk].first;
-        // creates a vector representation of the row bitset
-        // with 1 at set-bit positions. This vector is easier to
-        // look-up by index as looking up a bit in a bitset required
-        // division followed modulo operations.
-        // code from:
-        // https://lemire.me/blog/2018/02/21/iterating-over-set-bits-quickly/
-        std::vector<uint8_t> row_set_bits(row.size(), 0);
-        for (size_t block = 0; block < row.num_blocks(); block++)
-        {
-            auto bitset = row.m_bits[block];
-            while (bitset != 0)
-            {
-                uint64_t t = bitset & -bitset;
-                int r = __builtin_ctzll(bitset);
-                row_set_bits[block * BITS_PER_BLOCK + r] = 1;
-                bitset ^= t;
-            }
-        }
-        // define variables locally for omp for loop
-        std::size_t idx;
-        std::size_t group;
-        std::size_t group_int_start, group_int_stop;
-        T row_nnz, elem_start;
-        const OperatorTerm_t *term;
-        boost::dynamic_bitset<std::size_t> col_vec;
-        const std::vector<unsigned int> *group_inds;
-        std::size_t *col_ptr;
-        U val;
-        unsigned int row_int;
-        int do_col_search;
+    std::vector<uint16_t> grp_max_inds(num_groups, width);
+    get_group_max_inds(grp_max_inds, group_offdiag_inds, num_groups);
 
-        row_nnz = 0;
-        elem_start = indptr[kk];
-        // do diagonal first, if any
-        if (has_nonzero_diag)
-        {
+// process diagonal
+    std::vector<T> row_nnz_s(subspace_dim, 0);
+    if (has_nonzero_diag)
+    {
+#pragma omp parallel for schedule(dynamic) if (subspace_dim > 4096)
+        for (kk = 0; kk < subspace_dim; kk++)
+        { // begin loop over all rows
+            T& row_nnz = row_nnz_s[kk]; // reference T& is critical
+            T& elem_start = indptr[kk];
+            // do diagonal first, if any
             if (diag_vec[kk] != 0.0)
             {
                 if (compute_values)
@@ -89,30 +67,74 @@ void csr_matrix_builder2(const OperatorTerm_t *terms,
                 row_nnz += 1;
             }
         }
+    }
+
+#pragma omp parallel for schedule(dynamic) if (subspace_dim > 4096)
+    for (kk = 0; kk < subspace_dim; kk++)
+    { // begin loop over all rows
+        const boost::dynamic_bitset<size_t> &row = bitsets[kk].first;
+        
+        std::vector<uint8_t> row_set_bits(row.size(), 0);
+        bitset_to_bitvec(row, row_set_bits);
+        
+        // define variables locally for omp for loop
+        std::size_t idx;
+        std::size_t group;
+        std::size_t group_int_start, group_int_stop;
+        T row_nnz_col_idx, elem_start_col_idx;
+        const OperatorTerm_t *term;
+        boost::dynamic_bitset<std::size_t> col_vec;
+        const std::vector<unsigned int> *group_inds;
+        std::size_t *col_ptr;
+        std::size_t col_idx;
+        U val;
+        unsigned int row_int;
+
+        T& row_nnz = row_nnz_s[kk];
+        T& elem_start = indptr[kk];
+
         for (group = 0; group < num_groups; group++)
         { // begin loop over groups
+            if (!row_set_bits[grp_max_inds[group]])
+            {
+                continue;
+            }
+
             group_inds = &group_offdiag_inds[group];
             row_int = bitset_ladder_int(
                 row_set_bits.data(),
                 group_inds->data(),
-                group_rowint_length[group]);
+                group_rowint_length[group]
+            );
             group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
             group_int_stop = group_ladder_ptrs[group * ladder_offset + row_int + 1];
-            do_col_search = 1;
+
+            if (group_int_start < group_int_stop)
+            {
+                col_vec = row;
+                flip_bits(col_vec, group_inds->data(), group_inds->size());
+                
+                // if col_vec is smaller than the smallest bitset,
+                // it is already outside the subspace, and we can
+                // safely skip the group.
+                // Shows minor speed-up for fragment and dimer case.
+                if (col_vec < smallest_bitset)
+                {
+                    continue;
+                }
+
+                col_ptr = subspace.get_ptr(col_vec);
+                if (col_ptr == nullptr)
+                {
+                    continue;
+                } // column is NOT in the subspace so break group
+                col_idx = *col_ptr;
+            }
+
             val = 0;
+
             for (idx = group_int_start; idx < group_int_stop; idx++)
             { // begin loop over terms in this group
-                if (do_col_search)
-                {
-                    col_vec = row;
-                    flip_bits(col_vec, group_inds->data(), group_inds->size());
-                    col_ptr = subspace.get_ptr(col_vec);
-                    if (col_ptr == nullptr)
-                    {
-                        break;
-                    } // column is NOT in the subspace so break group
-                    do_col_search = 0;
-                }
                 term = &terms[idx];
                 if (passes_proj_validation(term, row))
                 {
@@ -121,29 +143,67 @@ void csr_matrix_builder2(const OperatorTerm_t *terms,
                                   term->real_phase, term->indices.size(), val);
                 }
             } // end loop over terms in this group
+            
             if (std::abs(val) > ATOL)
             {
                 if (compute_values)
                 {
-                    indices[elem_start + row_nnz] = *col_ptr;
-                    data[elem_start + row_nnz] = val;
+                    // process kk (row index)
+                    {
+                        std::lock_guard<std::mutex> lock_kk(mutex1[kk]);
+
+                        indices[elem_start + row_nnz] = col_idx;
+                        data[elem_start + row_nnz] = val;
+                        row_nnz += 1;
+                    }
+
+                    // process col_idx
+                    {
+                        std::lock_guard<std::mutex> lock_col_idx(mutex1[col_idx]);
+                        row_nnz_col_idx = row_nnz_s[col_idx];
+                        elem_start_col_idx = indptr[col_idx];
+                        indices[elem_start_col_idx + row_nnz_col_idx] = kk;
+                        row_nnz_s[col_idx] += 1;
+                        
+
+                        if constexpr (std::is_same_v<U, double>)
+                        {
+                            data[elem_start_col_idx + row_nnz_col_idx] = val;
+                        }
+                        else
+                        {
+                            // for complex-valued matrix, lower triangle 
+                            // element will be complex conjugate of the upper
+                            // triangle element
+                            data[elem_start_col_idx + row_nnz_col_idx] = std::conj(val);
+                        }
+                    }
                 }
-                row_nnz += 1;
+                if (!compute_values)
+                {
+                    {
+                        std::lock_guard<std::mutex> lock1(mutex2[kk]);
+                        row_nnz += 1;
+                    }
+                    
+                    {
+                        std::lock_guard<std::mutex> lock2(mutex2[col_idx]);
+                        row_nnz_s[col_idx] += 1;
+                    }
+                }
             }
         } // end loop over groups
-        if (!compute_values) // done with row, add row_nnz to indptr
-        {
-            indptr[kk] = row_nnz;
-        }
     } // end loop over all rows
+
     if (!compute_values) // Done with all rows so accumulate for correct indptr structure
     {
         _sum = 0;
-        for (kk = 0; kk < (subspace_dim + 1); kk++)
+        for (kk = 0; kk < (subspace_dim); kk++)
         {
-            temp = _sum + indptr[kk];
+            temp = _sum + row_nnz_s[kk];
             indptr[kk] = _sum;
             _sum = temp;
         }
+        indptr[subspace_dim] = _sum;
     }
 }

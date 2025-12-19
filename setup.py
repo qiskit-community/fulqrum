@@ -31,7 +31,9 @@ CYTHON_EXTS = [
     "csrlike",
     "qiskit",
     "openfermion",
+    "integrals",
     "matrix",
+    "sqd",
     "simple"
 ]
 CYTHON_MODULES = [
@@ -45,7 +47,9 @@ CYTHON_MODULES = [
     "fulqrum.core",
     "fulqrum.convert",
     "fulqrum.convert",
+    "fulqrum.convert",
     "fulqrum.utils",
+    "fulqrum.core",
     "fulqrum.ramps"
 ]
 CYTHON_SOURCE_DIRS = [
@@ -59,7 +63,9 @@ CYTHON_SOURCE_DIRS = [
     "fulqrum/core",
     "fulqrum/convert",
     "fulqrum/convert",
+    "fulqrum/convert",
     "fulqrum/utils",
+    "fulqrum/core",
     "fulqrum/ramps"
 ]
 
@@ -82,7 +88,9 @@ if os.getenv("FULQRUM_ARCH", False) and sys.platform != "win32":
         OPTIONAL_FLAGS.append("-march=" + os.getenv("FULQRUM_ARCH"))
         OPTIONAL_FLAGS.append("-mtune=" + os.getenv("FULQRUM_ARCH"))
 
-INCLUDE_DIRS = [np.get_include()]
+INCLUDE_DIRS = [np.get_include()] + [
+    "qiskit-addon-sqd-hpc/include",
+]
 # Extra link args
 LINK_FLAGS = []
 # If on Win and not in MSYS2 (i.e. Visual studio compile)

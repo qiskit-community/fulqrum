@@ -6,9 +6,8 @@
 #include <algorithm>
 #include "base.hpp"
 #include "constants.hpp"
+#include "bitset_hashmap.hpp"
 #include <boost/dynamic_bitset.hpp>
-
-
 
 /**
  * Flip a series of bits in a bitset
@@ -71,7 +70,6 @@ inline void bitset_column_index(const std::size_t start, const std::size_t stop,
     }
 }
 
-
 /**
  * Convert bits at given indices into an unsigned integer
  *
@@ -95,7 +93,6 @@ inline unsigned int bitset_ladder_int(const uint8_t *row,
 
     return out_int;
 }
-
 
 /**
  * verifies that bitstring passes constraints of the term projection operators
@@ -126,4 +123,102 @@ inline bool passes_proj_validation(const OperatorTerm_t *__restrict term,
         }
     }
     return out;
+}
+
+/**
+ * Computes orbital occupancy information of spin orbitals.
+ *
+ * @param subspace Subsapce as the HashMap.
+ * @param subspace_dim The number of bitsets in the subspace.
+ * @param probabilities Absolute squared eigenvector representing
+ * probability of each basis vector (subspace bitset).
+ * @param out Orbital occupancies of spin orbitals.
+ */
+void compute_orbital_occupancies(
+    const bitset_map_namespace::BitsetHashMapWrapper &subspace,
+    const std::size_t subspace_dim,
+    const double *__restrict probabilities,
+    double *out)
+{
+    const auto *bitsets = subspace.get_bitsets();
+    std::size_t kk;
+    for (kk = 0; kk < subspace_dim; kk++)
+    {
+        const boost::dynamic_bitset<size_t> &row = bitsets[kk].first;
+        std::vector<std::size_t> set_indices;
+        for (size_t block = 0; block < row.num_blocks(); block++)
+        {
+            auto bitset = row.m_bits[block];
+            while (bitset != 0)
+            {
+                uint64_t t = bitset & -bitset;
+                int r = __builtin_ctzll(bitset);
+                set_indices.push_back(block * BITS_PER_BLOCK + r);
+                bitset ^= t;
+            }
+        }
+        for (std::size_t &idx : set_indices)
+        {
+            out[idx] += probabilities[kk];
+        }
+    }
+}
+
+/**
+ * Constructs a vector of max offdiagonal group indices. The vector allows
+ * us to check only onw bit position in the row bitset to determine whether
+ * the candidate column bitset will be smaller or greater than the row bitset.
+ *
+ * @param grp_max_inds Vector to hold max index of each group. As the index
+ * is represented by ``uint16_t``, we can solve max 2^16 = 65536 qubit problem
+ * using Fulqrum.
+ * @param group_offdiag_inds Offdiagonal indices of a group. This list determines
+ * which bit positions in a row bitset will be flipped to construct a candidate
+ * column bitset.
+ * @param num_groups The number of groups.
+ */
+void get_group_max_inds(std::vector<uint16_t> &grp_max_inds,
+                        const std::vector<std::vector<unsigned int>> &group_offdiag_inds,
+                        const std::size_t &num_groups)
+{
+#pragma omp parallel for schedule(dynamic) if (num_groups > 4096)
+    for (size_t group = 0; group < num_groups; group++)
+    {
+        auto group_inds = &group_offdiag_inds[group];
+
+        // It is likely that the ``group_inds`` is already sorted, and
+        // the last element is the maximum. However, as size of ``group_inds``
+        // is moderate (2 or 4) and computing max element is cheap, we make use
+        // of ``std::max_element()`` to be safe.
+        auto max_element = std::max_element((*group_inds).begin(), (*group_inds).end());
+        grp_max_inds[group] = *max_element;
+    }
+}
+
+/**
+ * creates a vector representation of the row bitset
+ * with 1 at set-bit positions. This vector is easier to
+ * look-up by index as looking up a bit in a bitset required
+ * division followed modulo operations.
+ * code from:
+ * https://lemire.me/blog/2018/02/21/iterating-over-set-bits-quickly/
+ *
+ * @param row Bitstring in boost::dynamic_bitset<> format that will be converted
+ * into a vector of only 1s and 0s.
+ * @param row_set_bits Vector to hold bits of ``row`` bitset.
+ */
+void bitset_to_bitvec(const boost::dynamic_bitset<size_t> &row,
+                      std::vector<uint8_t> &row_set_bits)
+{
+    for (size_t block = 0; block < row.num_blocks(); block++)
+    {
+        auto bitset = row.m_bits[block];
+        while (bitset != 0)
+        {
+            uint64_t t = bitset & -bitset;
+            int r = __builtin_ctzll(bitset);
+            row_set_bits[block * BITS_PER_BLOCK + r] = 1;
+            bitset ^= t;
+        }
+    }
 }

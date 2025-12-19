@@ -22,14 +22,14 @@ def test_full_dist_h20_eigenenergy_matrix_free():
     for kk in range(2**14):
         full_dist[bin(kk)[2:].zfill(14)] = None
 
-    S = Subspace(full_dist)
+    S = Subspace([list(full_dist.keys())])
     Hsub = SubspaceHamiltonian(NEW_OP, S)
 
     evals, _ = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     # single bitset block
-    S = Subspace(full_dist, use_all_bitset_blocks=False)
+    S = Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(NEW_OP, S)
 
     evals, _ = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=float))
@@ -42,7 +42,7 @@ def test_full_dist_h20_eigenenergy_csr():
     for kk in range(2**14):
         full_dist[bin(kk)[2:].zfill(14)] = None
 
-    S = Subspace(full_dist)
+    S = Subspace([list(full_dist.keys())])
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_array()
     assert M.dtype == float
@@ -51,7 +51,7 @@ def test_full_dist_h20_eigenenergy_csr():
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     # single bitset block
-    S = Subspace(full_dist, use_all_bitset_blocks=False)
+    S = Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_array()
     assert M.dtype == float
@@ -66,7 +66,7 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator():
     for kk in range(2**14):
         full_dist[bin(kk)[2:].zfill(14)] = None
 
-    S = Subspace(full_dist)
+    S = Subspace([list(full_dist.keys())])
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_linearoperator()
 
@@ -75,7 +75,7 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator():
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     # single bitset block
-    S = Subspace(full_dist, use_all_bitset_blocks=False)
+    S = Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_linearoperator()
 
@@ -90,7 +90,7 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator_fast():
     for kk in range(2**14):
         full_dist[bin(kk)[2:].zfill(14)] = None
 
-    S = Subspace(full_dist)
+    S = Subspace([list(full_dist.keys())])
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_linearoperator_fast()
 
@@ -99,7 +99,7 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator_fast():
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
     # single bitset block
-    S = Subspace(full_dist, use_all_bitset_blocks=False)
+    S = Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(NEW_OP, S)
     M = Hsub.to_csr_linearoperator_fast()
 
