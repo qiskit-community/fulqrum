@@ -28,6 +28,14 @@ Fulqrum works over an extended alphabet of operators that includes projector and
     Defining Subspaces <subspaces.ipynb>
     Operator IO <operator_io.ipynb>
 
+.. toctree::
+    :maxdepth: 2
+    :caption: Tutorials
+    :hidden:
+    :glob:
+
+    tutorials/*
+
 
 .. toctree::
     :maxdepth: 1
