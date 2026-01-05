@@ -10,7 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-"""Fulqrum : A sophisticated take on quantum operators"""
+"""Fulqrum : A generalized quantum subspace eigensolver"""
 
 import os
 import sys
@@ -20,13 +20,15 @@ import numpy as np
 from Cython.Build import cythonize
 
 
+ROOT = "qiskit_addon_fulqrum"
+
 with open("requirements.txt") as f:
     REQUIREMENTS = f.read().splitlines()
 
 PACKAGES = setuptools.find_packages()
 PACKAGE_DATA = {
-    "fulqrum/core": ["*.pxd"],
-    "fulqrum/core/src": ["*.hpp"],
+    f"{ROOT}/core": ["*.pxd"],
+    f"{ROOT}/core/src": ["*.hpp"],
 }
 
 CYTHON_EXTS = [
@@ -45,37 +47,38 @@ CYTHON_EXTS = [
     "sqd",
     "simple"
 ]
+
 CYTHON_MODULES = [
-    "fulqrum.core",
-    "fulqrum.core",
-    "fulqrum.core",
-    "fulqrum.core",
-    "fulqrum.core",
-    "fulqrum.core",
-    "fulqrum.core",
-    "fulqrum.core",
-    "fulqrum.convert",
-    "fulqrum.convert",
-    "fulqrum.convert",
-    "fulqrum.utils",
-    "fulqrum.core",
-    "fulqrum.ramps"
+    f"{ROOT}.core",
+    f"{ROOT}.core",
+    f"{ROOT}.core",
+    f"{ROOT}.core",
+    f"{ROOT}.core",
+    f"{ROOT}.core",
+    f"{ROOT}.core",
+    f"{ROOT}.core",
+    f"{ROOT}.convert",
+    f"{ROOT}.convert",
+    f"{ROOT}.convert",
+    f"{ROOT}.utils",
+    f"{ROOT}.core",
+    f"{ROOT}.ramps"
 ]
 CYTHON_SOURCE_DIRS = [
-    "fulqrum/core",
-    "fulqrum/core",
-    "fulqrum/core",
-    "fulqrum/core",
-    "fulqrum/core",
-    "fulqrum/core",
-    "fulqrum/core",
-    "fulqrum/core",
-    "fulqrum/convert",
-    "fulqrum/convert",
-    "fulqrum/convert",
-    "fulqrum/utils",
-    "fulqrum/core",
-    "fulqrum/ramps"
+    f"{ROOT}/core",
+    f"{ROOT}/core",
+    f"{ROOT}/core",
+    f"{ROOT}/core",
+    f"{ROOT}/core",
+    f"{ROOT}/core",
+    f"{ROOT}/core",
+    f"{ROOT}/core",
+    f"{ROOT}/convert",
+    f"{ROOT}/convert",
+    f"{ROOT}/convert",
+    f"{ROOT}/utils",
+    f"{ROOT}/core",
+    f"{ROOT}/ramps"
 ]
 
 # Add openmp flags
@@ -125,7 +128,6 @@ for idx, ext in enumerate(CYTHON_EXTS):
         ],
     )
     EXT_MODULES.append(mod)
-
 
 
 setuptools.setup(
