@@ -16,7 +16,7 @@ from fulqrum.convert import (
     openfermion_fermi_op_to_fulqrum,
     openfermion_qubit_op_to_fulqrum,
     integrals_to_fq_fermionic_op,
-    fcidump_to_fq_fermionic_op
+    fcidump_to_fq_fermionic_op,
 )
 
 
@@ -109,15 +109,15 @@ def test_openfermion_fermi_op_to_fulqrum_value_error():
 
 @pytest.mark.skip(reason="Not implemented as it uses already tested functions")
 def test_integrals_to_fq_fermionic_op():
-    """The function uses openfermion methods which are tested as a part of 
-        openfermion itself. Finally, it uses ``openfermion_fermi_op_to_fulqrum``,
-        which is also tested above separately. Therefore, we are skipping explicitly
-        testing this function for now.
+    """The function uses openfermion methods which are tested as a part of
+    openfermion itself. Finally, it uses ``openfermion_fermi_op_to_fulqrum``,
+    which is also tested above separately. Therefore, we are skipping explicitly
+    testing this function for now.
 
-        Test Idea: Consider generating hcore and eri for a small molecule such as
-            H2O, solve it for full subspace, and compare expected accurancy with
-            computed accuracy. If integral conversion is correct, then accuracies
-            must match.
+    Test Idea: Consider generating hcore and eri for a small molecule such as
+        H2O, solve it for full subspace, and compare expected accurancy with
+        computed accuracy. If integral conversion is correct, then accuracies
+        must match.
     """
     pass
 
@@ -125,12 +125,12 @@ def test_integrals_to_fq_fermionic_op():
 @pytest.mark.skip(reason="Not implemented as it uses already tested functions")
 def test_fcidump_to_fq_fermionic_op():
     """The function uses PySCF to extract one- and two-body integrals and then
-        calls  ``integrals_to_fq_fermionic_op()``. Therefore, we are skipping
-        explicitly testing this function for now.
+    calls  ``integrals_to_fq_fermionic_op()``. Therefore, we are skipping
+    explicitly testing this function for now.
 
-        Test Idea: Search fcidump for a small molecule such as
-            H2O, solve it for full subspace, and compare expected accurancy with
-            computed accuracy. If integral conversion is correct, then accuracies
-            must match.
+    Test Idea: Search fcidump for a small molecule such as
+        H2O, solve it for full subspace, and compare expected accurancy with
+        computed accuracy. If integral conversion is correct, then accuracies
+        must match.
     """
     pass

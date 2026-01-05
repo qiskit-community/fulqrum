@@ -82,7 +82,7 @@ I have no idea how to set env vars on Windows, so I just do:
 python setup.py install
 ```
 
-## Notes on new `Supspace` input format
+## Notes on new `Subspace` input format
 Two modes of input to subspace is supported:
 1. **Half-string mode:** In this mode, the input `subspace_strs` to the `Subspace()` is a length-2 
 `tuple[list[str], list[str]]`, where the first element represents _alpha_ strings, and the second

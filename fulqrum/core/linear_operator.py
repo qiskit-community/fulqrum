@@ -1,5 +1,14 @@
-# Fulqrum
-# Copyright (C) 2024, IBM
+# This code is a Qiskit project.
+#
+# (C) Copyright IBM 2024.
+#
+# This code is licensed under the Apache License, Version 2.0. You may
+# obtain a copy of this license in the LICENSE.txt file in the root directory
+# of this source tree or at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# Any modifications or derivative works of this code must retain this
+# copyright notice, and modified files need to carry a notice indicating
+# that they have been altered from the originals.
 
 """Fulqrum linearoperator module"""
 
@@ -167,7 +176,6 @@ class SubspaceHamiltonian(LinearOperator):
         """
         M = self.spmv.to_csrlike(verbose).to_csr_array(verbose)
         return CSRLinearOperator(M, self.spmv.is_real)
-
 
     def to_linearoperator(self, verbose=False):
         """Convert subspace Hamiltonian to a CSR-like format LinearOperator

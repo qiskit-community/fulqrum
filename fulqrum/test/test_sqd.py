@@ -51,30 +51,28 @@ def test_subsample():
         "1100",
         "1101",
         "1110",
-        "1111"
+        "1111",
     ]
 
-    uniform_probs = np.array(
-        [1 / len(bitstrings) for _ in bitstrings]
-    )
+    uniform_probs = np.array([1 / len(bitstrings) for _ in bitstrings])
 
     samples_per_batch = 2
     subsampled_batch = subsample(
         bitstrings=bitstrings,
         weights=uniform_probs,
         samples_per_batch=samples_per_batch,
-        seed=0
+        seed=0,
     )
 
     assert len(subsampled_batch) == samples_per_batch
-    
+
     with pytest.raises(ValueError):
         samples_per_batch = 0
         subsampled_batch = subsample(
             bitstrings=bitstrings,
             weights=uniform_probs,
             samples_per_batch=samples_per_batch,
-            seed=0
+            seed=0,
         )
 
     with pytest.raises(ValueError):
@@ -83,9 +81,9 @@ def test_subsample():
             bitstrings=bitstrings,
             weights=uniform_probs,
             samples_per_batch=samples_per_batch,
-            seed=0
+            seed=0,
         )
-    
+
     bitstrings = [
         "0000",
         "0001",
@@ -100,7 +98,7 @@ def test_subsample():
         bitstrings=bitstrings,
         weights=probs,
         samples_per_batch=samples_per_batch,
-        seed=0
+        seed=0,
     )
 
     assert len(subsampled_batch) == samples_per_batch
@@ -160,13 +158,13 @@ def test_recover_configurations_1s_to_0s(num_bits):
 
 
 def test_recover_configurations_mismatch_orbitals():
-    bitstrings = ["1111"] # bN ... b0 / aN ... a0
+    bitstrings = ["1111"]  # bN ... b0 / aN ... a0
     probs = np.array([1.0])
-    occs_a = np.array([0.0, 0.0]) # a0 ... aN
-    occs_b = np.array([0.0, 1.0]) # b0 ... bN
+    occs_a = np.array([0.0, 0.0])  # a0 ... aN
+    occs_b = np.array([0.0, 1.0])  # b0 ... bN
     num_a = 0
     num_b = 1
-    expected_bs = ["1000"] # bN ... b0 / aN ... a0
+    expected_bs = ["1000"]  # bN ... b0 / aN ... a0
     expected_probs = np.array([1.0])
 
     bs_rec, probs_rec = recover_configurations(
@@ -178,18 +176,18 @@ def test_recover_configurations_mismatch_orbitals():
 
 
 def test_get_carryover_full_strs():
-    bitstrings = [['011101', '101011', '110110']]
+    bitstrings = [["011101", "101011", "110110"]]
     S = Subspace(bitstrings)
-    abs_amps = np.array([0.1, 0.3, 0.05]) # Test only. abs_amps ** 2 != 1
+    abs_amps = np.array([0.1, 0.3, 0.05])  # Test only. abs_amps ** 2 != 1
 
     carryover = get_carryover_full_strs(subspace=S, abs_amps=abs_amps, threshold=0.08)
-    assert carryover == [('101011', 0.3), ('011101', 0.1)]
+    assert carryover == [("101011", 0.3), ("011101", 0.1)]
 
     carryover = get_carryover_full_strs(subspace=S, abs_amps=abs_amps, threshold=0.20)
-    assert carryover == [('101011', 0.3)]
+    assert carryover == [("101011", 0.3)]
 
     carryover = get_carryover_full_strs(subspace=S, abs_amps=abs_amps, threshold=0.04)
-    assert carryover == [('101011', 0.3), ('011101', 0.1), ('110110', 0.05)]
+    assert carryover == [("101011", 0.3), ("011101", 0.1), ("110110", 0.05)]
 
     carryover = get_carryover_full_strs(subspace=S, abs_amps=abs_amps, threshold=0.40)
     assert carryover == []
