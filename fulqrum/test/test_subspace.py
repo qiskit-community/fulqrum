@@ -1,5 +1,14 @@
-# Fulqrum
-# Copyright (C) 2024, IBM
+# This code is a Qiskit project.
+#
+# (C) Copyright IBM 2024.
+#
+# This code is licensed under the Apache License, Version 2.0. You may
+# obtain a copy of this license in the LICENSE.txt file in the root directory
+# of this source tree or at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# Any modifications or derivative works of this code must retain this
+# copyright notice, and modified files need to carry a notice indicating
+# that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test string to vector conversion"""
 
@@ -10,7 +19,12 @@ from fulqrum import Subspace
 from fulqrum.exceptions import FulqrumError
 
 
-dic = {"01010": 1, "10101": 1, "11111": 1, "11100": 1} # sorted keys: "01010","10101","11100","11111"
+dic = {
+    "01010": 1,
+    "10101": 1,
+    "11111": 1,
+    "11100": 1,
+}  # sorted keys: "01010","10101","11100","11111"
 dic = [list(dic.keys())]
 dic2 = {
     "01010": 1,
@@ -20,7 +34,7 @@ dic2 = {
     "01111": 1,
     "00100": 1,
     "10111": 1,
-} # sorted keys: "00100","01010","01111","10111","11100","11111"
+}  # sorted keys: "00100","01010","01111","10111","11100","11111"
 dic2 = [list(dic2.keys())]
 
 
@@ -76,12 +90,12 @@ def test_get_n_th_bitstring():
 
 
 def test_max_num_qubits():
-    bitstrings = [["0" * (2 ** 16), "1" * (2 ** 16)]]
+    bitstrings = [["0" * (2**16), "1" * (2**16)]]
     S = Subspace(bitstrings)
-    
+
     assert S
 
-    bitstrings = [["0" * (2 ** 16 + 1), "1" * (2 ** 16 + 1)]]
+    bitstrings = [["0" * (2**16 + 1), "1" * (2**16 + 1)]]
 
     with pytest.raises(ValueError):
         S = Subspace(bitstrings)
@@ -90,13 +104,13 @@ def test_max_num_qubits():
 def test_get_orbital_occupancies():
     # sorted bitstrings as Subspace input as Subspace sorts them
     # if this is not sorted here, ``probs`` array may have mismatched order.
-    bitstrings = [['011101', '101011', '110110']] # bit order: bN ... b0, aN ... a0
+    bitstrings = [["011101", "101011", "110110"]]  # bit order: bN ... b0, aN ... a0
     probs = np.array([0.50, 0.30, 0.20])
     n_spatial_orb = len(bitstrings[0][0]) // 2
     S = Subspace(bitstrings)
 
     # occupancies orrder: ([a0, ..., aN], [b0, ..., bN])
-    occs_a , occs_b = S.get_orbital_occupancies(probs=probs, norb=n_spatial_orb)
+    occs_a, occs_b = S.get_orbital_occupancies(probs=probs, norb=n_spatial_orb)
 
     expected_occs_a = np.array([0.80, 0.50, 0.70])
     expected_occs_b = np.array([0.80, 0.70, 0.50])
@@ -104,12 +118,14 @@ def test_get_orbital_occupancies():
     np.testing.assert_allclose(occs_a, expected_occs_a)
     np.testing.assert_allclose(occs_b, expected_occs_b)
 
-    bitstrings = [["00010001", "00101000", "10000100"]] # bit order: bN ... b0, aN ... a0
+    bitstrings = [
+        ["00010001", "00101000", "10000100"]
+    ]  # bit order: bN ... b0, aN ... a0
     probs = np.array([0.40, 0.50, 0.10])
     n_spatial_orb = len(bitstrings[0][0]) // 2
     S = Subspace(bitstrings)
 
-    occs_a , occs_b = S.get_orbital_occupancies(probs=probs, norb=n_spatial_orb)
+    occs_a, occs_b = S.get_orbital_occupancies(probs=probs, norb=n_spatial_orb)
 
     expected_occs_a = np.array([0.40, 0.0, 0.10, 0.50])
     expected_occs_b = np.array([0.40, 0.50, 0.0, 0.10])
