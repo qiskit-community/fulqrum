@@ -467,7 +467,7 @@ cdef class FulqrumSpMV():
 
     def to_csrlike(self, int verbose=0):
         # This is here to prevent a circular import
-        from fulqrum.core.linear_operator import CSRLikeLinearOperator
+        from .linear_operator import CSRLikeLinearOperator
         # Compute diag vec if we have not done so already
         cdef double stop, start
         start = time.perf_counter()
