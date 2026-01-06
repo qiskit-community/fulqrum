@@ -2,12 +2,13 @@
 ![fulqrum_logo](https://github.ibm.com/user-attachments/assets/889bc5f1-93e7-46c4-91e1-aa64ab8c3391)
 
 
-# fulqrum
-Operator methods for quantum subpspace eigenproblems.
+# Fulqrum
 
-Fulqrum is a set of tools for enabling the solution to large-scale Hamiltonian subpspace eigenproblems over extended alphabets for those of us without access to high-performance computing (HPC) resources.  To accomplish this, Fulqrum utilizes a novel matrix-free method for performing the matrix-vector computation that is at the core of all sparse eigensolving methods.
+A generalized framework for quantum subspace eigensolving.
 
-Working over extended (i.e. non-Pauli) alphabets allows Fulqrum to work for both Bosonic and Fermionic problems.  Fermionic problems can be cast into Bosonic ones in a one-to-one manner using an extended Jordan-Wigner transformation, and the properties of extended operators can be used to further reduce the computational costs.
+Fulqrum is a set of tools for enabling the solution to large-scale Hamiltonian subspace eigenproblems over extended alphabets.  Fulqrum was designed specifically with the goals of: (1) Providing a unified code base for solving both spin and fermionic systems. (2) Working for arbitrary numbers of qubits. (3) Reducing memory consumption, as compared to existing methods. And finally, (4) Decoupling operator construction from eigensolving itself.  In addition to satisfying these goals, Fulqrum is performant, and beats other eigensolvers in terms of total runtime.
+
+In addition to eigensolving itself, Fulqrum provides tools for generating compact subspaces that yield accurate solutions while potentially  using orders of magnitude fewer bit-strings than standard quantum subspace methods alone.
 
 
 ## Installation
@@ -15,7 +16,7 @@ Working over extended (i.e. non-Pauli) alphabets allows Fulqrum to work for both
 
 ### Requirements
 
-Outside of standard packages, currently Fulqrum requires the Boost library and OpenMP v3+ . 
+Outside of standard Python packages Fulqrum requires the Boost library and OpenMP 3+ . 
 
 If using `conda` then adding Boost can be done using:
 
@@ -74,15 +75,8 @@ Then installation of Fulqrum with openmp can be accomplished using a call like:
 CC=clang CXX=clang++ pip install .
 ```
 
-### Installation on Windows [Currently not working]
+## Notes on `Subspace` input format
 
-I have no idea how to set env vars on Windows, so I just do:
-
-```bash
-python setup.py install
-```
-
-## Notes on new `Subspace` input format
 Two modes of input to subspace is supported:
 1. **Half-string mode:** In this mode, the input `subspace_strs` to the `Subspace()` is a length-2 
 `tuple[list[str], list[str]]`, where the first element represents _alpha_ strings, and the second
@@ -92,42 +86,3 @@ one represents _beta_ strings. Internally, `fulqrum` will sort each list and per
 
 **Note:** There is no special flag to denote half-string vs. full-string mode. `Fulqrum` will compute the lenght of the input `subspace_strs` and detect half-string or full-string mode automatically to construct the subspace. If `subspace_strs` has a different length other than 1 or 2 or its element(s) is not `list[str]`, it will throw an `TypeError`.
 
-## Examples
-
-> [!CAUTION]
-> The SciPy sparse `eigs` and `eigsh` solvers can conflict with the OpenMP used by Fulqrum if the underlying blas library is based on OpenBlas.  In these cases one should try to set the env variable: `OPENBLAS_NUM_THREADS=1` to begin with.  Increasing this number higher than this might increase the overall runtime on some machines.
-
-
-### 1541 qubit spin-lattice
-
-```python
-import time
-import primme
-from qiskit.transpiler import CouplingMap
-import fulqrum as fq
-
-# Build 1541-qubit coupling map
-cmap = CouplingMap.from_heavy_square(23)
-num_qubits = cmap.size()
-
-# Generate Hamiltonian
-H = fq.QubitOperator(num_qubits, [])
-touched_edges = set({})
-coeffs = [1/2, 1/2, 1]
-for edge in cmap.get_edges():
-    if edge[::-1] not in touched_edges:
-        H += fq.QubitOperator(num_qubits, [("XX", edge, coeffs[0]), 
-                                           ("YY", edge, coeffs[1]), 
-                                           ("ZZ", edge, coeffs[2])])
-        touched_edges.add(edge)
-
-# 1 million Pseudo counts
-counts = []
-for kk in range(int(1e6)):
-    counts.append(bin(kk)[2:].zfill(num_qubits))
-
-# Solve eigenproblem (can substitute scipy.sparse.linalg.eigsh)
-S = fq.Subspace([counts])
-Hsub = fq.SubspaceHamiltonian(H, S)
-evals, _ = primme.eigsh(Hsub, k=1, which='SA', method='PRIMME_DEFAULT_MIN_MATVECS')
-```
