@@ -124,7 +124,7 @@ def subsample(
     cdef list py_bitvec = []
     cdef string s
 
-    cdef size_t n
+    cdef int n
     for n in range(samples_per_batch):
         to_string(subsampled_bitvec[n], s)
         py_bitvec.append(s)
@@ -257,7 +257,7 @@ def get_carryover_full_strs(
     cdef string s
     cdef list out = []
 
-    for kk in range(subspace.size()):
+    for kk in range(<size_t>subspace.size()):
         if abs_amps[kk] <= threshold:
             continue
         s = subspace.get_n_th_bitstring(kk)
