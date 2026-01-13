@@ -14,7 +14,7 @@ import argparse
 
 import numpy as np
 import scipy.sparse.linalg as spla
-import fulqrum as fq
+import qiskit_addon_fulqrum as fq
 from qiskit.transpiler import CouplingMap
 
 import logging

@@ -38,11 +38,11 @@ and stored as a ``Subspace`` object (note that we do not use the counts data its
 
 .. jupyter-execute::
 
-    counts = {}
+    counts = []
     for kk in range(2**num_qubits):
-        counts[bin(kk)[2:].zfill(num_qubits)] = 1
+        counts.append(bin(kk)[2:].zfill(num_qubits))
 
-    S = fq.Subspace(counts)
+    S = fq.Subspace([counts])
 
 Right now we have a Hamiltonian and a subspace, but they know nothing about each other.  We can combine
 them into a ``SubspaceHamiltonian`` object, which is where all the magic happens, and is what we pass on

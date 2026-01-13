@@ -15,7 +15,7 @@ from pathlib import Path
 
 import numpy as np
 import scipy.sparse.linalg as spla
-import fulqrum as fq
+import qiskit_addon_fulqrum as fq
 
 import logging
 

@@ -1,7 +1,7 @@
 include LICENSE.txt
 include README.md
 include requirements.txt
-recursive-include fulqrum/core/includes *.pxi
-recursive-include fulqrum/core *.pxd
-recursive-include fulqrum/core/src *.hpp
-recursive-include fulqrum/test/data *.json
+recursive-include qiskit_addon_fulqrum/core/includes *.pxi
+recursive-include qiskit_addon_fulqrum/core *.pxd
+recursive-include qiskit_addon_fulqrum/core/src *.hpp
+recursive-include qiskit_addon_fulqrum/test/data *.json
