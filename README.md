@@ -32,15 +32,15 @@ Fulqrum uses [`qiskit-addon-sqd-hpc`](https://github.com/Qiskit/qiskit-addon-sqd
 
 Clone Fulqrum with `--recurse-submodules` flag, and it will also clone files from the submodule.
 ```bash
-git clone --recurse-submodules https://github.ibm.com/ibm-q-research/fulqrum.git
+git clone --recurse-submodules https://github.ibm.com/ibm-q-research/qiskit-addon-fulqrum.git
 ```
 
 OR
 
 After cloning Fulqrum normally, do a submodule update.
 ```bash
-git clone https://github.ibm.com/ibm-q-research/fulqrum.git
-cd fulqrum
+git clone https://github.ibm.com/ibm-q-research/qiskit-addon-fulqrum.git
+cd qiskit-addon-fulqrum
 git submodule update --init --recursive
 ```
 
