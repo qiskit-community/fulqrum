@@ -10,5 +10,6 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 import os
+
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 from .config import Configuration

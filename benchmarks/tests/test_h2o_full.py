@@ -50,7 +50,8 @@ def test_h2o_full(benchmark):
             v0=np.ones(len(S), dtype=float),
         )
         solver_end = time.perf_counter()
-        return evals[0], jw_end-jw_start, solver_end-solver_start
+        return evals[0], jw_end - jw_start, solver_end - solver_start
+
     benchmark.extra_info["jw_time"] = result[1]
     benchmark.extra_info["eigen_time"] = result[2]
     assert np.abs(result[0] - ANS) > 1e-14

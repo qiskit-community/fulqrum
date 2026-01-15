@@ -21,6 +21,7 @@ DEFAULT_FILENAME = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "default.conf")
 )
 
+
 class FulqrumConfig:
     """Class representing a user config file
 
@@ -46,8 +47,6 @@ class FulqrumConfig:
             self.options[sec] = {}
             for item in list(self.config_parser.items(sec)):
                 self.options[sec][item[0]] = literal_eval(item[1])
-
-
 
 
 Configuration = FulqrumConfig()
