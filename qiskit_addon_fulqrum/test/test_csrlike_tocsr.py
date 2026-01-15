@@ -45,7 +45,7 @@ def test_csrlike_csr1():
 
     S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_linearoperator().to_csr_array()
+    P = Hsub._to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -72,7 +72,7 @@ def test_csrlike_csr1a():
 
     S = fq.Subspace([list(counts.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_linearoperator().to_csr_array()
+    P = Hsub._to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -99,7 +99,7 @@ def test_csrlike_csr2():
 
     S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_linearoperator().to_csr_array()
+    P = Hsub._to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -126,7 +126,7 @@ def test_csrlike_csr2a():
 
     S = fq.Subspace([list(counts.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_linearoperator().to_csr_array()
+    P = Hsub._to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -153,7 +153,7 @@ def test_csrlike_csr3():
 
     S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_linearoperator().to_csr_array()
+    P = Hsub._to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -180,7 +180,7 @@ def test_csrlike_csr3():
 
     S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_linearoperator().to_csr_array()
+    P = Hsub._to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -207,7 +207,7 @@ def test_csrlike_csr3a():
 
     S = fq.Subspace([list(counts.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_linearoperator().to_csr_array()
+    P = Hsub._to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -234,7 +234,7 @@ def test_csrlike_csr4():
 
     S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_linearoperator().to_csr_array()
+    P = Hsub._to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -261,7 +261,7 @@ def test_csrlike_csr4a():
 
     S = fq.Subspace([list(counts.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_linearoperator().to_csr_array()
+    P = Hsub._to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -288,7 +288,7 @@ def test_csrlike_csr5():
 
     S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_linearoperator().to_csr_array()
+    P = Hsub._to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -316,7 +316,7 @@ def test_csrlike_csr5a():
 
     S = fq.Subspace([list(counts.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_linearoperator().to_csr_array()
+    P = Hsub._to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -343,7 +343,7 @@ def test_csrlike_csr6():
 
     S = fq.Subspace([list(counts.keys())])
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_linearoperator().to_csr_array()
+    P = Hsub._to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)
@@ -370,7 +370,7 @@ def test_csrlike_csr6a():
 
     S = fq.Subspace([list(counts.keys())], use_all_bitset_blocks=False)
     Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_linearoperator().to_csr_array()
+    P = Hsub._to_linearoperator().to_csr_array()
 
     assert np.allclose(P.indptr, M.indptr)
     assert np.allclose(P.indices, M.indices)

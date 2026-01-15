@@ -196,7 +196,7 @@ def test_csrlike_matvec1():
     counts = {"00": 10, "01": 10, "10": 10, "11": 10}
     S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
-    M = F.to_linearoperator()
+    M = F._to_linearoperator()
     in_vec = np.ones(len(S), dtype=float)
     perm = [int(key, 2) for key in S.to_dict().keys()]
     perm_vec = in_vec[perm]
@@ -213,7 +213,7 @@ def test_csrlike_matvec2():
     counts = {"00": 10, "01": 10, "10": 10, "11": 10}
     S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
-    M = F.to_linearoperator()
+    M = F._to_linearoperator()
     in_vec = np.arange(len(S), dtype=float)
     perm = [int(key, 2) for key in S.to_dict().keys()]
     perm_vec = in_vec[perm]
@@ -232,7 +232,7 @@ def test_csrlike_matvec3():
     counts = {"00": 10, "01": 10, "10": 10, "11": 10}
     S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
-    M = F.to_linearoperator()
+    M = F._to_linearoperator()
     in_vec = np.arange(len(S), dtype=complex)
     perm = [int(key, 2) for key in S.to_dict().keys()]
     perm_vec = in_vec[perm]
@@ -251,7 +251,7 @@ def test_csrlike_matvec4():
     counts = {"00": 10, "10": 10}
     S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
-    M = F.to_linearoperator()
+    M = F._to_linearoperator()
     in_vec = np.ones(len(S), dtype=complex)
     out_vec = M.matvec(in_vec)
     res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
@@ -268,7 +268,7 @@ def test_csrlike_matvec5():
     counts = {"00": 10, "11": 10}
     S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
-    M = F.to_linearoperator()
+    M = F._to_linearoperator()
     in_vec = np.ones(len(S), dtype=complex)
     out_vec = M.matvec(in_vec)
     res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
