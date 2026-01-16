@@ -18,11 +18,9 @@ import qiskit_addon_fulqrum as fulqrum
 from packaging.version import parse
 
 
-
-
 # function executed right after test items collected but before test run
 def pytest_collection_modifyitems(config, items):
-    if not config.getoption('-m'):
+    if not config.getoption("-m"):
         skip_me = pytest.mark.skip(reason="use `-m long` to run this test")
         for item in items:
             if "long" in item.keywords:

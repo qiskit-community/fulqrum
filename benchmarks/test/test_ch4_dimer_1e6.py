@@ -18,7 +18,6 @@ import scipy.sparse.linalg as spla
 import qiskit_addon_fulqrum as fq
 
 
-
 def test_ch4_dimer_1e6_csr_fast(benchmark):
     @benchmark
     def result():
@@ -50,11 +49,14 @@ def test_ch4_dimer_1e6_csr_fast(benchmark):
             v0=np.ones(len(S), dtype=float),
         )
         solver_end = time.perf_counter()
-        return (evals[0], jw_end - jw_start, 
-                subspace_end - subspace_start,
-                hsub_end - hsub_start,
-                oper_end - oper_start, 
-                solver_end - solver_start)
+        return (
+            evals[0],
+            jw_end - jw_start,
+            subspace_end - subspace_start,
+            hsub_end - hsub_start,
+            oper_end - oper_start,
+            solver_end - solver_start,
+        )
 
     benchmark.extra_info["jw_time"] = result[1]
     benchmark.extra_info["subspace_time"] = result[2]

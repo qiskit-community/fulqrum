@@ -20,6 +20,7 @@ import qiskit_addon_fulqrum as fq
 
 ANS = -84.20635059311753
 
+
 def full_subspace(num_qubits):
     out = {}
     for val in range(2**num_qubits):
@@ -41,7 +42,7 @@ def test_h2o_full_csr_fast(benchmark):
         subspace_start = time.perf_counter()
         S = fq.Subspace([list(dist.keys())])
         subspace_end = time.perf_counter()
-    
+
         hsub_start = time.perf_counter()
         Hsub = fq.SubspaceHamiltonian(op, S)
         hsub_end = time.perf_counter()
@@ -59,19 +60,21 @@ def test_h2o_full_csr_fast(benchmark):
             v0=np.ones(len(S), dtype=float),
         )
         solver_end = time.perf_counter()
-        return (evals[0], jw_end - jw_start, 
-                subspace_end - subspace_start,
-                hsub_end - hsub_start,
-                oper_end - oper_start, 
-                solver_end - solver_start)
+        return (
+            evals[0],
+            jw_end - jw_start,
+            subspace_end - subspace_start,
+            hsub_end - hsub_start,
+            oper_end - oper_start,
+            solver_end - solver_start,
+        )
 
     benchmark.extra_info["jw_time"] = result[1]
     benchmark.extra_info["subspace_time"] = result[2]
     benchmark.extra_info["hsub_time"] = result[3]
     benchmark.extra_info["operator_time"] = result[4]
     benchmark.extra_info["eigen_time"] = result[5]
-    assert np.abs((result[0] - ANS)/ANS) < 1e-14
-
+    assert np.abs((result[0] - ANS) / ANS) < 1e-14
 
 
 def test_h2o_full_matrix_free(benchmark):
@@ -102,13 +105,16 @@ def test_h2o_full_matrix_free(benchmark):
             v0=np.ones(len(S), dtype=float),
         )
         solver_end = time.perf_counter()
-        return (evals[0], jw_end - jw_start, 
-                subspace_end - subspace_start,
-                hsub_end - hsub_start, 
-                solver_end - solver_start)
+        return (
+            evals[0],
+            jw_end - jw_start,
+            subspace_end - subspace_start,
+            hsub_end - hsub_start,
+            solver_end - solver_start,
+        )
 
     benchmark.extra_info["jw_time"] = result[1]
     benchmark.extra_info["subspace_time"] = result[2]
     benchmark.extra_info["hsub_time"] = result[3]
     benchmark.extra_info["eigen_time"] = result[4]
-    assert np.abs((result[0] - ANS)/ANS) < 1e-14
+    assert np.abs((result[0] - ANS) / ANS) < 1e-14

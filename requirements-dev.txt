@@ -13,3 +13,4 @@ nbsphinx
 black
 openfermion
 pyscf
+pytest-benchmark
