@@ -20,6 +20,7 @@ import primme
 import qiskit_addon_fulqrum as fq
 
 from benchmarks.config import Configuration
+
 TOL = Configuration.options["solver"]["tol"]
 
 
@@ -46,19 +47,14 @@ def test_ch4_dimer_1e6_csr_fast(benchmark):
         oper_end = time.perf_counter()
 
         diag = Hsub.diagonal_vector()
-        min_idx = np.where(diag ==np.min(diag))[0][0]
+        min_idx = np.where(diag == np.min(diag))[0][0]
 
         v0 = np.zeros((len(S), 1), dtype=float)
         v0[min_idx] = 1
 
         solver_start = time.perf_counter()
         evals, _ = primme.eigsh(
-            A,
-            k=1,
-            which="SA",
-            tol=TOL,
-            v0=v0,
-            method='PRIMME_DEFAULT_MIN_MATVECS'
+            A, k=1, which="SA", tol=TOL, v0=v0, method="PRIMME_DEFAULT_MIN_MATVECS"
         )
         solver_end = time.perf_counter()
         return (
@@ -98,20 +94,14 @@ def test_ch4_dimer_1e6_matrix_free(benchmark):
         hsub_end = time.perf_counter()
 
         diag = Hsub.diagonal_vector()
-        min_idx = np.where(diag ==np.min(diag))[0][0]
+        min_idx = np.where(diag == np.min(diag))[0][0]
 
         v0 = np.zeros((len(S), 1), dtype=float)
         v0[min_idx] = 1
 
-
         solver_start = time.perf_counter()
         evals, _ = primme.eigsh(
-            Hsub,
-            k=1,
-            which="SA",
-            tol=TOL,
-            v0=v0,
-            method='PRIMME_DEFAULT_MIN_MATVECS'
+            Hsub, k=1, which="SA", tol=TOL, v0=v0, method="PRIMME_DEFAULT_MIN_MATVECS"
         )
         solver_end = time.perf_counter()
         return (
