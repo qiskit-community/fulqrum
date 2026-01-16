@@ -23,6 +23,8 @@ from libc.math cimport fabs
 from libcpp.algorithm cimport sort as stdsort
 from cython.operator cimport dereference, preincrement
 from qiskit_addon_fulqrum import __version__ as VERSION
+
+from ..utils.io import dict_to_json, json_to_dict
 from ..exceptions import FulqrumError
 from .bitset cimport Bitset
 
@@ -1108,21 +1110,7 @@ cdef class QubitOperator():
             filename (str): File to store to
             overwrite (bool): Overwrite file if it exits, default=False
         """
-        file = Path(filename)
-        if file.is_file() and not overwrite:
-            raise Exception("File already exists, set overwrite=True")
-        file_type = filename.split('.')[-1].lower()
-        if file_type == 'json':
-            with open(filename, "wb") as fd:
-                fd.write(orjson.dumps(self.to_dict()))
-        elif file_type == 'xz':
-            compressor = lzma.LZMACompressor()
-            json_data = orjson.dumps(self.to_dict())
-            lzma_data = compressor.compress(json_data) + compressor.flush()
-            with open(filename, "wb") as fd:
-                fd.write(lzma_data)
-        else:
-            raise FulqrumError("File type must be 'json' or 'xz'")
+        dict_to_json(self.to_dict(), filename, overwrite=overwrite)
 
 
     @classmethod
@@ -1135,17 +1123,7 @@ cdef class QubitOperator():
         Returns:
             QubitOperator
         """
-        filename = str(filename)  # convert PosixPath
-        file_type = filename.split('.')[-1].lower()
-        if file_type == 'json':
-            with open(filename, "r", encoding="utf-8") as fd:
-                dic = orjson.loads(fd.read())
-        elif file_type == 'xz':
-            lzma_file = lzma.open(filename)
-            data = lzma_file.readlines()
-            dic = orjson.loads(data[0])
-        else:
-            raise FulqrumError("File type must be 'json' or 'xz'")
+        dic = json_to_dict(filename)
         out = QubitOperator.from_dict(dic)
         return out
 
