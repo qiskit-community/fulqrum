@@ -20,7 +20,6 @@ import qiskit_addon_fulqrum as fq
 
 ANS = -84.20635059311753
 
-
 def full_subspace(num_qubits):
     out = {}
     for val in range(2**num_qubits):
@@ -28,7 +27,6 @@ def full_subspace(num_qubits):
     return out
 
 
-@pytest.mark.long
 def test_h2o_full(benchmark):
     @benchmark
     def result():
@@ -56,4 +54,4 @@ def test_h2o_full(benchmark):
 
     benchmark.extra_info["jw_time"] = result[1]
     benchmark.extra_info["eigen_time"] = result[2]
-    assert np.abs(result[0] - ANS) > 1e-14
+    assert np.abs((result[0] - ANS)/ANS) < 1e-14
