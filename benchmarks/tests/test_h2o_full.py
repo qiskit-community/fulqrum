@@ -9,6 +9,7 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
+
 import time
 import pytest
 from pathlib import Path
@@ -27,6 +28,7 @@ def full_subspace(num_qubits):
     return out
 
 
+@pytest.mark.long
 def test_h2o_full(benchmark):
     @benchmark
     def result():
