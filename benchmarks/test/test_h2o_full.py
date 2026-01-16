@@ -27,7 +27,7 @@ def full_subspace(num_qubits):
     return out
 
 
-def test_h2o_full(benchmark):
+def test_h2o_full_csr_fast(benchmark):
     @benchmark
     def result():
         path = Path(__file__).parent / "data/h2o.json"
@@ -38,8 +38,60 @@ def test_h2o_full(benchmark):
 
         dist = full_subspace(op.width)
 
+        subspace_start = time.perf_counter()
         S = fq.Subspace([list(dist.keys())])
+        subspace_end = time.perf_counter()
+    
+        hsub_start = time.perf_counter()
         Hsub = fq.SubspaceHamiltonian(op, S)
+        hsub_end = time.perf_counter()
+
+        oper_start = time.perf_counter()
+        A = Hsub.to_csr_linearoperator_fast()
+        oper_end = time.perf_counter()
+
+        solver_start = time.perf_counter()
+        evals, _ = spla.eigsh(
+            A,
+            k=1,
+            which="SA",
+            tol=0,
+            v0=np.ones(len(S), dtype=float),
+        )
+        solver_end = time.perf_counter()
+        return (evals[0], jw_end - jw_start, 
+                subspace_end - subspace_start,
+                hsub_end - hsub_start,
+                oper_end - oper_start, 
+                solver_end - solver_start)
+
+    benchmark.extra_info["jw_time"] = result[1]
+    benchmark.extra_info["subspace_time"] = result[2]
+    benchmark.extra_info["hsub_time"] = result[3]
+    benchmark.extra_info["operator_time"] = result[4]
+    benchmark.extra_info["eigen_time"] = result[5]
+    assert np.abs((result[0] - ANS)/ANS) < 1e-14
+
+
+
+def test_h2o_full_matrix_free(benchmark):
+    @benchmark
+    def result():
+        path = Path(__file__).parent / "data/h2o.json"
+        fop = fq.FermionicOperator.from_json(path)
+        jw_start = time.perf_counter()
+        op = fop.extended_jw_transformation()
+        jw_end = time.perf_counter()
+
+        dist = full_subspace(op.width)
+
+        subspace_start = time.perf_counter()
+        S = fq.Subspace([list(dist.keys())])
+        subspace_end = time.perf_counter()
+
+        hsub_start = time.perf_counter()
+        Hsub = fq.SubspaceHamiltonian(op, S)
+        hsub_end = time.perf_counter()
 
         solver_start = time.perf_counter()
         evals, _ = spla.eigsh(
@@ -50,8 +102,13 @@ def test_h2o_full(benchmark):
             v0=np.ones(len(S), dtype=float),
         )
         solver_end = time.perf_counter()
-        return evals[0], jw_end - jw_start, solver_end - solver_start
+        return (evals[0], jw_end - jw_start, 
+                subspace_end - subspace_start,
+                hsub_end - hsub_start, 
+                solver_end - solver_start)
 
     benchmark.extra_info["jw_time"] = result[1]
-    benchmark.extra_info["eigen_time"] = result[2]
+    benchmark.extra_info["subspace_time"] = result[2]
+    benchmark.extra_info["hsub_time"] = result[3]
+    benchmark.extra_info["eigen_time"] = result[4]
     assert np.abs((result[0] - ANS)/ANS) < 1e-14
