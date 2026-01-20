@@ -16,6 +16,7 @@ Fulqrum works over an extended alphabet of operators that includes projector and
 
     self
     Installation <install>
+    Citing Fulqrum <citing>
 
 .. toctree::
     :maxdepth: 1
