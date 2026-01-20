@@ -33,6 +33,6 @@ def about():
     print("██      ██    ██ ██      ██ ▄▄ ██ ██   ██ ██    ██ ██    ████    ██")
     print("██       ██████  ███████  ██████  ██   ██  ██████  ██    ████    ██")
     print("")
-    print("Copyright (C) 2024, IBM Quantum")
+    print("(C) Copyright IBM 2024")
     print("Paul D. Nation, Abdullah Saki, and Hwajung Kang")
     print(f"Fulqrum version: {__version__}")
