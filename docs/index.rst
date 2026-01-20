@@ -1,6 +1,15 @@
+.. raw:: html
+
+   <div style="height: 0; visibility: hidden;">
+
 #######
 Fulqrum
 #######
+
+.. raw:: html
+
+   </div>
+
 
 .. figure:: images/fulqrum_logo.png
     :align: center
