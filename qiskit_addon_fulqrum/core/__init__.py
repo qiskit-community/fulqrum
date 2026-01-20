@@ -29,7 +29,7 @@ Subspaces
    Subspace
    Bitset
 
-Subspace Hamiltonian
+SubspaceHamiltonian
 --------------------
 
 .. autosummary::
