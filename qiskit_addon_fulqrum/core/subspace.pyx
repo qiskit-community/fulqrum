@@ -179,6 +179,9 @@ cdef class Subspace():
         cdef size_t size = self.subspace.bitstrings.size()
         return size
 
+    def __repr__(self):
+        return f"<Subspace: size={self.subspace.size}, width={self.subspace.num_qubits}>"
+
     def size(self):
         """Size (dimensionality) of subspace
 
