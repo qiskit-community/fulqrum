@@ -28,12 +28,19 @@ import shutil
 import warnings
 from distutils.dir_util import copy_tree
 
+import qiskit_addon_fulqrum as fq
+
 """
 Sphinx documentation builder
 """
 
+version = fq.__version__
+
+
+rst_prolog = """.. |version| replace:: {0}""".format(version)
+
 # -- Project information -----------------------------------------------------
-project = 'Fulqrum'
+project = f'Fulqrum {version}'
 copyright = '2024, IBM Quantum'  # pylint: disable=redefined-builtin
 author = 'Fulqrum Development Team'
 # -- General configuration ---------------------------------------------------

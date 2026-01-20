@@ -34,13 +34,25 @@ Optional
 
    "qiskit", 1.0, "Conversion between Qiskit operators and Fulqrum types"
    "openfermion", 1.6.1, "Conversion between OpenFermion operators and Fulqrum types"
+   "primme", 3.2.3, "Eigensolver for Hermitian systems"
 
 C++
 ~~~~
 
 Fulqrum is based on C++17 and requires having OpenMP 3.0+.
-Getting OpenMP is straightforward on Linux and Windows, but does require installing
-LLVM via Homebrew on OSX.
+Getting OpenMP is straightforward on Linux but does require installing LLVM via Homebrew on OSX.
+
+
+Installing Boost
+================
+
+Fulqrum requires having Boost installed.  Using a `conda` environment makes this easy, namely
+
+.. code-block:: bash
+
+    conda install boost
+
+will install the files and they will be automatically found by the Fulqrum setup file.
 
 
 Build files locally
@@ -85,8 +97,4 @@ Then installation of Fulqrum with openmp can be accomplished using a call like:
 Installation on Windows
 =======================
 
-I have no idea how to set env vars on Windows, so I just do:
-
-.. code-block:: bash
-
-    python setup.py install
+Windows is currently not supported and there is currently no plan to do so.
