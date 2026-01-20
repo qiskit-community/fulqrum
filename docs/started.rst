@@ -15,7 +15,7 @@ To begin, we import the required libraries, and build our Hamiltonian as a ``Qub
 
     import scipy.sparse.linalg as spla
     from qiskit.transpiler import CouplingMap
-    import fulqrum as fq
+    import qiskit_addon_fulqrum as fq
 
     # Build 16-qubit coupling map
     cmap = CouplingMap.from_grid(4, 4)
