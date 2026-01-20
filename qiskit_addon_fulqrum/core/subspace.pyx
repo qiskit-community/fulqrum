@@ -115,7 +115,9 @@ cdef class Subspace():
                 full hashing usually leads to fewer collisions during Hash table look-up.
                 Default: `True`.
         """
-        if len(subspace_strs) == 1:
+        if len(subspace_strs) == 0:
+            return
+        elif len(subspace_strs) == 1:
             iterator = subspace_strs[0]
             iterator.sort()
             num_qubits = len(next(iter(iterator)))
@@ -178,9 +180,25 @@ cdef class Subspace():
         return size
 
     def size(self):
+        """Size (dimensionality) of subspace
+
+        Returns:
+            int
+        """
         cdef size_t size = self.subspace.bitstrings.size()
         return size
-        
+
+    def copy(self):
+        """Return a copy of subspace
+
+        Returns:
+            Subspace
+        """
+        cdef Subspace out = Subspace([])
+        out.subspace.bitstrings = self.subspace.bitstrings
+        out.subspace.num_qubits = self.subspace.num_qubits
+        out.subspace.size = self.subspace.size
+        return out
 
     # TODO: Move to sqd.pyx
     @cython.boundscheck(False)
