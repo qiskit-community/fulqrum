@@ -75,6 +75,11 @@ Then installation of Fulqrum with openmp can be accomplished using a call like:
 CC=clang CXX=clang++ pip install .
 ```
 
+## Running benchmarks
+
+See the README.md in the `benchmarks` directory.
+
+
 ## Notes on `Subspace` input format
 
 Two modes of input to subspace is supported:
