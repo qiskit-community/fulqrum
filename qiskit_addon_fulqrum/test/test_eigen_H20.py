@@ -53,7 +53,7 @@ def test_full_dist_h20_eigenenergy_csr():
 
     S = Subspace([list(full_dist.keys())])
     Hsub = SubspaceHamiltonian(NEW_OP, S)
-    M = Hsub.to_csr_array()
+    M = Hsub.to_csr_linearoperator().matrix
     assert M.dtype == float
 
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
@@ -62,7 +62,7 @@ def test_full_dist_h20_eigenenergy_csr():
     # single bitset block
     S = Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(NEW_OP, S)
-    M = Hsub.to_csr_array()
+    M = Hsub.to_csr_linearoperator().matrix
     assert M.dtype == float
 
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
