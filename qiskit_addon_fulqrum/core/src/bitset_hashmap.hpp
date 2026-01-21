@@ -172,5 +172,23 @@ namespace bitset_map_namespace
             }
             return map2.size();
         }
+
+        bool use_all_bitset_blocks() const
+        {
+            if (use_all_blocks)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        std::size_t num_buckets() const
+        {
+            if (use_all_blocks)
+            {
+                return map.get_num_buckets();
+            }
+            return map2.get_num_buckets();
+        }
     };
 }

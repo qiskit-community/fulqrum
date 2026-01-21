@@ -180,7 +180,11 @@ cdef class Subspace():
         return size
 
     def __repr__(self):
-        return f"<Subspace: size={self.subspace.size}, width={self.subspace.num_qubits}>"
+        temp_str = f"size={self.subspace.size}, "
+        temp_str += f"width={self.subspace.num_qubits}, "
+        temp_str += f"num_buckets={self.subspace.bitstrings.num_buckets()}, "
+        temp_str += f"use_all_bitset_blocks={self.subspace.bitstrings.use_all_bitset_blocks()}"
+        return f"<Subspace: {temp_str}>"
 
     def size(self):
         """Size (dimensionality) of subspace
