@@ -145,17 +145,6 @@ class SubspaceHamiltonian(LinearOperator):
             out = out.view().reshape(x.shape[0], 1)
         return out
 
-    def to_csr_array(self, verbose=False):
-        """Convert subspace Hamiltonian to a SciPy CSR array
-
-        Parameters:
-            verbose (bool): Turn on verbose mode, default=False.
-
-        Returns:
-            csr_array: Sparse representation of subspace Hamiltonian
-        """
-        return self.spmv.to_csr_array(verbose=verbose)
-
     def to_csr_linearoperator(self, verbose=False):
         """Convert subspace Hamiltonian to a LinearOperator wrapping a CSR matrix
 
