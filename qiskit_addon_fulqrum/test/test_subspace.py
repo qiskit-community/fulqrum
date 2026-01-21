@@ -131,3 +131,12 @@ def test_get_orbital_occupancies():
 
     np.testing.assert_allclose(occs_a, expected_occs_a)
     np.testing.assert_allclose(occs_b, expected_occs_b)
+
+
+def test_subspace_copy():
+    """Test subspace copy"""
+    S = Subspace([["0100", "1000", "1111", "0000"]])
+    B = S.copy()
+    del S
+    sorted_keys = list(B.to_dict().keys())
+    assert sorted_keys == ["0000", "0100", "1000", "1111"]
