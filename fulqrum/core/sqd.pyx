@@ -17,7 +17,7 @@ cimport cython
 import numpy as np
 cimport numpy as np
 from .bitset cimport bitset_t, to_string
-cimport qiskit_addon_fulqrum.core.sqd as sqd
+cimport fulqrum.core.sqd as sqd
 from .subspace cimport Subspace
 
 include "includes/base_header.pxi"
