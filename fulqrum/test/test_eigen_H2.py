@@ -16,8 +16,8 @@ import numpy as np
 import scipy.linalg as la
 import scipy.sparse.linalg as spla
 
-from qiskit_addon_fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
-from qiskit_addon_fulqrum.utils import qubitoperator_to_matrix
+from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
+from fulqrum.utils import qubitoperator_to_matrix
 
 
 _path = Path(__file__).parent / "data/h2.json"

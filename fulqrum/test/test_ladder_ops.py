@@ -13,7 +13,7 @@
 """Test string to vector conversion"""
 
 import numpy as np
-import qiskit_addon_fulqrum as fq
+import fulqrum as fq
 
 
 def test_bitset_int1():

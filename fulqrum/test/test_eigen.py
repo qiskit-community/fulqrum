@@ -13,8 +13,8 @@
 """Test matvec functionality"""
 
 import numpy as np
-from qiskit_addon_fulqrum import QubitOperator, Subspace, SubspaceHamiltonian
-from qiskit_addon_fulqrum.utils import kron_str
+from fulqrum import QubitOperator, Subspace, SubspaceHamiltonian
+from fulqrum.utils import kron_str
 
 import scipy.sparse.linalg as spla
 

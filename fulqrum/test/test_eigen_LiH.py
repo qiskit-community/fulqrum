@@ -16,7 +16,7 @@ import numpy as np
 import scipy.linalg as la
 import scipy.sparse.linalg as spla
 
-import qiskit_addon_fulqrum as fq
+import fulqrum as fq
 
 
 _path = Path(__file__).parent / "data/lih.json"

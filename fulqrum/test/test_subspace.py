@@ -14,8 +14,8 @@
 
 import pytest
 import numpy as np
-from qiskit_addon_fulqrum import Subspace
-from qiskit_addon_fulqrum.exceptions import FulqrumError
+from fulqrum import Subspace
+from fulqrum.exceptions import FulqrumError
 
 
 dic = {

@@ -12,7 +12,7 @@
 # pylint: disable=no-name-in-module
 """Test index ordering of FermionicOperator terms"""
 
-from qiskit_addon_fulqrum import FermionicOperator
+from fulqrum import FermionicOperator
 
 
 def test_deflate_empty():

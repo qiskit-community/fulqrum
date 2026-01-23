@@ -12,8 +12,8 @@
 
 import pytest
 import numpy as np
-from qiskit_addon_fulqrum.core.subspace import Subspace
-from qiskit_addon_fulqrum.core.sqd import (
+from fulqrum.core.subspace import Subspace
+from fulqrum.core.sqd import (
     postselect_by_hamming_right_and_left,
     subsample,
     recover_configurations,

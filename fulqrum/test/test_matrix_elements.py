@@ -13,7 +13,7 @@
 """Test basic core functionality"""
 import numpy as np
 import scipy.sparse as sp
-from qiskit_addon_fulqrum import QubitOperator
+from fulqrum import QubitOperator
 
 X = np.array([[0, 1], [1, 0]], dtype=complex)
 

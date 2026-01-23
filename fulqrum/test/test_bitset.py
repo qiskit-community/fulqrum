@@ -11,8 +11,8 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test bitset object"""
-from qiskit_addon_fulqrum import QubitOperator
-from qiskit_addon_fulqrum.core import Bitset
+from fulqrum import QubitOperator
+from fulqrum.core import Bitset
 
 
 def test_to_string1():

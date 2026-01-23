@@ -20,7 +20,7 @@ import numpy as np
 from Cython.Build import cythonize
 
 
-ROOT = "qiskit_addon_fulqrum"
+ROOT = "fulqrum"
 
 with open("requirements.txt") as f:
     REQUIREMENTS = f.read().splitlines()

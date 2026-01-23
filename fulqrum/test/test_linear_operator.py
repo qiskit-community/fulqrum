@@ -14,7 +14,7 @@
 from pathlib import Path
 import pytest
 
-from qiskit_addon_fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
+from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
 
 
 _path = Path(__file__).parent / "data/h2o.json"

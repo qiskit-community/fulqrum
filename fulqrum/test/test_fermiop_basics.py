@@ -12,7 +12,7 @@
 # pylint: disable=no-name-in-module
 """Test basic core functionality"""
 
-from qiskit_addon_fulqrum import FermionicOperator
+from fulqrum import FermionicOperator
 
 
 def test_empty_fermioperator():

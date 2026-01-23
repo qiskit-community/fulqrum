@@ -12,7 +12,7 @@
 # pylint: disable=no-name-in-module
 import pytest
 
-from qiskit_addon_fulqrum.convert import (
+from fulqrum.convert import (
     openfermion_fermi_op_to_fulqrum,
     openfermion_qubit_op_to_fulqrum,
     integrals_to_fq_fermionic_op,

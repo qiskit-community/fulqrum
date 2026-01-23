@@ -13,7 +13,7 @@
 """Test operator IO functionality"""
 import os
 from pathlib import Path
-import qiskit_addon_fulqrum as fq
+import fulqrum as fq
 
 
 _path = Path(__file__).parent / "data/lih.json"

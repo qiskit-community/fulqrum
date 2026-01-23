@@ -9,12 +9,9 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
-
-import time
 from pathlib import Path
 
-import numpy as np
-import qiskit_addon_fulqrum as fq
+import fulqrum as fq
 
 
 path = Path(__file__).parent / "data/h2o_ccpvdz.json.xz"

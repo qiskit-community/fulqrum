@@ -15,8 +15,8 @@ import numpy as np
 import scipy.sparse as sp
 from pathlib import Path
 
-from qiskit_addon_fulqrum import FermionicOperator
-from qiskit_addon_fulqrum.utils import qubitoperator_to_matrix
+from fulqrum import FermionicOperator
+from fulqrum.utils import qubitoperator_to_matrix
 
 
 # Tests compare JW transformations by looking at the resulting

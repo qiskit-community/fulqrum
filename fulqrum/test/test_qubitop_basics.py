@@ -12,8 +12,8 @@
 # pylint: disable=no-name-in-module
 """Test basic core functionality"""
 import numpy as np
-import qiskit_addon_fulqrum as fq
-from qiskit_addon_fulqrum import QubitOperator
+import fulqrum as fq
+from fulqrum import QubitOperator
 
 
 def test_empty_qubitoperator():

@@ -14,8 +14,8 @@
 import numpy as np
 from pathlib import Path
 from qiskit.transpiler import CouplingMap
-import qiskit_addon_fulqrum as fq
-from qiskit_addon_fulqrum import QubitOperator, FermionicOperator
+import fulqrum as fq
+from fulqrum import QubitOperator, FermionicOperator
 
 
 def test_grouping1():

@@ -10,7 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
-import qiskit_addon_fulqrum as fq
+import fulqrum as fq
 
 
 def test_real_phase1():

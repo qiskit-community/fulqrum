@@ -15,8 +15,8 @@ from pathlib import Path
 import numpy as np
 import scipy.sparse.linalg as spla
 
-from qiskit_addon_fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
-from qiskit_addon_fulqrum.ramps import ramps_simple_refinement
+from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
+from fulqrum.ramps import ramps_simple_refinement
 
 
 _path = Path(__file__).parent / "data/lih.json"

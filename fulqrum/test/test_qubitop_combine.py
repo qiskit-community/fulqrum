@@ -13,8 +13,8 @@
 """Test combining qubit terms"""
 from pathlib import Path
 import numpy as np
-from qiskit_addon_fulqrum import QubitOperator, FermionicOperator
-from qiskit_addon_fulqrum.utils import qubitoperator_to_matrix
+from fulqrum import QubitOperator, FermionicOperator
+from fulqrum.utils import qubitoperator_to_matrix
 
 
 def test_combining_terms1():

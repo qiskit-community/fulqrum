@@ -11,7 +11,7 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 import numpy as np
-import qiskit_addon_fulqrum as fq
+import fulqrum as fq
 
 
 def test_worst_case1():

@@ -15,9 +15,8 @@ import pytest
 from pathlib import Path
 
 import numpy as np
-import scipy.sparse.linalg as spla
 import primme
-import qiskit_addon_fulqrum as fq
+import fulqrum as fq
 
 from benchmarks.config import Configuration
 
