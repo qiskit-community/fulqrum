@@ -1,5 +1,5 @@
 /**
- * This code is a Qiskit project.
+ * This code is a part of Fulqrum.
  *
  * (C) Copyright IBM 2024.
  *
