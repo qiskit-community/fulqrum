@@ -28,7 +28,7 @@ import shutil
 import warnings
 from distutils.dir_util import copy_tree
 
-import qiskit_addon_fulqrum as fq
+import fulqrum as fq
 
 """
 Sphinx documentation builder
