@@ -7,5 +7,5 @@ Citing
 .. jupyter-execute::
     :hide-code:
     
-    import qiskit_addon_fulqrum as fq
+    import fulqrum as fq
     fq.about()

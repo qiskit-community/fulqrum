@@ -18,7 +18,7 @@ from libcpp.pair cimport pair
 
 from collections.abc import Iterable
 import numbers
-from qiskit_addon_fulqrum import __version__ as VERSION
+from .. import __version__ as VERSION
 from .qubit_operator cimport QubitOperator
 from ..utils.io import dict_to_json, json_to_dict
 from ..exceptions import FulqrumError

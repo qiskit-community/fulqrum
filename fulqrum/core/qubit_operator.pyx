@@ -22,7 +22,7 @@ from libcpp.map cimport map
 from libc.math cimport fabs
 from libcpp.algorithm cimport sort as stdsort
 from cython.operator cimport dereference, preincrement
-from qiskit_addon_fulqrum import __version__ as VERSION
+from .. import __version__ as VERSION
 
 from ..utils.io import dict_to_json, json_to_dict
 from ..exceptions import FulqrumError
