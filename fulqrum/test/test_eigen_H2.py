@@ -1,0 +1,231 @@
+# This code is a part of Fulqrum.
+#
+# (C) Copyright IBM 2024.
+#
+# This code is licensed under the Apache License, Version 2.0. You may
+# obtain a copy of this license in the LICENSE.txt file in the root directory
+# of this source tree or at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# Any modifications or derivative works of this code must retain this
+# copyright notice, and modified files need to carry a notice indicating
+# that they have been altered from the originals.
+# pylint: disable=no-name-in-module
+"""Test eigen functionality on H2"""
+from pathlib import Path
+import numpy as np
+import scipy.linalg as la
+import scipy.sparse.linalg as spla
+
+from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
+from fulqrum.utils import qubitoperator_to_matrix
+
+
+_path = Path(__file__).parent / "data/h2.json"
+FOP = FermionicOperator.from_json(_path)
+OP = FOP.extended_jw_transformation()
+M = qubitoperator_to_matrix(OP)
+ANS_EVALS, ANS_EVECS = la.eigh(M)
+ANS_EVECS = np.real(ANS_EVECS)
+GROUND_ENERGY = ANS_EVALS[0]
+
+GROUND_DIST = {}
+for state_int in np.where(ANS_EVECS[:, 0] != 0)[0]:
+    GROUND_DIST[bin(state_int)[2:].zfill(4)] = ANS_EVECS[state_int, 0]
+
+
+def test_full_dist_h2_eigen():
+    """Test full space solution against exact"""
+    full_dist = {}
+    for kk in range(2**4):
+        full_dist[bin(kk)[2:].zfill(4)] = None
+
+    S = Subspace([list(full_dist.keys())])
+    Hsub = SubspaceHamiltonian(OP, S)
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+    # use single bitset block for hashing
+    S = Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
+    Hsub = SubspaceHamiltonian(OP, S)
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+
+def test_partial_dist_h2_eigen1():
+    """Test subspace that overlaps with ground state still works"""
+    part_dist = GROUND_DIST.copy()
+    part_dist["0000"] = 1
+
+    S = Subspace([list(part_dist.keys())])
+    Hsub = SubspaceHamiltonian(OP, S)
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    ans_dict = Hsub.interpret_vector(evecs)
+    assert abs(ans_dict["1010"] - GROUND_DIST["1010"]) < 1e-14
+    assert abs(ans_dict["0101"] - GROUND_DIST["0101"]) < 1e-14
+
+    # use single bitset block for hashing
+    S = Subspace([list(part_dist.keys())], use_all_bitset_blocks=False)
+    Hsub = SubspaceHamiltonian(OP, S)
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    ans_dict = Hsub.interpret_vector(evecs)
+    assert abs(ans_dict["1010"] - GROUND_DIST["1010"]) < 1e-14
+    assert abs(ans_dict["0101"] - GROUND_DIST["0101"]) < 1e-14
+
+
+def test_partial_dist_h2_eigen2():
+    """Test subspace that overlaps with ground state still works"""
+    part_dist = GROUND_DIST.copy()
+    part_dist["1111"] = 1
+
+    S = Subspace([list(part_dist.keys())])
+    Hsub = SubspaceHamiltonian(OP, S)
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert np.allclose(evals, GROUND_ENERGY)
+    ans_dict = Hsub.interpret_vector(evecs)
+    assert abs(ans_dict["1010"] - GROUND_DIST["1010"]) < 1e-14
+    assert abs(ans_dict["0101"] - GROUND_DIST["0101"]) < 1e-14
+
+    # use single bitset block for hashing
+    S = Subspace([list(part_dist.keys())], use_all_bitset_blocks=False)
+    Hsub = SubspaceHamiltonian(OP, S)
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert np.allclose(evals, GROUND_ENERGY)
+    ans_dict = Hsub.interpret_vector(evecs)
+    assert abs(ans_dict["1010"] - GROUND_DIST["1010"]) < 1e-14
+    assert abs(ans_dict["0101"] - GROUND_DIST["0101"]) < 1e-14
+
+
+def test_full_dist_h2_eigen_csr_linearoperator():
+    """Test full space solution against exact for CSR linearoperator"""
+    full_dist = {}
+    for kk in range(2**4):
+        full_dist[bin(kk)[2:].zfill(4)] = None
+
+    S = Subspace([list(full_dist.keys())])
+    Hsub = SubspaceHamiltonian(OP, S)
+    M = Hsub.to_csr_linearoperator()
+    assert M.matrix.dtype == float
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+    # use single bitset block for hashing
+    S = Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
+    Hsub = SubspaceHamiltonian(OP, S)
+    M = Hsub.to_csr_linearoperator()
+    assert M.matrix.dtype == float
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+
+def test_full_dist_h2_eigen_csr_linearoperator_fast():
+    """Test full space solution against exact for CSR linearoperator fast"""
+    full_dist = {}
+    for kk in range(2**4):
+        full_dist[bin(kk)[2:].zfill(4)] = None
+
+    S = Subspace([list(full_dist.keys())])
+    Hsub = SubspaceHamiltonian(OP, S)
+    M = Hsub.to_csr_linearoperator()
+    assert M.matrix.dtype == float
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+    # use single bitset block for hashing
+    S = Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
+    Hsub = SubspaceHamiltonian(OP, S)
+    M = Hsub.to_csr_linearoperator_fast()
+    assert M.matrix.dtype == float
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+
+def test_full_dist_h2_eigen_csr_linearoperator_fast():
+    """Test full space solution against exact for CSR linearoperator fast"""
+    full_dist = {}
+    for kk in range(2**4):
+        full_dist[bin(kk)[2:].zfill(4)] = None
+
+    S = Subspace([list(full_dist.keys())])
+    Hsub = SubspaceHamiltonian(OP, S)
+    M = Hsub.to_csr_linearoperator()
+    assert M.matrix.dtype == float
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+    # use single bitset block for hashing
+    S = Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
+    Hsub = SubspaceHamiltonian(OP, S)
+    M = Hsub.to_csr_linearoperator_fast()
+    assert M.matrix.dtype == float
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if OP.is_real() else complex)
+    evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+
+def test_proj_indices_set():
+    """Test that projector indices set properly after JW transform"""
+    for kk in range(OP.num_terms):
+        has_proj_ops = 0
+        for op_idx_pair in OP[kk].operators:
+            if op_idx_pair[0] in ["0", "1"]:
+                has_proj_ops = 1
+                break
+        if has_proj_ops:
+            assert OP[kk].proj_indices.shape[0] > 0
+        else:
+            assert OP[kk].proj_indices.shape[0] == 0

@@ -14,7 +14,7 @@ import time
 import numpy
 import scipy
 import pytest
-import qiskit_addon_fulqrum as fulqrum
+import fulqrum
 from packaging.version import parse
 
 

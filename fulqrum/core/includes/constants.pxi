@@ -1,0 +1,18 @@
+# This code is a part of Fulqrum.
+#
+# (C) Copyright IBM 2024.
+#
+# This code is licensed under the Apache License, Version 2.0. You may
+# obtain a copy of this license in the LICENSE.txt file in the root directory
+# of this source tree or at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# Any modifications or derivative works of this code must retain this
+# copyright notice, and modified files need to carry a notice indicating
+# that they have been altered from the originals.
+# cython: c_string_type=unicode, c_string_encoding=UTF-8
+
+cdef double RTOL = 1e-8
+cdef double ATOL = 1e-14
+
+cdef extern from "../src/constants.hpp":
+    cdef size_t MAX_SIZE_T = MAX_SIZE_T
