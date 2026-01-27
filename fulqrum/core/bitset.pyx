@@ -26,7 +26,8 @@ include "includes/bitset_utils_header.pxi"
 
 
 cdef class Bitset:
-
+    """Bitset wrapper for Boost dynamic_bitset
+    """
     def __cinit__(self, str bitstring = ''):
         cdef string temp = bitstring
         self.bits = bitset_t(temp, 0, temp.size())
