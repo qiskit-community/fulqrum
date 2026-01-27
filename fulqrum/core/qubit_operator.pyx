@@ -62,12 +62,23 @@ cdef inline int diagonal_term(OperatorTerm_t * term):
 cdef class QubitOperator():
     """Operator class for qubit terms consisting of Pauli
     operators,projection operators, and ladder operators
+
+    Parameters:
+        width (int): Number of qubits
+        operators (list): List of tuples for terms in Hamiltonian
+
+    Example:
+
+    .. jupyter-execute::
+        
+        import fulqrum as fq
+        fq.QubitOperator(5, [("X1", [0, 3], -2), ("XZY", [2, 0, 4], 3)])
     """
     #QubitOperator oper
 
-    def __cinit__(self, unsigned int num_qubits,
+    def __cinit__(self, unsigned int width,
                   object operators=None):
-        self.oper.width = num_qubits
+        self.oper.width = width
         self.oper.sorted = False
         cdef object item
         cdef OperatorTerm_t term

@@ -42,10 +42,21 @@ cdef const FermionicTerm_t EmptyFermionicTerm
 
 cdef class FermionicOperator():
     """Operator class for Fermionic operators
+
+    Parameters:
+        width (int): Number of modes
+        operators (list): List of tuples for terms in Hamiltonian
+
+    Example:
+
+    .. jupyter-execute::
+        
+        import fulqrum as fq
+        fq.FermionicOperator(5, [("++--", [0, 0, 1, 4], -0.018), ("+-", [3, 2], 0.4)])
     """
-    def __cinit__(self, unsigned int num_qubits,
+    def __cinit__(self, unsigned int width,
                   object operators=None):
-        self.oper.width = num_qubits
+        self.oper.width = width
         cdef object item
         cdef FermionicTerm_t term
         cdef string op_str
