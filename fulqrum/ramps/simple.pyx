@@ -25,7 +25,19 @@ import numpy as np
 
 def ramps_simple_refinement(QubitOperator H, Subspace S, Bitset start, 
                             unsigned int max_recursion=3, double tol=1e-14):
-    
+    """RAMPS refinement of an existing subspace when targeting a single bit-string
+    and associated energy.
+
+    Parameters:
+        H (QubitOperator): Hamiltonian
+        S (Subspace): Existing subspace
+        start (Bitset): Starting bit-string
+        max_recursion (int): Optional, max. number of allowed recursions, default=3
+        tol (float): Optional, unit-less tolerance used for evaluating matrix-elements 
+
+    Returns:
+        Subspace: RAMPS refined subspace 
+    """
     cdef Subspace out = Subspace([[start.to_string()]])
     Hsub = SubspaceHamiltonian(H, S)
     cdef FulqrumSpMV spmv = Hsub.spmv

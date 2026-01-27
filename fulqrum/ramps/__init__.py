@@ -10,6 +10,18 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-"""Recursive Algorithm for a Minimally Perturbed Subspace (RAMPS)"""
+"""
+RAMPS
+=====
+
+Simple
+------
+
+.. autosummary::
+   :toctree: ../stubs/
+
+   ramps_simple_refinement
+
+"""
 
 from .simple import ramps_simple_refinement

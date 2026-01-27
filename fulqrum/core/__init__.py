@@ -11,6 +11,9 @@
 # that they have been altered from the originals.
 
 """
+Core
+====
+
 Operators
 ---------
 
@@ -45,7 +48,6 @@ LinearOperators
    :toctree: ../stubs/
 
    CSRLinearOperator
-   CSRLikeLinearOperator
 
 """
 

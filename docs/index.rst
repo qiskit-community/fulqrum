@@ -30,7 +30,7 @@ As shown below, a typical eigenvalue problem is broken up into three pieces: 1) 
 
     self
     Installation <install>
-    Citing Fulqrum <citing>
+    Citing <citing>
 
 .. toctree::
     :maxdepth: 1
@@ -54,7 +54,9 @@ As shown below, a typical eigenvalue problem is broken up into three pieces: 1) 
 
 .. toctree::
     :maxdepth: 1
-    :caption: API Documentation
+    :caption: API Docs
     :hidden:
     
     Core <apidocs/core>
+    Utilities <apidocs/utils>
+    RAMPS <apidocs/ramps>
