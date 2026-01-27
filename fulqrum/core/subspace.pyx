@@ -73,6 +73,20 @@ cdef class Subspace():
             function. Although hashing n (> 1) blocks is slower than hashing a single block,
             full hashing usually leads to fewer collisions during Hash table look-up.
             Default: `True`.
+
+    Example:
+
+    .. jupyter-execute::
+
+        import fulqrum as fq
+
+        num_qubits = 5
+        bitstrings = []
+        for val in range(2**num_qubits):
+            bitstrings.append(bin(val)[2:].zfill(num_qubits))
+
+        fq.Subspace([bitstrings])
+
     """
     @cython.boundscheck(False)
     def __cinit__(self, subspace_strs, int reserve_multiplier=2, bool use_all_bitset_blocks=True):
