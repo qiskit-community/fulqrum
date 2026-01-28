@@ -10,7 +10,20 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-"""Fulqrum helper utilites"""
+"""
+Utilities
+=========
+
+IO
+--
+
+.. autosummary::
+   :toctree: ../stubs/
+
+   dict_to_json
+   json_to_dict
+
+"""
 
 from .matrix import kron_str, qubitoperator_to_matrix
 from .io import dict_to_json, json_to_dict
