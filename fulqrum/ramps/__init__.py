@@ -24,4 +24,4 @@ Simple
 
 """
 
-from .simple import ramps_simple_refinement
+from .simple import ramps_restricted_simple
