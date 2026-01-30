@@ -121,7 +121,7 @@ double simple_restricted(const OperatorTerm_t *terms,
                 {
                     // If this column is in the subspace we need to compute the columns diagonal energy
                     single_bitstring_diagonal(input_bitsets[*col_ptr].first, diag_terms, col_energy);
-                    energy_amp = current_prefactors[kk] * std::pow(std::abs(val), 2) / (target_energy-col_energy);
+                    energy_amp = current_prefactors[kk] * std::pow(std::abs(val), 2) / (target_energy-col_energy+1e-15);
                     // If the amplitude is larger than tol
                     if (std::abs(energy_amp) > tol)
                     {
