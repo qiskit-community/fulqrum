@@ -18,8 +18,8 @@ include "../../core/includes/base_header.pxi"
 
 cdef extern from "../src/simple.hpp":
 
-    double simple_refinement(const OperatorTerm_t * terms,
-                             const BitsetHashMapWrapper &subspace,
+    double simple_restricted(const OperatorTerm_t * terms,
+                             const BitsetHashMapWrapper &restricted_subspace,
                              BitsetHashMapWrapper& out_subspace,
                              const vector[OperatorTerm_t]& diag_terms,
                              const unsigned int width,
@@ -31,6 +31,7 @@ cdef extern from "../src/simple.hpp":
                              vector[vector[unsigned int]]& group_offdiag_inds,
                              const size_t num_groups,
                              const unsigned int ladder_offset,
-                             unsigned int max_recursion,
-                             double tol
+                             const double target_energy,
+                             const unsigned int max_recursion,
+                             const double tol
                                ) nogil

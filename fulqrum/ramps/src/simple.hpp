@@ -27,8 +27,9 @@
 #include "../../core/src/diag.hpp"
 
 
-double simple_refinement(const OperatorTerm_t *terms,
-                         const bitset_map_namespace::BitsetHashMapWrapper& subspace,
+
+double simple_restricted(const OperatorTerm_t *terms,
+                         const bitset_map_namespace::BitsetHashMapWrapper& restricted_subspace,
                          bitset_map_namespace::BitsetHashMapWrapper& out_subspace,
                          const std::vector<OperatorTerm_t>& diag_terms,
                          const unsigned int width,
@@ -40,23 +41,21 @@ double simple_refinement(const OperatorTerm_t *terms,
                          const std::vector<std::vector<unsigned int>> &group_offdiag_inds,
                          const std::size_t num_groups,
                          const unsigned int ladder_offset,
-                         unsigned int max_recursion,
-                         double tol)
+                         const double target_energy,
+                         const unsigned int max_recursion,
+                         const double tol)
 {
     std::size_t recur, kk;
-    const auto * input_bitsets = subspace.get_bitsets();
+    const auto * input_bitsets = restricted_subspace.get_bitsets();
     auto * output_bitsets = out_subspace.get_bitsets();
 
-    double min_energy = 0;
-    single_bitstring_diagonal(output_bitsets[0].first, diag_terms, min_energy); 
-
     std::vector<std::size_t> current_rows;
-    std::vector<std::size_t> next_rows = {*subspace.get_ptr(output_bitsets[0].first)};
+    std::vector<std::size_t> next_rows = {*restricted_subspace.get_ptr(output_bitsets[0].first)};
 
     std::vector<double> current_prefactors;
-    std::vector<double> next_prefactors = {1.0/min_energy};
+    std::vector<double> next_prefactors = {1.0/target_energy};
     
-    double est_energy = min_energy;
+    double est_energy = target_energy;
     double col_energy = 0;
     double energy_amp = 0;
     
@@ -85,17 +84,7 @@ double simple_refinement(const OperatorTerm_t *terms,
         {
             const boost::dynamic_bitset<size_t> &row = input_bitsets[current_rows[kk]].first;
             std::vector<uint8_t> row_set_bits(row.size(), 0);
-            for (size_t block = 0; block < row.num_blocks(); block++)
-            {
-                auto bitset = row.m_bits[block];
-                while (bitset != 0)
-                {
-                    uint64_t t = bitset & -bitset;
-                    int r = __builtin_ctzll(bitset);
-                    row_set_bits[block * BITS_PER_BLOCK + r] = 1;
-                    bitset ^= t;
-                }
-            }
+            bitset_to_bitvec(row, row_set_bits);
             
             for (group = 0; group < num_groups; group++)
             {
@@ -112,7 +101,7 @@ double simple_refinement(const OperatorTerm_t *terms,
                     {
                         col_vec = row;
                         flip_bits(col_vec, group_inds->data(), group_inds->size());
-                        col_ptr = subspace.get_ptr(col_vec);
+                        col_ptr = restricted_subspace.get_ptr(col_vec);
                         if (col_ptr == nullptr)
                         {
                             break; // column is NOT in the subspace so break group
@@ -132,7 +121,7 @@ double simple_refinement(const OperatorTerm_t *terms,
                 {
                     // If this column is in the subspace we need to compute the columns diagonal energy
                     single_bitstring_diagonal(input_bitsets[*col_ptr].first, diag_terms, col_energy);
-                    energy_amp = current_prefactors[kk] * std::pow(std::abs(val), 2) / (min_energy-col_energy+1e-15);
+                    energy_amp = current_prefactors[kk] * std::pow(std::abs(val), 2) / (target_energy-col_energy+1e-15);
                     // If the amplitude is larger than tol
                     if (std::abs(energy_amp) > tol)
                     {
@@ -142,9 +131,9 @@ double simple_refinement(const OperatorTerm_t *terms,
                         out_col_ptr = out_subspace.get_ptr2(col_vec);
                         if (out_col_ptr == nullptr)
                         {
-                            est_energy += min_energy*energy_amp;
+                            est_energy += target_energy*energy_amp;
                             next_rows.push_back(*col_ptr);
-                            next_prefactors.push_back(energy_amp/(min_energy-col_energy+1e-15));
+                            next_prefactors.push_back(energy_amp/(target_energy-col_energy+1e-15));
                             out_subspace.emplace(col_vec, num_inserted_bitsets);
                             num_inserted_bitsets += 1;
                         }

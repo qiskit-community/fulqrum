@@ -16,7 +16,7 @@ import numpy as np
 import scipy.sparse.linalg as spla
 
 from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
-from fulqrum.ramps import ramps_simple_refinement
+from fulqrum.ramps import ramps_restricted_simple
 
 
 _path = Path(__file__).parent / "data/lih.json"
@@ -39,8 +39,9 @@ def test_ramps_simple_refine_subspace_dim():
     diag = HSUB.diagonal_vector()
     min_idx = np.where(diag == diag.min())[0][0]
 
-    start = S[min_idx]
-    out, _ = ramps_simple_refinement(NEW_OP, S, start)
+    target_subspace = Subspace([[S[min_idx].to_string()]])
+    target_energy = diag[min_idx]
+    out = ramps_restricted_simple(NEW_OP, target_subspace, target_energy, S)
     assert out.size() == 69
 
 
@@ -49,8 +50,9 @@ def test_ramps_simple_refine_accuracy():
     diag = HSUB.diagonal_vector()
     min_idx = np.where(diag == diag.min())[0][0]
 
-    start = S[min_idx]
-    out, _ = ramps_simple_refinement(NEW_OP, S, start)
+    target_subspace = Subspace([[S[min_idx].to_string()]])
+    target_energy = diag[min_idx]
+    out = ramps_restricted_simple(NEW_OP, target_subspace, target_energy, S)
 
     Hsub_small = SubspaceHamiltonian(NEW_OP, out)
     approx_energy = spla.eigsh(

@@ -215,10 +215,16 @@ cdef class Subspace():
         Returns:
             Subspace
         """
-        cdef Subspace out = Subspace([])
-        out.subspace.bitstrings = self.subspace.bitstrings
-        out.subspace.num_qubits = self.subspace.num_qubits
-        out.subspace.size = self.subspace.size
+        cdef Subspace out
+        if self.size() > 1:
+            out = Subspace([])
+            out.subspace.bitstrings = self.subspace.bitstrings
+            out.subspace.num_qubits = self.subspace.num_qubits
+            out.subspace.size = self.subspace.size
+        # Copying the data of a size=1 subspace segfaults. This gets around that by creating a new
+        # subspace.  This is not a big deal since there is a single element
+        else:
+            out = Subspace([[self[0].to_string()]], use_all_bitset_blocks=self.subspace.bitstrings.use_all_bitset_blocks())
         return out
 
     # TODO: Move to sqd.pyx
