@@ -46,7 +46,7 @@ cdef class Bitset:
     def __repr__(self):
         cdef string s
         to_string(self.bits, s)
-        return f"<Bitset: {s}>"
+        return f"Bitset('{s}')"
 
     def size(self):
         """Number of bits in Bitset
