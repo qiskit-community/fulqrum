@@ -89,7 +89,7 @@ cdef class Subspace():
 
     """
     @cython.boundscheck(False)
-    def __cinit__(self, subspace_strs, int reserve_multiplier=2, bool use_all_bitset_blocks=True):
+    def __cinit__(self, object subspace_strs, int reserve_multiplier=2, bool use_all_bitset_blocks=True):
         """
         args:
             subspace_strs: Input bitstrings as either length-1 or length-2 tuple

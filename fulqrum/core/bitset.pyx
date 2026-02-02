@@ -65,6 +65,12 @@ cdef class Bitset:
     def __neq__(self, Bitset other):
         return self.bits != other.bits
 
+    def __lt_(self, Bitset other):
+        return self.bits < other.bits
+
+    def __gt__(self, Bitset other):
+        return self.bits > other.bits
+
     def num_blocks(self):
         """Number of blocks (int64) used to store Bitset
 
