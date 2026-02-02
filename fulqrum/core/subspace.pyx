@@ -129,6 +129,7 @@ cdef class Subspace():
                 full hashing usually leads to fewer collisions during Hash table look-up.
                 Default: `True`.
         """
+        cdef int input_bitsets = 0
         if len(subspace_strs) == 0:
             return
         elif len(subspace_strs) == 1:
@@ -136,6 +137,8 @@ cdef class Subspace():
             iterator.sort()
             num_qubits = len(next(iter(iterator)))
             size = len(iterator)
+            if isinstance(iterator[0], Bitset):
+                input_bitsets = 1
         elif len(subspace_strs) == 2:
             alpha_strs = subspace_strs[0]
             beta_strs = subspace_strs[1]
@@ -170,10 +173,15 @@ cdef class Subspace():
         cdef size_t idx
         cdef string key
         cdef bitset_t temp_bits
+        cdef Bitset bit_key
 
-        for idx, key in enumerate(iterator):
-            temp_bits = bitset_t(key, 0, self.subspace.num_qubits)
-            self.subspace.bitstrings.insert_unique(temp_bits, idx)
+        if input_bitsets:
+            for idx, bit_key in enumerate(iterator):
+                self.subspace.bitstrings.insert_unique(bit_key.bits, idx)
+        else:
+            for idx, key in enumerate(iterator):
+                temp_bits = bitset_t(key, 0, self.subspace.num_qubits)
+                self.subspace.bitstrings.insert_unique(temp_bits, idx)
     
     def __dealloc__(self):
         # Clear hash table upon deallocation of class
