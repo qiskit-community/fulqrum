@@ -157,3 +157,15 @@ def test_bitset_dict():
         Bitset("1000"),
         Bitset("1111"),
     ]
+
+
+def test_bitset_init():
+    """Test subspace init using bitsets"""
+    A = {Bitset("01010"): 0, Bitset("01111"): 1, Bitset("11100"): 2, Bitset("00000"): 3}
+    S = Subspace([list(A.keys())])
+    assert list(S.to_dict()) == [
+        Bitset("00000"),
+        Bitset("01010"),
+        Bitset("01111"),
+        Bitset("11100"),
+    ]
