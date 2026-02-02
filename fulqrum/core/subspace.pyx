@@ -343,17 +343,34 @@ cdef class Subspace():
     
     
     @cython.boundscheck(False)
-    def to_dict(self):
+    def to_dict(self, str key_type='bitset'):
         """Converts Subspace to a dictionary
+
+        Parameters:
+            key_type (str): Type of key data to return, default='bitset'
 
         Returns:
             dict
         """
         cdef size_t kk
         cdef string s
+        cdef Bitset temp_bits
+        cdef bitset_t bits
         cdef dict out = {}
 
-        for kk in range(self.subspace.bitstrings.size()):
-            to_string(self.subspace.bitstrings.get_n_th_bitset(kk), s)
-            out[s] = None
+
+        if key_type not in ['bitset', 'str']:
+            raise FulqrumError("key_type must be 'bitset' or 'str'")
+        
+        if key_type == 'bitset':
+            for kk in range(self.subspace.bitstrings.size()):
+                bits = self.subspace.bitstrings.get_n_th_bitset(kk)
+                temp_bits = Bitset()
+                temp_bits.bits = bits
+                out[temp_bits] = None
+        
+        elif key_type == 'str':
+            for kk in range(self.subspace.bitstrings.size()):
+                to_string(self.subspace.bitstrings.get_n_th_bitset(kk), s)
+                out[s] = None
         return out
