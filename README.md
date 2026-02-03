@@ -68,6 +68,13 @@ On OSX, to get OpenMP, one should install llvm using homebrew:
 ```bash
 brew install llvm
 ```
+and the following, or something similar, added to the users `.zshrc` file:
+
+```bash
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
+```
 
 Then installation of Fulqrum with openmp can be accomplished using a call like:
 
