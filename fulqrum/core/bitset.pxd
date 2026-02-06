@@ -27,6 +27,8 @@ cdef extern from "<boost/dynamic_bitset.hpp>" namespace "boost":
         bint operator==(const dynamic_bitset&, const dynamic_bitset&)
         bint operator!=(const dynamic_bitset&, const dynamic_bitset&)
         bint operator[](size_t)
+        bint operator<(const dynamic_bitset&, const dynamic_bitset&)
+        bint operator>(const dynamic_bitset&, const dynamic_bitset&)
 
         void resize(size_t)
         void set(size_t)

@@ -23,6 +23,7 @@ from ..exceptions import FulqrumError
 from .qubit_operator cimport QubitOperator
 
 include "includes/bitset_utils_header.pxi"
+include "includes/bitset_hashmap_header.pxi"
 
 
 cdef class Bitset:
@@ -38,10 +39,14 @@ cdef class Bitset:
     def __len__(self):
         return self.bits.size()
 
+    def __hash__(self):
+        cdef BitsetHasherRapid hasher 
+        return hasher(self.bits)
+
     def __repr__(self):
         cdef string s
         to_string(self.bits, s)
-        return f"<Bitset: {s}>"
+        return f"Bitset('{s}')"
 
     def size(self):
         """Number of bits in Bitset
@@ -59,6 +64,12 @@ cdef class Bitset:
 
     def __neq__(self, Bitset other):
         return self.bits != other.bits
+
+    def __lt_(self, Bitset other):
+        return self.bits < other.bits
+
+    def __gt__(self, Bitset other):
+        return self.bits > other.bits
 
     def num_blocks(self):
         """Number of blocks (int64) used to store Bitset

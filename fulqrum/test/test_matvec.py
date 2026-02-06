@@ -26,7 +26,7 @@ def test_matvec1():
     S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
     in_vec = np.ones(len(S), dtype=float)
-    perm = [int(key, 2) for key in S.to_dict().keys()]
+    perm = [int(key, 2) for key in S.to_dict(key_type="str").keys()]
     perm_vec = in_vec[perm]
     out_vec = F.matvec(perm_vec)
     res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
@@ -42,7 +42,7 @@ def test_matvec2():
     S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
     in_vec = np.arange(len(S), dtype=float)
-    perm = [int(key, 2) for key in S.to_dict().keys()]
+    perm = [int(key, 2) for key in S.to_dict(key_type="str").keys()]
     perm_vec = in_vec[perm]
     out_vec = F.matvec(perm_vec)
     res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
@@ -60,7 +60,7 @@ def test_matvec3():
     S = Subspace([list(counts.keys())])
     F = SubspaceHamiltonian(H, S)
     in_vec = np.arange(len(S), dtype=complex)
-    perm = [int(key, 2) for key in S.to_dict().keys()]
+    perm = [int(key, 2) for key in S.to_dict(key_type="str").keys()]
     perm_vec = in_vec[perm]
     out_vec = F.matvec(perm_vec)
     res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
@@ -198,7 +198,7 @@ def test_csrlike_matvec1():
     F = SubspaceHamiltonian(H, S)
     M = F._to_linearoperator()
     in_vec = np.ones(len(S), dtype=float)
-    perm = [int(key, 2) for key in S.to_dict().keys()]
+    perm = [int(key, 2) for key in S.to_dict(key_type="str").keys()]
     perm_vec = in_vec[perm]
     out_vec = M.matvec(perm_vec)
     res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
@@ -215,7 +215,7 @@ def test_csrlike_matvec2():
     F = SubspaceHamiltonian(H, S)
     M = F._to_linearoperator()
     in_vec = np.arange(len(S), dtype=float)
-    perm = [int(key, 2) for key in S.to_dict().keys()]
+    perm = [int(key, 2) for key in S.to_dict(key_type="str").keys()]
     perm_vec = in_vec[perm]
     out_vec = M.matvec(perm_vec)
     res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)
@@ -234,7 +234,7 @@ def test_csrlike_matvec3():
     F = SubspaceHamiltonian(H, S)
     M = F._to_linearoperator()
     in_vec = np.arange(len(S), dtype=complex)
-    perm = [int(key, 2) for key in S.to_dict().keys()]
+    perm = [int(key, 2) for key in S.to_dict(key_type="str").keys()]
     perm_vec = in_vec[perm]
     out_vec = M.matvec(perm_vec)
     res = F.interpret_vector(out_vec, -1, sort=True, renormalize=False)

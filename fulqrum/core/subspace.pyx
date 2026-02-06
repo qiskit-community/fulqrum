@@ -89,7 +89,7 @@ cdef class Subspace():
 
     """
     @cython.boundscheck(False)
-    def __cinit__(self, subspace_strs, int reserve_multiplier=2, bool use_all_bitset_blocks=True):
+    def __cinit__(self, object subspace_strs, int reserve_multiplier=2, bool use_all_bitset_blocks=True):
         """
         args:
             subspace_strs: Input bitstrings as either length-1 or length-2 tuple
@@ -129,6 +129,7 @@ cdef class Subspace():
                 full hashing usually leads to fewer collisions during Hash table look-up.
                 Default: `True`.
         """
+        cdef int input_bitsets = 0
         if len(subspace_strs) == 0:
             return
         elif len(subspace_strs) == 1:
@@ -136,6 +137,8 @@ cdef class Subspace():
             iterator.sort()
             num_qubits = len(next(iter(iterator)))
             size = len(iterator)
+            if isinstance(iterator[0], Bitset):
+                input_bitsets = 1
         elif len(subspace_strs) == 2:
             alpha_strs = subspace_strs[0]
             beta_strs = subspace_strs[1]
@@ -170,10 +173,15 @@ cdef class Subspace():
         cdef size_t idx
         cdef string key
         cdef bitset_t temp_bits
+        cdef Bitset bit_key
 
-        for idx, key in enumerate(iterator):
-            temp_bits = bitset_t(key, 0, self.subspace.num_qubits)
-            self.subspace.bitstrings.insert_unique(temp_bits, idx)
+        if input_bitsets:
+            for idx, bit_key in enumerate(iterator):
+                self.subspace.bitstrings.insert_unique(bit_key.bits, idx)
+        else:
+            for idx, key in enumerate(iterator):
+                temp_bits = bitset_t(key, 0, self.subspace.num_qubits)
+                self.subspace.bitstrings.insert_unique(temp_bits, idx)
     
     def __dealloc__(self):
         # Clear hash table upon deallocation of class
@@ -343,17 +351,34 @@ cdef class Subspace():
     
     
     @cython.boundscheck(False)
-    def to_dict(self):
+    def to_dict(self, str key_type='bitset'):
         """Converts Subspace to a dictionary
+
+        Parameters:
+            key_type (str): Type of key data to return, default='bitset'
 
         Returns:
             dict
         """
         cdef size_t kk
         cdef string s
+        cdef Bitset temp_bits
+        cdef bitset_t bits
         cdef dict out = {}
 
-        for kk in range(self.subspace.bitstrings.size()):
-            to_string(self.subspace.bitstrings.get_n_th_bitset(kk), s)
-            out[s] = None
+
+        if key_type not in ['bitset', 'str']:
+            raise FulqrumError("key_type must be 'bitset' or 'str'")
+        
+        if key_type == 'bitset':
+            for kk in range(self.subspace.bitstrings.size()):
+                bits = self.subspace.bitstrings.get_n_th_bitset(kk)
+                temp_bits = Bitset()
+                temp_bits.bits = bits
+                out[temp_bits] = None
+        
+        elif key_type == 'str':
+            for kk in range(self.subspace.bitstrings.size()):
+                to_string(self.subspace.bitstrings.get_n_th_bitset(kk), s)
+                out[s] = None
         return out

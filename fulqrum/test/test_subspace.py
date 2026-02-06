@@ -14,7 +14,7 @@
 
 import pytest
 import numpy as np
-from fulqrum import Subspace
+from fulqrum import Subspace, Bitset
 from fulqrum.exceptions import FulqrumError
 
 
@@ -60,12 +60,17 @@ def test_subspace_vector_order1():
 
 def test_subspace_vector_order2():
     V = Subspace(dic)
-    assert list(V.to_dict().keys()) == ["01010", "10101", "11100", "11111"]
+    assert list(V.to_dict(key_type="str").keys()) == [
+        "01010",
+        "10101",
+        "11100",
+        "11111",
+    ]
 
 
 def test_subspace_vector_order3():
     V = Subspace(dic2)
-    assert list(V.to_dict().keys()) == [
+    assert list(V.to_dict(key_type="str").keys()) == [
         "00100",
         "01010",
         "01111",
@@ -138,5 +143,29 @@ def test_subspace_copy():
     S = Subspace([["0100", "1000", "1111", "0000"]])
     B = S.copy()
     del S
-    sorted_keys = list(B.to_dict().keys())
+    sorted_keys = list(B.to_dict(key_type="str").keys())
     assert sorted_keys == ["0000", "0100", "1000", "1111"]
+
+
+def test_bitset_dict():
+    """Test subspace to_dict as Bitsets"""
+    S = Subspace([["0100", "1000", "1111", "0000"]])
+    sorted_keys = list(S.to_dict().keys())
+    assert sorted_keys == [
+        Bitset("0000"),
+        Bitset("0100"),
+        Bitset("1000"),
+        Bitset("1111"),
+    ]
+
+
+def test_bitset_init():
+    """Test subspace init using bitsets"""
+    A = {Bitset("01010"): 0, Bitset("01111"): 1, Bitset("11100"): 2, Bitset("00000"): 3}
+    S = Subspace([list(A.keys())])
+    assert list(S.to_dict()) == [
+        Bitset("00000"),
+        Bitset("01010"),
+        Bitset("01111"),
+        Bitset("11100"),
+    ]
