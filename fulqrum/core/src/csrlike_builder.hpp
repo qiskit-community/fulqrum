@@ -22,6 +22,7 @@
 #include "bitset_utils.hpp"
 #include "constants.hpp"
 #include "elements.hpp"
+#include "offdiag_grouping.hpp"
 #include "operators.hpp"
 #include <boost/dynamic_bitset.hpp>
 
@@ -41,9 +42,6 @@ void csrlike_builder(const OperatorTerm_t* terms,
 	std::size_t kk;
 
 	const auto* bitsets = subspace.get_bitsets();
-
-	const auto smallest_bitset = bitsets[0].first;
-	const auto largest_bitset = bitsets[(subspace_dim - 1)].first;
 
 	cols.resize(subspace_dim);
 	data.resize(subspace_dim);
@@ -80,15 +78,16 @@ void csrlike_builder(const OperatorTerm_t* terms,
 		const std::vector<unsigned int>* group_inds;
 		T val;
 
-		// need two different types for sorting
-		// int sort_start_int = 0;
-		// int sort_end_int = 0;
-		// long long sort_start_long = 0;
-		// long long sort_end_long = 0;
+		std::vector<uint8_t> row_set_bits(row.size(), 0);
+		bitset_to_bitvec(row, row_set_bits);
 
 		for(group = 0; group < num_groups; group++)
 		{ // begin loop over groups
-			if(!row.test(grp_max_inds[group]))
+			// Detects a lower or an upper
+			// triangle matrix element.
+			// See details in ``get_group_max_inds()``
+			// in fulqrum/core/src/offdiag_grouping.hpp
+			if(!row_set_bits[grp_max_inds[group]])
 			{
 				continue;
 			}
@@ -102,10 +101,7 @@ void csrlike_builder(const OperatorTerm_t* terms,
 				group_inds = &group_offdiag_inds[group];
 				col_vec = row;
 				flip_bits(col_vec, group_inds->data(), group_inds->size());
-				if(col_vec < smallest_bitset)
-				{
-					continue;
-				}
+
 				col_ptr = subspace.get_ptr(col_vec);
 				if(col_ptr == nullptr)
 				{

@@ -24,6 +24,7 @@
 #include "csr_utils.hpp"
 #include "csrlike.hpp"
 #include "elements.hpp"
+#include "offdiag_grouping.hpp"
 #include "operators.hpp"
 #include <boost/dynamic_bitset.hpp>
 
@@ -46,9 +47,6 @@ void csrlike_builder2(const OperatorTerm_t* terms,
 {
 	std::size_t kk;
 	const auto* bitsets = subspace.get_bitsets();
-
-	const auto smallest_bitset = bitsets[0].first;
-	const auto largest_bitset = bitsets[(subspace_dim - 1)].first;
 
 	cols.resize(subspace_dim);
 	data.resize(subspace_dim);
@@ -95,11 +93,7 @@ void csrlike_builder2(const OperatorTerm_t* terms,
 #pragma omp parallel for schedule(dynamic) if(subspace_dim > 4096)
 	for(kk = 0; kk < subspace_dim; kk++)
 	{ // begin loop over all rows
-
 		const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
-
-		std::vector<uint8_t> row_set_bits(row.size(), 0);
-		bitset_to_bitvec(row, row_set_bits);
 
 		// define variables locally for omp for loop
 		std::size_t idx;
@@ -113,28 +107,23 @@ void csrlike_builder2(const OperatorTerm_t* terms,
 		T val;
 		unsigned int row_int;
 
+		std::vector<uint8_t> row_set_bits(row.size(), 0);
+		bitset_to_bitvec(row, row_set_bits);
+
 		for(group = 0; group < num_groups; group++)
 		{ // begin loop over groups
-
-			// see Note: LOWER TRAINGLE DETECTION at the beginning.
-			// For lower triangle elements, col_idx < row_idx (kk).
-			// For sorted bitstrings (must), it means col_vec < row.
-			// Checking the bit location at the max index of group_offdiag_inds[group]
-			// (it is the differing bit location) tells us if potential col_vec < row.
-			// If potential col_vec > row, we are in the upper triangle, and we can skip
-			// to the group without doing expensive col_vec construction and subsapce
-			// look-up.
-
+			// Detects a lower or an upper
+			// triangle matrix element.
+			// See details in ``get_group_max_inds()``
+			// in fulqrum/core/src/offdiag_grouping.hpp
 			if(!row_set_bits[grp_max_inds[group]])
 			{
 				continue;
 			}
 
 			group_inds = &group_offdiag_inds[group];
-			//
 			row_int = bitset_ladder_int(
 				row_set_bits.data(), group_inds->data(), group_rowint_length[group]);
-
 			group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
 			group_int_stop = group_ladder_ptrs[group * ladder_offset + row_int + 1];
 			val = 0;
@@ -143,16 +132,6 @@ void csrlike_builder2(const OperatorTerm_t* terms,
 			{
 				col_vec = row;
 				flip_bits(col_vec, group_inds->data(), group_inds->size());
-
-				// if col_vec is smaller than the smallest bitset
-				// it is already outside the subspace, and we can
-				// safely skip the group. As we only do col_idx < row_idx
-				// col_vec cannot be > largest_bitset
-				// Shows minor speed-up for fragment and dimer case.
-				if(col_vec < smallest_bitset)
-				{
-					continue;
-				}
 
 				col_ptr = subspace.get_ptr(col_vec);
 				if(col_ptr == nullptr)

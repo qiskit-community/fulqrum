@@ -23,6 +23,7 @@
 #include "bitset_utils.hpp"
 #include "constants.hpp"
 #include "elements.hpp"
+#include "offdiag_grouping.hpp"
 #include "operators.hpp"
 #include <boost/dynamic_bitset.hpp>
 
@@ -41,7 +42,6 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
 {
 	std::size_t kk;
 	const auto* bitsets = subspace.get_bitsets();
-	const auto smallest_bitset = bitsets[0].first;
 
 	std::vector<std::mutex> mutex1(subspace_dim);
 
@@ -69,9 +69,6 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
 			{
 				const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
 
-				std::vector<uint8_t> row_set_bits(row.size(), 0);
-				bitset_to_bitvec(row, row_set_bits);
-
 				boost::dynamic_bitset<std::size_t> col_vec;
 				T temp_val;
 				const OperatorTerm_t* term;
@@ -79,9 +76,17 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
 				std::size_t* col_ptr;
 				std::size_t idx, col_idx;
 				const std::vector<unsigned int>* group_inds;
+
+				std::vector<uint8_t> row_set_bits(row.size(), 0);
+				bitset_to_bitvec(row, row_set_bits);
+
 				// Loop over all off-diagonal terms in operator
 				for(group = 0; group < num_groups; group++)
 				{
+					// Detects a lower or an upper
+					// triangle matrix element.
+					// See details in ``get_group_max_inds()``
+					// in fulqrum/core/src/offdiag_grouping.hpp
 					if(!row_set_bits[grp_max_inds[group]])
 					{
 						continue;
@@ -96,11 +101,6 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
 						col_vec = row;
 						flip_bits(col_vec, group_inds->data(), group_inds->size());
 
-						if(col_vec < smallest_bitset)
-						{
-							continue;
-						}
-						//
 						col_ptr = subspace.get_ptr(col_vec);
 						if(col_ptr == nullptr)
 						{

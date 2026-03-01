@@ -179,37 +179,6 @@ void compute_orbital_occupancies(const bitset_map_namespace::BitsetHashMapWrappe
 }
 
 /**
- * Constructs a vector of max offdiagonal group indices. The vector allows
- * us to check only onw bit position in the row bitset to determine whether
- * the candidate column bitset will be smaller or greater than the row bitset.
- *
- * @param grp_max_inds Vector to hold max index of each group. As the index
- * is represented by ``uint16_t``, we can solve max 2^16 = 65536 qubit problem
- * using Fulqrum.
- * @param group_offdiag_inds Offdiagonal indices of a group. This list determines
- * which bit positions in a row bitset will be flipped to construct a candidate
- * column bitset.
- * @param num_groups The number of groups.
- */
-void get_group_max_inds(std::vector<uint16_t>& grp_max_inds,
-						const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
-						const std::size_t& num_groups)
-{
-#pragma omp parallel for schedule(dynamic) if(num_groups > 4096)
-	for(size_t group = 0; group < num_groups; group++)
-	{
-		auto group_inds = &group_offdiag_inds[group];
-
-		// It is likely that the ``group_inds`` is already sorted, and
-		// the last element is the maximum. However, as size of ``group_inds``
-		// is moderate (2 or 4) and computing max element is cheap, we make use
-		// of ``std::max_element()`` to be safe.
-		auto max_element = std::max_element((*group_inds).begin(), (*group_inds).end());
-		grp_max_inds[group] = *max_element;
-	}
-}
-
-/**
  * creates a vector representation of the row bitset
  * with 1 at set-bit positions. This vector is easier to
  * look-up by index as looking up a bit in a bitset required

@@ -22,6 +22,7 @@
 #include "bitset_utils.hpp"
 #include "constants.hpp"
 #include "elements.hpp"
+#include "offdiag_grouping.hpp"
 #include "operators.hpp"
 #include <boost/dynamic_bitset.hpp>
 
@@ -44,7 +45,6 @@ void csr_matrix_builder(const OperatorTerm_t* terms,
 	T temp, _sum;
 
 	const auto* bitsets = subspace.get_bitsets();
-	const auto smallest_bitset = bitsets[0].first;
 
 	std::vector<std::mutex> mutex1(subspace_dim);
 	std::vector<std::mutex> mutex2(subspace_dim);
@@ -90,9 +90,16 @@ void csr_matrix_builder(const OperatorTerm_t* terms,
 		T& row_nnz = row_nnz_s[kk];
 		T& elem_start = indptr[kk];
 
+		std::vector<uint8_t> row_set_bits(row.size(), 0);
+		bitset_to_bitvec(row, row_set_bits);
+
 		for(group = 0; group < num_groups; group++)
 		{ // begin loop over groups
-			if(!row.test(grp_max_inds[group]))
+			// Detects a lower or an upper
+			// triangle matrix element.
+			// See details in ``get_group_max_inds()``
+			// in fulqrum/core/src/offdiag_grouping.hpp
+			if(!row_set_bits[grp_max_inds[group]])
 			{
 				continue;
 			}
@@ -106,11 +113,6 @@ void csr_matrix_builder(const OperatorTerm_t* terms,
 			{
 				col_vec = row;
 				flip_bits(col_vec, group_inds->data(), group_inds->size());
-
-				if(col_vec < smallest_bitset)
-				{
-					continue;
-				}
 
 				col_ptr = subspace.get_ptr(col_vec);
 				if(col_ptr == nullptr)
