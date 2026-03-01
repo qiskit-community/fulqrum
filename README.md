@@ -95,7 +95,7 @@ FQ_BUILD_PARALLEL=8 CC=clang CXX=clang++ pip install .
 # Linux
 FQ_BUILD_PARALLEL=8 pip install .
 
- # local
+# local
 FQ_BUILD_PARALLEL=8 python setup.py build_ext --inplace
 ```
 
