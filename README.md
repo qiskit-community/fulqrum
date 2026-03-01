@@ -82,6 +82,23 @@ Then installation of Fulqrum with openmp can be accomplished using a call like:
 CC=clang CXX=clang++ pip install .
 ```
 
+### Parallel build
+
+You can turn on parallel compilation by setting the environment variable
+`FQ_BUILD_PARALLEL=<num threads>`, which can accelerate the build time. Example
+with `8` parallel threads:
+
+```bash
+# OSX
+FQ_BUILD_PARALLEL=8 CC=clang CXX=clang++ pip install .
+
+# Linux
+FQ_BUILD_PARALLEL=8 pip install .
+
+ # local
+FQ_BUILD_PARALLEL=8 python setup.py build_ext --inplace
+```
+
 ## Running benchmarks
 
 See the README.md in the `benchmarks` directory.
