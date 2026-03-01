@@ -22,8 +22,8 @@ cdef extern from "../src/csrlike.hpp":
     ctypedef struct RowData_Real64_t:
         vector[vector[long long ]] cols
         vector[vector[double]] data
-    
-    
+
+
     ctypedef struct RowData_Complex32_t:
         vector[vector[int]] cols
         vector[vector[complex]] data
@@ -35,7 +35,7 @@ cdef extern from "../src/csrlike.hpp":
 
     void set_csr_ptr[T, U](const vector[vector[T]]& cols, U * ptrs)
 
-    void set_csr_data[T, U, V](const vector[vector[T]]& in_data, const vector[vector[U]]& cols, 
+    void set_csr_data[T, U, V](const vector[vector[T]]& in_data, const vector[vector[U]]& cols,
                                V * ptrs, V * inds, T * out_data)
 
     void csrlike_spmv[T, U](const vector[vector[T]]& data, const vector[vector[U]]& cols,

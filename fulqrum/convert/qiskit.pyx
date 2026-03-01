@@ -47,14 +47,14 @@ def qiskit_nature_fermi_op_to_fulqrum(object op):
     cdef size_t num_qubits
     cdef list tmp, term_split
     cdef size_t qubit_int
-    
+
     num_qubits = op.num_spin_orbitals
 
     if num_qubits % 2 != 0:
         raise ValueError(
             "Fermionic Operators with odd number of modes are not supported yet."
         )
-    
+
     cdef FermionicOperator out = FermionicOperator(num_qubits)
 
     for term, coeff in op.items():
@@ -69,8 +69,8 @@ def qiskit_nature_fermi_op_to_fulqrum(object op):
                     f"num spin orbitals {num_qubits}."
                 )
             tmp.append(f'{symbol}:{int(qubit)}')
-        
+
         label = " ".join(tmp)
         out += FermionicOperator.from_label(num_qubits, label, coeff)
-    
+
     return out

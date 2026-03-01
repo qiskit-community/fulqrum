@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test basic core functionality"""
+
 import numpy as np
 from pathlib import Path
 from qiskit.transpiler import CouplingMap

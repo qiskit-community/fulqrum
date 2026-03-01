@@ -11,9 +11,9 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test eigen functionality on H2"""
+
 from pathlib import Path
 import numpy as np
-import scipy.linalg as la
 import scipy.sparse.linalg as spla
 
 from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian

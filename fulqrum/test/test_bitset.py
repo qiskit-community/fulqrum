@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test bitset object"""
+
 from fulqrum import QubitOperator
 from fulqrum.core import Bitset
 

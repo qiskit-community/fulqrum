@@ -50,7 +50,7 @@ cdef extern from "../src/base.hpp":
         vector[unsigned int] indices
         vector[unsigned char] values
 
-    
+
     ctypedef struct FermionicOperator_t:
         unsigned int width
         vector[FermionicTerm_t] terms

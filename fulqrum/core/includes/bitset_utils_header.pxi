@@ -26,14 +26,14 @@ cdef extern from "../src/bitset_utils.hpp":
                            const unsigned char * val,
                            const unsigned int N) nogil
 
-    unsigned int bitset_ladder_int(const uint8_t * row, 
+    unsigned int bitset_ladder_int(const uint8_t * row,
                                    const unsigned int * inds,
                                    const unsigned int ladder_width) nogil
-    
+
     void compute_orbital_occupancies(const BitsetHashMapWrapper& subspace,
                     const size_t subspace_dim,
                     const double* probabilities,
                     double* out) nogil
-    
+
     bool passes_proj_validation(const OperatorTerm_t * term,
                                 const bitset_t& row) nogil

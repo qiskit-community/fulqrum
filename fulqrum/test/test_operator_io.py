@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test operator IO functionality"""
+
 import os
 from pathlib import Path
 import fulqrum as fq

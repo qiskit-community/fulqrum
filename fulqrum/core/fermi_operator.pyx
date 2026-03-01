@@ -50,7 +50,7 @@ cdef class FermionicOperator():
     Example:
 
     .. jupyter-execute::
-        
+
         import fulqrum as fq
         fq.FermionicOperator(5, [("++--", [0, 0, 1, 4], -0.018), ("+-", [3, 2], 0.4)])
     """
@@ -72,7 +72,7 @@ cdef class FermionicOperator():
                         term.coeff = item[0]
                     else:
                         op_str = (<string>item[0]).c_str()
-                        inds = item[1] if isinstance(item[1], Iterable) else [item[1]] 
+                        inds = item[1] if isinstance(item[1], Iterable) else [item[1]]
                         coeff = item[2] if len(item) == 3 else 1.0
                         for kk in range(<size_t>len(item[0])):
                             if inds[kk] > (self.oper.width - 1):
@@ -87,11 +87,11 @@ cdef class FermionicOperator():
                 insertion_sort_term(&term)
                 self.oper.terms.push_back(term)
 
-    
+
     def __dealloc__(self):
         # Clear vectors upon deallocation of class
         (vector[FermionicTerm_t]()).swap(self.oper.terms)
-    
+
     def __len__(self):
         """Number of terms in operator
 
@@ -103,7 +103,7 @@ cdef class FermionicOperator():
     def __iter__(self):
         self._iter_index = 0
         return self
-    
+
     def __next__(self):
         cdef FermionicOperator out
         if self._iter_index < self.oper.terms.size():
@@ -206,7 +206,7 @@ cdef class FermionicOperator():
         cdef FermionicOperator out = FermionicOperator(self.oper.width)
         if isinstance(key, numbers.Integral):
             if key < 0:
-                 key = self.oper.terms.size() + key 
+                 key = self.oper.terms.size() + key
             kk = <size_t>key
             if kk > self.oper.terms.size() - 1:
                 raise FulqrumError(f"Index {kk} is out of range for operator"
@@ -258,7 +258,7 @@ cdef class FermionicOperator():
             int: Number of terms in operator
         """
         return self.oper.terms.size()
-    
+
     @property
     def width(self):
         """Width of operator
@@ -301,7 +301,7 @@ cdef class FermionicOperator():
 
     @cython.boundscheck(False)
     def __repr__(self):
-        cdef size_t idx 
+        cdef size_t idx
         cdef list out = []
         cdef str temp_str
         cdef FermionicTerm_t term
@@ -389,9 +389,9 @@ cdef class FermionicOperator():
         for kk in range(self.oper.terms.size()):
             deflate_term_indicies(&self.oper.terms[kk], &out.oper.terms)
         return out
-    
+
     def extended_jw_transformation(self):
-        """Jordan-Wigner transformation over extended alphabet 
+        """Jordan-Wigner transformation over extended alphabet
         from Fermionic -> Qubit operator
         """
         cdef FermionicOperator fermi = self.deflate_repeated_indices()
@@ -405,7 +405,7 @@ cdef class FermionicOperator():
     @cython.boundscheck(False)
     def to_dict(self):
         """Dictionary represenation of FermionicOperator
-        
+
         Returns:
             dict: Dictionary representation of FermionicOperator
         """
@@ -429,7 +429,7 @@ cdef class FermionicOperator():
             terms.append([temp_vals, temp_inds, (term.coeff.real, term.coeff.imag)])
         out['terms'] = terms
         return out
-    
+
 
     @classmethod
     def from_dict(self, dict dic):
@@ -437,7 +437,7 @@ cdef class FermionicOperator():
 
         Parameters:
             dic(dict): Dictionary representation of operator
-        
+
         Returns:
             FermionicOperator
         """
@@ -448,7 +448,7 @@ cdef class FermionicOperator():
         for term in dic['terms']:
             out += FermionicOperator(width, [(term[0], term[1], complex(*term[2]))])
         return out
-    
+
 
     def to_json(self, filename, overwrite=False):
         """Save operator to a JSON or XZ file. File extension can be 'json'
@@ -475,7 +475,7 @@ cdef class FermionicOperator():
         dic = json_to_dict(filename)
         out = FermionicOperator.from_dict(dic)
         return out
-  
+
 
 
 @cython.cdivision(True)
@@ -528,7 +528,7 @@ cdef int collapse_value(unsigned char x):
 
 cdef void deflate_term_indicies(FermionicTerm_t * term, vector[FermionicTerm_t] * out_terms):
     cdef size_t num_elems = term.indices.size()
-    cdef size_t kk 
+    cdef size_t kk
     cdef size_t start, num_touched
     cdef FermionicTerm_t new_term = EmptyFermionicTerm
     cdef unsigned int current_index

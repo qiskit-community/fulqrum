@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test off-diagonal weights"""
+
 import numpy as np
 import fulqrum as fq
 from fulqrum import QubitOperator

@@ -63,3 +63,13 @@ from .linear_operator import (
     CSRLinearOperator,
     CSRLikeLinearOperator,
 )
+
+__all__ = [
+    "QubitOperator",
+    "FermionicOperator",
+    "Bitset",
+    "Subspace",
+    "SubspaceHamiltonian",
+    "CSRLinearOperator",
+    "CSRLikeLinearOperator",
+]

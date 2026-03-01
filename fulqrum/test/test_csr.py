@@ -161,33 +161,6 @@ def test_csr3():
     assert P.indptr.dtype == np.int32
 
 
-def test_csr3():
-    """Test building CSR array from subspace Hamiltonian"""
-    num_qubits = 5
-    strings = ["XXIXX", "YYIYY"]
-    values = np.array([(-1) ** kk * 3.14159 / (kk + 1) for kk in range(len(strings))])
-
-    H = fq.QubitOperator(num_qubits)
-    for idx, string in enumerate(strings):
-        H += fq.QubitOperator.from_label(string, values[idx])
-
-    A = qubitoperator_to_matrix(H)
-    M = sp.csr_array(A)
-
-    counts = {}
-    for kk in range(2**5):
-        counts[bin(kk)[2:].zfill(5)] = None
-
-    S = fq.Subspace([list(counts.keys())])
-    Hsub = fq.SubspaceHamiltonian(H, S)
-    P = Hsub.to_csr_linearoperator().matrix
-
-    assert np.allclose(P.indptr, M.indptr)
-    assert np.allclose(P.indices, M.indices)
-    assert np.allclose(P.data, M.data)
-    assert P.indptr.dtype == np.int32
-
-
 def test_csr3a():
     """Test building CSR array from subspace Hamiltonian"""
     num_qubits = 5

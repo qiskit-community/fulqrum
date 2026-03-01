@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test method(s) in linear operator that are not covered in other tests"""
+
 from pathlib import Path
 import numpy as np
 import scipy.sparse.linalg as spla

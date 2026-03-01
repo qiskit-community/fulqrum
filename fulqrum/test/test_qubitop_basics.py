@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test basic core functionality"""
+
 import numpy as np
 import fulqrum as fq
 from fulqrum import QubitOperator
@@ -100,7 +101,7 @@ def test_simple_diagonal():
     for kk in range(20):
         op += QubitOperator(N, [(diag_ops[kk % len(diag_ops)], kk, 1 / (N + kk))])
 
-    assert op.is_diagonal() == True
+    assert op.is_diagonal()
 
 
 def test_simple_diagonal2():
@@ -116,7 +117,7 @@ def test_simple_diagonal2():
         else:
             op += QubitOperator(N, [("X", kk, 1 / (N + kk))])
 
-    assert op.is_diagonal() == False
+    assert not op.is_diagonal()
 
 
 def test_operator_diagonal_splitting():
@@ -179,7 +180,6 @@ def test_operator_sorting2():
 
 def test_operator_subtraction():
     """Test operator subtraction"""
-    N = 2
     H = QubitOperator.from_label("ZZ")
     G = QubitOperator.from_label("XX", 5)
     qo = H - G

@@ -15,9 +15,19 @@
 import os
 import sys
 import setuptools
+from setuptools.command.build_ext import build_ext
 
 import numpy as np
 from Cython.Build import cythonize
+
+n_parallel_threads = int(os.environ.get("FQ_BUILD_PARALLEL", "1"))
+using_inplace = "--inplace" in sys.argv
+
+
+class ParallelBuildExt(build_ext):
+    def build_extensions(self):
+        self.parallel = n_parallel_threads
+        build_ext.build_extensions(self)
 
 
 ROOT = "fulqrum"
@@ -45,7 +55,7 @@ CYTHON_EXTS = [
     "integrals",
     "matrix",
     "sqd",
-    "simple"
+    "simple",
 ]
 
 CYTHON_MODULES = [
@@ -62,7 +72,7 @@ CYTHON_MODULES = [
     f"{ROOT}.convert",
     f"{ROOT}.utils",
     f"{ROOT}.core",
-    f"{ROOT}.ramps"
+    f"{ROOT}.ramps",
 ]
 CYTHON_SOURCE_DIRS = [
     f"{ROOT}/core",
@@ -78,7 +88,7 @@ CYTHON_SOURCE_DIRS = [
     f"{ROOT}/convert",
     f"{ROOT}/utils",
     f"{ROOT}/core",
-    f"{ROOT}/ramps"
+    f"{ROOT}/ramps",
 ]
 
 # Add openmp flags
@@ -135,6 +145,11 @@ setuptools.setup(
     package_data=PACKAGE_DATA,
     packages=PACKAGES,
     ext_modules=cythonize(
-        EXT_MODULES, language_level=3, force=True, compiler_directives={"embedsignature": True}
-    )
+        EXT_MODULES,
+        nthreads=0 if using_inplace else n_parallel_threads,  # to avoid race condition
+        language_level=3,
+        force=True,
+        compiler_directives={"embedsignature": True},
+    ),
+    cmdclass={"build_ext": ParallelBuildExt},
 )

@@ -34,7 +34,7 @@ cdef inline dict qubit_reorder_map(size_t num_qubits):
     data = list(range(num_qubits))[::-1]
     b_half = data[:half_len]
     a_half = data[half_len:]
-    
+
     interleaved = []
     for i in range(half_len):
         interleaved.append(b_half[i])
@@ -42,7 +42,7 @@ cdef inline dict qubit_reorder_map(size_t num_qubits):
 
     for old, new in zip(interleaved, data):
         mapper[new] = old
-    
+
     return mapper
 
 @cython.boundscheck(False)
@@ -62,7 +62,7 @@ def openfermion_qubit_op_to_fulqrum(object op):
     cdef tuple paulis
     cdef list chars, data, b_half, a_half, interleaved
     cdef dict mapper
-    
+
     # Determine number of qubits used in operator
     for key in op.terms.keys():
         for pair in key:
@@ -85,10 +85,10 @@ def openfermion_qubit_op_to_fulqrum(object op):
         for idx, pauli in paulis:
             idx_new = mapper[idx]
             chars[idx_new] = pauli
-        
+
         label = ''.join(chars)
         out += QubitOperator.from_label(label[::-1], coeff)
-    
+
     return out
 
 @cython.boundscheck(False)
@@ -107,7 +107,7 @@ def openfermion_fermi_op_to_fulqrum(object op):
     cdef tuple terms
     cdef list data, b_half, a_half, interleaved, tmp
     cdef dict mapper
-    
+
     # Determine number of qubits used in operator
     for key in op.terms.keys():
         for qubit, _ in key:
@@ -118,7 +118,7 @@ def openfermion_fermi_op_to_fulqrum(object op):
         raise ValueError(
             "Fermionic Operators with odd number of modes are not supported yet."
         )
-    
+
     cdef FermionicOperator out = FermionicOperator(num_qubits)
 
     mapper = qubit_reorder_map(num_qubits)
@@ -132,10 +132,10 @@ def openfermion_fermi_op_to_fulqrum(object op):
                 symbol = "-"
 
             qubit_new = mapper[qubit]
-            
+
             tmp.append(f'{symbol}:{qubit_new}')
-        
+
         label = " ".join(tmp)
         out += FermionicOperator.from_label(num_qubits, label, coeff)
-    
+
     return out

@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test Jordan-Wginer transformation of FermionicOperator terms"""
+
 import numpy as np
 import scipy.sparse as sp
 from pathlib import Path

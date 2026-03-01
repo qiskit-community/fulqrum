@@ -239,15 +239,15 @@ def get_carryover_full_strs(
 
     Args:
         subsapce (Subspace): Subspace containing the bitstrings.
-        
+
         abs_amps (ndarray): Absolute amplitudes of subspace bitstrings.
             One should use ``np.abs(eigenvector)`` as this argument as
             it will maintain order between subspace bitstrings and the
             absolute amplitudes.
-        
+
         threshold (float): Threshold to filter out bitstrings. Only bitstrings
             with absolute amplitude ``> threshold`` is returned.
-    
+
     Returns:
         A sorted list of lenght-2 tuples where the first element is the carryover
         bitstring and the second element is the absolute amplitude. The list is sorted
@@ -262,6 +262,6 @@ def get_carryover_full_strs(
             continue
         s = subspace.get_n_th_bitstring(kk)
         out.append((s, abs_amps[kk]))
-    
+
     out.sort(key=lambda x: x[1], reverse=True)
     return out

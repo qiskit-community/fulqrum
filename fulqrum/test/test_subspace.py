@@ -15,7 +15,6 @@
 import pytest
 import numpy as np
 from fulqrum import Subspace, Bitset
-from fulqrum.exceptions import FulqrumError
 
 
 dic = {

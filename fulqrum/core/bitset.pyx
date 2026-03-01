@@ -40,7 +40,7 @@ cdef class Bitset:
         return self.bits.size()
 
     def __hash__(self):
-        cdef BitsetHasherRapid hasher 
+        cdef BitsetHasherRapid hasher
         return hasher(self.bits)
 
     def __repr__(self):

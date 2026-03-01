@@ -15,7 +15,7 @@ cimport cython
 from cython.operator cimport dereference
 from libcpp.vector cimport vector
 from libcpp.string cimport string
-from libc.string cimport memcpy 
+from libc.string cimport memcpy
 from libcpp cimport bool
 from libcpp.unordered_map cimport unordered_map
 from libcpp.map cimport map
@@ -70,7 +70,7 @@ cdef class QubitOperator():
     Example:
 
     .. jupyter-execute::
-        
+
         import fulqrum as fq
         fq.QubitOperator(5, [("X1", [0, 3], -2), ("XZY", [2, 0, 4], 3)])
     """
@@ -96,7 +96,7 @@ cdef class QubitOperator():
                         term.coeff = item[0]
                     else:
                         op_str = (<string>item[0]).c_str()
-                        inds = item[1] if isinstance(item[1], Iterable) else [item[1]] 
+                        inds = item[1] if isinstance(item[1], Iterable) else [item[1]]
                         coeff = item[2]
                         for kk in range(<size_t>len(item[0])):
                             if inds[kk] > (self.oper.width - 1):
@@ -118,7 +118,7 @@ cdef class QubitOperator():
     def __dealloc__(self):
         # Clear vectors upon deallocation of class
         (vector[OperatorTerm_t]()).swap(self.oper.terms)
-    
+
     @classmethod
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -151,7 +151,7 @@ cdef class QubitOperator():
         Parameters:
             width (unsigned int): Width of operator
             coeff (complex): Operator coefficient
-        
+
         Returns:
             QubitOperator: Constant operator
         """
@@ -175,7 +175,7 @@ cdef class QubitOperator():
         if (value != 1 and value != 2):
             raise FulqrumError("Type of operator must be '1' or '2'")
         self.oper.type = value
-    
+
     @property
     def type(self):
         """ Type of QubitOperator
@@ -217,7 +217,7 @@ cdef class QubitOperator():
             int: Number of terms in operator
         """
         return self.oper.terms.size()
-    
+
     @property
     def width(self):
         """Width (number of qubits) of the operator
@@ -267,7 +267,7 @@ cdef class QubitOperator():
         for kk in range(self.oper.terms.size()):
             out[kk] = self.oper.terms[kk].group
         return np.asarray(out)
-    
+
     @property
     def num_groups(self):
         """Number of off-diagonal groupings
@@ -288,9 +288,9 @@ cdef class QubitOperator():
         Returns:
             int : Ladder width
         """
-        
+
         return self.oper.ladder_width
-    
+
     def copy(self):
         """Copy QubitOperator
 
@@ -343,7 +343,7 @@ cdef class QubitOperator():
             if (self.oper.terms[kk].indices.size() == 0):
                 out += self.oper.terms[kk].coeff
         return out.real
-    
+
     @cython.boundscheck(False)
     def split_diagonal(self):
         """Spit an operator into diagonal and non-diagonal components
@@ -436,7 +436,7 @@ cdef class QubitOperator():
         cdef QubitOperator out = QubitOperator(self.oper.width)
         if isinstance(key, numbers.Integral):
             if key < 0:
-                 key = self.oper.terms.size() + key 
+                 key = self.oper.terms.size() + key
             kk = <size_t>key
             if kk > self.oper.terms.size() - 1:
                 raise FulqrumError(f"Index {kk} is out of range for operator"
@@ -457,7 +457,7 @@ cdef class QubitOperator():
     def __iter__(self):
         self._iter_index = 0
         return self
-    
+
     def __next__(self):
         cdef QubitOperator out
         if self._iter_index < self.oper.terms.size():
@@ -473,7 +473,7 @@ cdef class QubitOperator():
         """
         self.append(other)
         return self
-    
+
     @cython.boundscheck(False)
     def __imul__(self, double complex other):
         """Inplace multiplication of QubitOperators
@@ -516,7 +516,7 @@ cdef class QubitOperator():
             term.coeff *= -1
             out.oper.terms.push_back(term)
         return out
-    
+
     @cython.boundscheck(False)
     def __mul__(self, double complex other):
         """Multiplication of QubitOperators on left with copy
@@ -547,7 +547,7 @@ cdef class QubitOperator():
 
     @cython.boundscheck(False)
     def __repr__(self):
-        cdef size_t idx 
+        cdef size_t idx
         cdef list out = []
         cdef str temp_str
         cdef OperatorTerm_t term
@@ -575,7 +575,7 @@ cdef class QubitOperator():
         if num_terms == 1:
             add_str = f", extended={self.oper.terms[0].extended}, group={self.oper.terms[0].group}"
         return f"<QubitOperator[{out_strs}], width={self.oper.width}{add_str}>"
-    
+
     @cython.boundscheck(False)
     cpdef void append(self, QubitOperator other):
         cdef size_t kk
@@ -627,12 +627,12 @@ cdef class QubitOperator():
                 if self.oper.terms[kk].values[jj] > 2:
                     return 0
         return 1
-    
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def add_operator(self, unsigned int qubit, str operator, bool overwrite=False):
         cdef size_t kk
-        cdef OperatorTerm_t temp_term 
+        cdef OperatorTerm_t temp_term
         if self.oper.terms.size() == 0:
             temp_term = EmptyOperatorTerm
             temp_term.coeff = 1.0
@@ -658,7 +658,7 @@ cdef class QubitOperator():
 
         Parameters:
             return_value (bool): Return the sum of constant term coefficients, default=True
-        
+
         Returns:
             QubitOperator: Operator with no identity terms
             complex: Sum of identity coefficients, if `return_value=True`
@@ -677,7 +677,7 @@ cdef class QubitOperator():
         if return_value:
             return out, val.real
         return out
-    
+
     @cython.boundscheck(False)
     def matrix_element(self, object row, object col):
         """Compute matrix element value at given row and column
@@ -795,7 +795,7 @@ cdef class QubitOperator():
                 break
         out.oper.type = self.oper.type
         return out
-    
+
     @cython.boundscheck(False)
     def extended(self):
         """Extended element flag for each term
@@ -882,7 +882,7 @@ cdef class QubitOperator():
             return 0
         cdef size_t[::1] out = temp
         return max_offdiag_ptr_size(&out[0], out.shape[0])
-    
+
     def combine_repeated_terms(self, double atol=1e-12):
         """Combine repeated terms that represent same
         operators, dropping terms smaller than requested tolerance.
@@ -913,7 +913,7 @@ cdef class QubitOperator():
             ladder_width (int): Number of ladder terms to consider, default = 4
 
         Returns:
-            ndarray: Array of uint32 integers 
+            ndarray: Array of uint32 integers
         """
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
@@ -922,7 +922,7 @@ cdef class QubitOperator():
         for kk in range(self.oper.terms.size()):
             out[kk] = term_ladder_int(self.oper.terms[kk], self.oper.ladder_width)
         return np.asarray(out)
-    
+
     @cython.boundscheck(False)
     def group_offdiag_indices(self):
         """Off-diagonal indices for each group in operator
@@ -994,7 +994,7 @@ cdef class QubitOperator():
         group_ranges = np.zeros(num_ladder_bins*num_groups + 1, dtype=np.uintp)
         ladder_bin_starts(self.oper.terms, &group_ptrs[0], &group_counts[0], &group_ranges[0],
                         num_groups, num_ladder_bins, self.oper.ladder_width)
-        
+
         return np.asarray(group_ranges)
 
     @cython.boundscheck(False)
@@ -1018,7 +1018,7 @@ cdef class QubitOperator():
     @cython.boundscheck(False)
     def worst_case_offdiag_group_amplitudes(self):
         """Compute the worst case amplitude of off-diagonal groups.
-        
+
         Requires input operator to be purely off-diagonal
 
         Parameters:
@@ -1065,7 +1065,7 @@ cdef class QubitOperator():
     @cython.boundscheck(False)
     def to_dict(self):
         """Dictionary representation of QubitOperator
-        
+
         Returns:
             dict: Dictionary representation of QubitOperator
         """
@@ -1090,7 +1090,7 @@ cdef class QubitOperator():
             terms.append([temp_vals, temp_inds, (term.coeff.real, term.coeff.imag)])
         out['terms'] = terms
         return out
-    
+
 
     @classmethod
     def from_dict(self, dict dic):
@@ -1098,7 +1098,7 @@ cdef class QubitOperator():
 
         Parameters:
             dic(dict): Dictionary representation of operator
-        
+
         Returns:
             QubitOperator
         """
@@ -1110,7 +1110,7 @@ cdef class QubitOperator():
             out += QubitOperator(width, [(term[0], term[1], complex(*term[2]))])
         out.oper.type = dic['type']
         return out
-    
+
 
     def to_json(self, filename, overwrite=False):
         """Save operator to a JSON or XZ file. File extension can be 'json'

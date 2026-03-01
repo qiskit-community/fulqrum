@@ -24,7 +24,7 @@ import numpy as np
 
 
 
-def ramps_restricted_simple(QubitOperator H, Subspace target_subspace, double target_energy, 
+def ramps_restricted_simple(QubitOperator H, Subspace target_subspace, double target_energy,
                             Subspace restricted_subspace, unsigned int max_recursion=3, double tol=1e-14):
     """RAMPS restricted to an existing subspace when targeting a single bit-string
     and associated energy.
@@ -36,7 +36,7 @@ def ramps_restricted_simple(QubitOperator H, Subspace target_subspace, double ta
         restricted_subspace (Subspace): Subspace to restrict search in
         max_recursion (int): Optional, maximum number of recursions to perform, default=3
         tol (double): Optional, tolerance value for truncation, default=1e-14
-    
+
     Returns:
         Subspace: RAMPS refined subspace
     """
@@ -58,9 +58,9 @@ def ramps_restricted_simple(QubitOperator H, Subspace target_subspace, double ta
                                            spmv.ladder_offset,
                                            target_energy,
                                            max_recursion,
-                                           tol)     
-   
-    
+                                           tol)
+
+
     # This is a temp workaround for issues with iteratively expanded
     # subspaces.  This should be removed once those are resolved
     cdef list temp_out = []
@@ -69,7 +69,7 @@ def ramps_restricted_simple(QubitOperator H, Subspace target_subspace, double ta
     for n in range(<size_t>out.size()):
         bs = out.get_n_th_bitstring(n)
         temp_out.append(bs)
-    
+
     cdef Subspace final_out = Subspace([temp_out])
-    
+
     return final_out

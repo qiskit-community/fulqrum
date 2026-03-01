@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test basic core functionality"""
+
 import numpy as np
 import scipy.sparse as sp
 from fulqrum import QubitOperator
@@ -21,7 +22,7 @@ Y = np.array([[0, -1j], [1j, 0]], dtype=complex)
 
 Z = np.array([[1, 0], [0, -1]], dtype=complex)
 
-I = np.array([[1, 0], [0, 1]], dtype=complex)
+I = np.array([[1, 0], [0, 1]], dtype=complex)  # noqa: E741
 
 P = np.array([[0, 0], [1, 0]], dtype=complex)
 
@@ -29,7 +30,7 @@ M = np.array([[0, 1], [0, 0]], dtype=complex)
 
 G = np.array([[1, 0], [0, 0]], dtype=complex)
 
-O = np.array([[0, 0], [0, 1]], dtype=complex)
+O = np.array([[0, 0], [0, 1]], dtype=complex)  # noqa: E741
 
 
 def _build_dense_matrix(op):

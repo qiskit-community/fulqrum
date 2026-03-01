@@ -28,6 +28,6 @@ cdef class PyBitsetHashMap:
     def get(self, bitstring: str) -> int:
         cdef bitset_t bs = bitset_t(bitstring, 0, len(bitstring))
         return self.c_map.get(bs)
-    
+
     def size(self) -> int:
         return self.c_map.size()

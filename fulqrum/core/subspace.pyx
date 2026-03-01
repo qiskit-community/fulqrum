@@ -57,14 +57,14 @@ cdef class Subspace():
             2. Full-string mode: In this mode, `subspace_strs` has to be length-1
             `tuple[list[str]]`. In this mode, no Cartesian product is taken internally,
             and the supplied _full_ bitstrings are used as is after sorting.
-        
+
         reserve_multiplier (float): We reserve a capacity for the Hash table that stores the
             subspace bit-strings, typically equal to the number of bit-strings. This
             argument allows a user to reserve more capacity than needed. While it consumes,
-            more memory, it reduces collision during Hash table look-up leading to 
+            more memory, it reduces collision during Hash table look-up leading to
             minor speed-up.
             Default: 2.
-        
+
         use_all_bitset_blocks (bool): If `use_all_bitset_blocks=False`, only first block of a
             bitset is used in hashing. If your bitsets are long and rarely share common
             prefixes, setting it to False speeds up execution. However, it likely that
@@ -112,11 +112,11 @@ cdef class Subspace():
                 2. Full-string mode: In this mode, `subspace_strs` has to be length-1
                 `tuple[list[str]]`. In this mode, no Cartesian product is taken internally,
                 and the supplied _full_ bitstrings are used as is after sorting.
-                
+
             reserve_multiplier: We reserve a capacity for the Hash table that stores the
                 subspace bitstrings, typically equal to the number of bitstrings. This
                 argument allows a user to reserve more capacity than needed. While it consumes,
-                more memory, it reduces collision during Hash table look-up leading to 
+                more memory, it reduces collision during Hash table look-up leading to
                 minor speed-up.
                 Default: 2.
 
@@ -152,7 +152,7 @@ cdef class Subspace():
             size = len(alpha_strs) * len(beta_strs)
         else:
             raise ValueError("bitstrings are wrongly formatted")
-        
+
         if num_qubits > (2 ** 16):
             raise ValueError(
                 f"Number of qubits must be <= 2 ** 16 ( = {2 ** 16}). "
@@ -182,7 +182,7 @@ cdef class Subspace():
             for idx, key in enumerate(iterator):
                 temp_bits = bitset_t(key, 0, self.subspace.num_qubits)
                 self.subspace.bitstrings.insert_unique(temp_bits, idx)
-    
+
     def __dealloc__(self):
         # Clear hash table upon deallocation of class
         self.subspace.bitstrings = BitsetHashMapWrapper()
@@ -190,7 +190,7 @@ cdef class Subspace():
     @cython.boundscheck(False)
     def __getitem__(self, object key):
         if key < 0:
-            key = self.subspace.bitstrings.size() + key 
+            key = self.subspace.bitstrings.size() + key
         cdef size_t idx = <size_t>key
         cdef bitset_t bits = self.subspace.bitstrings.get_n_th_bitset(idx)
         cdef Bitset out = Bitset()
@@ -245,7 +245,7 @@ cdef class Subspace():
                 It must be the absolute value squared of an eigenvector, which represents
                 amplitudes of each basis vector (Slated determinant) in a wavefunction.
             norb (int): The number of spatial orbitals.
-        
+
         Returns:
             Orbital occupanies as a length-2 tuple of 1D np.ndarrays.
             It is formatted as ``([a0, ..., aN], [b0, ..., bN])``.
@@ -256,10 +256,10 @@ cdef class Subspace():
         compute_orbital_occupancies(
             self.subspace.bitstrings, self.subspace.size, &probs[0], &out_mv[0]
         )
-        
+
         return np.split(out, 2)
-    
-    
+
+
     @cython.boundscheck(False)
     def get_bitstring_index(self, str bitstring):
         """Return the index of the given bitstring.
@@ -268,7 +268,7 @@ cdef class Subspace():
 
         Args:
             bitstring (str): The bitstring as Python ``str`` type.
-        
+
         Returns:
             size_t: Index if the bitstring is found.
             None: If the bitstring is not found.
@@ -278,7 +278,7 @@ cdef class Subspace():
         cdef bitset_t bitset
         bitset = bitset_t(bitstring, 0, len(bitstring))
         index = self.subspace.bitstrings.get(bitset)
-        
+
         return None if index == MAX_SIZE_T else index
 
 
@@ -322,8 +322,8 @@ cdef class Subspace():
         if sort:
             out = {k: v for k, v in sorted(out.items(), key=lambda item: int(item[0], 2))}
         return out
-    
-    
+
+
     def get_n_th_bitstring(self, size_t n):
         """Return n-th bitstring in the Subspace
 
@@ -338,7 +338,7 @@ cdef class Subspace():
         to_string(self.subspace.bitstrings.get_n_th_bitset(n), s)
         return s
 
-    
+
     def get_bitset_index(self, Bitset bitset):
         """Return the index of the given Bitset.
 
@@ -348,8 +348,8 @@ cdef class Subspace():
             size_t: Index
         """
         return self.subspace.bitstrings.get(bitset.bits)
-    
-    
+
+
     @cython.boundscheck(False)
     def to_dict(self, str key_type='bitset'):
         """Converts Subspace to a dictionary
@@ -369,14 +369,14 @@ cdef class Subspace():
 
         if key_type not in ['bitset', 'str']:
             raise FulqrumError("key_type must be 'bitset' or 'str'")
-        
+
         if key_type == 'bitset':
             for kk in range(self.subspace.bitstrings.size()):
                 bits = self.subspace.bitstrings.get_n_th_bitset(kk)
                 temp_bits = Bitset()
                 temp_bits.bits = bits
                 out[temp_bits] = None
-        
+
         elif key_type == 'str':
             for kk in range(self.subspace.bitstrings.size()):
                 to_string(self.subspace.bitstrings.get_n_th_bitset(kk), s)

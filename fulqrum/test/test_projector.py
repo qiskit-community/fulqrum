@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test projector functionality"""
+
 import numpy as np
 import fulqrum as fq
 

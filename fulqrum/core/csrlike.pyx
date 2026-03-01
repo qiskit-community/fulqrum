@@ -119,7 +119,7 @@ cdef class CSRLike():
         cdef long long[::1] inds64
         cdef double[::1] real_data
         cdef complex[::1] complex_data
-        
+
         cdef size_t nnz = self.nnz
         cdef object mat
         cdef double stop, start = time.perf_counter()
@@ -129,7 +129,7 @@ cdef class CSRLike():
             stop = time.perf_counter()
             if verbose:
                 print(f'CSR Conversion time: {round(stop-start, 3)}')
-            return  sp.csr_array((np.empty(0, dtype=_dtype), np.empty(0, dtype=_dtype), np.zeros(self.num_rows+1, dtype=_dtype)), 
+            return  sp.csr_array((np.empty(0, dtype=_dtype), np.empty(0, dtype=_dtype), np.zeros(self.num_rows+1, dtype=_dtype)),
                                 shape=(self.num_rows,)*2, dtype=float if self.is_real else complex)
 
         cdef int data_size
@@ -147,10 +147,10 @@ cdef class CSRLike():
             total_bytes = (self.num_rows+1) * 8  + nnz * 8 + nnz * data_size
         else:
             total_bytes = (self.num_rows+1) * 4  + nnz * 4 + nnz * data_size
-        
+
         if psutil.virtual_memory().available < total_bytes:
             raise FulqrumError(f"Sparse matrix copy of size {round(total_bytes/(1024**2), 3)} Mb does not fit within available memory.")
-        
+
         if '32' in self.type_string and not needs_int64:
             ptr32 = np.zeros(self.num_rows+1, dtype=np.int32)
             inds32 = np.empty(nnz, dtype=np.int32)
@@ -168,19 +168,19 @@ cdef class CSRLike():
                 set_csr_ptr(self.data_d32.cols, &ptr32[0])
                 set_csr_data(self.data_d32.data, self.data_d32.cols, &ptr32[0], &inds32[0], &real_data[0])
 
-                mat = sp.csr_array((real_data, inds32, ptr32), 
+                mat = sp.csr_array((real_data, inds32, ptr32),
                                     shape=(self.num_rows,)*2, dtype=float)
             else:
                 set_csr_ptr(self.data_d32.cols, &ptr64[0])
                 set_csr_data(self.data_d32.data, self.data_d32.cols, &ptr64[0], &inds64[0], &real_data[0])
-                mat = sp.csr_array((real_data, inds64, ptr64), 
+                mat = sp.csr_array((real_data, inds64, ptr64),
                                     shape=(self.num_rows,)*2, dtype=float)
 
         elif self.type_string == 'd64':
             set_csr_ptr(self.data_d64.cols, &ptr64[0])
             set_csr_data(self.data_d64.data, self.data_d64.cols, &ptr64[0], &inds64[0], &real_data[0])
 
-            mat = sp.csr_array((real_data, inds64, ptr64), 
+            mat = sp.csr_array((real_data, inds64, ptr64),
                                 shape=(self.num_rows,)*2, dtype=float)
 
         elif self.type_string == 'z32':
@@ -188,20 +188,20 @@ cdef class CSRLike():
                 set_csr_ptr(self.data_z32.cols, &ptr32[0])
                 set_csr_data(self.data_z32.data, self.data_z32.cols, &ptr32[0], &inds32[0], &complex_data[0])
 
-                mat = sp.csr_array((complex_data, inds32, ptr32), 
+                mat = sp.csr_array((complex_data, inds32, ptr32),
                                    shape=(self.num_rows,)*2, dtype=complex)
             else:
                 set_csr_ptr(self.data_z32.cols, &ptr64[0])
                 set_csr_data(self.data_z32.data, self.data_z32.cols, &ptr64[0], &inds64[0], &complex_data[0])
 
-                mat = sp.csr_array((complex_data, inds64, ptr64), 
+                mat = sp.csr_array((complex_data, inds64, ptr64),
                                    shape=(self.num_rows,)*2, dtype=complex)
-        
+
         elif self.type_string == 'z64':
             set_csr_ptr(self.data_z64.cols, &ptr64[0])
             set_csr_data(self.data_z64.data, self.data_z64.cols, &ptr64[0], &inds64[0], &complex_data[0])
 
-            mat = sp.csr_array((complex_data, inds64, ptr64), 
+            mat = sp.csr_array((complex_data, inds64, ptr64),
                                 shape=(self.num_rows,)*2, dtype=complex)
 
         stop = time.perf_counter()
@@ -234,5 +234,5 @@ cdef class CSRLike():
         elif self.type_string == 'z64':
             if double_or_complex is complex:
                 csrlike_spmv(self.data_z64.data, self.data_z64.cols, &x[0], &out[0], <long long>self.num_rows)
-        
+
         return np.asarray(out)

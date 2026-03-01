@@ -22,7 +22,7 @@ cdef extern from "./src/sqd.hpp":
         const vector[double] &weights,
         const uint32_t &right,
         const uint32_t &left) nogil
-    
+
     vector[bitset_t] subsample_cpp(
         const vector[bitset_t] &bitstrings,
         const vector[double] &weights,

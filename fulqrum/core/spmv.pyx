@@ -65,7 +65,7 @@ cdef class FulqrumSpMV():
         if group_ptrs.shape[0] > 1:
             set_group_offdiag_indices(self.oper.terms, self.group_offdiag_inds,
                                       &self.group_ptrs[0], self.num_groups)
-        
+
         if self.oper.type == 2:
             if self.oper.terms.size():
                 self.group_rowint_length = hamiltonian.group_rowint_length()
@@ -228,10 +228,10 @@ cdef class FulqrumSpMV():
                             self.num_groups,
                             &x[0],
                             &out[0])
-        
+
         return np.asarray(out)
 
-    
+
     def to_csr_array(self, int verbose=0):
         """Convert subspace Hamiltonian to a SciPy CSR array
 
@@ -243,7 +243,7 @@ cdef class FulqrumSpMV():
         """
         cdef int64 max_int = np.iinfo(np.int32).max
         cdef size_t num_terms = self.oper.terms.size()
-        
+
         cdef int[::1] indptr32
         cdef int[::1] indices32
         cdef int64[::1] indptr64
@@ -293,7 +293,7 @@ cdef class FulqrumSpMV():
                     raise FulqrumError(f"Sparse matrix of size {round(total_bytes/(1024**2), 3)}Mb does not fit within available memory.")
                 if verbose:
                     print(f'Est. matrix size: {round(total_bytes/(1024**2), 3)}Mb')
-                
+
                 if int_64:
                     indices64 = np.zeros(nnz, dtype=np.int64)
                     if self.is_real:
@@ -446,17 +446,17 @@ cdef class FulqrumSpMV():
                     print('CSR fill time', round(stop-start, 3))
         if int_64:
             if self.is_real:
-                mat = sp.csr_array((real_data, indices64, indptr64), 
+                mat = sp.csr_array((real_data, indices64, indptr64),
                                     shape=(self.subspace_dim,)*2, dtype=float)
             else:
-                mat = sp.csr_array((complex_data, indices64, indptr64), 
+                mat = sp.csr_array((complex_data, indices64, indptr64),
                                     shape=(self.subspace_dim,)*2, dtype=complex)
         else:
             if self.is_real:
-                mat = sp.csr_array((real_data, indices32, indptr32), 
+                mat = sp.csr_array((real_data, indices32, indptr32),
                                 shape=(self.subspace_dim,)*2, dtype=float)
             else:
-                mat = sp.csr_array((complex_data, indices32, indptr32), 
+                mat = sp.csr_array((complex_data, indices32, indptr32),
                                 shape=(self.subspace_dim,)*2, dtype=complex)
         start = time.perf_counter()
         quicksort_indices(mat.indices, mat.indptr, mat.data)

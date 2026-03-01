@@ -13,3 +13,5 @@ import os
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 from .config import Configuration
+
+__all__ = ["Configuration"]

@@ -11,9 +11,9 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test eigen functionality on LiH"""
+
 from pathlib import Path
 import numpy as np
-import scipy.linalg as la
 import scipy.sparse.linalg as spla
 
 import fulqrum as fq

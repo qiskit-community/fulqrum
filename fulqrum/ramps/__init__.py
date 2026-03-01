@@ -25,3 +25,5 @@ Simple
 """
 
 from .simple import ramps_restricted_simple
+
+__all__ = ["ramps_restricted_simple"]

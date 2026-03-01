@@ -17,7 +17,6 @@ from scipy.sparse.linalg import LinearOperator
 
 from .spmv import FulqrumSpMV
 from .csr import csr_matvec
-from .csrlike import CSRLike
 
 
 class SubspaceHamiltonian(LinearOperator):
@@ -121,7 +120,7 @@ class SubspaceHamiltonian(LinearOperator):
 
     def __repr__(self):
         out = f"<SubspaceHamiltonian(width={self.spmv.width}, "
-        out += f"num_op_terms={self.spmv.num_diag_terms+self.spmv.num_terms}({self.spmv.num_diag_terms}/{self.spmv.num_terms}), "
+        out += f"num_op_terms={self.spmv.num_diag_terms + self.spmv.num_terms}({self.spmv.num_diag_terms}/{self.spmv.num_terms}), "
         out += f"subspace_dim={self.spmv.subspace_dim}>"
         return out
 

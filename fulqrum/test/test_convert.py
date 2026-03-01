@@ -15,8 +15,6 @@ import pytest
 from fulqrum.convert import (
     openfermion_fermi_op_to_fulqrum,
     openfermion_qubit_op_to_fulqrum,
-    integrals_to_fq_fermionic_op,
-    fcidump_to_fq_fermionic_op,
 )
 
 
@@ -58,8 +56,7 @@ def test_openfermion_qubit_op_to_fulqrum_value_error():
         openfermion_qubit_op_to_fulqrum(openf_qubit_op)
 
     assert str(msg.value) == (
-        "Number of qubits must be even in a QubitOperator. "
-        "number of qubits: 5 is odd."
+        "Number of qubits must be even in a QubitOperator. number of qubits: 5 is odd."
     )
 
 

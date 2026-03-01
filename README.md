@@ -16,7 +16,7 @@ In addition to eigensolving itself, Fulqrum provides tools for generating compac
 
 ### Requirements
 
-Outside of standard Python packages Fulqrum requires the Boost library and OpenMP 3+ . 
+Outside of standard Python packages Fulqrum requires the Boost library and OpenMP 3+ .
 
 If using `conda` then adding Boost can be done using:
 
@@ -90,11 +90,10 @@ See the README.md in the `benchmarks` directory.
 ## Notes on `Subspace` input format
 
 Two modes of input to subspace is supported:
-1. **Half-string mode:** In this mode, the input `subspace_strs` to the `Subspace()` is a length-2 
+1. **Half-string mode:** In this mode, the input `subspace_strs` to the `Subspace()` is a length-2
 `tuple[list[str], list[str]]`, where the first element represents _alpha_ strings, and the second
 one represents _beta_ strings. Internally, `fulqrum` will sort each list and perform a Cartesian product between the two lists to construct the full subspace. A full bitstring will be represented by `beta half str + alpha half str`, and the final length of subspace bitstring will be `len(beta half string) + len(alpha half string)`. For example, `[['100', '001, '010'], ['110', '000']]` is a valid input `subspace_strs` in half-string mode. The final subspace size will be `2 * 3 = 6`, with each bitstrings with `3 + 3 = 6` characters/bits. This mode is useful for chemistry applications. For instance, many popular chemistry packages such as PySCF takes alpha and beta strings separately and extends the subspace by taking Cartesian product. This mode enables PySCF-like funcationality and keeps the memory requirment in check.
 
 2. **Full-string mode:** In this mode, `subspace_strs` has to be length-1 `tuple[list[str]]`. In this mode, no Cartesian product is taken internally, and the supplied _full_ bitstrings are used as is after sorting.
 
 **Note:** There is no special flag to denote half-string vs. full-string mode. `Fulqrum` will compute the lenght of the input `subspace_strs` and detect half-string or full-string mode automatically to construct the subspace. If `subspace_strs` has a different length other than 1 or 2 or its element(s) is not `list[str]`, it will throw an `TypeError`.
-

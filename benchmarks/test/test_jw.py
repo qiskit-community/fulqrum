@@ -21,6 +21,6 @@ fop = fq.FermionicOperator.from_json(path)
 def test_jw_h2o_ccpvdz(benchmark):
     @benchmark
     def result():
-        op = fop.extended_jw_transformation()
+        _ = fop.extended_jw_transformation()
 
     assert True

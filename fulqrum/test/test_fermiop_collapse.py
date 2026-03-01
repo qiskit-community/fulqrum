@@ -19,7 +19,7 @@ def test_deflate_empty():
     """deflate indices works for empty operators"""
     fop = FermionicOperator(1, [])
     fop_deflate = fop.deflate_repeated_indices()
-    assert fop_deflate.operators == None
+    assert fop_deflate.operators is None
 
 
 def test_deflate_id():
@@ -61,7 +61,7 @@ def test_deflate_pairs1():
     """deflate indices pair testing"""
     fop = FermionicOperator(1, [("--", [0, 0])])
     fop_deflate = fop.deflate_repeated_indices()
-    assert fop_deflate.operators == None
+    assert fop_deflate.operators is None
 
 
 def test_deflate_pairs2():
@@ -75,7 +75,7 @@ def test_deflate_pairs3():
     """deflate indices pair testing"""
     fop = FermionicOperator(1, [("-0", [0, 0])])
     fop_deflate = fop.deflate_repeated_indices()
-    assert fop_deflate.operators == None
+    assert fop_deflate.operators is None
 
 
 def test_deflate_pairs4():
@@ -96,7 +96,7 @@ def test_deflate_pairs6():
     """deflate indices pair testing"""
     fop = FermionicOperator(1, [("++", [0, 0])])
     fop_deflate = fop.deflate_repeated_indices()
-    assert fop_deflate.operators == None
+    assert fop_deflate.operators is None
 
 
 def test_deflate_pairs7():
@@ -110,7 +110,7 @@ def test_deflate_pairs8():
     """deflate indices pair testing"""
     fop = FermionicOperator(1, [("+1", [0, 0])])
     fop_deflate = fop.deflate_repeated_indices()
-    assert fop_deflate.operators == None
+    assert fop_deflate.operators is None
 
 
 def test_deflate_pairs9():
@@ -124,7 +124,7 @@ def test_deflate_pairs10():
     """deflate indices pair testing"""
     fop = FermionicOperator(1, [("0+", [0, 0])])
     fop_deflate = fop.deflate_repeated_indices()
-    assert fop_deflate.operators == None
+    assert fop_deflate.operators is None
 
 
 def test_deflate_pairs11():
@@ -138,14 +138,14 @@ def test_deflate_pairs12():
     """deflate indices pair testing"""
     fop = FermionicOperator(1, [("01", [0, 0])])
     fop_deflate = fop.deflate_repeated_indices()
-    assert fop_deflate.operators == None
+    assert fop_deflate.operators is None
 
 
 def test_deflate_pairs13():
     """deflate indices pair testing"""
     fop = FermionicOperator(1, [("1-", [0, 0])])
     fop_deflate = fop.deflate_repeated_indices()
-    assert fop_deflate.operators == None
+    assert fop_deflate.operators is None
 
 
 def test_deflate_pairs14():
@@ -159,7 +159,7 @@ def test_deflate_pairs15():
     """deflate indices pair testing"""
     fop = FermionicOperator(1, [("10", [0, 0])])
     fop_deflate = fop.deflate_repeated_indices()
-    assert fop_deflate.operators == None
+    assert fop_deflate.operators is None
 
 
 def test_deflate_pairs16():
@@ -180,7 +180,7 @@ def test_deflate_three2():
     """deflate 3 elements"""
     fop = FermionicOperator(1, [("11-", [0, 0, 0])])
     fop_deflate = fop.deflate_repeated_indices()
-    assert fop_deflate.operators == None
+    assert fop_deflate.operators is None
 
 
 def test_deflate_three3():
@@ -201,7 +201,7 @@ def test_deflate_two_pair2():
     """deflate two pairs of elements"""
     fop = FermionicOperator(2, [("+-++", [0, 0, 1, 1])])
     fop_deflate = fop.deflate_repeated_indices()
-    assert fop_deflate.operators == None
+    assert fop_deflate.operators is None
 
 
 def test_deflate_several():

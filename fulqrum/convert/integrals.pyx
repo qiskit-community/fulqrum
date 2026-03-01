@@ -70,7 +70,6 @@ def fcidump_to_fq_fermionic_op(fcidump_path: str | Path) -> FermionicOperator:
     mf_as = tools.fcidump.to_scf(fcidump_path)
     hcore = mf_as.get_hcore()
     num_spatial_orbitals = hcore.shape[0]
-    # TODO: Ask Kevin Sung or Mario Motta about the correct/need for below line
     eri = ao2mo.restore(1, mf_as._eri, num_spatial_orbitals)
     nuclear_repulsion_energy = mf_as.mol.energy_nuc()
 

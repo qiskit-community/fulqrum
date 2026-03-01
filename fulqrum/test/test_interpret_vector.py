@@ -12,7 +12,6 @@
 # pylint: disable=no-name-in-module
 from pathlib import Path
 import numpy as np
-import scipy.linalg as la
 import scipy.sparse.linalg as spla
 
 import fulqrum as fq

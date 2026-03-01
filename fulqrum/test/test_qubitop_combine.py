@@ -11,10 +11,10 @@
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
 """Test combining qubit terms"""
+
 from pathlib import Path
 import numpy as np
 from fulqrum import QubitOperator, FermionicOperator
-from fulqrum.utils import qubitoperator_to_matrix
 
 
 def test_combining_terms1():

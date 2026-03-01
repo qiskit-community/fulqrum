@@ -31,6 +31,6 @@ cdef extern from "../src/csr.hpp":
                               U * data,
                               int compute_values) nogil
 
-    
-    void csr_spmv[T,U](const T * indptr, const T * indices, const U * data, 
+
+    void csr_spmv[T,U](const T * indptr, const T * indices, const U * data,
                        U * vec, U * out, size_t dim) nogil

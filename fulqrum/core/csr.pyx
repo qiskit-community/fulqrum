@@ -17,7 +17,7 @@ include "includes/types.pxi"
 
 
 
-def csr_matvec(int32_or_int64[::1] indptr, int32_or_int64[::1] indices, double_or_complex[::1] data, 
+def csr_matvec(int32_or_int64[::1] indptr, int32_or_int64[::1] indices, double_or_complex[::1] data,
                double_or_complex[::1] vec, double_or_complex[::1] out, size_t dim):
     """Perform SpMV using a CSR matrix
 
