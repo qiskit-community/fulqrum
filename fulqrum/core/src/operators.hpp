@@ -70,12 +70,12 @@ void set_proj_indices(OperatorTerm_t& term)
 }
 
 /**
- * Comparitor for off-diagonal weight grouping
+ * Comparator for off-diagonal weight grouping
  *
  * @param term1 The first term
  * @param term2 The second term
  *
- * @return comparitor value
+ * @return comparator value
  */
 int offweight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
 {
@@ -83,12 +83,12 @@ int offweight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
 }
 
 /**
- * Comparitor for weight grouping
+ * Comparator for weight grouping
  *
  * @param term1 The first term
  * @param term2 The second term
  *
- * @return comparitor value
+ * @return comparator value
  */
 int weight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
 {
@@ -129,7 +129,7 @@ void set_offdiag_weight_ptrs(std::vector<OperatorTerm_t>& __restrict terms,
 /**
  * Find max. number of elements with same off-diag weight
  *
- * Used for offseting the group counter for parallel execution
+ * Used for offsetting the group counter for parallel execution
  *
  * @param vec Vector of off-diagonal pointers
  *
@@ -218,7 +218,7 @@ void set_weight_ptrs(std::vector<OperatorTerm_t>& __restrict terms, std::vector<
  * Input terms must be sorted by weight before calling this routine
  *
  * @param terms Terms for input operator
- * @param out_terms Terms for ouput operator (to push_back to)
+ * @param out_terms Terms for output operator (to push_back to)
  * @param touched pointer array indicating if term has been touched
  * @param num_terms Number of terms in input operator
  * @param atol Absolute tolerance for term truncation

@@ -21,9 +21,9 @@
 
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
  *
- * @var indices the qubits (locations) where non-idenity term operators are
+ * @var indices the qubits (locations) where non-identity term operators are
  * @var values are the char representations of the operators
- * @var coeff is the complex coeffcient multiplying the term
+ * @var coeff is the complex coefficient multiplying the term
  * @var offdiag_weight is the number of non-diagonal operators in the term
  */
 typedef struct OperatorTerm
@@ -60,9 +60,9 @@ typedef struct QubitOperator
 
 /** @brief Data structure for each Fermionic operator term
  *
- * @var indices the modes (locations) where non-idenity term operators are
+ * @var indices the modes (locations) where non-identity term operators are
  * @var values are the char representations of the operators
- * @var coeff is the complex coeffcient multiplying the term
+ * @var coeff is the complex coefficient multiplying the term
  */
 typedef struct FermionicTerm
 {
@@ -89,7 +89,7 @@ typedef struct FermionicOperator
  *
  * @var bitstrings The subspace bit-strings stored in a hash table
  * @var num_qubits The number of qubits, i.e length of bitstrings
- * @var size Dimenion / number of bit-strings in the subpsace
+ * @var size Dimension / number of bit-strings in the subspace
  */
 typedef struct Subspace
 {

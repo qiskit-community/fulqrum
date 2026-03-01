@@ -69,7 +69,7 @@ public:
 	}
 
 	// Gets a pointer to the internal
-	// data-stucture that holds all
+	// data-structure that holds all
 	// (key, value) pairs.
 	const auto* get_bitsets() const
 	{
@@ -252,7 +252,7 @@ public:
 	// Utility function to check
 	// whether the HashMap is
 	// hashing all Bitset blocks
-	// or only the firts one.
+	// or only the first one.
 	bool use_all_bitset_blocks() const
 	{
 		if(use_all_blocks)

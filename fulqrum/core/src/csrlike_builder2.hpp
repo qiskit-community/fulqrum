@@ -52,7 +52,7 @@ void csrlike_builder2(const OperatorTerm_t* terms,
 	data.resize(subspace_dim);
 	std::vector<std::mutex> row_mutex(subspace_dim);
 
-	// Note: LOWER TRAINGLE ELEMENTS DETECTION
+	// Note: LOWER TRIANGLE ELEMENTS DETECTION
 	// Following block gets the max item of ``group_offdiag_inds``
 	// for each group.
 	// Only checking the bit at max index position
@@ -165,7 +165,7 @@ void csrlike_builder2(const OperatorTerm_t* terms,
 				// position. It may lead to multiple parallel threads writing
 				// into the same inner vector at the same time.
 				// These scoped (inside each curly braces {}) Mutex-based locks
-				// are supposed to prevent simulaneous writing into a same vector.
+				// are supposed to prevent simultaneous writing into a same vector.
 				{
 					std::lock_guard<std::mutex> lock_kk(row_mutex[kk]);
 					cols[kk].push_back(col_idx);

@@ -22,7 +22,7 @@ cdef inline size_t size_max(size_t x, size_t y):
     return y
 
 cdef inline dict qubit_reorder_map(size_t num_qubits):
-    """OpenFermion has a differnt qubit ordering |... b2 a2 b1 a1 b0 a0>.
+    """OpenFermion has a different qubit ordering |... b2 a2 b1 a1 b0 a0>.
         Qiskit and fulqrum use another ordering |..b2 b1 b0 ... a2 a1 a0>.
         This function creates map between these two.
     """

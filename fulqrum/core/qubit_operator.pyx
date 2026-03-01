@@ -424,7 +424,7 @@ cdef class QubitOperator():
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def __getitem__(self, key):
-        """Impliments indexing and slicing of terms
+        """Implements indexing and slicing of terms
 
         Parameters:
             key (integral or slice or list or tuple): Indices

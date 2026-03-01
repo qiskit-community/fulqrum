@@ -121,7 +121,7 @@ cdef class FulqrumSpMV():
         """Diagonal vector of subspace Hamitlonian
 
         Returns:
-            ndarray: Array of complex numbers representating diagonal
+            ndarray: Array of complex numbers representing diagonal
         """
         if verbose:
             st = time.perf_counter()

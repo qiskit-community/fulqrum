@@ -194,7 +194,7 @@ cdef class FermionicOperator():
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def __getitem__(self, key):
-        """Impliments indexing and slicing of terms
+        """Implements indexing and slicing of terms
 
         Parameters:
             key (integral or slice or list or tuple): Indices
@@ -387,7 +387,7 @@ cdef class FermionicOperator():
         cdef size_t kk
         cdef FermionicOperator out = FermionicOperator(self.width)
         for kk in range(self.oper.terms.size()):
-            deflate_term_indicies(&self.oper.terms[kk], &out.oper.terms)
+            deflate_term_indices(&self.oper.terms[kk], &out.oper.terms)
         return out
 
     def extended_jw_transformation(self):
@@ -404,7 +404,7 @@ cdef class FermionicOperator():
 
     @cython.boundscheck(False)
     def to_dict(self):
-        """Dictionary represenation of FermionicOperator
+        """Dictionary representation of FermionicOperator
 
         Returns:
             dict: Dictionary representation of FermionicOperator
@@ -526,7 +526,7 @@ cdef int collapse_value(unsigned char x):
         return 3
 
 
-cdef void deflate_term_indicies(FermionicTerm_t * term, vector[FermionicTerm_t] * out_terms):
+cdef void deflate_term_indices(FermionicTerm_t * term, vector[FermionicTerm_t] * out_terms):
     cdef size_t num_elems = term.indices.size()
     cdef size_t kk
     cdef size_t start, num_touched

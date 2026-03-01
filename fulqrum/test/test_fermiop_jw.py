@@ -321,7 +321,7 @@ def test_jwH2():
     # These values differ from Qiskit Nature by one element
     # because their matrix has a FP zero that is not removed
     # by calling mat.eliminate_zeros() on the CSR that they
-    # return. The full dense matrix values were confimed to be
+    # return. The full dense matrix values were confirmed to be
     # the same though.
     ans_indices = np.array(
         [1, 2, 3, 4, 5, 10, 6, 9, 7, 8, 6, 9, 5, 10, 11, 12, 13, 14, 15]

@@ -584,7 +584,7 @@ public:
     }
 #endif
 
-    //only useful for at fucntion if not find key then return zero
+    //only useful for at function if not find key then return zero
     void pack_zero(ValueT zero)
     {
         _pairs[_num_filled] = { KeyT(), zero };

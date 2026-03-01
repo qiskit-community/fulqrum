@@ -46,7 +46,7 @@ const double REAL_OPER_ELEMENTS[28] = {
  *
  * @param row The row bit-string
  * @param col The col bit-string
- * @param pos The positions (qubits) of the non-idenity operators in ther term
+ * @param pos The positions (qubits) of the non-identity operators in the term
  * @param val The char value for each operator
  * @param coeff The complex coefficient of the term in question
  * @param N The length of the pos and val vector, i.e. number of non-ID operators in term

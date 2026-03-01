@@ -262,7 +262,7 @@ class CSRLikeLinearOperator(LinearOperator):
 
     @property
     def memory_size(self):
-        """An estimate of the raw memeory size of the underlying
+        """An estimate of the raw memory size of the underlying
         date structure in bytes
 
         Returns:

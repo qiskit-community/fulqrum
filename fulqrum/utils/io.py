@@ -10,7 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-"""Fulqrum helper utilites for input and output"""
+"""Fulqrum helper utilities for input and output"""
 
 import lzma
 import orjson

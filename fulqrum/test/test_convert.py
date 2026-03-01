@@ -112,7 +112,7 @@ def test_integrals_to_fq_fermionic_op():
     testing this function for now.
 
     Test Idea: Consider generating hcore and eri for a small molecule such as
-        H2O, solve it for full subspace, and compare expected accurancy with
+        H2O, solve it for full subspace, and compare expected accuracy with
         computed accuracy. If integral conversion is correct, then accuracies
         must match.
     """
@@ -126,7 +126,7 @@ def test_fcidump_to_fq_fermionic_op():
     explicitly testing this function for now.
 
     Test Idea: Search fcidump for a small molecule such as
-        H2O, solve it for full subspace, and compare expected accurancy with
+        H2O, solve it for full subspace, and compare expected accuracy with
         computed accuracy. If integral conversion is correct, then accuracies
         must match.
     """

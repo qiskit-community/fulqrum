@@ -249,7 +249,7 @@ def get_carryover_full_strs(
             with absolute amplitude ``> threshold`` is returned.
 
     Returns:
-        A sorted list of lenght-2 tuples where the first element is the carryover
+        A sorted list of length-2 tuples where the first element is the carryover
         bitstring and the second element is the absolute amplitude. The list is sorted
         is descending order of absolute amplitudes.
     """

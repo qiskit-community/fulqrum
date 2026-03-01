@@ -38,7 +38,7 @@ dic2 = [list(dic2.keys())]
 
 def test_subspace_vector_order0():
     V = Subspace(dic)
-    # Order is only guarenteed up to first bit
+    # Order is only guaranteed up to first bit
     assert V[0].to_string()[-1] == "0"
     assert V[1].to_string()[-1] == "1"
     assert V[2].to_string()[-1] == "0"
@@ -47,7 +47,7 @@ def test_subspace_vector_order0():
 
 def test_subspace_vector_order1():
     V = Subspace(dic2)
-    # Order is only guarenteed up to first bit
+    # Order is only guaranteed up to first bit
     assert V[0].to_string()[-1] == "0"
     assert V[1].to_string()[-1] == "0"
     assert V[2].to_string()[-1] == "1"

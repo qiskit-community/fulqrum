@@ -44,7 +44,7 @@ std::size_t term_offdiag_structure(const OperatorTerm_t& term)
  * @param term1 The first term
  * @param term2 The second term
  *
- * @return comparitor value
+ * @return comparator value
  */
 int offdiag_comp(const OperatorTerm_t& term1, const OperatorTerm_t& term2)
 {
@@ -76,12 +76,12 @@ unsigned int _max_offdiag_group_size(std::size_t* __restrict ptrs, std::size_t n
 }
 
 /**
- * Comparitor for term grouping
+ * Comparator for term grouping
  *
  * @param term1 The first term
  * @param term2 The second term
  *
- * @return comparitor value
+ * @return comparator value
  */
 int offdiag_group_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
 {
@@ -205,7 +205,7 @@ void term_group_sort(std::vector<OperatorTerm_t>& terms,
  * upper) triangle matrix. In Fulqrum, we only process lower triangle elements to
  * speed up the computation.
  *
- * DETAILS: LOWER TRAINGLE ELEMENTS DETECTION
+ * DETAILS: LOWER TRIANGLE ELEMENTS DETECTION
  * Fulqrum deals with Hamiltonians with Hermitian matrices only where upper
  * triangle of a matrix is the complex conjugate of the lower triangle (or vice versa).
  * We can evaluate only lower half of a matrix and readily know the upper
@@ -233,7 +233,7 @@ void term_group_sort(std::vector<OperatorTerm_t>& terms,
  * Now, consider bit-flip positions for another group is [1 ,2], i.e., max index is 2.
  * The row bit at position 2 (b2) is 1, and it will be flipped to 0 in the col_bitset.
  * The col_bitset 1100xx will always be smaller than row_bitset 1101xx regardless of
- * trainling bits. Therefore, this group/matrix element corresponds to a lower triangle
+ * trailing bits. Therefore, this group/matrix element corresponds to a lower triangle
  * element. We need to evaluate this element and populate corresponding upper triangle
  * entry.
  *
