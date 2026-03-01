@@ -51,7 +51,6 @@ void csr_matrix_builder2(const OperatorTerm_t* terms,
 
 	std::vector<std::mutex> mutex1(subspace_dim);
 	std::vector<std::mutex> mutex2(subspace_dim);
-	std::vector<std::mutex> mutex3(subspace_dim);
 
 	std::vector<uint16_t> grp_max_inds(num_groups, width);
 	get_group_max_inds(grp_max_inds, group_offdiag_inds, num_groups);
@@ -154,7 +153,8 @@ void csr_matrix_builder2(const OperatorTerm_t* terms,
 			{
 				if(compute_values)
 				{
-					// process kk (row index)
+					// see fulqrum/core/src/csr.hpp for details
+					// about these Mutex locks
 					{
 						std::lock_guard<std::mutex> lock_kk(mutex1[kk]);
 
@@ -163,7 +163,6 @@ void csr_matrix_builder2(const OperatorTerm_t* terms,
 						row_nnz += 1;
 					}
 
-					// process col_idx
 					{
 						std::lock_guard<std::mutex> lock_col_idx(mutex1[col_idx]);
 						row_nnz_col_idx = row_nnz_s[col_idx];
@@ -177,8 +176,8 @@ void csr_matrix_builder2(const OperatorTerm_t* terms,
 						}
 						else
 						{
-							// for complex-valued matrix, lower triangle
-							// element will be complex conjugate of the upper
+							// for complex-valued matrix, the upper triangle
+							// element will be complex conjugate of the lower
 							// triangle element
 							data[elem_start_col_idx + row_nnz_col_idx] = std::conj(val);
 						}

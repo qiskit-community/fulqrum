@@ -141,8 +141,17 @@ void csr_matrix_builder(const OperatorTerm_t* terms,
 			{
 				if(compute_values)
 				{
-					// process kk (row index)
-					{
+					// Mutex locks to avoid write contention
+					// inside OMP parallel for loop. After
+					// detecting an lower triangle elements, we
+					// also populate corresponding upper
+					// triangle position. It may lead to
+					// multiple parallel threads writing into
+					// the same inner vector at the same time.
+					// These scoped (inside each curly braces
+					// {}) Mutex-based locks prevents
+					// simultaneous writing into a same vector.
+					{ // process kk (row index)
 						std::lock_guard<std::mutex> lock_kk(mutex1[kk]);
 
 						indices[elem_start + row_nnz] = col_idx;
@@ -150,8 +159,7 @@ void csr_matrix_builder(const OperatorTerm_t* terms,
 						row_nnz += 1;
 					}
 
-					// process col_idx
-					{
+					{ // process col_idx
 						std::lock_guard<std::mutex> lock_col_idx(mutex1[col_idx]);
 						row_nnz_col_idx = row_nnz_s[col_idx];
 						elem_start_col_idx = indptr[col_idx];
@@ -164,8 +172,8 @@ void csr_matrix_builder(const OperatorTerm_t* terms,
 						}
 						else
 						{
-							// for complex-valued matrix, lower triangle
-							// element will be complex conjugate of the upper
+							// for complex-valued matrix, the upper triangle
+							// element will be complex conjugate of the lower
 							// triangle element
 							data[elem_start_col_idx + row_nnz_col_idx] = std::conj(val);
 						}

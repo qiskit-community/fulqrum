@@ -133,6 +133,8 @@ void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
 					} // end loop over this group
 					if(std::abs(temp_val) > ATOL) // if at least one element was found
 					{
+						// see fulqrum/core/src/csr.hpp for details
+						// about these Mutex locks
 						{
 							std::lock_guard<std::mutex> lock1(mutex1[kk]);
 							out_vec[kk] += (temp_val * in_vec[col_idx]);
@@ -146,6 +148,9 @@ void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
 							}
 							else
 							{
+								// for complex-valued matrix, the upper triangle
+								// element will be complex conjugate of the lower
+								// triangle element
 								out_vec[col_idx] += (std::conj(temp_val) * in_vec[kk]);
 							}
 						}

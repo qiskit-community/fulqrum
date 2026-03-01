@@ -45,7 +45,8 @@ void csrlike_builder(const OperatorTerm_t* terms,
 
 	cols.resize(subspace_dim);
 	data.resize(subspace_dim);
-	std::vector<std::mutex> row_mutex(subspace_dim);
+
+	std::vector<std::mutex> mutex1(subspace_dim);
 
 	std::vector<uint16_t> grp_max_inds(num_groups, width);
 	get_group_max_inds(grp_max_inds, group_offdiag_inds, num_groups);
@@ -128,14 +129,16 @@ void csrlike_builder(const OperatorTerm_t* terms,
 			} // end loop over terms in this group
 			if(std::abs(val) > ATOL)
 			{
+				// see fulqrum/core/src/csr.hpp for details
+				// about these Mutex locks
 				{
-					std::lock_guard<std::mutex> lock_kk(row_mutex[kk]);
+					std::lock_guard<std::mutex> lock_kk(mutex1[kk]);
 					cols[kk].push_back(col_idx);
 					data[kk].push_back(val);
 				}
 
 				{
-					std::lock_guard<std::mutex> lock_col_idx(row_mutex[col_idx]);
+					std::lock_guard<std::mutex> lock_col_idx(mutex1[col_idx]);
 					cols[col_idx].push_back(kk);
 					if constexpr(std::is_same_v<T, double>)
 					{
@@ -143,8 +146,8 @@ void csrlike_builder(const OperatorTerm_t* terms,
 					}
 					else
 					{
-						// for complex-valued matrix, lower trianle
-						// element will be complex conjugate of the upper
+						// for complex-valued matrix, the upper triangle
+						// element will be complex conjugate of the lower
 						// triangle element
 						data[col_idx].push_back(std::conj(val));
 					}

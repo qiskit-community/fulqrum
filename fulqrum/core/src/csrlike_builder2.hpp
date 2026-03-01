@@ -50,28 +50,9 @@ void csrlike_builder2(const OperatorTerm_t* terms,
 
 	cols.resize(subspace_dim);
 	data.resize(subspace_dim);
-	std::vector<std::mutex> row_mutex(subspace_dim);
 
-	// Note: LOWER TRIANGLE ELEMENTS DETECTION
-	// Following block gets the max item of ``group_offdiag_inds``
-	// for each group.
-	// Only checking the bit at max index position
-	// can tell us if a potential column is greater than
-	// the row.
-	// Inspecting col_idx < row_idx (kk) helps us detect the location of
-	// lower triangle elements of the matrix.
-	// When subspace bitstrings are sorted in the ascending order,
-	// a col_bitset < row_bitset means the corresponding col_idx < row_idx (kk)
-	//
-	// Our potential columns are found by flipping row bits at
-	// ``group_offdiag_inds[group]`` positions.
-	// If the row bit at max inds position is ``0``, it will be
-	// flipped to ``1`` in the column, and thus, column will be > the row.
-	// So, we do not need to construct the full col_vec and check
-	// whether col_vec < row (or col_vec > row) to detect, whether we
-	// are potentially in the lower triangle or not. Only, testing
-	// max group inds bit location in row tells us this, and
-	// we can avoid expensive computations.
+	std::vector<std::mutex> mutex1(subspace_dim);
+
 	std::vector<uint16_t> grp_max_inds(num_groups, width);
 	get_group_max_inds(grp_max_inds, group_offdiag_inds, num_groups);
 
@@ -159,21 +140,16 @@ void csrlike_builder2(const OperatorTerm_t* terms,
 
 			if(std::abs(val) > ATOL)
 			{
-				// Mutex locks to avoid write contention inside OMP
-				// parallel for loop. After detecting an lower triangle
-				// elements, we also populate corresponding upper triangle
-				// position. It may lead to multiple parallel threads writing
-				// into the same inner vector at the same time.
-				// These scoped (inside each curly braces {}) Mutex-based locks
-				// are supposed to prevent simultaneous writing into a same vector.
+				// see fulqrum/core/src/csr.hpp for details
+				// about these Mutex locks
 				{
-					std::lock_guard<std::mutex> lock_kk(row_mutex[kk]);
+					std::lock_guard<std::mutex> lock_kk(mutex1[kk]);
 					cols[kk].push_back(col_idx);
 					data[kk].push_back(val);
 				}
 
 				{
-					std::lock_guard<std::mutex> lock_col_idx(row_mutex[col_idx]);
+					std::lock_guard<std::mutex> lock_col_idx(mutex1[col_idx]);
 					cols[col_idx].push_back(kk);
 					if constexpr(std::is_same_v<T, double>)
 					{
@@ -181,8 +157,8 @@ void csrlike_builder2(const OperatorTerm_t* terms,
 					}
 					else
 					{
-						// for complex-valued matrix, lower triangle
-						// element will be complex conjugate of the upper
+						// for complex-valued matrix, the upper triangle
+						// element will be complex conjugate of the lower
 						// triangle element
 						data[col_idx].push_back(std::conj(val));
 					}
