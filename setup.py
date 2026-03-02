@@ -101,14 +101,14 @@ else:
     OPTIONAL_FLAGS = ["-fopenmp"]
     OPTIONAL_ARGS.append("-fopenmp")
 
-if os.getenv("FULQRUM_ARCH", False) and sys.platform != "win32":
+if os.getenv("FQ_ARCH", False) and sys.platform != "win32":
     if sys.platform == "darwin":
         # This is needed to set the flag for ARM processors on OSX
         # M1 = apple-a14, M2 = apple-a15, M3 = apple-a16, M4 = apple-m4
-        OPTIONAL_FLAGS.append("-mcpu=" + os.getenv("FULQRUM_ARCH"))
+        OPTIONAL_FLAGS.append("-mcpu=" + os.getenv("FQ_ARCH"))
     else:
-        OPTIONAL_FLAGS.append("-march=" + os.getenv("FULQRUM_ARCH"))
-        OPTIONAL_FLAGS.append("-mtune=" + os.getenv("FULQRUM_ARCH"))
+        OPTIONAL_FLAGS.append("-march=" + os.getenv("FQ_ARCH"))
+        OPTIONAL_FLAGS.append("-mtune=" + os.getenv("FQ_ARCH"))
 
 INCLUDE_DIRS = [np.get_include()] + [
     "qiskit-addon-sqd-hpc/include",

@@ -51,7 +51,7 @@ In order to run the unittests locally, it is only necessary to build the Cython 
 ```bash
 python setup.py build_ext --inplace
 ```
-you can add also use env flags such as `CC=clang CXX=clang++` or set the target architecture using `FULQRUM_ARCH=znver4` (or whatever you have)
+you can add also use env flags such as `CC=clang CXX=clang++` or set the target architecture using `FQ_ARCH=znver4` (or whatever you have)
 
 ### Installation on Linux
 
