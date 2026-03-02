@@ -12,7 +12,7 @@
  * that they have been altered from the originals.
  */
 #ifndef BOOST_DYNAMIC_BITSET_DONT_USE_FRIENDS
-#	define BOOST_DYNAMIC_BITSET_DONT_USE_FRIENDS
+#    define BOOST_DYNAMIC_BITSET_DONT_USE_FRIENDS
 #endif
 #pragma once
 #include "base.hpp"
@@ -30,16 +30,16 @@
  * @param size The size of the array
  */
 inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
-					  const unsigned int* __restrict arr,
-					  const unsigned int size)
+                      const unsigned int* __restrict arr,
+                      const unsigned int size)
 {
-	unsigned int kk;
-	unsigned int pos;
-	for(kk = 0; kk < size; kk++)
-	{
-		pos = arr[kk];
-		bitset.m_bits[pos >> BLOCK_EXPONENT] ^= ((size_t(1) << (pos & BLOCK_SHIFT)));
-	}
+    unsigned int kk;
+    unsigned int pos;
+    for(kk = 0; kk < size; kk++)
+    {
+        pos = arr[kk];
+        bitset.m_bits[pos >> BLOCK_EXPONENT] ^= ((size_t(1) << (pos & BLOCK_SHIFT)));
+    }
 }
 
 /**
@@ -51,38 +51,38 @@ inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
  * @param N Number of non-ID operators in the term
  */
 inline void get_column_bitset(boost::dynamic_bitset<std::size_t>& col,
-							  const unsigned int* __restrict pos,
-							  const unsigned char* __restrict val,
-							  const unsigned int N)
+                              const unsigned int* __restrict pos,
+                              const unsigned char* __restrict val,
+                              const unsigned int N)
 {
-	unsigned int block_num, block_idx;
-	unsigned int ind;
-	unsigned int kk;
-	for(kk = 0; kk < N; kk++)
-	{
-		ind = pos[kk];
-		block_num = ind / BITS_PER_BLOCK;
-		block_idx = ind % BITS_PER_BLOCK;
-		col.m_bits[block_num] = col.m_bits[block_num] ^ (std::size_t)((val[kk] > 2) << block_idx);
-	}
+    unsigned int block_num, block_idx;
+    unsigned int ind;
+    unsigned int kk;
+    for(kk = 0; kk < N; kk++)
+    {
+        ind = pos[kk];
+        block_num = ind / BITS_PER_BLOCK;
+        block_idx = ind % BITS_PER_BLOCK;
+        col.m_bits[block_num] = col.m_bits[block_num] ^ (std::size_t)((val[kk] > 2) << block_idx);
+    }
 }
 
 inline void bitset_column_index(const std::size_t start,
-								const std::size_t stop,
-								const boost::dynamic_bitset<std::size_t>& col,
-								const std::vector<boost::dynamic_bitset<std::size_t>>& subspace,
-								std::size_t& col_idx)
+                                const std::size_t stop,
+                                const boost::dynamic_bitset<std::size_t>& col,
+                                const std::vector<boost::dynamic_bitset<std::size_t>>& subspace,
+                                std::size_t& col_idx)
 {
-	std::size_t kk;
-	col_idx = MAX_SIZE_T;
-	for(kk = start; kk < stop; kk++)
-	{
-		if(col == subspace[kk])
-		{
-			col_idx = kk;
-			break;
-		}
-	}
+    std::size_t kk;
+    col_idx = MAX_SIZE_T;
+    for(kk = start; kk < stop; kk++)
+    {
+        if(col == subspace[kk])
+        {
+            col_idx = kk;
+            break;
+        }
+    }
 }
 
 /**
@@ -93,20 +93,20 @@ inline void bitset_column_index(const std::size_t start,
  * @param num_bits The number of bits to consider
  */
 inline unsigned int bitset_ladder_int(const uint8_t* row,
-									  const unsigned int* __restrict inds,
-									  const unsigned int num_bits)
+                                      const unsigned int* __restrict inds,
+                                      const unsigned int num_bits)
 {
-	unsigned int row_int, out_int = 0;
-	unsigned int kk, pos;
+    unsigned int row_int, out_int = 0;
+    unsigned int kk, pos;
 
-	for(kk = 0; kk < num_bits; kk++)
-	{
-		pos = inds[kk];
-		row_int = row[pos];
-		out_int |= (row_int << kk);
-	}
+    for(kk = 0; kk < num_bits; kk++)
+    {
+        pos = inds[kk];
+        row_int = row[pos];
+        out_int |= (row_int << kk);
+    }
 
-	return out_int;
+    return out_int;
 }
 
 /**
@@ -118,26 +118,26 @@ inline unsigned int bitset_ladder_int(const uint8_t* row,
  * @param size The size of the proj array
  */
 inline bool passes_proj_validation(const OperatorTerm_t* __restrict term,
-								   const boost::dynamic_bitset<std::size_t>& bitset)
+                                   const boost::dynamic_bitset<std::size_t>& bitset)
 {
-	std::size_t kk;
-	unsigned int block_num, block_idx;
-	unsigned int pos;
-	unsigned int bit;
-	bool out = 1;
-	for(kk = 0; kk < term->proj_indices.size(); kk++)
-	{
-		pos = term->proj_indices[kk];
-		block_num = pos >> BLOCK_EXPONENT;
-		block_idx = pos & BLOCK_SHIFT;
-		bit = ((bitset.m_bits[block_num] >> block_idx) & std::size_t(1));
-		if(bit != term->proj_bits[kk])
-		{
-			out = 0;
-			break;
-		}
-	}
-	return out;
+    std::size_t kk;
+    unsigned int block_num, block_idx;
+    unsigned int pos;
+    unsigned int bit;
+    bool out = 1;
+    for(kk = 0; kk < term->proj_indices.size(); kk++)
+    {
+        pos = term->proj_indices[kk];
+        block_num = pos >> BLOCK_EXPONENT;
+        block_idx = pos & BLOCK_SHIFT;
+        bit = ((bitset.m_bits[block_num] >> block_idx) & std::size_t(1));
+        if(bit != term->proj_bits[kk])
+        {
+            out = 0;
+            break;
+        }
+    }
+    return out;
 }
 
 /**
@@ -150,32 +150,32 @@ inline bool passes_proj_validation(const OperatorTerm_t* __restrict term,
  * @param out Orbital occupancies of spin orbitals.
  */
 void compute_orbital_occupancies(const bitset_map_namespace::BitsetHashMapWrapper& subspace,
-								 const std::size_t subspace_dim,
-								 const double* __restrict probabilities,
-								 double* out)
+                                 const std::size_t subspace_dim,
+                                 const double* __restrict probabilities,
+                                 double* out)
 {
-	const auto* bitsets = subspace.get_bitsets();
-	std::size_t kk;
-	for(kk = 0; kk < subspace_dim; kk++)
-	{
-		const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
-		std::vector<std::size_t> set_indices;
-		for(size_t block = 0; block < row.num_blocks(); block++)
-		{
-			auto bitset = row.m_bits[block];
-			while(bitset != 0)
-			{
-				uint64_t t = bitset & -bitset;
-				int r = __builtin_ctzll(bitset);
-				set_indices.push_back(block * BITS_PER_BLOCK + r);
-				bitset ^= t;
-			}
-		}
-		for(std::size_t& idx : set_indices)
-		{
-			out[idx] += probabilities[kk];
-		}
-	}
+    const auto* bitsets = subspace.get_bitsets();
+    std::size_t kk;
+    for(kk = 0; kk < subspace_dim; kk++)
+    {
+        const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
+        std::vector<std::size_t> set_indices;
+        for(size_t block = 0; block < row.num_blocks(); block++)
+        {
+            auto bitset = row.m_bits[block];
+            while(bitset != 0)
+            {
+                uint64_t t = bitset & -bitset;
+                int r = __builtin_ctzll(bitset);
+                set_indices.push_back(block * BITS_PER_BLOCK + r);
+                bitset ^= t;
+            }
+        }
+        for(std::size_t& idx : set_indices)
+        {
+            out[idx] += probabilities[kk];
+        }
+    }
 }
 
 /**
@@ -192,15 +192,15 @@ void compute_orbital_occupancies(const bitset_map_namespace::BitsetHashMapWrappe
  */
 void bitset_to_bitvec(const boost::dynamic_bitset<size_t>& row, std::vector<uint8_t>& row_set_bits)
 {
-	for(size_t block = 0; block < row.num_blocks(); block++)
-	{
-		auto bitset = row.m_bits[block];
-		while(bitset != 0)
-		{
-			uint64_t t = bitset & -bitset;
-			int r = __builtin_ctzll(bitset);
-			row_set_bits[block * BITS_PER_BLOCK + r] = 1;
-			bitset ^= t;
-		}
-	}
+    for(size_t block = 0; block < row.num_blocks(); block++)
+    {
+        auto bitset = row.m_bits[block];
+        while(bitset != 0)
+        {
+            uint64_t t = bitset & -bitset;
+            int r = __builtin_ctzll(bitset);
+            row_set_bits[block * BITS_PER_BLOCK + r] = 1;
+            bitset ^= t;
+        }
+    }
 }

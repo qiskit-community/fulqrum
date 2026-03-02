@@ -28,15 +28,15 @@
  */
 typedef struct OperatorTerm
 {
-	std::complex<double> coeff;
-	std::vector<unsigned int> indices;
-	std::vector<unsigned char> values;
-	std::vector<unsigned int> proj_indices;
-	std::vector<unsigned int> proj_bits;
-	unsigned int offdiag_weight{0};
-	int extended{0};
-	int real_phase{1}; // 'phase' of real part (+/- 1), 0 means operator is complex-valued
-	int group{-1}; // -1 means unset here
+    std::complex<double> coeff;
+    std::vector<unsigned int> indices;
+    std::vector<unsigned char> values;
+    std::vector<unsigned int> proj_indices;
+    std::vector<unsigned int> proj_bits;
+    unsigned int offdiag_weight{0};
+    int extended{0};
+    int real_phase{1}; // 'phase' of real part (+/- 1), 0 means operator is complex-valued
+    int group{-1}; // -1 means unset here
 } OperatorTerm_t;
 
 /** @struct QubitOperator
@@ -48,14 +48,14 @@ typedef struct OperatorTerm
  */
 typedef struct QubitOperator
 {
-	unsigned int width;
-	std::vector<OperatorTerm_t> terms;
-	int type{1};
-	unsigned int ladder_width{DEFAULT_LADDER_WIDTH};
-	int sorted{0};
-	int weight_sorted{0};
-	int off_weight_sorted{0};
-	int ladder_sorted{0};
+    unsigned int width;
+    std::vector<OperatorTerm_t> terms;
+    int type{1};
+    unsigned int ladder_width{DEFAULT_LADDER_WIDTH};
+    int sorted{0};
+    int weight_sorted{0};
+    int off_weight_sorted{0};
+    int ladder_sorted{0};
 } QubitOperator_t;
 
 /** @brief Data structure for each Fermionic operator term
@@ -66,9 +66,9 @@ typedef struct QubitOperator
  */
 typedef struct FermionicTerm
 {
-	std::complex<double> coeff;
-	std::vector<unsigned int> indices;
-	std::vector<unsigned char> values;
+    std::complex<double> coeff;
+    std::vector<unsigned int> indices;
+    std::vector<unsigned char> values;
 } FermionicTerm_t;
 
 /** @struct FermionicOperator
@@ -80,8 +80,8 @@ typedef struct FermionicTerm
  */
 typedef struct FermionicOperator
 {
-	unsigned int width;
-	std::vector<FermionicTerm_t> terms;
+    unsigned int width;
+    std::vector<FermionicTerm_t> terms;
 } FermionicOperator_t;
 
 /** @struct subspace
@@ -93,7 +93,7 @@ typedef struct FermionicOperator
  */
 typedef struct Subspace
 {
-	bitset_map_namespace::BitsetHashMapWrapper bitstrings;
-	unsigned int num_qubits;
-	std::size_t size;
+    bitset_map_namespace::BitsetHashMapWrapper bitstrings;
+    unsigned int num_qubits;
+    std::size_t size;
 } Subspace_t;
