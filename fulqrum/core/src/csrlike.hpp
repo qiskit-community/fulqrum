@@ -13,9 +13,11 @@
  */
 #pragma once
 #include <algorithm>
+#include <chrono>
 #include <complex>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <vector>
 
 // Data types for CSR-like matrix structure
@@ -85,24 +87,126 @@ void set_csr_data(std::vector<std::vector<T>>& in_data,
                   T* __restrict out_data)
 {
     std::size_t num_rows = in_data.size();
-    std::size_t kk;
-#pragma omp parallel for schedule(dynamic)
-    for(kk = 0; kk < num_rows; kk++)
-    {
-        V start, stop, diff;
-        start = ptrs[kk];
-        stop = ptrs[kk + 1];
-        diff = stop - start;
-        std::copy(cols[kk].data(), cols[kk].data() + diff, &inds[start]);
-        std::copy(in_data[kk].data(), in_data[kk].data() + diff, &out_data[start]);
+	std::size_t kk;
+	std::vector<V> diffs;
+	diffs.resize(num_rows);
 
-        // dealloc after each inner vector is copied into main CSR
-        // structure. ``cols[kk]`` and ``in_data[kk]`` are note used
-        // after this.
-        std::vector<U>().swap(cols[kk]);
-        std::vector<T>().swap(in_data[kk]);
-    }
+// #pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for simd
+	for(kk = 0; kk < num_rows; kk++)
+	{
+		diffs[kk] = ptrs[kk + 1] - ptrs[kk];
+	}
+
+	size_t splits = 5;
+	size_t base = num_rows / splits;
+	size_t extra = num_rows % splits;
+	auto tic = std::chrono::steady_clock::now();
+
+	/// 1st
+#pragma omp parallel for simd
+	for(kk = 0; kk < base; kk++)
+	{
+		V start;
+		start = ptrs[kk];
+
+		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
+		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
+
+	}
+
+#pragma omp parallel for schedule(dynamic)
+	for(kk = 0; kk < base; kk++)
+	{
+		// dealloc after each inner vector is copied into main CSR
+		// structure. ``cols[kk]`` and ``in_data[kk]`` are not used
+		// after this.
+		std::vector<U>().swap(cols[kk]);
+		std::vector<T>().swap(in_data[kk]);
+	}
+
+	/// 2
+#pragma omp parallel for simd
+	for(kk = base; kk < (2 * base); kk++)
+	{
+		V start;
+		start = ptrs[kk];
+
+		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
+		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
+
+	}
+
+#pragma omp parallel for schedule(dynamic)
+	for(kk = base; kk < (2 * base); kk++)
+	{
+		std::vector<U>().swap(cols[kk]);
+		std::vector<T>().swap(in_data[kk]);
+	}
+
+	/// 3
+#pragma omp parallel for simd
+	for(kk = 2 * base; kk < (3 * base); kk++)
+	{
+		V start;
+		start = ptrs[kk];
+
+		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
+		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
+
+	}
+
+#pragma omp parallel for schedule(dynamic)
+	for(kk = 2 * base; kk < (3 * base); kk++)
+	{
+		std::vector<U>().swap(cols[kk]);
+		std::vector<T>().swap(in_data[kk]);
+	}
+
+	/// 4
+#pragma omp parallel for simd
+	for(kk = 3 * base; kk < (4 * base); kk++)
+	{
+		V start;
+		start = ptrs[kk];
+
+		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
+		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
+
+	}
+
+#pragma omp parallel for schedule(dynamic)
+	for(kk = 3 * base; kk < (4 * base); kk++)
+	{
+		std::vector<U>().swap(cols[kk]);
+		std::vector<T>().swap(in_data[kk]);
+	}
+
+	/// 5
+#pragma omp parallel for simd
+	for(kk = 4 * base; kk < num_rows; kk++)
+	{
+		V start;
+		start = ptrs[kk];
+
+		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
+		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
+
+	}
+
+#pragma omp parallel for schedule(dynamic)
+	for(kk = 4 * base; kk < num_rows; kk++)
+	{
+		std::vector<U>().swap(cols[kk]);
+		std::vector<T>().swap(in_data[kk]);
+	}
+
+	auto toc = std::chrono::steady_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic);
+
+    std::cout << "Set CSR time: " << duration.count() << " milliseconds" << std::endl;
 }
+
 
 template <typename T, typename U>
 void csrlike_spmv(const std::vector<std::vector<T>>& data,

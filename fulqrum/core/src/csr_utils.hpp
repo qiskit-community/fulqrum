@@ -14,6 +14,11 @@
 #pragma once
 #include <complex>
 #include <cstdlib>
+#include <vector>
+#include <numeric>
+#include <cstring>
+
+#include "./external/pdqsort.h"
 
 template <typename T, typename U>
 T partition(T* __restrict indices, U* __restrict data, T start, T stop)
@@ -59,4 +64,42 @@ void quicksort_indices_data(T* __restrict indices, U* __restrict data, T start, 
         quicksort_indices_data(indices, data, start, pi - 1);
         quicksort_indices_data(indices, data, pi + 1, stop);
     }
+}
+
+template <typename T, typename U>
+void sort_paired(std::vector<std::vector<T>> &cols,
+				 std::vector<std::vector<U>> &data)
+{
+#pragma omp parallel
+	{
+		std::vector<T> tmp1;
+		std::vector<U> tmp2;
+		std::vector<size_t> idx;
+
+#pragma omp for schedule(dynamic)
+		for (size_t kk = 0; kk < cols.size(); kk++)
+		{
+			auto &row1 = cols[kk];
+			auto &row2 = data[kk];
+			const size_t n = row1.size();
+
+			idx.resize(n);
+			tmp1.resize(n);
+			tmp2.resize(n);
+
+			std::iota(idx.begin(), idx.end(), 0);
+
+			pdqsort(idx.begin(), idx.end(), [&](size_t a, size_t b)
+					{ return row1[a] < row1[b]; });
+
+			for (size_t i = 0; i < n; i++)
+			{
+				tmp1[i] = row1[idx[i]];
+				tmp2[i] = row2[idx[i]];
+			}
+
+			memcpy(row1.data(), tmp1.data(), n * sizeof(T));
+			memcpy(row2.data(), tmp2.data(), n * sizeof(U));
+		}
+	}
 }
