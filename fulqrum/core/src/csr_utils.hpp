@@ -17,8 +17,9 @@
 #include <vector>
 #include <numeric>
 #include <cstring>
+#include <boost/sort/pdqsort/pdqsort.hpp>
 
-#include "./external/pdqsort.h"
+// #include "./external/pdqsort.h"
 
 template <typename T, typename U>
 T partition(T* __restrict indices, U* __restrict data, T start, T stop)
@@ -79,8 +80,8 @@ void sort_paired(std::vector<std::vector<T>> &cols,
 #pragma omp for schedule(dynamic)
 		for (size_t kk = 0; kk < cols.size(); kk++)
 		{
-			auto &row1 = cols[kk];
-			auto &row2 = data[kk];
+			auto& row1 = cols[kk];
+			auto& row2 = data[kk];
 			const size_t n = row1.size();
 
 			idx.resize(n);
@@ -89,7 +90,7 @@ void sort_paired(std::vector<std::vector<T>> &cols,
 
 			std::iota(idx.begin(), idx.end(), 0);
 
-			pdqsort(idx.begin(), idx.end(), [&](size_t a, size_t b)
+			boost::sort::pdqsort(idx.begin(), idx.end(), [&](size_t a, size_t b)
 					{ return row1[a] < row1[b]; });
 
 			for (size_t i = 0; i < n; i++)
