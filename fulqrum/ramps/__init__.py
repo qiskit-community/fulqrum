@@ -20,7 +20,7 @@ Simple
 .. autosummary::
    :toctree: ../stubs/
 
-   ramps_simple_refinement
+   ramps_restricted_simple
 
 """
 

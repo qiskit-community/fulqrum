@@ -42,6 +42,10 @@ C++
 Fulqrum is based on C++17 and requires having OpenMP 3.0+.
 Getting OpenMP is straightforward on Linux but does require installing LLVM via Homebrew on OSX.
 
+Note that the runtime of Fulqrum is compiler dependent.  In practice the ``clang`` compiler 
+works better than ``gcc``, and vendor versions of ``clang``, such as the Intel and AMD compilers, show
+further gains in performance.
+
 
 Installing Boost
 ================
@@ -65,7 +69,10 @@ For testing we only require building the source files locally using:
     python setup.py build_ext --inplace
 
 you can add also use env flags on Linux and OSX for such things as specifying the compiler, 
-e.g. ``CC=clang CXX=clang++`` or setting the target architecture like ``FULQRUM_ARCH=znver4``.
+e.g. ``CC=clang CXX=clang++`` or setting the target architecture like ``FQ_ARCH=znver4``.
+
+Parallel builds can be activated using the ``FQ_BUILD_PARALLEL=N`` flag where ``N`` is the number 
+of threads to run.
 
 
 Installation on Linux
