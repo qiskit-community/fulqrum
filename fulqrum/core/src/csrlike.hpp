@@ -105,7 +105,7 @@ void set_csr_data(std::vector<std::vector<T>>& in_data,
 
 	/// 1st
 #pragma omp parallel for simd
-	for(kk = 0; kk < base; kk++)
+	for(kk = 0; kk < num_rows; kk++)
 	{
 		V start;
 		start = ptrs[kk];
@@ -116,90 +116,92 @@ void set_csr_data(std::vector<std::vector<T>>& in_data,
 	}
 
 #pragma omp parallel for schedule(dynamic)
-	for(kk = 0; kk < base; kk++)
+	for(kk = 0; kk < num_rows; kk++)
 	{
-		// dealloc after each inner vector is copied into main CSR
-		// structure. ``cols[kk]`` and ``in_data[kk]`` are not used
-		// after this.
+		// dealloc after each inner vector
+		// in parallel.
 		std::vector<U>().swap(cols[kk]);
 		std::vector<T>().swap(in_data[kk]);
 	}
 
-	/// 2
-#pragma omp parallel for simd
-	for(kk = base; kk < (2 * base); kk++)
-	{
-		V start;
-		start = ptrs[kk];
+// 	/// 2
+// #pragma omp parallel for simd
+// 	for(kk = base; kk < (2 * base); kk++)
+// 	{
+// 		V start;
+// 		start = ptrs[kk];
 
-		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
-		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
+// 		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
+// 		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
 
-	}
+// 	}
 
-#pragma omp parallel for schedule(dynamic)
-	for(kk = base; kk < (2 * base); kk++)
-	{
-		std::vector<U>().swap(cols[kk]);
-		std::vector<T>().swap(in_data[kk]);
-	}
+// #pragma omp parallel for schedule(dynamic)
+// 	for(kk = base; kk < (2 * base); kk++)
+// 	{
+// 		std::vector<U>().swap(cols[kk]);
+// 		std::vector<T>().swap(in_data[kk]);
+// 	}
 
-	/// 3
-#pragma omp parallel for simd
-	for(kk = 2 * base; kk < (3 * base); kk++)
-	{
-		V start;
-		start = ptrs[kk];
+// 	/// 3
+// #pragma omp parallel for simd
+// 	for(kk = 2 * base; kk < (3 * base); kk++)
+// 	{
+// 		V start;
+// 		start = ptrs[kk];
 
-		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
-		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
+// 		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
+// 		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
 
-	}
+// 	}
 
-#pragma omp parallel for schedule(dynamic)
-	for(kk = 2 * base; kk < (3 * base); kk++)
-	{
-		std::vector<U>().swap(cols[kk]);
-		std::vector<T>().swap(in_data[kk]);
-	}
+// #pragma omp parallel for schedule(dynamic)
+// 	for(kk = 2 * base; kk < (3 * base); kk++)
+// 	{
+// 		std::vector<U>().swap(cols[kk]);
+// 		std::vector<T>().swap(in_data[kk]);
+// 	}
 
-	/// 4
-#pragma omp parallel for simd
-	for(kk = 3 * base; kk < (4 * base); kk++)
-	{
-		V start;
-		start = ptrs[kk];
+// 	/// 4
+// #pragma omp parallel for simd
+// 	for(kk = 3 * base; kk < (4 * base); kk++)
+// 	{
+// 		V start;
+// 		start = ptrs[kk];
 
-		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
-		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
+// 		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
+// 		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
 
-	}
+// 	}
 
-#pragma omp parallel for schedule(dynamic)
-	for(kk = 3 * base; kk < (4 * base); kk++)
-	{
-		std::vector<U>().swap(cols[kk]);
-		std::vector<T>().swap(in_data[kk]);
-	}
+// #pragma omp parallel for schedule(dynamic)
+// 	for(kk = 3 * base; kk < (4 * base); kk++)
+// 	{
+// 		std::vector<U>().swap(cols[kk]);
+// 		std::vector<T>().swap(in_data[kk]);
+// 	}
 
-	/// 5
-#pragma omp parallel for simd
-	for(kk = 4 * base; kk < num_rows; kk++)
-	{
-		V start;
-		start = ptrs[kk];
+// 	/// 5
+// #pragma omp parallel for simd
+// 	for(kk = 4 * base; kk < num_rows; kk++)
+// 	{
+// 		V start;
+// 		start = ptrs[kk];
 
-		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
-		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
+// 		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
+// 		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
 
-	}
+// 	}
 
-#pragma omp parallel for schedule(dynamic)
-	for(kk = 4 * base; kk < num_rows; kk++)
-	{
-		std::vector<U>().swap(cols[kk]);
-		std::vector<T>().swap(in_data[kk]);
-	}
+// #pragma omp parallel for schedule(dynamic)
+// 	for(kk = 4 * base; kk < num_rows; kk++)
+// 	{
+// 		std::vector<U>().swap(cols[kk]);
+// 		std::vector<T>().swap(in_data[kk]);
+// 	}
+
+	std::vector<std::vector<U>>().swap(cols);
+	std::vector<std::vector<T>>().swap(in_data);
 
 	auto toc = std::chrono::steady_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic);
