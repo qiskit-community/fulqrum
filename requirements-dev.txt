@@ -14,3 +14,4 @@ black
 openfermion
 pyscf
 pytest-benchmark
+qiskit-sphinx-theme
