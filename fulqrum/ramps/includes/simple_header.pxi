@@ -33,5 +33,4 @@ cdef extern from "../src/simple.hpp":
                              const unsigned int ladder_offset,
                              const double target_energy,
                              const unsigned int max_recursion,
-                             const double tol
-                               ) nogil
+                             const double tol) nogil
