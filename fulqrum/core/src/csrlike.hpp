@@ -13,11 +13,9 @@
  */
 #pragma once
 #include <algorithm>
-#include <chrono>
 #include <complex>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
 #include <vector>
 
 // Data types for CSR-like matrix structure
@@ -91,19 +89,12 @@ void set_csr_data(std::vector<std::vector<T>>& in_data,
 	std::vector<V> diffs;
 	diffs.resize(num_rows);
 
-// #pragma omp parallel for schedule(dynamic)
 #pragma omp parallel for simd
 	for(kk = 0; kk < num_rows; kk++)
 	{
 		diffs[kk] = ptrs[kk + 1] - ptrs[kk];
 	}
 
-	size_t splits = 5;
-	size_t base = num_rows / splits;
-	size_t extra = num_rows % splits;
-	auto tic = std::chrono::steady_clock::now();
-
-	/// 1st
 #pragma omp parallel for simd
 	for(kk = 0; kk < num_rows; kk++)
 	{
@@ -118,95 +109,16 @@ void set_csr_data(std::vector<std::vector<T>>& in_data,
 #pragma omp parallel for schedule(dynamic)
 	for(kk = 0; kk < num_rows; kk++)
 	{
-		// dealloc after each inner vector
-		// in parallel.
+		// dealloc each inner
+		// vector in parallel
 		std::vector<U>().swap(cols[kk]);
 		std::vector<T>().swap(in_data[kk]);
 	}
 
-// 	/// 2
-// #pragma omp parallel for simd
-// 	for(kk = base; kk < (2 * base); kk++)
-// 	{
-// 		V start;
-// 		start = ptrs[kk];
-
-// 		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
-// 		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
-
-// 	}
-
-// #pragma omp parallel for schedule(dynamic)
-// 	for(kk = base; kk < (2 * base); kk++)
-// 	{
-// 		std::vector<U>().swap(cols[kk]);
-// 		std::vector<T>().swap(in_data[kk]);
-// 	}
-
-// 	/// 3
-// #pragma omp parallel for simd
-// 	for(kk = 2 * base; kk < (3 * base); kk++)
-// 	{
-// 		V start;
-// 		start = ptrs[kk];
-
-// 		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
-// 		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
-
-// 	}
-
-// #pragma omp parallel for schedule(dynamic)
-// 	for(kk = 2 * base; kk < (3 * base); kk++)
-// 	{
-// 		std::vector<U>().swap(cols[kk]);
-// 		std::vector<T>().swap(in_data[kk]);
-// 	}
-
-// 	/// 4
-// #pragma omp parallel for simd
-// 	for(kk = 3 * base; kk < (4 * base); kk++)
-// 	{
-// 		V start;
-// 		start = ptrs[kk];
-
-// 		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
-// 		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
-
-// 	}
-
-// #pragma omp parallel for schedule(dynamic)
-// 	for(kk = 3 * base; kk < (4 * base); kk++)
-// 	{
-// 		std::vector<U>().swap(cols[kk]);
-// 		std::vector<T>().swap(in_data[kk]);
-// 	}
-
-// 	/// 5
-// #pragma omp parallel for simd
-// 	for(kk = 4 * base; kk < num_rows; kk++)
-// 	{
-// 		V start;
-// 		start = ptrs[kk];
-
-// 		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
-// 		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
-
-// 	}
-
-// #pragma omp parallel for schedule(dynamic)
-// 	for(kk = 4 * base; kk < num_rows; kk++)
-// 	{
-// 		std::vector<U>().swap(cols[kk]);
-// 		std::vector<T>().swap(in_data[kk]);
-// 	}
-
+	// dealloc 2D vectors
+	// Empty inner vectors make it instantaneous
 	std::vector<std::vector<U>>().swap(cols);
 	std::vector<std::vector<T>>().swap(in_data);
-
-	auto toc = std::chrono::steady_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic);
-
-    std::cout << "Set CSR time: " << duration.count() << " milliseconds" << std::endl;
 }
 
 

@@ -19,5 +19,5 @@ include "base_header.pxi"
 
 cdef extern from "../src/bitset_hashmap.hpp":
 
-     cdef cppclass BitsetHasherRapid:
+    cdef cppclass BitsetHasherRapid:
         size_t operator()(const bitset_t &bs)

@@ -19,7 +19,6 @@
 #include <cstring>
 #include <boost/sort/pdqsort/pdqsort.hpp>
 
-// #include "./external/pdqsort.h"
 
 template <typename T, typename U>
 T partition(T* __restrict indices, U* __restrict data, T start, T stop)
@@ -68,8 +67,8 @@ void quicksort_indices_data(T* __restrict indices, U* __restrict data, T start, 
 }
 
 template <typename T, typename U>
-void sort_paired(std::vector<std::vector<T>> &cols,
-				 std::vector<std::vector<U>> &data)
+void sort_paired(std::vector<std::vector<T>>& cols,
+				 std::vector<std::vector<U>>& data)
 {
 #pragma omp parallel
 	{

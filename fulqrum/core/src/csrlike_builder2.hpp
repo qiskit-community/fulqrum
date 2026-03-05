@@ -13,9 +13,7 @@
  */
 #pragma once
 #include <complex>
-#include <chrono>
 #include <cstdlib>
-#include <iostream>
 #include <mutex>
 #include <vector>
 
@@ -72,8 +70,7 @@ void csrlike_builder2(const OperatorTerm_t* terms,
             }
         }
     }
-    
-    auto start = std::chrono::steady_clock::now();
+
 #pragma omp parallel for schedule(dynamic) if(subspace_dim > 4096)
     for(kk = 0; kk < subspace_dim; kk++)
     { // begin loop over all rows
@@ -170,41 +167,5 @@ void csrlike_builder2(const OperatorTerm_t* terms,
         } // end loop over groups
     }
 
-    auto end = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-    std::cout << "Vector build time: " << duration.count() << " milliseconds" << std::endl;
-
-    auto start3 = std::chrono::steady_clock::now();
-
     sort_paired(cols, data);
-    
-    auto end3 = std::chrono::steady_clock::now();
-    auto duration3 = std::chrono::duration_cast<std::chrono::milliseconds>(end3 - start3);
-
-    std::cout << "Pair sort time: " << duration3.count() << " milliseconds" << std::endl;
-
-// #pragma omp parallel for schedule(dynamic) if(subspace_dim > 4096)
-//     for(kk = 0; kk < subspace_dim; kk++)
-//     {
-//         // need two different types for sorting
-//         int sort_start_int = 0;
-//         int sort_end_int = 0;
-//         long long sort_start_long = 0;
-//         long long sort_end_long = 0;
-//         // sort column indices and data in each row
-//         if constexpr(std::is_same_v<U, int>)
-//         {
-//             sort_end_int = cols[kk].size() - 1;
-//             quicksort_indices_data(cols[kk].data(), data[kk].data(), sort_start_int, sort_end_int);
-//         }
-//         else
-//         {
-//             sort_end_long = cols[kk].size() - 1;
-//             quicksort_indices_data(
-//                 cols[kk].data(), data[kk].data(), sort_start_long, sort_end_long);
-//         }
-//         cols[kk].shrink_to_fit();
-//         data[kk].shrink_to_fit();
-//     } // end loop over all rows
 } // end function

@@ -156,27 +156,5 @@ void csrlike_builder(const OperatorTerm_t* terms,
         } // end loop over groups
     } // end loop over all rows
 
-#pragma omp parallel for schedule(dynamic) if(subspace_dim > 4096)
-    for(kk = 0; kk < subspace_dim; kk++)
-    {
-        // need two different types for sorting
-        int sort_start_int = 0;
-        int sort_end_int = 0;
-        long long sort_start_long = 0;
-        long long sort_end_long = 0;
-        // sort column indices and data in each row
-        if constexpr(std::is_same_v<U, int>)
-        {
-            sort_end_int = cols[kk].size() - 1;
-            quicksort_indices_data(cols[kk].data(), data[kk].data(), sort_start_int, sort_end_int);
-        }
-        else
-        {
-            sort_end_long = cols[kk].size() - 1;
-            quicksort_indices_data(
-                cols[kk].data(), data[kk].data(), sort_start_long, sort_end_long);
-        }
-        cols[kk].shrink_to_fit();
-        data[kk].shrink_to_fit();
-    } // end loop over all rows
+    sort_paired(cols, data);
 }
