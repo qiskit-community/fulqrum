@@ -85,42 +85,40 @@ void set_csr_data(std::vector<std::vector<T>>& in_data,
                   T* __restrict out_data)
 {
     std::size_t num_rows = in_data.size();
-	std::size_t kk;
-	std::vector<V> diffs;
-	diffs.resize(num_rows);
+    std::size_t kk;
+    std::vector<V> diffs;
+    diffs.resize(num_rows);
 
 #pragma omp parallel for simd
-	for(kk = 0; kk < num_rows; kk++)
-	{
-		diffs[kk] = ptrs[kk + 1] - ptrs[kk];
-	}
+    for(kk = 0; kk < num_rows; kk++)
+    {
+        diffs[kk] = ptrs[kk + 1] - ptrs[kk];
+    }
 
 #pragma omp parallel for simd
-	for(kk = 0; kk < num_rows; kk++)
-	{
-		V start;
-		start = ptrs[kk];
+    for(kk = 0; kk < num_rows; kk++)
+    {
+        V start;
+        start = ptrs[kk];
 
-		std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
-		std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
-
-	}
+        std::copy(cols[kk].data(), cols[kk].data() + diffs[kk], &inds[start]);
+        std::copy(in_data[kk].data(), in_data[kk].data() + diffs[kk], &out_data[start]);
+    }
 
 #pragma omp parallel for schedule(dynamic)
-	for(kk = 0; kk < num_rows; kk++)
-	{
-		// dealloc each inner
-		// vector in parallel
-		std::vector<U>().swap(cols[kk]);
-		std::vector<T>().swap(in_data[kk]);
-	}
+    for(kk = 0; kk < num_rows; kk++)
+    {
+        // dealloc each inner
+        // vector in parallel
+        std::vector<U>().swap(cols[kk]);
+        std::vector<T>().swap(in_data[kk]);
+    }
 
-	// dealloc 2D vectors
-	// Empty inner vectors make it instantaneous
-	std::vector<std::vector<U>>().swap(cols);
-	std::vector<std::vector<T>>().swap(in_data);
+    // dealloc 2D vectors
+    // Empty inner vectors make it instantaneous
+    std::vector<std::vector<U>>().swap(cols);
+    std::vector<std::vector<T>>().swap(in_data);
 }
-
 
 template <typename T, typename U>
 void csrlike_spmv(const std::vector<std::vector<T>>& data,
