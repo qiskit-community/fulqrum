@@ -235,7 +235,7 @@ cdef class Subspace():
             out = Subspace([[self[0].to_string()]], use_all_bitset_blocks=self.subspace.bitstrings.use_all_bitset_blocks())
         return out
 
-    # TODO: Move to sqd.pyx
+
     @cython.boundscheck(False)
     def get_orbital_occupancies(self, double[::1] probs, int norb):
         """Computes orbital occupancies of electrons.
