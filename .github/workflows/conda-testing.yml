@@ -1,0 +1,46 @@
+name: Testing
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: []
+jobs:
+  conda-test:
+    name: ${{ matrix.os }} using Py ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -el {0}
+    strategy:
+      max-parallel: 5
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.12", "3.13", "3.14"]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.12
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        miniconda-version: "latest"
+        auto-update-conda: true
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        conda info
+        pip install -U -r requirements.txt
+    - name: Black
+      run: |
+        pip install -U -r requirements-dev.txt
+        python setup.py build_ext --inplace
+        black --check fulqrum
+    - name: Run tests with pytest
+      run: |
+        pip install pytest
+        pip install .
+        pytest -p no:warnings --pyargs fulqrum/test
+    - name: Build docs
+      run: |
+        conda install pandoc
+        cd docs
+        make html
