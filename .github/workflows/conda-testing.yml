@@ -33,10 +33,12 @@ jobs:
         sudo apt-get install libblas-dev liblapack-dev
         pip install -U -r requirements.txt
         pip install -U -r requirements-dev.txt
+
     - name: Run tests with pytest
       run: |
+        python setup.py build_ext --inplace
         pip install .
-        pytest -p no:warnings fulqrum/test
+        pytest -p no:warnings --pyargs fulqrum/test
     - name: Build docs
       run: |
         conda install pandoc
