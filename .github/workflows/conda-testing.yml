@@ -1,9 +1,9 @@
 name: Testing
 on:
   push:
-    branches: ["main"]
-  pull_request:
     branches: []
+  pull_request:
+    branches: ["main"]
 jobs:
   conda-test:
     name: ${{ matrix.os }} using Py ${{ matrix.python-version }}
