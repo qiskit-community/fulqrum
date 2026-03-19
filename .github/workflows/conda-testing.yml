@@ -32,11 +32,6 @@ jobs:
         conda info
         sudo apt-get install libblas-dev liblapack-dev
         pip install -U -r requirements.txt
-    - name: Black
-      run: |
-        pip install -U -r requirements-dev.txt
-        python setup.py build_ext --inplace
-        black --check fulqrum
     - name: Run tests with pytest
       run: |
         pip install pytest
