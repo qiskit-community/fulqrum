@@ -11,6 +11,7 @@ jobs:
     defaults:
       run:
         shell: bash -el {0}
+        shell: sudo apt-get install libopenblas-dev
     strategy:
       max-parallel: 5
       matrix:
