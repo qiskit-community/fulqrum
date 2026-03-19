@@ -111,6 +111,7 @@ if os.getenv("FQ_ARCH", False) and sys.platform != "win32":
         OPTIONAL_FLAGS.append("-mtune=" + os.getenv("FQ_ARCH"))
 
 INCLUDE_DIRS = [np.get_include()] + [
+    "third-party",
     "qiskit-addon-sqd-hpc/include",
 ]
 # Extra link args
