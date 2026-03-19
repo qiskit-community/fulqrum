@@ -19,11 +19,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+      with:
+        submodules: recursive
     - name: Set up Python 3.12
       uses: conda-incubator/setup-miniconda@v3
       with:
-        submodules: recursive
         miniconda-version: "latest"
         auto-update-conda: true
         python-version: ${{ matrix.python-version }}
