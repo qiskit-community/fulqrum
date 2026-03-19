@@ -36,7 +36,7 @@ jobs:
     - name: Run tests with pytest
       run: |
         pip install .
-        pytest -p no:warnings --pyargs fulqrum/test
+        pytest -p no:warnings fulqrum/test
     - name: Build docs
       run: |
         conda install pandoc
