@@ -16,15 +16,9 @@ In addition to eigensolving itself, Fulqrum provides tools for generating compac
 
 ### Requirements
 
-Outside of standard Python packages Fulqrum requires the Boost library and OpenMP 3+ .
+Outside of standard Python packages Fulqrum requires some Boost headers and OpenMP 3+.
 
-If using `conda` then adding Boost can be done using:
-
-```bash
-conda install boost
-```
-
-and the required include files should be automatically found on Linux and OSX.
+Required Boost header files are included in the ``third-party/boost`` directory, and therefore, no explicit installation of Boost is needed.
 
 ### Git submodule
 
