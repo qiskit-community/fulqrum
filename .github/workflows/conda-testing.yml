@@ -37,10 +37,10 @@ jobs:
     - name: Run tests with pytest
       run: |
         python setup.py build_ext --inplace
-        pip install .
         pytest -p no:warnings --pyargs fulqrum/test
     - name: Build docs
       run: |
         conda install pandoc
+        pip install .
         cd docs
         make html
