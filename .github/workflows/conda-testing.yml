@@ -10,7 +10,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        shell: bash -el {0}
+        bash -el {0}
+        apt-get install libopenblas-dev
     strategy:
       max-parallel: 5
       matrix:
