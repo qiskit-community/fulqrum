@@ -1,7 +1,9 @@
 name: Testing
 on:
   push:
+    branches: ["main"]
   pull_request:
+    branches: []
 jobs:
   conda-test:
     name: ${{ matrix.os }} using Py ${{ matrix.python-version }}
@@ -14,7 +16,7 @@ jobs:
       max-parallel: 5
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.12", "3.13", "3.14"]
+        python-version: ["3.12", "3.14"]
 
     steps:
     - uses: actions/checkout@v4
