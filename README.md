@@ -11,6 +11,11 @@ Fulqrum is a set of tools for enabling the solution to large-scale Hamiltonian s
 In addition to eigensolving itself, Fulqrum provides tools for generating compact subspaces that yield accurate solutions while potentially  using orders of magnitude fewer bit-strings than standard quantum subspace methods alone.
 
 
+## Documentation
+
+Development docs: https://qiskit-community.github.io/fulqrum/dev/
+
+
 ## Installation
 
 
