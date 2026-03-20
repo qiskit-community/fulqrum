@@ -121,7 +121,7 @@ if sys.platform == "win32" and os.environ.get("MSYSTEM", None) is None:
     COMPILER_FLAGS = ["/O2", "/std:c++17"]
 # Everything else
 else:
-    COMPILER_FLAGS = ["-O3", "-std=c++17", "-ffast-math"]
+    COMPILER_FLAGS = ["-O3", "-std=c++17"]
 
 EXT_MODULES = []
 # Add Cython Extensions
