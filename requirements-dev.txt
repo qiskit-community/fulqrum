@@ -1,4 +1,4 @@
-black
+ruff
 jupyter
 jupyter-sphinx
 matplotlib
