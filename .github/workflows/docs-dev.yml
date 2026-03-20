@@ -1,4 +1,4 @@
-name: Build and deploy documentation for development branch
+name: Build and deploy dev documentation
 
 on:
   workflow_dispatch:
