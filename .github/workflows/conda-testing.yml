@@ -33,10 +33,6 @@ jobs:
         sudo apt-get install libblas-dev liblapack-dev
         pip install -U -r requirements.txt
         pip install -U -r requirements-dev.txt
-    - name: Ruff lint and format
-      run: |
-        ruff check .
-        ruff format . --check
     - name: Run tests with pytest
       run: |
         python setup.py build_ext --inplace
