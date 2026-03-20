@@ -17,7 +17,6 @@ Required
    :header: "Package", "Minimum version", "Description"
    :widths: 15, 10, 30
 
-   "boost", 1.85, "We use the ``dynamic_bitset`` types for storing bit-strings"
    "cython", 3.0.5, "The glue between C++ and Python"
    "numpy", 1.25, "Used as array interface between Python and C++"
    "orjson", "any", "IO for saving operators"
@@ -45,18 +44,6 @@ Getting OpenMP is straightforward on Linux but does require installing LLVM via 
 Note that the runtime of Fulqrum is compiler dependent.  In practice the ``clang`` compiler 
 works better than ``gcc``, and vendor versions of ``clang``, such as the Intel and AMD compilers, show
 further gains in performance.
-
-
-Installing Boost
-================
-
-Fulqrum requires having Boost installed.  Using a `conda` environment makes this easy, namely
-
-.. code-block:: bash
-
-    conda install boost
-
-will install the files and they will be automatically found by the Fulqrum setup file.
 
 
 Build files locally
