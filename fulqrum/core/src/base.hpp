@@ -54,6 +54,7 @@ typedef struct OperatorTerm
     int group{-1}; // -1 means unset here
 
     OperatorTerm() {}
+    OperatorTerm(std::complex<double> c): coeff(c) {} // Init empty term with given coefficient
     OperatorTerm(std::string vals, std::vector<unsigned int> inds, std::complex<double> c): indices(inds), coeff(c)
     {
         // Iterate over string of values, mapping to new values and adding to term

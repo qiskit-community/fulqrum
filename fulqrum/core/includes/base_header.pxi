@@ -28,6 +28,8 @@ cdef extern from "../src/base.hpp":
         int group
         void sort_term_data()
         void set_proj_indices()
+        OperatorTerm_t()
+        OperatorTerm_t(complex) except +
 
 
     ctypedef struct QubitOperator_t:

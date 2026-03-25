@@ -93,7 +93,7 @@ cdef class QubitOperator():
                 term.offdiag_weight = 0
                 if any(item):
                     if len(item) == 1:
-                        term.coeff = item[0]
+                        term = OperatorTerm_t(item[0])
                     else:
                         op_str = (<string>item[0]).c_str()
                         inds = item[1] if isinstance(item[1], Iterable) else [item[1]]
