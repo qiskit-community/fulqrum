@@ -26,7 +26,7 @@
 
 typedef std::tuple<std::string, std::vector<unsigned int>, std::complex<double>> TermData;
 
-
+// Map converting standard char values into continuous values
 std::unordered_map<unsigned char, unsigned char> oper_map =
     {
         {90, 0}, {48, 1}, {49, 2}, {88, 3}, {89, 4}, {45, 5}, {43, 6}
@@ -118,6 +118,24 @@ typedef struct OperatorTerm
 } OperatorTerm_t;
 
 
+/**
+ * Validate that term indices are less than operator width
+ *
+ * @param[in] indices Indices for the given term
+ * @param[in] width The operator width
+ */
+void _validate_indices(std::vector<unsigned int>& inds, unsigned int width){
+    std::size_t size = inds.size();
+    for(std::size_t kk=0; kk < size; kk++)
+    {
+        if(inds[kk] >= width)
+        {
+            throw std::runtime_error("Index is larger than the operator width.");
+        }
+    }
+}
+
+
 /** @struct QubitOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
  *
@@ -151,6 +169,7 @@ typedef struct QubitOperator
        for(kk =0; kk < num_terms; kk++)
        {
         tdata = data[kk];
+        _validate_indices(std::get<1>(tdata), width); // validate that all indices are less than operator width
         terms.push_back(OperatorTerm(std::get<0>(tdata), std::get<1>(tdata), std::get<2>(tdata)));
        }
     }

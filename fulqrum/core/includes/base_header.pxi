@@ -57,3 +57,7 @@ cdef extern from "../src/base.hpp":
     ctypedef struct FermionicOperator_t:
         unsigned int width
         vector[FermionicTerm_t] terms
+
+
+    # cdef cppclass TermData:
+    #    TermData()
