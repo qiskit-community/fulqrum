@@ -39,6 +39,7 @@ cdef extern from "../src/base.hpp":
         int weight_sorted
         int off_weight_sorted
         int ladder_sorted
+        size_t size()
 
 
     ctypedef struct Subspace_t:

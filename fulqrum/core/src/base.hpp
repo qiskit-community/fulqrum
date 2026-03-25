@@ -117,6 +117,7 @@ typedef struct OperatorTerm
     }
 } OperatorTerm_t;
 
+
 /** @struct QubitOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
  *
@@ -161,6 +162,7 @@ typedef struct QubitOperator
     std::size_t size(){return terms.size();}
 } QubitOperator_t;
 
+
 /** @brief Data structure for each Fermionic operator term
  *
  * @var indices the modes (locations) where non-identity term operators are
@@ -174,6 +176,7 @@ typedef struct FermionicTerm
     std::vector<unsigned char> values;
 } FermionicTerm_t;
 
+
 /** @struct FermionicOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
  *
@@ -186,6 +189,7 @@ typedef struct FermionicOperator
     unsigned int width;
     std::vector<FermionicTerm_t> terms;
 } FermionicOperator_t;
+
 
 /** @struct subspace
  * @brief Data structure for subspace defined by counts

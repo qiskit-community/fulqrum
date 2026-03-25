@@ -160,7 +160,7 @@ cdef class QubitOperator():
         return out
 
     def __len__(self):
-        return self.oper.terms.size()
+        return self.oper.size()
 
     def set_type(self, unsigned int value):
         """Manually set the type of the operator
@@ -216,7 +216,16 @@ cdef class QubitOperator():
         Returns:
             int: Number of terms in operator
         """
-        return self.oper.terms.size()
+        return self.oper.size()
+
+    @property
+    def size(self):
+        """Return the number of terms in the operator
+
+        Returns:
+            int: Number of terms in operator
+        """
+        return self.oper.size()
 
     @property
     def width(self):
