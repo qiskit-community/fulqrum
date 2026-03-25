@@ -18,6 +18,20 @@
 #include <complex>
 #include <cstdlib>
 #include <vector>
+#include <unordered_map>
+#include <string>
+#include <stdexcept>
+
+
+typedef std::tuple<std::string, std::vector<unsigned int>, std::complex<double>> TermData;
+
+
+std::unordered_map<unsigned char, unsigned char> oper_map =
+    {
+        {90, 0}, {48, 1}, {49, 2}, {88, 3}, {89, 4}, {45, 5}, {43, 6}
+    };
+
+
 
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
  *
@@ -28,15 +42,37 @@
  */
 typedef struct OperatorTerm
 {
-    std::complex<double> coeff;
-    std::vector<unsigned int> indices;
     std::vector<unsigned char> values;
+    std::vector<unsigned int> indices;
+    std::complex<double> coeff;
     std::vector<unsigned int> proj_indices;
     std::vector<unsigned int> proj_bits;
     unsigned int offdiag_weight{0};
     int extended{0};
     int real_phase{1}; // 'phase' of real part (+/- 1), 0 means operator is complex-valued
     int group{-1}; // -1 means unset here
+
+    OperatorTerm() {}
+    OperatorTerm(std::string vals, std::vector<unsigned int> inds, std::complex<double> c): indices(inds), coeff(c)
+    {
+        // Iterate over string of values, mapping to new values and adding to term
+        for(std::string::iterator it = vals.begin(); it != vals.end(); ++it)
+        {
+            if(*it == 73)
+            {
+                throw std::runtime_error("Cannot use identity operators in sparse format.");
+            }
+            else{
+                values.push_back(oper_map[*it]);
+            }
+        }
+        //check that length of values == length of indices
+        if(values.size() != indices.size())
+        {
+            throw std::runtime_error("Size of values vector does not equal that of indices.");
+        }
+    }
+
 } OperatorTerm_t;
 
 /** @struct QubitOperator
@@ -56,6 +92,31 @@ typedef struct QubitOperator
     int weight_sorted{0};
     int off_weight_sorted{0};
     int ladder_sorted{0};
+
+    QubitOperator() {}
+    /**
+     * Constructor building an empty operator with a given width
+     *
+     * @param[in] width The width (number of qubits) of the operator
+     */
+    QubitOperator(unsigned int x){width = x;}
+
+    QubitOperator(unsigned int x, std::vector<TermData> data): width(x) {
+       unsigned int num_terms = data.size();
+       std::size_t kk;
+       TermData tdata;
+       for(kk =0; kk < num_terms; kk++)
+       {
+        tdata = data[kk];
+        terms.push_back(OperatorTerm(std::get<0>(tdata), std::get<1>(tdata), std::get<2>(tdata)));
+       }
+    }
+    /**
+     * The number of terms in the operator
+     *
+     * @param[out] size The number of terms in the operator
+     */
+    std::size_t size(){return terms.size();}
 } QubitOperator_t;
 
 /** @brief Data structure for each Fermionic operator term
