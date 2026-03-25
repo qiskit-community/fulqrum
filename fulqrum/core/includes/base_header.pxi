@@ -26,6 +26,8 @@ cdef extern from "../src/base.hpp":
         int extended
         int real_phase
         int group
+        void sort_term_data()
+        void set_proj_indices()
 
 
     ctypedef struct QubitOperator_t:

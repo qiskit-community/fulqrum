@@ -22,52 +22,7 @@
 // Z, 0, 1, X, Y, -, +
 const int REV_EXT_MASK[7] = {1, 0, 0, 1, 1, 0, 0};
 
-/**
- * Sorting of indices and values for Operator term data
- *
- * @param inds The term indices (qubits) array
- * @param vals The term values (operators) array
- */
-void sort_term_data(std::vector<unsigned int>& inds, std::vector<unsigned char>& vals)
-{
-    std::size_t n = inds.size();
-    for(std::size_t i = 1; i < n; i++)
-    {
-        unsigned int key = inds[i];
-        char val = vals[i];
-        std::size_t j = std::lower_bound(inds.begin(), inds.begin() + i, key) - inds.begin();
 
-        for(std::size_t k = i; k > j; k--)
-        {
-            inds[k] = inds[k - 1];
-            vals[k] = vals[k - 1];
-        }
-        inds[j] = key;
-        vals[j] = val;
-    }
-}
-
-/**
- * Set the projector indices and bits for each term
- *
- * @param term OperatorTerm to add projector information to
- */
-void set_proj_indices(OperatorTerm_t& term)
-{
-    std::size_t kk;
-    unsigned int val;
-    term.proj_indices.resize(0);
-    term.proj_bits.resize(0);
-    for(kk = 0; kk < term.values.size(); kk++)
-    {
-        val = term.values[kk];
-        if(val == 1 || val == 2)
-        {
-            term.proj_indices.push_back(term.indices[kk]);
-            term.proj_bits.push_back(val - 1);
-        }
-    }
-}
 
 /**
  * Comparator for off-diagonal weight grouping

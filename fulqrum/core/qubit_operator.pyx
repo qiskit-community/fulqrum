@@ -108,9 +108,9 @@ cdef class QubitOperator():
                         term.coeff = coeff
                 else:
                     term.coeff = 1
-                sort_term_data(term.indices, term.values)
+                term.sort_term_data()
                 set_offdiag_weight(term)
-                set_proj_indices(term)
+                term.set_proj_indices()
                 set_extended_flag(term)
                 self.oper.terms.push_back(term)
 
@@ -137,9 +137,9 @@ cdef class QubitOperator():
                 term.values.push_back(ind)
                 term.offdiag_weight += (ind > 2)
         term.coeff = coeff
-        sort_term_data(term.indices, term.values)
+        term.sort_term_data()
         set_offdiag_weight(term)
-        set_proj_indices(term)
+        term.set_proj_indices()
         set_extended_flag(term)
         out.oper.terms.push_back(term)
         return out

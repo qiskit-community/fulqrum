@@ -14,9 +14,9 @@ from libcpp.vector cimport vector
 include "base_header.pxi"
 
 cdef extern from "../src/operators.hpp":
-    void sort_term_data(vector[unsigned int]& inds, vector[unsigned char]& vals) nogil
+    #void sort_term_data(vector[unsigned int]& inds, vector[unsigned char]& vals) nogil
 
-    void set_proj_indices(OperatorTerm_t& term) nogil
+    #void set_proj_indices(OperatorTerm_t& term) nogil
 
     void set_extended_flag(OperatorTerm_t& term) nogil
 

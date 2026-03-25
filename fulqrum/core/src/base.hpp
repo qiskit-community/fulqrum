@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <string>
 #include <stdexcept>
+#include <algorithm>
 
 
 typedef std::tuple<std::string, std::vector<unsigned int>, std::complex<double>> TermData;
@@ -71,8 +72,49 @@ typedef struct OperatorTerm
         {
             throw std::runtime_error("Size of values vector does not equal that of indices.");
         }
+        sort_term_data(); // sort term data from low -> high indices
+        set_proj_indices(); // set projection operator indices, if any
     }
+    /**
+     * Sorting of indices and values for Operator term data
+     */
+    void sort_term_data()
+    {
+        std::size_t n = indices.size();
+        for(std::size_t i = 1; i < n; i++)
+        {
+            unsigned int key = indices[i];
+            char val = values[i];
+            std::size_t j = std::lower_bound(indices.begin(), indices.begin() + i, key) - indices.begin();
 
+            for(std::size_t k = i; k > j; k--)
+            {
+                indices[k] = indices[k - 1];
+                values[k] = values[k - 1];
+            }
+            indices[j] = key;
+            values[j] = val;
+        }
+    }
+    /**
+     * Set the projector indices and bits for term
+     */
+    void set_proj_indices()
+    {
+        std::size_t kk;
+        unsigned int val;
+        proj_indices.resize(0);
+        proj_bits.resize(0);
+        for(kk = 0; kk < values.size(); kk++)
+        {
+            val = values[kk];
+            if(val == 1 || val == 2)
+            {
+                proj_indices.push_back(indices[kk]);
+                proj_bits.push_back(val - 1);
+            }
+        }
+    }
 } OperatorTerm_t;
 
 /** @struct QubitOperator
