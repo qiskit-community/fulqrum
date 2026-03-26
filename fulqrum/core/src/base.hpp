@@ -84,6 +84,7 @@ typedef struct OperatorTerm
         std::vector<unsigned int>().swap(proj_indices);
         std::vector<unsigned int>().swap(proj_bits);
     }
+    std::size_t size(){return indices.size();}
     /**
      * Sorting of indices and values for Operator term data
      */
@@ -240,6 +241,7 @@ typedef struct FermionicTerm
         std::vector<unsigned char>().swap(values);
         std::vector<unsigned int>().swap(indices);
     }
+    std::size_t size(){return indices.size();}
     /**
      * Insertion sort indices (and values) in the term
      */
