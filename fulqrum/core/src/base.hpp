@@ -217,6 +217,12 @@ typedef struct FermionicTerm
             throw std::runtime_error("Size of values vector does not equal that of indices.");
         }
     }
+    // destructor
+    ~FermionicTerm()
+    {
+        std::vector<unsigned char>().swap(values);
+        std::vector<unsigned int>().swap(indices);
+    }
 } FermionicTerm_t;
 
 
@@ -249,6 +255,11 @@ typedef struct FermionicOperator
         _validate_indices(std::get<1>(tdata), width); // validate that all indices are less than operator width
         terms.push_back(FermionicTerm(std::get<0>(tdata), std::get<1>(tdata), std::get<2>(tdata)));
        }
+    }
+    // deallocation
+    ~FermionicOperator()
+    {
+        std::vector<FermionicTerm_t>().swap(terms);
     }
     std::size_t size(){return terms.size();}
 } FermionicOperator_t;
