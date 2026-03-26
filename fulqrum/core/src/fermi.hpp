@@ -96,3 +96,38 @@ void extended_jw_transform(const FermionicOperator_t& fermi,
         out.terms[kk].set_proj_indices();
     }
 }
+
+
+void insertion_sort_term(FermionicTerm_t& term)
+{
+    std::size_t kk;
+    int ll;
+    std::size_t num_elems = term.indices.size();
+    unsigned int temp_index;
+    unsigned char temp_value;
+    int prefactor = 1;
+    for(kk=1; kk < num_elems; kk++)
+    {
+        temp_index = term.indices[kk];
+        temp_value = term.values[kk];
+        ll = kk - 1;
+        // Only switch elements if they are of different indices
+        // In this case we always pick up a minus sign that
+        // we need to keep track of with the 'prefactor'
+        while(ll >= 0 && temp_index < term.indices[ll])
+        {
+            term.indices[ll + 1] = term.indices[ll];
+            term.values[ll + 1] = term.values[ll];
+            // Only add a minus sign if both operators (values)
+            // are not projectors (ie. > 4 since '-'=5 and '+'=6)
+            if((temp_value > 4) and (term.values[ll] > 4))
+            {
+                prefactor *= -1;
+            }
+            ll -= 1;
+        }
+        term.indices[ll + 1] = temp_index;
+        term.values[ll + 1] = temp_value;
+    }
+    term.coeff *= prefactor;
+}
