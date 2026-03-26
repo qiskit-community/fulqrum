@@ -22,6 +22,7 @@
 #include <string>
 #include <stdexcept>
 #include <algorithm>
+#include <ostream>
 
 
 typedef std::tuple<std::string, std::vector<unsigned int>, std::complex<double>> TermData;
@@ -32,6 +33,11 @@ std::unordered_map<unsigned char, unsigned char> oper_map =
         {90, 0}, {48, 1}, {49, 2}, {88, 3}, {89, 4}, {45, 5}, {43, 6}
     };
 
+// Reverse map back to standard char values
+std::unordered_map<unsigned char, unsigned char> rev_oper_map =
+    {
+        {0, 90}, {1, 48}, {2, 49}, {3, 88}, {4, 89}, {5, 45}, {6, 43}
+    };
 
 
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
@@ -84,7 +90,10 @@ typedef struct OperatorTerm
         std::vector<unsigned int>().swap(proj_indices);
         std::vector<unsigned int>().swap(proj_bits);
     }
-    std::size_t size(){return indices.size();}
+    /**
+     * Return the size of the term
+     */
+    std::size_t size() const {return indices.size();}
     /**
      * Sorting of indices and values for Operator term data
      */
@@ -194,7 +203,7 @@ typedef struct QubitOperator
      *
      * @param[out] size The number of terms in the operator
      */
-    std::size_t size(){return terms.size();}
+    std::size_t size() const {return terms.size();}
 } QubitOperator_t;
 
 
@@ -241,7 +250,10 @@ typedef struct FermionicTerm
         std::vector<unsigned char>().swap(values);
         std::vector<unsigned int>().swap(indices);
     }
-    std::size_t size(){return indices.size();}
+    /**
+     * Return the size of the term
+     */
+    std::size_t size() const {return indices.size();}
     /**
      * Insertion sort indices (and values) in the term
      */
@@ -317,7 +329,54 @@ typedef struct FermionicOperator
     {
         std::vector<FermionicTerm_t>().swap(terms);
     }
-    std::size_t size(){return terms.size();}
+    /**
+     * Print object to standard output stream
+     */
+    friend auto operator<<(std::ostream& os, const FermionicOperator& self) -> std::ostream&
+    { 
+        std::size_t num_terms = self.size();
+        std::size_t total_terms = num_terms;
+        FermionicTerm_t term;
+        int too_many_terms = 0;
+        std::size_t kk, jj;
+
+        // restrict to outputting at most 100 terms
+        if(num_terms > 100)
+        {
+            too_many_terms = 1;
+            num_terms = 100;
+        }
+        os << "<FermionicOperator["; // start output here
+        for(kk=0; kk < num_terms; kk++)
+        {
+            term = self.terms[kk];
+            os << "(";
+            for(jj=0; jj < term.indices.size(); jj++)
+            {
+                os << rev_oper_map[term.values[jj]] << ":" << term.indices[jj];
+                if(jj!=term.indices.size()-1)
+                {
+                    os << " ";
+                }
+                
+            }
+            os << ", " << term.coeff;
+            os << ")";
+            if(kk!=num_terms-1)
+            {
+                os << ", ";
+            }
+        }
+        if(too_many_terms)
+        {
+            os << " + " << (total_terms-100) << "terms";
+        }
+        return os << ", width=" << self.width << "]>";
+    }
+    /**
+     * Return the size of the operator
+     */
+    std::size_t size() const {return terms.size();}
 } FermionicOperator_t;
 
 
