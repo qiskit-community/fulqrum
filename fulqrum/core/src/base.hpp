@@ -227,6 +227,9 @@ typedef struct FermionicTerm
         std::vector<unsigned char>().swap(values);
         std::vector<unsigned int>().swap(indices);
     }
+    /**
+     * Insertion sort indices (and values) in the term
+     */
     void insertion_sort()
     {
         std::size_t kk;
