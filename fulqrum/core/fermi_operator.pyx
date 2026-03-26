@@ -84,7 +84,7 @@ cdef class FermionicOperator():
                         term.coeff = coeff
                 else:
                     term.coeff = 1
-                insertion_sort_term(term)
+                term.insertion_sort()
                 self.oper.terms.push_back(term)
 
 
@@ -246,7 +246,7 @@ cdef class FermionicOperator():
                 ind = STR_TO_IND[(<string>temp[0]).c_str()[0]]
                 term.values.push_back(ind)
         term.coeff = coeff
-        insertion_sort_term(term)
+        term.insertion_sort()
         out.oper.terms.push_back(term)
         return out
 

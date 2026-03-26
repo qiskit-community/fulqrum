@@ -18,4 +18,3 @@ cdef extern from "../src/fermi.hpp":
     void extended_jw_transform(const FermionicOperator_t& fermi, QubitOperator_t& out,
                                size_t num_terms)
 
-    void insertion_sort_term(FermionicTerm_t& term)

@@ -56,6 +56,7 @@ cdef extern from "../src/base.hpp":
         double complex coeff
         vector[unsigned int] indices
         vector[unsigned char] values
+        void insertion_sort()
 
 
     ctypedef struct FermionicOperator_t:
