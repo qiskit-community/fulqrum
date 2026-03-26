@@ -163,7 +163,8 @@ typedef struct QubitOperator
      */
     QubitOperator(unsigned int x){width = x;}
 
-    QubitOperator(unsigned int x, std::vector<TermData> data): width(x) {
+    QubitOperator(unsigned int x, std::vector<TermData> data): width(x)
+    {
        unsigned int num_terms = data.size();
        std::size_t kk;
        TermData tdata;
@@ -191,9 +192,31 @@ typedef struct QubitOperator
  */
 typedef struct FermionicTerm
 {
-    std::complex<double> coeff;
-    std::vector<unsigned int> indices;
     std::vector<unsigned char> values;
+    std::vector<unsigned int> indices;
+    std::complex<double> coeff;
+
+    FermionicTerm() {}
+    FermionicTerm(std::complex<double> c): coeff(c) {} // Init empty term with given coefficient
+    FermionicTerm(std::string vals, std::vector<unsigned int> inds, std::complex<double> c): indices(inds), coeff(c)
+    {
+        // Iterate over string of values, mapping to new values and adding to term
+        for(std::string::iterator it = vals.begin(); it != vals.end(); ++it)
+        {
+            if(*it == 73)
+            {
+                throw std::runtime_error("Cannot use identity operators in sparse format.");
+            }
+            else{
+                values.push_back(oper_map[*it]);
+            }
+        }
+        //check that length of values == length of indices
+        if(values.size() != indices.size())
+        {
+            throw std::runtime_error("Size of values vector does not equal that of indices.");
+        }
+    }
 } FermionicTerm_t;
 
 
@@ -208,6 +231,26 @@ typedef struct FermionicOperator
 {
     unsigned int width;
     std::vector<FermionicTerm_t> terms;
+    FermionicOperator() {}
+    /**
+     * Constructor building an empty operator with a given width
+     *
+     * @param[in] width The width (number of qubits) of the operator
+     */
+    FermionicOperator(unsigned int x){width = x;}
+    FermionicOperator(unsigned int x, std::vector<TermData> data): width(x)
+    {
+       unsigned int num_terms = data.size();
+       std::size_t kk;
+       TermData tdata;
+       for(kk =0; kk < num_terms; kk++)
+       {
+        tdata = data[kk];
+        _validate_indices(std::get<1>(tdata), width); // validate that all indices are less than operator width
+        terms.push_back(FermionicTerm(std::get<0>(tdata), std::get<1>(tdata), std::get<2>(tdata)));
+       }
+    }
+    std::size_t size(){return terms.size();}
 } FermionicOperator_t;
 
 

@@ -41,6 +41,8 @@ cdef extern from "../src/base.hpp":
         int weight_sorted
         int off_weight_sorted
         int ladder_sorted
+        QubitOperator_t()
+        QubitOperator_t(unsigned int)
         size_t size()
 
 
@@ -59,6 +61,7 @@ cdef extern from "../src/base.hpp":
     ctypedef struct FermionicOperator_t:
         unsigned int width
         vector[FermionicTerm_t] terms
+        size_t size()
 
 
     # cdef cppclass TermData:
