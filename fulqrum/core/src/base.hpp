@@ -76,6 +76,14 @@ typedef struct OperatorTerm
         sort_term_data(); // sort term data from low -> high indices
         set_proj_indices(); // set projection operator indices, if any
     }
+    // destructor
+    ~OperatorTerm()
+    {
+        std::vector<unsigned char>().swap(values);
+        std::vector<unsigned int>().swap(indices);
+        std::vector<unsigned int>().swap(proj_indices);
+        std::vector<unsigned int>().swap(proj_bits);
+    }
     /**
      * Sorting of indices and values for Operator term data
      */
@@ -175,6 +183,11 @@ typedef struct QubitOperator
         terms.push_back(OperatorTerm(std::get<0>(tdata), std::get<1>(tdata), std::get<2>(tdata)));
        }
     }
+    // destructor
+    ~QubitOperator()
+    {
+        std::vector<OperatorTerm_t>().swap(terms);
+    }
     /**
      * The number of terms in the operator
      *
@@ -184,7 +197,7 @@ typedef struct QubitOperator
 } QubitOperator_t;
 
 
-// Fermionic components
+// Fermionic components ---------------------------------------------------------------------------
 
 
 /** @brief Data structure for each Fermionic operator term
@@ -267,7 +280,6 @@ typedef struct FermionicTerm
 
 
 
-
 /** @struct FermionicOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
  *
@@ -305,6 +317,9 @@ typedef struct FermionicOperator
     }
     std::size_t size(){return terms.size();}
 } FermionicOperator_t;
+
+
+// Subspace components ---------------------------------------------------------------------------
 
 
 /** @struct subspace

@@ -172,11 +172,11 @@ void set_weight_ptrs(std::vector<OperatorTerm_t>& __restrict terms, std::vector<
  *
  * Input terms must be sorted by weight before calling this routine
  *
- * @param terms Terms for input operator
- * @param out_terms Terms for output operator (to push_back to)
- * @param touched pointer array indicating if term has been touched
- * @param num_terms Number of terms in input operator
- * @param atol Absolute tolerance for term truncation
+ * @param[in] terms Terms for input operator
+ * @param[in] out_terms Terms for output operator (to push_back to)
+ * @param[in] touched pointer array indicating if term has been touched
+ * @param[in] num_terms Number of terms in input operator
+ * @param[in] atol Absolute tolerance for term truncation
  *
  */
 void combine_qubit_terms(std::vector<OperatorTerm_t>& __restrict terms,
