@@ -350,7 +350,7 @@ typedef struct FermionicOperator
         for(kk=0; kk < num_terms; kk++)
         {
             term = self.terms[kk];
-            os << "(";
+            os << "{";
             for(jj=0; jj < term.indices.size(); jj++)
             {
                 os << rev_oper_map[term.values[jj]] << ":" << term.indices[jj];
@@ -361,7 +361,7 @@ typedef struct FermionicOperator
                 
             }
             os << ", " << term.coeff;
-            os << ")";
+            os << "}";
             if(kk!=num_terms-1)
             {
                 os << ", ";
