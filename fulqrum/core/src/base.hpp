@@ -199,6 +199,50 @@ typedef struct QubitOperator
         std::vector<OperatorTerm_t>().swap(terms);
     }
     /**
+     * Print object to standard output stream
+     */
+    friend auto operator<<(std::ostream& os, const QubitOperator& self) -> std::ostream&
+    { 
+        std::size_t num_terms = self.size();
+        std::size_t total_terms = num_terms;
+        OperatorTerm_t term;
+        int too_many_terms = 0;
+        std::size_t kk, jj;
+
+        // restrict to outputting at most 100 terms
+        if(num_terms > 100)
+        {
+            too_many_terms = 1;
+            num_terms = 100;
+        }
+        os << "<QubitOperator["; // start output here
+        for(kk=0; kk < num_terms; kk++)
+        {
+            term = self.terms[kk];
+            os << "{";
+            for(jj=0; jj < term.indices.size(); jj++)
+            {
+                os << rev_oper_map[term.values[jj]] << ":" << term.indices[jj];
+                if(jj!=term.indices.size()-1)
+                {
+                    os << " ";
+                }
+                
+            }
+            os << ", " << term.coeff;
+            os << "}";
+            if(kk!=num_terms-1)
+            {
+                os << ", ";
+            }
+        }
+        if(too_many_terms)
+        {
+            os << " + " << (total_terms-100) << "terms";
+        }
+        return os << ", width=" << self.width << "]>";
+    }
+    /**
      * The number of terms in the operator
      *
      * @param[out] size The number of terms in the operator
