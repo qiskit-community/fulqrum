@@ -186,17 +186,32 @@ typedef struct QubitOperator
        unsigned int num_terms = data.size();
        std::size_t kk;
        TermData tdata;
+       std::complex<double> coeff = 1.0;
        for(kk =0; kk < num_terms; kk++)
        {
         tdata = data[kk];
         _validate_indices(std::get<1>(tdata), width); // validate that all indices are less than operator width
-        terms.push_back(OperatorTerm(std::get<0>(tdata), std::get<1>(tdata), std::get<2>(tdata)));
+        // If there are no indices and the coeff==0 then the term should be an identity term with coeff=1
+        if(std::get<1>(tdata).size() == 0 && std::get<2>(tdata) == std::complex<double>(0,0)){
+            coeff = 1.0;
+        }
+        else{
+            coeff = std::get<2>(tdata);
+        }
+        terms.push_back(OperatorTerm(std::get<0>(tdata), std::get<1>(tdata), coeff));
        }
     }
     // destructor
     ~QubitOperator()
     {
         std::vector<OperatorTerm_t>().swap(terms);
+    }
+    /**
+     * Grab a single term by index
+     */
+    OperatorTerm_t operator[] (std::size_t kk)
+    {
+        return terms[kk];
     }
     /**
      * Print object to standard output stream
@@ -248,6 +263,7 @@ typedef struct QubitOperator
      * @param[out] size The number of terms in the operator
      */
     std::size_t size() const {return terms.size();}
+    std::size_t num_terms() const {return terms.size();}
 } QubitOperator_t;
 
 
