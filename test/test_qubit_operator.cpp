@@ -13,8 +13,9 @@
  */
 #include "doctest.h"
 #include <complex>
+#include <vector>
 #include "fulqrum.hpp"
-#include <fulqrum.hpp>
+
 
 typedef std::complex<double> complex;
 
@@ -41,8 +42,16 @@ TEST_CASE("Test setting coeff for single identity operator") {
     CHECK(op[0].coeff == complex(1,2));
 }
 
+
 TEST_CASE("Validate QubitOperator inplace multiplication") {
     QubitOperator_t op = QubitOperator(5, {{}});
     op *= complex(1,2);
     CHECK(op[0].coeff == complex(1,2));
+}
+
+
+TEST_CASE("Test simple multi operators") {
+    QubitOperator_t op = QubitOperator(5, {{"XXXXX", {0,1,2,3,4}, 1}});
+    std::vector<OpData> ans = {OpData("X", 0), OpData("X", 1), OpData("X", 2), OpData("X", 3), OpData("X", 4)};
+    CHECK(op[0].operators() == ans);
 }

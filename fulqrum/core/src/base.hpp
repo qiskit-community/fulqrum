@@ -26,6 +26,8 @@
 
 
 typedef std::tuple<std::string, std::vector<unsigned int>, std::complex<double>> TermData;
+typedef std::tuple<std::string, std::vector<unsigned int>> OpData;
+
 
 // Map converting standard char values into continuous values
 std::unordered_map<unsigned char, unsigned char> oper_map =
@@ -140,6 +142,16 @@ typedef struct OperatorTerm
                 proj_bits.push_back(val - 1);
             }
         }
+    }
+    std::vector<OpData> operators() const
+    {
+        std::vector<OpData> out;
+        for(std::size_t kk=0; kk < indices.size(); kk++)
+        {
+            OpData item{std::string(1, static_cast<char>(rev_oper_map[values[kk]])), indices[kk]};
+            out.push_back(item);
+        }
+        return out;
     }
 } OperatorTerm_t;
 
