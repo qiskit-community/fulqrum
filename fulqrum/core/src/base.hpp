@@ -162,6 +162,23 @@ typedef struct OperatorTerm
         }
         return out;
     }
+    /**
+     * Is the term diagonal
+     */
+    bool is_diagonal() const
+    {
+        std::size_t kk;
+        bool diag = 1;
+        for(kk=0; kk < values.size(); kk++)
+        {
+            if(values[kk] > 2)
+            {
+                diag = 0;
+                break;
+            }
+        }
+        return diag;
+    }
 } OperatorTerm_t;
 
 
@@ -351,6 +368,22 @@ typedef struct QubitOperator
         out.terms = this->terms;
         out.type = this->type;
         return out;
+    }
+    /**
+     * Is the operator diagonal
+     */
+    bool is_diagonal() const
+    {
+        std::size_t kk;
+        bool diag = 1;
+        for(kk=0; kk<terms.size(); kk++)
+        {
+            if(!terms[kk].is_diagonal()){
+                diag =0;
+                break;
+            }
+        }
+        return diag;
     }
     std::vector<unsigned int> weights() const
     {

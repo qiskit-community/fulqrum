@@ -56,6 +56,7 @@ TEST_CASE("Test simple multi operators") {
     CHECK(op[0].operators() == ans);
 }
 
+
 TEST_CASE("Test simple operator weight") {
     QubitOperator_t op = QubitOperator(5, {{"XXXXX", {0,1,2,3,4}, 1}});
     CHECK(op[0].weight() == 5);
@@ -87,6 +88,7 @@ TEST_CASE("Test inplace addition of operators") {
     }
 }
 
+
 TEST_CASE("Test addition of operators") {
     unsigned int N = 5;
     QubitOperator_t op = QubitOperator(N);
@@ -101,3 +103,31 @@ TEST_CASE("Test addition of operators") {
         CHECK(op[kk].coeff == 1.0/(N+kk));
     }
 }
+
+
+TEST_CASE("Verify diagonal operator returns true") {
+    unsigned int N = 25;
+    QubitOperator_t op = QubitOperator(N);
+    std::vector<std::string> diag_ops = {"Z", "O", "1"};
+    unsigned int kk;
+    for(kk=0; kk < N; kk++)
+    {
+        op +=  QubitOperator(N, {{diag_ops[kk % 3], {kk}, 1.0/(N+kk)}});
+    }
+    CHECK(op[kk].is_diagonal());
+}
+
+
+TEST_CASE("Verify non-diagonal operator returns false") {
+    unsigned int N = 25;
+    QubitOperator_t op = QubitOperator(N);
+    std::vector<std::string> diag_ops = {"Z", "O", "1"};
+    unsigned int kk;
+    for(kk=0; kk < N; kk++)
+    {
+        op +=  QubitOperator(N, {{diag_ops[kk % 3], {kk}, 1.0/(N+kk)}});
+    }
+    op +=  QubitOperator(N, {{"X", {0}, 1}});
+    CHECK(!op[kk].is_diagonal());
+}
+
