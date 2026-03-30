@@ -86,3 +86,18 @@ TEST_CASE("Test inplace addition of operators") {
         CHECK(op[kk].coeff == 1.0/(N+kk));
     }
 }
+
+TEST_CASE("Test addition of operators") {
+    unsigned int N = 5;
+    QubitOperator_t op = QubitOperator(N);
+    for(unsigned int kk=0; kk < N; kk++)
+    {
+        op = op + QubitOperator(N, {{"Y", {kk}, 1.0/(N+kk)}});
+    }
+    for(unsigned int kk=0; kk < N; kk++)
+    {
+        std::vector<OpData> ans = {OpData("Y", kk)};
+        CHECK(op[kk].operators() == ans);
+        CHECK(op[kk].coeff == 1.0/(N+kk));
+    }
+}

@@ -270,6 +270,26 @@ typedef struct QubitOperator
         this->sorted = 0;
     }
     /**
+     * Addition by another QubitOperator
+     * 
+     * @param[in] other Operator to add to this one
+     * @param[out] out The new operator
+     * @throw Error if operators do not share the same width
+     */
+    QubitOperator operator+(QubitOperator other) const
+    {
+        if(other.width != this->width)
+        {
+            throw std::runtime_error("Operators must have the same width");
+        }
+        QubitOperator out = this->copy();
+        for(std::size_t kk=0; kk<other.size(); kk++)
+        {
+            out.terms.push_back(other.terms[kk]);
+        }
+        return out;
+    }
+    /**
      * Print object to standard output stream
      */
     friend auto operator<<(std::ostream& os, const QubitOperator& self) -> std::ostream&
