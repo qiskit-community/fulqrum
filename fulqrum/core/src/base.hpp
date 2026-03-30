@@ -91,6 +91,13 @@ typedef struct OperatorTerm
         std::vector<unsigned int>().swap(proj_bits);
     }
     /**
+     * Inplace multiplication by a complex value
+     */
+    void operator*=(std::complex<double> c)
+    {
+        coeff *=c ;
+    }
+    /**
      * Return the size of the term
      */
     std::size_t size() const {return indices.size();}
@@ -209,9 +216,19 @@ typedef struct QubitOperator
     /**
      * Grab a single term by index
      */
-    OperatorTerm_t operator[] (std::size_t kk)
+    OperatorTerm_t operator[] (std::size_t kk) const
     {
         return terms[kk];
+    }
+    /**
+     * Inplace multiplication by a complex value
+     */
+    void operator*=(std::complex<double> c)
+    {
+        for(std::size_t kk=0; kk<this->size(); kk++)
+        {
+            terms[kk] *= c;
+        }
     }
     /**
      * Print object to standard output stream
