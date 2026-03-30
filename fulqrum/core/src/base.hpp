@@ -243,6 +243,24 @@ typedef struct QubitOperator
         }
     }
     /**
+     * Inplace addition by another QubitOperator
+     * 
+     * @param[in] other Operator to add to this one
+     * @throw Error if operators do not share the same width
+     */
+    void operator+=(QubitOperator other)
+    {
+        if(other.width != this->width)
+        {
+            throw std::runtime_error("Operators must have the same width");
+        }
+        for(std::size_t kk=0; kk<other.size(); kk++)
+        {
+            this->terms.push_back(other.terms[kk]);
+        }
+        this->sorted = 0;
+    }
+    /**
      * Print object to standard output stream
      */
     friend auto operator<<(std::ostream& os, const QubitOperator& self) -> std::ostream&
