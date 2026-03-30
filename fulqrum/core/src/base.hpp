@@ -104,6 +104,15 @@ typedef struct OperatorTerm
      */
     std::size_t size() const {return indices.size();}
     /**
+     * Return the weight (num. non-identity) operators
+     * 
+     * @param[out] weight The weight of the term
+     */
+    unsigned int weight() const
+    {
+        return static_cast<unsigned int>(indices.size());
+    }
+    /**
      * Sorting of indices and values for Operator term data
      */
     void sort_term_data()
@@ -322,6 +331,15 @@ typedef struct QubitOperator
         out.terms = this->terms;
         out.type = this->type;
         return out;
+    }
+    std::vector<unsigned int> weights() const
+    {
+        std::vector<unsigned int> out;
+        for(std::size_t kk=0; kk<this->size(); kk++)
+        {
+            out.push_back(this->terms[kk].weight());
+        }
+        return out; 
     }
 
 } QubitOperator_t;

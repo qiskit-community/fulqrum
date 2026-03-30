@@ -56,6 +56,21 @@ TEST_CASE("Test simple multi operators") {
     CHECK(op[0].operators() == ans);
 }
 
+TEST_CASE("Test simple operator weight") {
+    QubitOperator_t op = QubitOperator(5, {{"XXXXX", {0,1,2,3,4}, 1}});
+    CHECK(op[0].weight() == 5);
+}
+
+
+TEST_CASE("Test simple multi-term operator weight") {
+    QubitOperator_t op = QubitOperator(5, {{"XXXXX", {0,1,2,3,4}, 1}});
+    op += QubitOperator(5, {{"ZY", {2,3}, 1}});
+    CHECK(op[0].weight() == 5);
+    CHECK(op[1].weight() == 2);
+    std::vector<unsigned int> ans = {5, 2};
+    CHECK(op.weights() == ans);
+}
+
 
 TEST_CASE("Test inplace addition of operators") {
     unsigned int N = 5;
