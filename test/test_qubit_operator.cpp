@@ -40,3 +40,9 @@ TEST_CASE("Test setting coeff for single identity operator") {
     CHECK(op.num_terms() == 1);
     CHECK(op[0].coeff == complex(1,2));
 }
+
+TEST_CASE("Validate QubitOperator inplace multiplication") {
+    QubitOperator_t op = QubitOperator(5, {{}});
+    op *= complex(1,2);
+    CHECK(op[0].coeff == complex(1,2));
+}
