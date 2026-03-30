@@ -281,6 +281,19 @@ typedef struct QubitOperator
      */
     std::size_t size() const {return terms.size();}
     std::size_t num_terms() const {return terms.size();}
+    /**
+     * The number of terms in the operator
+     *
+     * @param[out] out A copy of the current operator
+     */
+    QubitOperator copy() const
+    {
+        QubitOperator out = QubitOperator(this->width);
+        out.terms = this->terms;
+        out.type = this->type;
+        return out;
+    }
+
 } QubitOperator_t;
 
 
