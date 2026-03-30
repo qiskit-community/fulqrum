@@ -269,6 +269,27 @@ typedef struct QubitOperator
         }
     }
     /**
+     * multiplication by a complex value (need one for mult on each side)
+     */
+    friend QubitOperator operator*(QubitOperator& op, std::complex<double> c)
+    {
+        QubitOperator out = op.copy();
+        for(std::size_t kk=0; kk<out.size(); kk++)
+        {
+            out.terms[kk] *= c;
+        }
+        return out;
+    }
+    friend QubitOperator operator*(std::complex<double> c, QubitOperator& op)
+    {
+        QubitOperator out = op.copy();
+        for(std::size_t kk=0; kk<out.size(); kk++)
+        {
+            out.terms[kk] *= c;
+        }
+        return out;
+    }
+    /**
      * Inplace addition by another QubitOperator
      * 
      * @param[in] other Operator to add to this one

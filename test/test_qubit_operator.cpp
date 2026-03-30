@@ -50,6 +50,20 @@ TEST_CASE("Validate QubitOperator inplace multiplication") {
 }
 
 
+TEST_CASE("Test multiplication on left") {
+    QubitOperator_t op = QubitOperator(5, {{"XXXXX", {4, 3, 2, 1, 0}, complex(0,-1)}});
+    QubitOperator_t new_op = 5 * op;
+    CHECK(new_op[0].coeff == complex(0,-5));
+}
+
+
+TEST_CASE("Test multiplication on right") {
+    QubitOperator_t op = QubitOperator(5, {{"XXXXX", {4, 3, 2, 1, 0}, complex(0,-1)}});
+    QubitOperator_t new_op = op * 3.4;
+    CHECK(new_op[0].coeff == complex(0,-3.4));
+}
+
+
 TEST_CASE("Test simple multi operators") {
     QubitOperator_t op = QubitOperator(5, {{"XXXXX", {0,1,2,3,4}, 1}});
     std::vector<OpData> ans = {OpData("X", 0), OpData("X", 1), OpData("X", 2), OpData("X", 3), OpData("X", 4)};
