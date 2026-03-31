@@ -222,3 +222,15 @@ TEST_CASE("Test operator from label for all id string") {
     std::vector<OpData> ans = {};
     CHECK(op[0].operators() == ans);
 }
+
+
+TEST_CASE("Test term off-diagonal weight") {
+    QubitOperator_t op = QubitOperator::from_label("IIIIII");
+    op += QubitOperator::from_label("IIXIII");
+    op += QubitOperator::from_label("01XII+");
+    op += QubitOperator::from_label("ZZZZZZ");
+    CHECK(op[0].offdiag_weight == 0);
+    CHECK(op[1].offdiag_weight == 1);
+    CHECK(op[2].offdiag_weight == 2);
+    CHECK(op[3].offdiag_weight == 0);
+}

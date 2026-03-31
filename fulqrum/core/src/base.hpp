@@ -66,6 +66,7 @@ typedef struct OperatorTerm
     OperatorTerm(std::complex<double> c): coeff(c) {} // Init empty term with given coefficient
     OperatorTerm(std::string vals, std::vector<unsigned int> inds, std::complex<double> c): indices(inds), coeff(c)
     {
+        unsigned char val;
         // Iterate over string of values, mapping to new values and adding to term
         for(std::string::iterator it = vals.begin(); it != vals.end(); ++it)
         {
@@ -74,7 +75,9 @@ typedef struct OperatorTerm
                 throw std::runtime_error("Cannot use identity operators in sparse format.");
             }
             else{
-                values.push_back(oper_map[*it]);
+                val = oper_map[*it];
+                values.push_back(val);
+                this->offdiag_weight += (val > 2);
             }
         }
         //check that length of values == length of indices
@@ -108,6 +111,7 @@ typedef struct OperatorTerm
         out.indices = this->indices;
         out.proj_indices = this->proj_indices;
         out.proj_bits = this->proj_bits;
+        out.offdiag_weight = this->offdiag_weight;
         return out;
     }
     /**
@@ -144,7 +148,7 @@ typedef struct OperatorTerm
     /**
      * Sorting of indices and values for Operator term data
      */
-    void sort_term_data()
+    OperatorTerm& sort_term_data()
     {
         std::size_t n = indices.size();
         for(std::size_t i = 1; i < n; i++)
@@ -161,11 +165,12 @@ typedef struct OperatorTerm
             indices[j] = key;
             values[j] = val;
         }
+        return *this;
     }
     /**
      * Set the projector indices and bits for term
      */
-    void set_proj_indices()
+    OperatorTerm& set_proj_indices()
     {
         std::size_t kk;
         unsigned int val;
@@ -180,6 +185,7 @@ typedef struct OperatorTerm
                 proj_bits.push_back(val - 1);
             }
         }
+        return *this;
     }
     std::vector<OpData> operators() const
     {
@@ -286,6 +292,7 @@ typedef struct QubitOperator
     static QubitOperator from_label(std::string label)
     {
         unsigned int width = label.size();
+        unsigned char val;
         std::size_t counter=0;
         QubitOperator out = QubitOperator(width);
         OperatorTerm term = OperatorTerm(1.0); // start with term set with coeff = 1.0
@@ -293,8 +300,10 @@ typedef struct QubitOperator
         {
             if(*it != 73)
             {
-                term.values.push_back(oper_map[*it]);
+                val = oper_map[*it];
+                term.values.push_back(val);
                 term.indices.push_back(counter);
+                term.offdiag_weight += (val > 2);
             }
             counter += 1;
         }
