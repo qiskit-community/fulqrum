@@ -164,3 +164,20 @@ TEST_CASE("Test operator subtraction") {
     QubitOperator out = op1 - op2;
     CHECK(out[1].coeff == complex(-5,0));
 }
+
+
+TEST_CASE("Test projector indices") {
+    unsigned int N = 5;
+    QubitOperator_t op = QubitOperator(N, {{"1Z0Z0", {0,1,2,3,4}, 1.0}});
+    std::vector<unsigned int> ans = {0,2,4};
+    CHECK(op[0].proj_indices == ans);
+}
+
+
+TEST_CASE("Test projector indices are not set") {
+    unsigned int N = 5;
+    QubitOperator_t op = QubitOperator(N, {{"XZYZ+", {0,1,2,3,4}, 1.0}});
+    std::vector<unsigned int> ans = {};
+    CHECK(op[0].proj_indices == ans);
+}
+
