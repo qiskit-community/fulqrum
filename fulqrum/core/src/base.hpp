@@ -338,6 +338,53 @@ typedef struct QubitOperator
         return *this;
     }
     /**
+     * Inplace subtraction by another QubitOperator
+     * 
+     * @param[in] other Operator to add to this one
+     * @throw Error if operators do not share the same width
+     */
+    QubitOperator& operator-=(QubitOperator other)
+    {
+        if(other.width != this->width)
+        {
+            throw std::runtime_error("Operators must have the same width");
+        }
+        
+        OperatorTerm term;
+        for(std::size_t kk=0; kk<other.size(); kk++)
+        {
+            term = other.terms[kk];
+            term.coeff *= -1;
+            this->terms.push_back(term);
+        }
+        this->sorted = 0;
+        return *this;
+    }
+    /**
+     * Subtraction by another QubitOperator
+     * 
+     * @param[in] other Operator to subject to this one
+     * @param[out] out New operator
+     * @throw Error if operators do not share the same width
+     */
+    QubitOperator operator-(QubitOperator other)
+    {
+        if(other.width != this->width)
+        {
+            throw std::runtime_error("Operators must have the same width");
+        }
+        
+        OperatorTerm term;
+        QubitOperator out = this->copy();
+        for(std::size_t kk=0; kk<other.size(); kk++)
+        {
+            term = other.terms[kk];
+            term.coeff *= -1;
+            out.terms.push_back(term);
+        }
+        return out;
+    }
+    /**
      * Addition by another QubitOperator
      * 
      * @param[in] other Operator to add to this one

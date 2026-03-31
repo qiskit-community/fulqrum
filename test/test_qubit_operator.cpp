@@ -156,3 +156,11 @@ TEST_CASE("Test simple operator sorting") {
     CHECK(op[0].operators() == ans);
 }
 
+
+TEST_CASE("Test operator subtraction") {
+    unsigned int N = 5;
+    QubitOperator_t op1 = QubitOperator(N, {{"Z0+XY", {4,0,3,1,2}, 1.0}});
+    QubitOperator_t op2 = QubitOperator(N, {{"XYZZ", {0,3,1,2}, 5.0}});
+    QubitOperator out = op1 - op2;
+    CHECK(out[1].coeff == complex(-5,0));
+}
