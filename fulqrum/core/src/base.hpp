@@ -95,9 +95,37 @@ typedef struct OperatorTerm
     /**
      * Inplace multiplication by a complex value
      */
-    void operator*=(std::complex<double> c)
+    OperatorTerm& operator*=(std::complex<double> c)
     {
-        coeff *=c ;
+        coeff *= c;
+        return *this;
+    }
+    OperatorTerm copy() const
+    {
+        OperatorTerm out = OperatorTerm(this->coeff);
+        out.values = this->values;
+        out.indices = this->indices;
+        out.proj_indices = this->proj_indices;
+        out.proj_bits = this->proj_bits;
+        return out;
+    }
+    /**
+     * Term multiplication by a complex number
+     */
+    friend OperatorTerm operator*(OperatorTerm& op, std::complex<double> c)
+    {
+        OperatorTerm out = op.copy();
+        out.coeff *= c;
+        return out;
+    }
+    /**
+     * Term multiplication by a complex number
+     */
+    friend OperatorTerm operator*(std::complex<double> c, OperatorTerm& op)
+    {
+        OperatorTerm out = op.copy();
+        out.coeff *= c;
+        return out;
     }
     /**
      * Return the size of the term
@@ -261,12 +289,13 @@ typedef struct QubitOperator
     /**
      * Inplace multiplication by a complex value
      */
-    void operator*=(std::complex<double> c)
+    QubitOperator& operator*=(std::complex<double> c)
     {
         for(std::size_t kk=0; kk<this->size(); kk++)
         {
             terms[kk] *= c;
         }
+        return *this;
     }
     /**
      * multiplication by a complex value (need one for mult on each side)
@@ -295,7 +324,7 @@ typedef struct QubitOperator
      * @param[in] other Operator to add to this one
      * @throw Error if operators do not share the same width
      */
-    void operator+=(QubitOperator other)
+    QubitOperator& operator+=(QubitOperator other)
     {
         if(other.width != this->width)
         {
@@ -306,6 +335,7 @@ typedef struct QubitOperator
             this->terms.push_back(other.terms[kk]);
         }
         this->sorted = 0;
+        return *this;
     }
     /**
      * Addition by another QubitOperator

@@ -25,16 +25,19 @@ TEST_CASE("Test empty QubitOperator") {
     CHECK(op.num_terms() == 0);
 }
 
+
 TEST_CASE("Test empty QubitOperator 2") {
     QubitOperator_t op = QubitOperator(5, {});
     CHECK(op.num_terms() == 0);
 }
+
 
 TEST_CASE("Test identity operator") {
     QubitOperator_t op = QubitOperator(5, {{}});
     CHECK(op.num_terms() == 1);
     CHECK(op[0].coeff == complex(1,0));
 }
+
 
 TEST_CASE("Test setting coeff for single identity operator") {
     QubitOperator_t op = QubitOperator(5, {{"", {}, complex(1,2)}});
@@ -143,5 +146,13 @@ TEST_CASE("Verify non-diagonal operator returns false") {
     }
     op +=  QubitOperator(N, {{"X", {0}, 1}});
     CHECK(!op[kk].is_diagonal());
+}
+
+
+TEST_CASE("Test simple operator sorting") {
+    unsigned int N = 5;
+    QubitOperator_t op = QubitOperator(N, {{"Z0+XY", {4,0,3,1,2}, 1.0}});
+    std::vector<OpData> ans = {OpData("0", 0), OpData("X", 1), OpData("Y", 2), OpData("+", 3), OpData("Z", 4)};
+    CHECK(op[0].operators() == ans);
 }
 
