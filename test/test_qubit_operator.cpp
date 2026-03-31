@@ -181,3 +181,16 @@ TEST_CASE("Test projector indices are not set") {
     CHECK(op[0].proj_indices == ans);
 }
 
+
+TEST_CASE("Test is_real() 1") {
+    unsigned int N = 5;
+    QubitOperator_t op = QubitOperator(N, {{"++", {2,3}, complex(1, 1e-14)}});
+    CHECK(op.is_real() == true);
+}
+
+
+TEST_CASE("Test is_real() 2") {
+    unsigned int N = 5;
+    QubitOperator_t op = QubitOperator(N, {{"++", {2,3}, complex(1, 1e-11)}});
+    CHECK(op.is_real() == false);
+}

@@ -15,6 +15,7 @@
 #include "bitset_hashmap.hpp"
 #include "constants.hpp"
 #include <boost/dynamic_bitset.hpp>
+#include <cmath>
 #include <complex>
 #include <cstdlib>
 #include <vector>
@@ -448,6 +449,8 @@ typedef struct QubitOperator
         }
         return os << ", width=" << self.width << "]>";
     }
+    auto begin() { return terms.begin(); }
+    auto end()   { return terms.end(); } 
     /**
      * The number of terms in the operator
      *
@@ -482,6 +485,37 @@ typedef struct QubitOperator
             }
         }
         return diag;
+    }
+    /**
+     * Can operator be described via a symmetric matrix
+     */
+    bool is_real() const
+    {
+        bool out = true;
+       for(std::size_t kk=0; kk < this->size(); kk++)
+        {
+            if(std::abs(terms[kk].coeff.imag()) > ATOL || !terms[kk].real_phase)
+            {
+                out = false;
+                break;
+            }
+        }
+        return out;
+    }
+    /**
+     * Set operator type inplace
+     * 
+     * @param[in] x Integer type of operator
+     * @throw Error if type is not 1 or 2
+     */
+    QubitOperator& set_type(int x)
+    {
+        if (x > 2 || x < 1)
+        {
+            throw std::runtime_error("Type must be 1 or 2");
+        }
+        this->type = x;
+        return *this;
     }
     std::vector<unsigned int> weights() const
     {
