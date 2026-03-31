@@ -234,3 +234,30 @@ TEST_CASE("Test term off-diagonal weight") {
     CHECK(op[2].offdiag_weight == 2);
     CHECK(op[3].offdiag_weight == 0);
 }
+
+
+TEST_CASE("Test operator splitting") {
+    QubitOperator_t op = QubitOperator(5);
+    std::vector<std::string> ops = {"X", "Z", "0", "Y", "1"};
+    for(auto item: ops)
+    {
+        op += QubitOperator(5, {{item, {0}, 1.0}});
+    }
+    auto [diag, off] = op.split_diagonal();
+    CHECK(diag.size() == 3);
+    CHECK(off.size() == 2);
+}
+
+
+TEST_CASE("Test operator splitting preserves operator type") {
+    QubitOperator_t op = QubitOperator(5);
+    std::vector<std::string> ops = {"X", "Z", "0", "Y", "1"};
+    for(auto item: ops)
+    {
+        op += QubitOperator(5, {{item, {0}, 1.0}});
+    }
+    op.set_type(2);
+    auto [diag, off] = op.split_diagonal();
+    CHECK(diag.type == 2);
+    CHECK(off.type == 2);
+}

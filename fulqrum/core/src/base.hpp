@@ -556,6 +556,31 @@ typedef struct QubitOperator
         }
         return out; 
     }
+    /**
+     * Split operator into diagonal and off-diagonal components
+     * 
+     * @param[out] pair Diagonal and off-diagonal operators
+     */
+    std::pair<QubitOperator, QubitOperator> split_diagonal() const
+    {
+        QubitOperator diag = QubitOperator(this->width);
+        QubitOperator off = QubitOperator(this->width);
+        for(auto term: this->terms)
+        {
+            if(term.is_diagonal())
+            {
+                diag.terms.push_back(term);
+            }
+            else
+            {
+                off.terms.push_back(term);
+            }
+        }
+        off.type = this->type;
+        diag.type = this->type;
+
+        return {diag, off};
+    }
 
 } QubitOperator_t;
 
