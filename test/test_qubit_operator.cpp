@@ -209,3 +209,16 @@ TEST_CASE("Test operator iteration") {
     }
 }
 
+
+TEST_CASE("Test operator from label") {
+    QubitOperator_t op = QubitOperator::from_label("YXIIII");
+    std::vector<OpData> ans = {OpData("X", 4), OpData("Y", 5)};
+    CHECK(op[0].operators() == ans);
+}
+
+
+TEST_CASE("Test operator from label for all id string") {
+    QubitOperator_t op = QubitOperator::from_label("IIIIII");
+    std::vector<OpData> ans = {};
+    CHECK(op[0].operators() == ans);
+}

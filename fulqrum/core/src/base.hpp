@@ -281,6 +281,27 @@ typedef struct QubitOperator
         std::vector<OperatorTerm_t>().swap(terms);
     }
     /**
+     * QubitOperator from string label
+     */
+    static QubitOperator from_label(std::string label)
+    {
+        unsigned int width = label.size();
+        std::size_t counter=0;
+        QubitOperator out = QubitOperator(width);
+        OperatorTerm term = OperatorTerm(1.0); // start with term set with coeff = 1.0
+        for (auto it = label.rbegin(); it != label.rend(); it++)
+        {
+            if(*it != 73)
+            {
+                term.values.push_back(oper_map[*it]);
+                term.indices.push_back(counter);
+            }
+            counter += 1;
+        }
+        out.terms.push_back(term);
+        return out;
+    }
+    /**
      * Grab a single term by index
      */
     OperatorTerm_t operator[] (std::size_t kk) const
