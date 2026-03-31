@@ -194,3 +194,18 @@ TEST_CASE("Test is_real() 2") {
     QubitOperator_t op = QubitOperator(N, {{"++", {2,3}, complex(1, 1e-11)}});
     CHECK(op.is_real() == false);
 }
+
+
+TEST_CASE("Test operator iteration") {
+    unsigned int N = 6;
+    QubitOperator_t op = QubitOperator(N, {{"XX", {2,3}, 1}});
+    op += QubitOperator(N, {{"YXXY", {0,2,3,5}, 1}});
+    op += QubitOperator(N, {{"ZZZZZZ", {0,1,2,3,4,5}, 1}});
+    std::size_t kk=0;
+    for(auto item: op)
+    {
+        CHECK(item.operators() == op[kk].operators());
+        kk += 1;
+    }
+}
+
