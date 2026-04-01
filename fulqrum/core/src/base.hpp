@@ -733,6 +733,18 @@ typedef struct QubitOperator
         return out;
     }
 
+    std::vector<unsigned int> offdiag_weights() const
+    {
+        std::vector<unsigned int> out;
+        out.resize(terms.size());
+        std::size_t kk;
+        for(kk=0; kk < terms.size(); kk++)
+        {
+            out[kk] = terms[kk].offdiag_weight;
+        }
+        return out;
+    }
+
 } QubitOperator_t;
 
 
