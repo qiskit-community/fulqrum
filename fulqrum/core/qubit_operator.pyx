@@ -856,7 +856,7 @@ cdef class QubitOperator():
     def offdiag_weight_sort(self):
         """In-place sort terms by their off-diagonal weight
         """
-        offdiag_weight_sort(self.oper)
+        self.oper.offdiag_weight_sort()
 
     def weight_sort(self):
         """In-place sort terms by their standard weight

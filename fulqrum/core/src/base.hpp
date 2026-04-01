@@ -250,6 +250,19 @@ inline int weight_comp(OperatorTerm& term1, OperatorTerm& term2)
     return term1.indices.size() < term2.indices.size();
 }
 
+/**
+ * Comparator for off-diagonal weight grouping
+ *
+ * @param term1 The first term
+ * @param term2 The second term
+ *
+ * @return comparator value
+ */
+inline int offweight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
+{
+    return term1.offdiag_weight < term2.offdiag_weight;
+}
+
 
 inline void set_weight_ptrs(std::vector<OperatorTerm>& __restrict terms, std::vector<std::size_t>& vec)
 {
@@ -707,16 +720,30 @@ typedef struct QubitOperator
 
         return {diag, off};
     }
-     /**
-     * In-place sorting of terms by weight
-     * 
-     */
+    /**
+    * In-place sorting of terms by weight
+    * 
+    */
     QubitOperator& weight_sort()
     {
-        // sort by group index
+        // sort by weight
         std::sort(terms.begin(), terms.end(), weight_comp);
         this->off_weight_sorted = 0;
         this->weight_sorted = 1;
+        this->sorted = 0;
+        return *this;
+    }
+    /**
+    * In-place sorting of terms by off-diagonal weight
+    * 
+    */
+    QubitOperator& offdiag_weight_sort()
+    {
+        // sort by off-diagonal weight
+        std::sort(terms.begin(), terms.end(), offweight_comp);
+        this->off_weight_sorted = 1;
+        this->weight_sorted = 0;
+        this->sorted = 0;
         return *this;
     }
 

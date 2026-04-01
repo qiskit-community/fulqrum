@@ -25,20 +25,6 @@ const int REV_EXT_MASK[7] = {1, 0, 0, 1, 1, 0, 0};
 
 
 /**
- * Comparator for off-diagonal weight grouping
- *
- * @param term1 The first term
- * @param term2 The second term
- *
- * @return comparator value
- */
-int offweight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
-{
-    return term1.offdiag_weight < term2.offdiag_weight;
-}
-
-
-/**
  * Set the pointers for the off-diagonal weights
  *
  * @param terms Operator terms

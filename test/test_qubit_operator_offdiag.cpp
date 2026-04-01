@@ -71,3 +71,14 @@ TEST_CASE("Check off-diag weight for simple multi-term 3") {
     CHECK(op.offdiag_weights() == ans);
 }
 
+
+TEST_CASE("Test off-diagonal weight sorting") {
+    QubitOperator op = QubitOperator::from_label("IXI");
+    op += QubitOperator::from_label("YXX");
+    op += QubitOperator::from_label("X1Y");
+    op += QubitOperator::from_label("ZI0");
+    op.offdiag_weight_sort();
+    std::vector<unsigned int> ans = {0, 1, 2, 3};
+    CHECK(op.offdiag_weights() == ans);
+}
+
