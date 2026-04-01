@@ -26,21 +26,23 @@
 #include <ostream>
 
 
-typedef std::tuple<std::string, std::vector<unsigned int>, std::complex<double>> TermData;
-typedef std::tuple<std::string, std::vector<unsigned int>> OpData;
-
 
 // Map converting standard char values into continuous values
-std::unordered_map<unsigned char, unsigned char> oper_map =
+inline std::unordered_map<unsigned char, unsigned char> oper_map =
     {
         {90, 0}, {48, 1}, {49, 2}, {88, 3}, {89, 4}, {45, 5}, {43, 6}
     };
 
 // Reverse map back to standard char values
-std::unordered_map<unsigned char, unsigned char> rev_oper_map =
+inline std::unordered_map<unsigned char, unsigned char> rev_oper_map =
     {
         {0, 90}, {1, 48}, {2, 49}, {3, 88}, {4, 89}, {5, 45}, {6, 43}
     };
+
+
+
+typedef std::tuple<std::string, std::vector<unsigned int>, std::complex<double>> TermData;
+typedef std::tuple<std::string, std::vector<unsigned int>> OpData;
 
 
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
@@ -223,7 +225,7 @@ typedef struct OperatorTerm
  * @param[in] indices Indices for the given term
  * @param[in] width The operator width
  */
-void _validate_indices(std::vector<unsigned int>& inds, unsigned int width){
+inline void _validate_indices(std::vector<unsigned int>& inds, unsigned int width){
     std::size_t size = inds.size();
     for(std::size_t kk=0; kk < size; kk++)
     {
@@ -243,13 +245,13 @@ void _validate_indices(std::vector<unsigned int>& inds, unsigned int width){
  *
  * @return comparator value
  */
-int weight_comp(OperatorTerm& term1, OperatorTerm& term2)
+inline int weight_comp(OperatorTerm& term1, OperatorTerm& term2)
 {
     return term1.indices.size() < term2.indices.size();
 }
 
 
-void set_weight_ptrs(std::vector<OperatorTerm>& __restrict terms, std::vector<std::size_t>& vec)
+inline void set_weight_ptrs(std::vector<OperatorTerm>& __restrict terms, std::vector<std::size_t>& vec)
 {
     vec.resize(0);
     vec.push_back(0);
@@ -279,7 +281,7 @@ void set_weight_ptrs(std::vector<OperatorTerm>& __restrict terms, std::vector<st
  * @param[in] atol Absolute tolerance for term truncation
  *
  */
-void combine_qubit_terms(std::vector<OperatorTerm>& __restrict terms,
+inline void combine_qubit_terms(std::vector<OperatorTerm>& __restrict terms,
                          std::vector<OperatorTerm>& __restrict out_terms,
                          unsigned int* touched,
                          double atol)
