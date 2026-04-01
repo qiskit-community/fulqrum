@@ -686,6 +686,12 @@ typedef struct QubitOperator
         this->type = x;
         return *this;
     }
+    /**
+    * Return vector of weights for each term
+    * 
+    * @param[out] out Vector of weights for terms
+    * 
+    */
     std::vector<unsigned int> weights() const
     {
         std::vector<unsigned int> out;
@@ -746,7 +752,13 @@ typedef struct QubitOperator
         this->sorted = 0;
         return *this;
     }
-
+    /**
+    * Combine repeated terms in operator
+    * 
+    * @param[in] atol Tolerance for determining if a combined coefficient is zero
+    * @param[out] out Output QubitOperator with terms combined
+    * 
+    */
     QubitOperator combine_repeated_terms(double atol = 1e-12)
     {
         QubitOperator out = QubitOperator(this->width);
@@ -759,7 +771,12 @@ typedef struct QubitOperator
         out.type = this->type;
         return out;
     }
-
+    /**
+    * Return vector of off-diagonal weights for each term
+    * 
+    * @param[out] out Vector of off-diagonal weights for terms
+    * 
+    */
     std::vector<unsigned int> offdiag_weights() const
     {
         std::vector<unsigned int> out;
