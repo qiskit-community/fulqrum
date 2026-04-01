@@ -261,3 +261,4 @@ TEST_CASE("Test operator splitting preserves operator type") {
     CHECK(diag.type == 2);
     CHECK(off.type == 2);
 }
+

@@ -37,18 +37,6 @@ int offweight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
     return term1.offdiag_weight < term2.offdiag_weight;
 }
 
-/**
- * Comparator for weight grouping
- *
- * @param term1 The first term
- * @param term2 The second term
- *
- * @return comparator value
- */
-int weight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
-{
-    return term1.indices.size() < term2.indices.size();
-}
 
 /**
  * Set the pointers for the off-diagonal weights
@@ -291,12 +279,4 @@ void offdiag_weight_sort(QubitOperator_t& oper)
     std::sort(oper.terms.begin(), oper.terms.end(), offweight_comp);
     oper.off_weight_sorted = 1;
     oper.weight_sorted = 0;
-}
-
-void weight_sort(QubitOperator_t& oper)
-{
-    // sort by group index
-    std::sort(oper.terms.begin(), oper.terms.end(), weight_comp);
-    oper.off_weight_sorted = 0;
-    oper.weight_sorted = 1;
 }

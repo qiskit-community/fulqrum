@@ -861,7 +861,7 @@ cdef class QubitOperator():
     def weight_sort(self):
         """In-place sort terms by their standard weight
         """
-        weight_sort(self.oper)
+        self.oper.weight_sort()
 
     @cython.boundscheck(False)
     def offdiag_weight_ptrs(self):

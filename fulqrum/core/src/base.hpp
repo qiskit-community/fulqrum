@@ -235,6 +235,21 @@ void _validate_indices(std::vector<unsigned int>& inds, unsigned int width){
 }
 
 
+
+/**
+ * Comparator for weight grouping
+ *
+ * @param term1 The first term
+ * @param term2 The second term
+ *
+ * @return comparator value
+ */
+int weight_comp(OperatorTerm& term1, OperatorTerm& term2)
+{
+    return term1.indices.size() < term2.indices.size();
+}
+
+
 /** @struct QubitOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
  *
@@ -580,6 +595,18 @@ typedef struct QubitOperator
         diag.type = this->type;
 
         return {diag, off};
+    }
+     /**
+     * In-place sorting of terms by weight
+     * 
+     */
+    QubitOperator& weight_sort()
+    {
+        // sort by group index
+        std::sort(terms.begin(), terms.end(), weight_comp);
+        this->off_weight_sorted = 0;
+        this->weight_sorted = 1;
+        return *this;
     }
 
 } QubitOperator_t;
