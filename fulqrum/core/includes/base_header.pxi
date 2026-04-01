@@ -45,6 +45,7 @@ cdef extern from "../src/base.hpp":
         QubitOperator_t(unsigned int)
         size_t size()
         QubitOperator_t& weight_sort()
+        QubitOperator_t combine_repeated_terms(double)
 
 
     ctypedef struct Subspace_t:

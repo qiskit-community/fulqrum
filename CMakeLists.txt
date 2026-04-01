@@ -10,7 +10,9 @@ project(Fulqrum
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-add_compile_options(-Wall -Wextra)
+
+add_compile_options(-Wall -Wextra -O3 -fopenmp)
+add_link_options(-fopenmp)
 
 include_directories(fulqrum/include third-party)
 add_subdirectory(third-party/doctest)

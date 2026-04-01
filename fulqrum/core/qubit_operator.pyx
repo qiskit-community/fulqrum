@@ -902,14 +902,8 @@ cdef class QubitOperator():
         Returns:
             QubitOperator: Operator with repeat terms combined
         """
-        cdef QubitOperator out = QubitOperator(self.width)
-        cdef size_t num_terms = self.oper.terms.size()
-        cdef unsigned int[::1] touched = np.zeros(num_terms, dtype=np.uint32)
-        if not self.oper.weight_sorted:
-            self.weight_sort()
-        combine_qubit_terms(self.oper.terms, out.oper.terms,
-                            &touched[0], atol)
-        out.oper.type = self.oper.type
+        cdef QubitOperator out = QubitOperator(self.oper.width)
+        out.oper = self.oper.combine_repeated_terms(atol)
         return out
 
     @cython.boundscheck(False)
