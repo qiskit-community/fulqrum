@@ -82,3 +82,38 @@ TEST_CASE("Test off-diagonal weight sorting") {
     CHECK(op.offdiag_weights() == ans);
 }
 
+
+TEST_CASE("Test off-diagonal weight pointers 1") {
+    QubitOperator op = QubitOperator::from_label("IIII+");
+    op += QubitOperator::from_label("III+I");
+    op += QubitOperator::from_label("II+II");
+    op += QubitOperator::from_label("I+III");
+    op += QubitOperator::from_label("+IIII");
+    std::vector<std::size_t> ans = {0, 5};
+    CHECK(op.offdiag_weight_ptrs() == ans);
+}
+
+
+TEST_CASE("Test off-diagonal weight pointers 2") {
+    QubitOperator op = QubitOperator::from_label("IIIII");
+    op += QubitOperator::from_label("IIZII");
+    op += QubitOperator::from_label("IZZZI");
+    op += QubitOperator::from_label("I+III");
+    op += QubitOperator::from_label("++III");
+    std::vector<std::size_t> ans = {3, 4, 5};
+    CHECK(op.offdiag_weight_ptrs() == ans);
+    CHECK(op[0].offdiag_weight == 0);
+    CHECK(op[1].offdiag_weight == 0);
+    CHECK(op[2].offdiag_weight == 0);
+    CHECK(op[3].offdiag_weight == 1);
+    CHECK(op[4].offdiag_weight == 2);
+}
+
+
+TEST_CASE("Test off-diagonal weight pointers all diag op") {
+    QubitOperator op = QubitOperator::from_label("IIIII");
+    op += QubitOperator::from_label("IIZII");
+    op += QubitOperator::from_label("IZZZI");
+    std::vector<std::size_t> ans = {};
+    CHECK(op.offdiag_weight_ptrs() == ans);
+}

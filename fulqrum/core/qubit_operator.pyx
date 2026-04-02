@@ -870,14 +870,9 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of off-diagonal weight pointers
         """
-        if not self.oper.off_weight_sorted:
-            self.offdiag_weight_sort()
-        cdef vector[size_t] vec
-        set_offdiag_weight_ptrs(self.oper.terms, vec)
+        cdef vector[size_t] vec = self.oper.offdiag_weight_ptrs()
         cdef size_t[::1] out = np.empty(vec.size(), dtype=np.uintp)
-        cdef size_t kk
-        for kk in range(vec.size()):
-            out[kk] = vec[kk]
+        memcpy(&out[0], &vec[0], vec.size() * sizeof(size_t))
         return np.asarray(out)
 
     def max_offdiag_ptr_size(self):

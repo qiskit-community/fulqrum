@@ -11,6 +11,7 @@
  * copyright notice, and modified files need to carry a notice indicating
  * that they have been altered from the originals.
  */
+
 #pragma once
 #include "bitset_hashmap.hpp"
 #include "constants.hpp"
@@ -373,6 +374,82 @@ inline void combine_qubit_terms(std::vector<OperatorTerm>& __restrict terms,
 
 } // end combine_qubit_terms
 
+/**
+ * Compute an integer value from the off-diagonal structure of a term
+ *
+ * @param term The term
+ *
+ * @return Structure value
+ */
+inline std::size_t term_offdiag_structure(const OperatorTerm_t& term)
+{
+    std::size_t kk;
+    std::size_t out = 0;
+    //#pragma omp simd reduction(+:out)
+    for(kk = 0; kk < term.values.size(); ++kk)
+    {
+        out +=
+            (term.indices[kk] + 1) *
+            (term.values[kk] > 2); // need plus one here so that an offdiag on 0 index does not look like a diagonal term
+    }
+    return out;
+}
+
+/**
+ * Comparator for off-diagonal grouping
+ *
+ * @param term1 The first term
+ * @param term2 The second term
+ *
+ * @return comparator value
+ */
+inline int offdiag_comp(const OperatorTerm& term1, const OperatorTerm& term2)
+{
+    return term_offdiag_structure(term1) < term_offdiag_structure(term2);
+}
+
+/**
+ * Sort terms in operator by their off-diagonal structure value
+ *
+ * @param terms Vector of operator terms
+ *
+ */
+inline void term_offdiag_sort(std::vector<OperatorTerm>& terms)
+{
+    std::sort(terms.begin(), terms.end(), offdiag_comp);
+}
+
+/**
+ * Set the pointers for the off-diagonal weights
+ *
+ * @param terms Operator terms
+ * @param vec Vector to add pointers to
+ *
+ */
+inline void set_offdiag_weight_ptrs(std::vector<OperatorTerm>& __restrict terms,
+                             std::vector<std::size_t>& vec)
+{
+    vec.resize(0);
+    std::size_t kk;
+    unsigned int val = terms[0].offdiag_weight;
+    if(val > 0) // Only start pointers where non-diagonal terms start
+    {
+        vec.push_back(0);
+    }
+    for(kk = 1; kk < terms.size(); kk++)
+    {
+        if(terms[kk].offdiag_weight > val)
+        {
+            vec.push_back(kk);
+            val = terms[kk].offdiag_weight;
+        }
+    }
+    if(vec.size() != 0)
+    {
+        vec.push_back(terms.size());
+    }
+}
+
 
 /** @struct QubitOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
@@ -727,6 +804,18 @@ typedef struct QubitOperator
         return {diag, off};
     }
     /**
+    * In-place sorting of terms into groups (shared off-diagonal structure)
+    * 
+    */
+    QubitOperator& group_sort()
+    {
+        if(this->size()) // do stuff only if there are terms in the operator
+        {
+
+        }
+        return *this;
+    }
+    /**
     * In-place sorting of terms by weight
     * 
     */
@@ -752,6 +841,21 @@ typedef struct QubitOperator
         this->sorted = 0;
         return *this;
     }
+    /**
+    * Pointers to starting indices for off-diagonally sorted operator
+    * 
+    */
+    std::vector<std::size_t> offdiag_weight_ptrs()
+    {
+        std::vector<std::size_t> ptrs;
+        if(!this->off_weight_sorted)
+        {
+            this->offdiag_weight_sort();
+        }
+        set_offdiag_weight_ptrs(terms, ptrs);
+        return ptrs;
+    }
+
     /**
     * Combine repeated terms in operator
     * 
