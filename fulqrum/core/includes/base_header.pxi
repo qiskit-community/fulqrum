@@ -68,6 +68,7 @@ cdef extern from "../src/base.hpp":
         vector[FermionicTerm_t] terms
         size_t size()
 
+    size_t max_offdiag_ptr_size(vector[size_t]&)
 
     # cdef cppclass TermData:
     #    TermData()

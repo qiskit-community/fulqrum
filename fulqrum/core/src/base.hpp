@@ -282,6 +282,8 @@ inline void set_weight_ptrs(std::vector<OperatorTerm>& __restrict terms, std::ve
     vec.push_back(terms.size());
 }
 
+
+
 /**
  * Combine repeated terms that represent same
  * operators, dropping terms smaller than requested tolerance.
@@ -426,7 +428,7 @@ inline void term_offdiag_sort(std::vector<OperatorTerm>& terms)
  * @param vec Vector to add pointers to
  *
  */
-inline void set_offdiag_weight_ptrs(std::vector<OperatorTerm>& __restrict terms,
+inline void set_offdiag_weight_ptrs(const std::vector<OperatorTerm>& __restrict terms,
                              std::vector<std::size_t>& vec)
 {
     vec.resize(0);
@@ -448,6 +450,39 @@ inline void set_offdiag_weight_ptrs(std::vector<OperatorTerm>& __restrict terms,
     {
         vec.push_back(terms.size());
     }
+}
+
+/**
+ * Find max. number of elements with same off-diag weight
+ *
+ * Used for offsetting the group counter for parallel execution
+ *
+ * @param[in] vec Vector of off-diagonal pointers
+ * @param[in] size Number of elements in vec
+ * 
+ * @returns size_t for max. number of terms
+ *
+ */
+inline std::size_t max_offdiag_ptr_size(std::vector<std::size_t>& vec)
+{
+    std::size_t kk;
+    std::size_t temp, max = 0;
+    if(!vec.size()) // This is the case for all diagonals operator
+    {
+        max = 0;
+    }
+    else
+    {
+    for(kk = 0; kk < vec.size() - 1; kk++)
+        {
+            temp = vec[kk + 1] - vec[kk];
+            if(temp > max)
+            {
+                max = temp;
+            }
+        }
+    }   
+    return max;
 }
 
 

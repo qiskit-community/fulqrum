@@ -23,32 +23,6 @@
 const int REV_EXT_MASK[7] = {1, 0, 0, 1, 1, 0, 0};
 
 
-
-/**
- * Find max. number of elements with same off-diag weight
- *
- * Used for offsetting the group counter for parallel execution
- *
- * @param vec Vector of off-diagonal pointers
- *
- * @returns Unsigned int for max. number of terms
- *
- */
-unsigned int max_offdiag_ptr_size(std::size_t* vec, std::size_t size)
-{
-    std::size_t kk;
-    unsigned int temp, max = 0;
-    for(kk = 0; kk < size - 1; kk++)
-    {
-        temp = vec[kk + 1] - vec[kk];
-        if(temp > max)
-        {
-            max = temp;
-        }
-    }
-    return max;
-}
-
 /**
  * In-place marks a term as extended or not
  *

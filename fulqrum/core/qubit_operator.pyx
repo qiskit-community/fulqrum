@@ -881,11 +881,8 @@ cdef class QubitOperator():
         Returns:
             int: Number of terms
         """
-        temp = self.offdiag_weight_ptrs()
-        if temp.shape[0] == 0:
-            return 0
-        cdef size_t[::1] out = temp
-        return max_offdiag_ptr_size(&out[0], out.shape[0])
+        cdef vector[size_t] ptrs = self.oper.offdiag_weight_ptrs()
+        return max_offdiag_ptr_size(ptrs)
 
     def combine_repeated_terms(self, double atol=1e-12):
         """Combine repeated terms that represent same
