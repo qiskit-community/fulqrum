@@ -275,3 +275,26 @@ TEST_CASE("Test QubitOperator combining terms") {
     CHECK(new_op[1].coeff == complex(5,0));
 }
 
+
+TEST_CASE("Test diagonal QubitOperator properties") {
+    QubitOperator op = QubitOperator(3);
+    std::vector<std::string> labels = {"III", "ZZ1", "Z0Z", "IZI", "ZI0"};
+    for(auto label: labels)
+    {
+        op += QubitOperator::from_label(label);
+    }
+    CHECK(op.width == 3);
+    CHECK(op.size() == 5);
+    CHECK(op.num_terms() == 5);
+    CHECK(op.sorted == 0);
+    CHECK(op.off_weight_sorted == 0);
+    CHECK(op[0].operators().size() == 0);
+    std::vector<OpData> ans1 = {OpData("1", 0), OpData("Z", 1), OpData("Z", 2)};
+    CHECK(op[1].operators() == ans1);
+    std::vector<OpData> ans2 = {OpData("Z", 0), OpData("0", 1), OpData("Z", 2)};
+    CHECK(op[2].operators() == ans2);
+    std::vector<OpData> ans3 = {OpData("Z", 1)};
+    CHECK(op[3].operators() == ans3);
+    std::vector<OpData> ans4 = {OpData("0", 0), OpData("Z", 2)};
+    CHECK(op[4].operators() == ans4);
+}
