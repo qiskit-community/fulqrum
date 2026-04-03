@@ -14,13 +14,10 @@ from libcpp.vector cimport vector
 include "base_header.pxi"
 
 cdef extern from "../src/operators.hpp":
-    #void sort_term_data(vector[unsigned int]& inds, vector[unsigned char]& vals) nogil
-
-    #void set_proj_indices(OperatorTerm_t& term) nogil
 
     void set_extended_flag(OperatorTerm_t& term) nogil
 
-    void set_offdiag_weight(OperatorTerm_t& term) nogil
+    void set_offdiag_weight_and_phase(OperatorTerm_t& term) nogil
 
     void combine_qubit_terms(vector[OperatorTerm_t]& terms,
                              vector[OperatorTerm_t]& out_terms,
