@@ -9,8 +9,10 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
+# cython: c_string_type=unicode, c_string_encoding=UTF-8
 
 from libcpp.vector cimport vector
+from libcpp.string cimport string
 from ..core.bitset cimport bitset_t
 from ..core.bitset_hashmap cimport BitsetHashMapWrapper
 
@@ -48,6 +50,7 @@ cdef extern from "../src/base.hpp":
         QubitOperator_t& offdiag_weight_sort()
         QubitOperator_t combine_repeated_terms(double)
         vector[size_t] offdiag_weight_ptrs()
+        QubitOperator_t& from_label(string)
 
 
     ctypedef struct Subspace_t:

@@ -288,13 +288,60 @@ TEST_CASE("Test diagonal QubitOperator properties") {
     CHECK(op.num_terms() == 5);
     CHECK(op.sorted == 0);
     CHECK(op.off_weight_sorted == 0);
+    CHECK(op[0].offdiag_weight == 0);
     CHECK(op[0].operators().size() == 0);
     std::vector<OpData> ans1 = {OpData("1", 0), OpData("Z", 1), OpData("Z", 2)};
     CHECK(op[1].operators() == ans1);
+    CHECK(op[1].offdiag_weight == 0);
     std::vector<OpData> ans2 = {OpData("Z", 0), OpData("0", 1), OpData("Z", 2)};
     CHECK(op[2].operators() == ans2);
+    CHECK(op[2].offdiag_weight == 0);
     std::vector<OpData> ans3 = {OpData("Z", 1)};
     CHECK(op[3].operators() == ans3);
+    CHECK(op[3].offdiag_weight == 0);
     std::vector<OpData> ans4 = {OpData("0", 0), OpData("Z", 2)};
     CHECK(op[4].operators() == ans4);
+    CHECK(op[4].offdiag_weight == 0);
+}
+
+
+TEST_CASE("Test real phase 1") {
+    QubitOperator op = QubitOperator::from_label("IIII");
+    CHECK(op[0].real_phase == 1);
+}
+
+
+TEST_CASE("Test real phase 2") {
+    QubitOperator op = QubitOperator::from_label("IYII");
+    CHECK(op[0].real_phase == 0);
+}
+
+
+TEST_CASE("Test real phase 3") {
+    QubitOperator op = QubitOperator::from_label("XZ01");
+    CHECK(op[0].real_phase == 1);
+}
+
+
+TEST_CASE("Test real phase 4") {
+    QubitOperator op = QubitOperator::from_label("IYIY");
+    CHECK(op[0].real_phase == -1);
+}
+
+
+TEST_CASE("Test real phase 5") {
+    QubitOperator op = QubitOperator::from_label("IYYY");
+    CHECK(op[0].real_phase == 0);
+}
+
+
+TEST_CASE("Test real phase 6") {
+    QubitOperator op = QubitOperator::from_label("YYYY");
+    CHECK(op[0].real_phase == 1);
+}
+
+
+TEST_CASE("Test real phase 7") {
+    QubitOperator op = QubitOperator::from_label("YYYYYY");
+    CHECK(op[0].real_phase == -1);
 }

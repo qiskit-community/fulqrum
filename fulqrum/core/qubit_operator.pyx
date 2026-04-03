@@ -123,25 +123,10 @@ cdef class QubitOperator():
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def from_label(self, string label, double complex coeff = 1.0):
-        cdef unsigned int num_qubits = label.size()
-        cdef OperatorTerm_t term = EmptyOperatorTerm
-        cdef QubitOperator out = QubitOperator(num_qubits)
-        cdef unsigned int kk
-        cdef const char * labels = label.c_str()
-        cdef char s, ind
-        for kk in range(num_qubits):
-            s = labels[num_qubits-kk-1]
-            if s != 73:
-                term.indices.push_back(kk)
-                ind = STR_TO_IND[s]
-                term.values.push_back(ind)
-                term.offdiag_weight += (ind > 2)
-        term.coeff = coeff
-        term.sort_term_data()
-        set_offdiag_weight_and_phase(term)
-        term.set_proj_indices()
-        set_extended_flag(term)
-        out.oper.terms.push_back(term)
+        cdef QubitOperator_t temp
+        cdef QubitOperator out = QubitOperator(label.size())
+        out.oper = temp.from_label(label)
+        out.oper.terms[0].coeff = coeff
         return out
 
     @classmethod
