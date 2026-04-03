@@ -109,7 +109,7 @@ cdef class QubitOperator():
                 else:
                     term.coeff = 1
                 term.sort_term_data()
-                set_offdiag_weight(term)
+                set_offdiag_weight_and_phase(term)
                 term.set_proj_indices()
                 set_extended_flag(term)
                 self.oper.terms.push_back(term)
@@ -138,7 +138,7 @@ cdef class QubitOperator():
                 term.offdiag_weight += (ind > 2)
         term.coeff = coeff
         term.sort_term_data()
-        set_offdiag_weight(term)
+        set_offdiag_weight_and_phase(term)
         term.set_proj_indices()
         set_extended_flag(term)
         out.oper.terms.push_back(term)
@@ -849,7 +849,7 @@ cdef class QubitOperator():
             term_offdiag_sort(self.oper.terms)
             self.oper.off_weight_sorted = 1
         cdef size_t[::1] ptrs = self.offdiag_ptrs()
-        cdef unsigned int max_group_size = _max_offdiag_group_size(&ptrs[0], ptrs.shape[0])
+        cdef unsigned int max_group_size = self.max_offdiag_ptr_size()
         term_group_sort(self.oper.terms, &ptrs[0], ptrs.shape[0], max_group_size)
         self.oper.sorted = 1
 

@@ -18,53 +18,7 @@
 #include <cstdlib>
 #include <vector>
 
-// Reverse mask for marking terms as extended or not
-// Z, 0, 1, X, Y, -, +
-const int REV_EXT_MASK[7] = {1, 0, 0, 1, 1, 0, 0};
 
-
-/**
- * In-place marks a term as extended or not
- *
- * @param term Hamiltonian term
- *
- */
-void set_extended_flag(OperatorTerm_t& term)
-{
-    std::size_t kk;
-    int out = 1;
-    for(kk = 0; kk < term.values.size(); kk++)
-    {
-        out *= REV_EXT_MASK[term.values[kk]];
-    }
-    term.extended = (!out);
-}
-
-/**
- * In-place set off-diagonal weight and real_phase
- *
- * @param term Hamiltonian term
- *
- */
-void set_offdiag_weight(OperatorTerm_t& term)
-{
-    std::size_t kk;
-    unsigned int weight = 0;
-    unsigned int temp, num_y = 0;
-    unsigned char* values = &term.values[0];
-    for(kk = 0; kk < term.values.size(); kk++)
-    {
-        weight += (values[kk] > 2);
-        num_y += (values[kk] == 4);
-    }
-    term.offdiag_weight = weight;
-    // Do the real_phase for checking if operator itself can be cast as symmetric (real)
-    temp = num_y % 4;
-    if(temp)
-    {
-        term.real_phase = (temp % 2) - 1;
-    }
-}
 
 
 inline unsigned int term_ladder_int(const OperatorTerm_t& term, unsigned int ladder_width)
