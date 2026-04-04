@@ -283,6 +283,24 @@ inline void set_weight_ptrs(std::vector<OperatorTerm>& __restrict terms, std::ve
 }
 
 
+inline void set_group_ptrs(const std::vector<OperatorTerm>& __restrict terms, std::vector<std::size_t>& vec)
+{
+    vec.resize(0);
+    vec.push_back(0);
+    std::size_t kk;
+    int val = terms[0].group;
+    for(kk = 1; kk < terms.size(); kk++)
+    {
+        if(terms[kk].group > val)
+        {
+            vec.push_back(kk);
+            val = terms[kk].group;
+        }
+    }
+    vec.push_back(terms.size());
+}
+
+
 
 /**
  * Combine repeated terms that represent same
@@ -434,10 +452,7 @@ inline void set_offdiag_weight_ptrs(const std::vector<OperatorTerm>& __restrict 
     vec.resize(0);
     std::size_t kk;
     unsigned int val = terms[0].offdiag_weight;
-    if(val > 0) // Only start pointers where non-diagonal terms start
-    {
-        vec.push_back(0);
-    }
+    vec.push_back(0);
     for(kk = 1; kk < terms.size(); kk++)
     {
         if(terms[kk].offdiag_weight > val)
@@ -446,10 +461,7 @@ inline void set_offdiag_weight_ptrs(const std::vector<OperatorTerm>& __restrict 
             val = terms[kk].offdiag_weight;
         }
     }
-    if(vec.size() != 0)
-    {
-        vec.push_back(terms.size());
-    }
+    vec.push_back(terms.size());
 }
 
 /**
@@ -547,10 +559,16 @@ inline int offdiag_group_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
     return term1.group < term2.group;
 }
 
+
+/**
+ * Sort terms with same off-diagonal weight into groups that share the
+ * same off-diagonal structure
+ *
+ */
 inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
-                     std::size_t* __restrict weight_ptrs,
+                     std::size_t* __restrict offdiag_weight_ptrs,
                      std::size_t len_ptrs,
-                     unsigned int max_group_size)
+                     std::size_t max_group_size)
 {
     std::size_t ii;
     // Reset all groupings
@@ -563,12 +581,14 @@ inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
         }
     } // end reset
 
+ 
+
     std::ptrdiff_t dist;
     #pragma omp parallel for schedule(dynamic) if(terms.size() > 1024)
     for(ii = 0; ii < len_ptrs - 1; ii++)
     {
-        std::size_t start = weight_ptrs[ii];
-        std::size_t stop = weight_ptrs[ii + 1];
+        std::size_t start = offdiag_weight_ptrs[ii];
+        std::size_t stop = offdiag_weight_ptrs[ii + 1];
         int group_idx = ii * (max_group_size);
         std::size_t kk, ll, idx;
         OperatorTerm_t* term;
@@ -1065,9 +1085,40 @@ typedef struct QubitOperator
     {
         if(this->size()) // do stuff only if there are terms in the operator
         {
-
+            if(!this->off_weight_sorted)
+            {
+                this->offdiag_weight_sort();
+            }
+            std::vector<std::size_t> ptrs = this->offdiag_weight_ptrs();
+            std::size_t max_group_size = max_offdiag_ptr_size(ptrs);
+            term_group_sort(this->terms, &ptrs[0], ptrs.size(), max_group_size);
         }
+        this->sorted = 1;
         return *this;
+    }
+    /**
+    * Return a vector of all the term group labels
+    * 
+    */
+    std::vector<int> groups() const
+    {
+        std::vector<int> out;
+        out.resize(terms.size());
+        for(std::size_t kk=0 ; kk < terms.size(); kk++)
+        {
+            out[kk] = terms[kk].group;
+        }
+        return out;
+    }
+    /**
+    * Return a vector of pointers to all the groups
+    * 
+    */
+    std::vector<std::size_t> group_ptrs()
+    {
+        std::vector<std::size_t> out;
+        set_group_ptrs(terms, out);
+        return out;
     }
 
     /**

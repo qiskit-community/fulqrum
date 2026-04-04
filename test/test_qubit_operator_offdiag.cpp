@@ -100,7 +100,7 @@ TEST_CASE("Test off-diagonal weight pointers 2") {
     op += QubitOperator::from_label("IZZZI");
     op += QubitOperator::from_label("I+III");
     op += QubitOperator::from_label("++III");
-    std::vector<std::size_t> ans = {3, 4, 5};
+    std::vector<std::size_t> ans = {0, 3, 4, 5};
     CHECK(op.offdiag_weight_ptrs() == ans);
     CHECK(op[0].offdiag_weight == 0);
     CHECK(op[1].offdiag_weight == 0);
@@ -114,7 +114,7 @@ TEST_CASE("Test off-diagonal weight pointers all diag op") {
     QubitOperator op = QubitOperator::from_label("IIIII");
     op += QubitOperator::from_label("IIZII");
     op += QubitOperator::from_label("IZZZI");
-    std::vector<std::size_t> ans = {};
+    std::vector<std::size_t> ans = {0, 3};
     CHECK(op.offdiag_weight_ptrs() == ans);
 }
 
@@ -137,12 +137,12 @@ TEST_CASE("Test max offdiag pointer size 2") {
     op += QubitOperator::from_label("I+III");
     op += QubitOperator::from_label("++III");
     std::vector<std::size_t> ptrs = op.offdiag_weight_ptrs();
-    CHECK(max_offdiag_ptr_size(ptrs) == 1);
+    CHECK(max_offdiag_ptr_size(ptrs) == 3);
 }
 
 
 TEST_CASE("Test max offdiag pointer size 3") {
-    QubitOperator op = QubitOperator::from_label("IIIII");
+    QubitOperator op = QubitOperator::from_label("+IIII");
     op += QubitOperator::from_label("IIZII");
     op += QubitOperator::from_label("IZZZI");
     op += QubitOperator::from_label("I+II-");
@@ -157,5 +157,5 @@ TEST_CASE("Test max offdiag pointer size for all diagonals") {
     op += QubitOperator::from_label("IIZII");
     op += QubitOperator::from_label("IZZZI");
     std::vector<std::size_t> ptrs = op.offdiag_weight_ptrs();
-    CHECK(max_offdiag_ptr_size(ptrs) == 0);
+    CHECK(max_offdiag_ptr_size(ptrs) == 3);
 }

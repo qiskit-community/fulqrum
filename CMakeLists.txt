@@ -22,6 +22,7 @@ add_executable(fulqrum_tests
     test/doctest_main.cpp
     test/test_qubit_operator.cpp
     test/test_qubit_operator_offdiag.cpp
+    test/test_grouping.cpp
 )
 target_include_directories(fulqrum_tests PRIVATE third-party/doctest/doctest)
 target_link_libraries(fulqrum_tests

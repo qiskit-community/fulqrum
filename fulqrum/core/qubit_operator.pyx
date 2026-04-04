@@ -828,15 +828,7 @@ cdef class QubitOperator():
         """Inplace sorting of operator terms according to off-diagonal
         structure.
         """
-        if not self.oper.terms.size():
-            return
-        if not self.oper.off_weight_sorted:
-            term_offdiag_sort(self.oper.terms)
-            self.oper.off_weight_sorted = 1
-        cdef size_t[::1] ptrs = self.offdiag_ptrs()
-        cdef unsigned int max_group_size = self.max_offdiag_ptr_size()
-        term_group_sort(self.oper.terms, &ptrs[0], ptrs.shape[0], max_group_size)
-        self.oper.sorted = 1
+        self.oper.group_sort()
 
     def offdiag_weight_sort(self):
         """In-place sort terms by their off-diagonal weight
