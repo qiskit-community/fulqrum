@@ -88,7 +88,7 @@ def test_offdiag_weight_ptrs3():
     op += fq.QubitOperator.from_label("IZZZI")
     op += fq.QubitOperator.from_label("I+III")
     op += fq.QubitOperator.from_label("++III")
-    assert np.allclose(op.offdiag_weight_ptrs(), [3, 4, 5])
+    assert np.allclose(op.offdiag_weight_ptrs(), [0, 3, 4, 5])
     assert np.allclose(op[:3].offdiag_weights(), [0, 0, 0])
     assert np.allclose(op[3].offdiag_weights(), [1])
     assert np.allclose(op[4].offdiag_weights(), [2])
@@ -99,7 +99,7 @@ def test_offdiag_weight_ptrs_all_diag():
     op = fq.QubitOperator.from_label("IIIII")
     op += fq.QubitOperator.from_label("IIZII")
     op += fq.QubitOperator.from_label("IZZZI")
-    assert np.allclose(op.offdiag_weight_ptrs(), [])
+    assert np.allclose(op.offdiag_weight_ptrs(), [0, 3])
 
 
 def test_max_offdiag_weight_ptr_size1():
@@ -119,7 +119,7 @@ def test_max_offdiag_weight_ptr_size2():
     op += fq.QubitOperator.from_label("IZZZI")
     op += fq.QubitOperator.from_label("I+III")
     op += fq.QubitOperator.from_label("++III")
-    assert op.max_offdiag_ptr_size() == 1
+    assert op.max_offdiag_ptr_size() == 3
 
 
 def test_max_offdiag_weight_ptr_size3():
@@ -129,7 +129,7 @@ def test_max_offdiag_weight_ptr_size3():
     op += fq.QubitOperator.from_label("IZZZI")
     op += fq.QubitOperator.from_label("I+II-")
     op += fq.QubitOperator.from_label("++III")
-    assert op.max_offdiag_ptr_size() == 2
+    assert op.max_offdiag_ptr_size() == 3
 
 
 def test_max_offdiag_weight_ptr_size4():
@@ -137,4 +137,4 @@ def test_max_offdiag_weight_ptr_size4():
     op = fq.QubitOperator.from_label("IIIII")
     op += fq.QubitOperator.from_label("IIZII")
     op += fq.QubitOperator.from_label("IZZZI")
-    assert op.max_offdiag_ptr_size() == 0
+    assert op.max_offdiag_ptr_size() == 3
