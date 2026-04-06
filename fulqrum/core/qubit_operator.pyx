@@ -293,8 +293,7 @@ cdef class QubitOperator():
             QubitOperator
         """
         cdef QubitOperator out = QubitOperator(self.width)
-        out.oper.terms = self.oper.terms
-        out.oper.type = self.oper.type
+        out.oper = self.oper.copy()
         return out
 
     @cython.boundscheck(False)
@@ -304,13 +303,7 @@ cdef class QubitOperator():
         Returns:
             int: Is operator real-valued
         """
-        cdef size_t kk
-        cdef int out = 1
-        for kk in range(self.oper.terms.size()):
-            if fabs(self.oper.terms[kk].coeff.imag) > ATOL or ( not self.oper.terms[kk].real_phase):
-                out = 0
-                break
-        return out
+        return self.oper.is_real()
 
     @cython.boundscheck(False)
     def real_phases(self):

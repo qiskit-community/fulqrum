@@ -1101,7 +1101,7 @@ typedef struct QubitOperator
     bool is_real() const
     {
         bool out = true;
-       for(std::size_t kk=0; kk < this->size(); kk++)
+        for(std::size_t kk=0; kk < this->size(); kk++)
         {
             if(std::abs(terms[kk].coeff.imag()) > ATOL || !terms[kk].real_phase)
             {

@@ -14,6 +14,7 @@
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libcpp.pair cimport pair
+from libcpp cimport bool
 from ..core.bitset cimport bitset_t
 from ..core.bitset_hashmap cimport BitsetHashMapWrapper
 
@@ -47,6 +48,8 @@ cdef extern from "../src/base.hpp":
         QubitOperator_t()
         QubitOperator_t(unsigned int)
         size_t size()
+        bool is_real()
+        QubitOperator_t copy()
         QubitOperator_t& weight_sort()
         QubitOperator_t& offdiag_weight_sort()
         QubitOperator_t& group_sort()
