@@ -13,6 +13,7 @@
 
 from libcpp.vector cimport vector
 from libcpp.string cimport string
+from libcpp.pair cimport pair
 from ..core.bitset cimport bitset_t
 from ..core.bitset_hashmap cimport BitsetHashMapWrapper
 
@@ -54,6 +55,7 @@ cdef extern from "../src/base.hpp":
         QubitOperator_t& from_label(string)
         double constant_energy()
         QubitOperator_t remove_constant_terms()
+        pair[QubitOperator_t, QubitOperator_t] split_diagonal()
 
 
     ctypedef struct Subspace_t:

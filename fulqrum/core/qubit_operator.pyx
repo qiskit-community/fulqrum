@@ -15,6 +15,7 @@ cimport cython
 from cython.operator cimport dereference
 from libcpp.vector cimport vector
 from libcpp.string cimport string
+from libcpp.pair cimport pair
 from libc.string cimport memcpy
 from libcpp cimport bool
 from libcpp.unordered_map cimport unordered_map
@@ -340,18 +341,11 @@ cdef class QubitOperator():
         Returns:
             tuple: QubitOperators for diagonal and non-diagonal parts
         """
-        cdef size_t kk
         cdef QubitOperator diag = QubitOperator(self.oper.width)
         cdef QubitOperator offdiag = QubitOperator(self.oper.width)
-        cdef OperatorTerm_t term
-        for kk in range(self.oper.terms.size()):
-            term = self.oper.terms[kk]
-            if diagonal_term(&term):
-                diag.oper.terms.push_back(term)
-            else:
-                offdiag.oper.terms.push_back(term)
-        diag.oper.type = self.oper.type
-        offdiag.oper.type = self.oper.type
+        cdef pair[QubitOperator_t, QubitOperator_t] out = self.oper.split_diagonal()
+        diag.oper = out.first
+        offdiag.oper = out.second
         return diag, offdiag
 
     @cython.boundscheck(False)
