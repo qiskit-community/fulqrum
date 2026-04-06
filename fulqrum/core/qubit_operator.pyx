@@ -755,26 +755,6 @@ cdef class QubitOperator():
             out[kk] = self.oper.terms[kk].extended
         return np.asarray(out)
 
-    @cython.boundscheck(False)
-    def offdiag_ptrs(self):
-        """Pointers for off-diagonal term sorting
-
-        Returns:
-            ndarray: Array of type size_t
-        """
-        cdef size_t kk
-        _offdiag_sort(self)
-        cdef vector[size_t] ptrs
-        cdef current_val = term_offdiag_structure(self.oper.terms[0])
-        ptrs.push_back(0)
-        for kk in range(1, self.oper.terms.size()):
-            if term_offdiag_structure(self.oper.terms[kk]) != current_val:
-                ptrs.push_back(kk)
-                current_val = term_offdiag_structure(self.oper.terms[kk])
-        ptrs.push_back(self.oper.terms.size())
-        cdef size_t[::1] out = np.empty(ptrs.size(), dtype=np.uintp)
-        memcpy(&out[0], &ptrs[0], ptrs.size() * sizeof(size_t))
-        return np.asarray(out)
 
     def offdiag_term_grouping(self):
         """Inplace sorting of operator terms according to off-diagonal
