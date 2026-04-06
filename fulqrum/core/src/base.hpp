@@ -1276,6 +1276,10 @@ typedef struct QubitOperator
     */
     std::vector<std::size_t> group_ptrs()
     {
+        if(!this->sorted)
+        {
+            this->group_sort();
+        }
         std::vector<std::size_t> out;
         set_group_ptrs(terms, out);
         return out;

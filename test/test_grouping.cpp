@@ -83,3 +83,61 @@ TEST_CASE("Test split operator grouping") {
     CHECK(diag.groups() == diag_ans);
     CHECK(off.groups() == off_ans);
 }
+
+
+TEST_CASE("Test basic term group pointers1 ") {
+    QubitOperator H = QubitOperator(5);
+    H += QubitOperator::from_label("IIIIX");
+    H += QubitOperator::from_label("IIIXI");
+    H += QubitOperator::from_label("IIYII");
+    H += QubitOperator::from_label("I-III");
+    H += QubitOperator::from_label("+IIII");
+    CHECK(H.group_ptrs() == std::vector<std::size_t>{0, 1, 2, 3, 4, 5});
+}
+
+
+TEST_CASE("Test basic term group pointers 2") {
+    QubitOperator H = QubitOperator(5);
+    H += QubitOperator::from_label("IIIIX");
+    H += QubitOperator::from_label("IIIIY");
+    H += QubitOperator::from_label("IIIXI");
+    H += QubitOperator::from_label("IIYII");
+    H += QubitOperator::from_label("I-III");
+    H += QubitOperator::from_label("+IIII");
+    CHECK(H.group_ptrs() == std::vector<std::size_t>{0, 2, 3, 4, 5, 6});
+}
+
+
+TEST_CASE("Test basic term group pointers 3") {
+    QubitOperator H = QubitOperator(5);
+    H += QubitOperator::from_label("IIIIX");
+    H += QubitOperator::from_label("IIIXI");
+    H += QubitOperator::from_label("IIYII");
+    H += QubitOperator::from_label("I-III");
+    H += QubitOperator::from_label("+IIII");
+    H += QubitOperator::from_label("XIIII");
+    CHECK(H.group_ptrs() == std::vector<std::size_t>{0, 1, 2, 3, 4, 6});
+}
+
+
+TEST_CASE("Test basic term group pointers 4") {
+    QubitOperator H = QubitOperator(5);
+    H += QubitOperator::from_label("IIIIX");
+    H += QubitOperator::from_label("+IIII");
+    H += QubitOperator::from_label("XIIII");
+    H += QubitOperator::from_label("YIIII");
+    H += QubitOperator::from_label("IIIII");
+    CHECK(H.group_ptrs() == std::vector<std::size_t>{0, 1, 2, 5});
+}
+
+
+TEST_CASE("Test basic term group pointers 5") {
+    QubitOperator op = QubitOperator::from_label("IIII");
+    op += QubitOperator::from_label("XIIX");
+    op += QubitOperator::from_label("YIIX");
+    op += QubitOperator::from_label("IYYI");
+    op += QubitOperator::from_label("ZIII");
+    op += QubitOperator::from_label("XYYX");
+    op += QubitOperator::from_label("IIIX");
+    CHECK(op.group_ptrs() == std::vector<std::size_t>{0, 2, 3, 5, 6, 7});
+}
