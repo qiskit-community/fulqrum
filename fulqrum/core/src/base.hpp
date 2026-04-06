@@ -1192,7 +1192,35 @@ typedef struct QubitOperator
         set_group_ptrs(terms, out);
         return out;
     }
-
+    /**
+    * Return a vector of pointers to all the groups
+    * 
+    */
+    QubitOperator terms_by_group(int idx)
+    {
+        if(!this->sorted)
+        {
+            throw std::runtime_error("Operator must be group sorted first");
+        }
+        QubitOperator out = QubitOperator(this->width);
+        for(std::size_t kk=0; kk < this->size(); kk++)
+        {
+            if(terms[kk].group == idx)
+            {
+                out.terms.push_back(terms[kk]);
+            }
+            else if (terms[kk].group > idx)
+            {
+                break;
+            }
+        }
+        if(!out.size())
+        {
+            throw std::runtime_error("No terms with given group index found");
+        }
+        out.sorted = 1;
+        return out;
+    }
     /**
     * Combine repeated terms in operator
     * 
