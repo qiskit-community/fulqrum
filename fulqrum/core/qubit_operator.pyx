@@ -709,9 +709,9 @@ cdef class QubitOperator():
             ndarray: Array of ints indicating group of each term
         """
         cdef size_t kk
-        cdef int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.int32)
-        for kk in range(self.oper.terms.size()):
-            out[kk] = self.oper.terms[kk].group
+        cdef vector[int] groups = self.oper.groups()
+        cdef int[::1] out = np.empty(groups.size(), dtype=np.int32)
+        memcpy(&out[0], &groups[0], groups.size() * sizeof(int))
         return np.asarray(out)
 
     @cython.boundscheck(False)

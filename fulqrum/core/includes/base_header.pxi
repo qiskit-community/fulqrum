@@ -53,6 +53,7 @@ cdef extern from "../src/base.hpp":
         QubitOperator_t& weight_sort()
         QubitOperator_t& offdiag_weight_sort()
         QubitOperator_t& group_sort()
+        vector[int] groups()
         QubitOperator_t combine_repeated_terms(double)
         vector[size_t] offdiag_weight_ptrs()
         QubitOperator_t& from_label(string)
