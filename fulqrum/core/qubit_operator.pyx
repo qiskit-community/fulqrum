@@ -603,28 +603,6 @@ cdef class QubitOperator():
                     return 0
         return 1
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    def add_operator(self, unsigned int qubit, str operator, bool overwrite=False):
-        cdef size_t kk
-        cdef OperatorTerm_t temp_term
-        if self.oper.terms.size() == 0:
-            temp_term = EmptyOperatorTerm
-            temp_term.coeff = 1.0
-            self.oper.terms.push_back(temp_term)
-        if self.oper.terms.size() > 1:
-            raise FulqrumError('Can only add operators to single-term QubitOperators.')
-        if qubit >= self.oper.width:
-            raise FulqrumError(f"qubit number {qubit} out of range")
-        # Check if element already exists if overwrite=False
-        if not overwrite:
-            for kk in range(self.oper.terms[0].indices.size()):
-                if self.oper.terms[0].indices[kk] == qubit:
-                    raise FulqrumError(f"Operator {IND_TO_STR[self.oper.terms[0].indices[kk]]} already exists at qubit {qubit}")
-        if operator != 'I':
-            self.oper.terms[0].indices.push_back(qubit)
-            self.oper.terms[0].values.push_back(STR_TO_IND[operator])
-        self.oper.sorted = 0
 
     @cython.boundscheck(False)
     def remove_constant_terms(self, bool return_value=True):
