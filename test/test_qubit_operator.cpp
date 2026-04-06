@@ -345,3 +345,20 @@ TEST_CASE("Test real phase 7") {
     QubitOperator op = QubitOperator::from_label("YYYYYY");
     CHECK(op[0].real_phase == -1);
 }
+
+
+TEST_CASE("Test removal of diagonal terms") {
+    unsigned int N = 6;
+    QubitOperator op = QubitOperator(N);
+    std::vector<std::string> diag_ops = {"I", "X", "Z", "0", "Y", "I"};
+    unsigned int kk;
+    for(kk=0; kk < N; kk++)
+    {
+        op +=  QubitOperator(N, {{diag_ops[kk], {kk}, 1.0/(N+kk)}});
+    }
+    CHECK(std::abs(op.constant_energy() - 0.25757575757575757) < 1e-14);
+    QubitOperator out = op.remove_constant_terms();
+    CHECK(out.size() == 4);
+    CHECK(out.constant_energy() == 0);
+}
+

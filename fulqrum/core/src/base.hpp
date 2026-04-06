@@ -67,19 +67,27 @@ typedef struct OperatorTerm
 
     OperatorTerm() {}
     OperatorTerm(std::complex<double> c): coeff(c) {} // Init empty term with given coefficient
-    OperatorTerm(std::string vals, std::vector<unsigned int> inds, std::complex<double> c): indices(inds), coeff(c)
+    OperatorTerm(std::string vals, std::vector<unsigned int> inds, std::complex<double> c): coeff(c)
     {
+        //check that length of values == length of indices
+        if(vals.size() != inds.size())
+        {
+            throw std::runtime_error("Size of input string does not equal that of indices");
+        }
         unsigned char val;
+        unsigned int counter = 0;
         // Iterate over string of values, mapping to new values and adding to term
         for(std::string::iterator it = vals.begin(); it != vals.end(); ++it)
         {
-            if(*it == 73)
+            counter += 1;
+            if(*it == 73) // identity operator
             {
-                throw std::runtime_error("Cannot use identity operators in sparse format.");
+                continue;
             }
             else{
                 val = oper_map[*it];
                 values.push_back(val);
+                indices.push_back(inds[counter-1]);
                 this->offdiag_weight += (val > 2);
             }
         }
@@ -1158,6 +1166,37 @@ typedef struct QubitOperator
 
         return {diag, off};
     }
+    /**Constant energy of operator
+    * 
+    */
+    double constant_energy() const
+    {
+        double out = 0;
+        for(std::size_t kk=0; kk < terms.size(); kk++)
+        {
+            if(!terms[kk].indices.size())
+            {
+                out += terms[kk].coeff.real();
+            } 
+        }
+        return out;
+    }
+    /**
+    * Remove constant terms from operator
+    * 
+    */
+    QubitOperator remove_constant_terms()
+    {
+        QubitOperator out = QubitOperator(this->width);
+        for(std::size_t kk=0; kk < this->size(); kk++)
+        {
+            if(terms[kk].indices.size())
+            {
+                out.terms.push_back(terms[kk]);
+            } 
+        }
+        return out;
+    }
     /**
     * In-place sorting of terms by weight
     * 
@@ -1268,6 +1307,7 @@ typedef struct QubitOperator
             throw std::runtime_error("No terms with given group index found");
         }
         out.sorted = 1;
+        out.type = this->type;
         return out;
     }
     /**
