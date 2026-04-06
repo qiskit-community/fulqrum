@@ -784,14 +784,6 @@ cdef class QubitOperator():
         memcpy(&out[0], &vec[0], vec.size() * sizeof(size_t))
         return np.asarray(out)
 
-    def max_offdiag_ptr_size(self):
-        """Maximum number of elements in an off-diagonal pointer term
-
-        Returns:
-            int: Number of terms
-        """
-        cdef vector[size_t] ptrs = self.oper.offdiag_weight_ptrs()
-        return max_offdiag_ptr_size(ptrs)
 
     def combine_repeated_terms(self, double atol=1e-12):
         """Combine repeated terms that represent same
