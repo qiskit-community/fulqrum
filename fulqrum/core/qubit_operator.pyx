@@ -948,7 +948,7 @@ cdef class QubitOperator():
         if not self.oper.sorted:
             self.offdiag_term_grouping()
         cdef size_t[::1] group_ptrs = self.group_ptrs()
-        sort_groups_by_ladder_int(self.oper, &group_ptrs[0], group_ptrs.shape[0]-1, ladder_width)
+        sort_groups_by_ladder_int(self.oper.terms, &group_ptrs[0], group_ptrs.shape[0]-1, ladder_width)
         self.oper.ladder_width = ladder_width
         self.oper.ladder_sorted = 1
 

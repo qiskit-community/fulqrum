@@ -675,6 +675,78 @@ inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
     }
 }
 
+/**
+ * Compute the ladder integer value for a given qubit term
+ *
+ */
+inline unsigned int term_ladder_int(const OperatorTerm& term, unsigned int ladder_width)
+{
+    unsigned int subset = 0;
+    unsigned int kk, counter = 0;
+    for(kk = 0; kk < term.indices.size(); kk++)
+    {
+        if(term.values[kk] > 4)
+        {
+            subset = subset | ((unsigned int)term.values[kk] - 5U) << counter;
+            counter += 1;
+        }
+    }
+    if(counter < ladder_width)
+    {
+        ladder_width = counter;
+    }
+    if(!counter)
+    {
+        subset = MAX_UINT;
+    }
+    else
+    {
+        subset = subset & ((1U << ladder_width) - 1U);
+    }
+    return subset;
+}
+
+
+
+/**
+ * Sort terms within each group by their ladder integer values
+ *
+ */
+inline void sort_groups_by_ladder_int(std::vector<OperatorTerm>& terms,
+                                      const std::size_t* group_ptrs,
+                                      unsigned int num_groups,
+                                      unsigned int ladder_width)
+{
+
+    unsigned int kk;
+    #pragma omp parallel for if(num_groups > 128)
+    for(kk = 0; kk < num_groups; kk++)
+    {
+        std::size_t start, stop;
+        start = group_ptrs[kk];
+        stop = group_ptrs[kk + 1];
+        if(!terms[start].group) // This is true if the group=0 and thus are diagonal terms
+        {
+            continue;
+        }
+        std::sort(&terms[start],
+                  &terms[stop],
+                  [=](const OperatorTerm& a, const OperatorTerm& b) {
+                      unsigned int res_a, res_b;
+                      res_a = term_ladder_int(a, ladder_width);
+                      res_b = term_ladder_int(b, ladder_width);
+                      return res_a < res_b;
+                  });
+    }
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -1125,7 +1197,8 @@ typedef struct QubitOperator
     * Combine repeated terms in operator
     * 
     * @param[in] atol Tolerance for determining if a combined coefficient is zero
-    * @param[out] out Output QubitOperator with terms combined
+    * 
+    * @return Output QubitOperator with terms combined
     * 
     */
     QubitOperator combine_repeated_terms(double atol = 1e-12)
@@ -1143,7 +1216,7 @@ typedef struct QubitOperator
     /**
     * Return vector of off-diagonal weights for each term
     * 
-    * @param[out] out Vector of off-diagonal weights for terms
+    * @return Vector of off-diagonal weights for terms
     * 
     */
     std::vector<unsigned int> offdiag_weights() const
@@ -1157,8 +1230,68 @@ typedef struct QubitOperator
         }
         return out;
     }
+    /**
+    * In-place sort terms in groups by their ladder integer values
+    * 
+    */
+    QubitOperator& group_term_sort_by_ladder_int(unsigned int ladder_width=4)
+    {
+        if(!this->ladder_sorted)
+        {
+            if(!this->sorted)
+            {
+                this->group_sort();
+            }
+            std::vector<std::size_t> ptrs = this->group_ptrs();
+            sort_groups_by_ladder_int(this->terms, &ptrs[0], ptrs.size()-1, ladder_width);
+            this->ladder_width = ladder_width;
+            this->ladder_sorted = 1;
+        }
+        return *this;
+    }
+    /**
+    * Vector of ladder integer values for terms in operators
+    * 
+    * If no ladder ops present then default int is max(uint32)
+    * 
+    */
+    std::vector<unsigned int> ladder_integers()
+    {
+       std::vector<unsigned int> out;
+       if(!this->ladder_sorted)
+       {
+        this->group_term_sort_by_ladder_int();
+       }
+       for(std::size_t kk=0; kk < this->size(); kk++)
+       {
+            out.push_back(term_ladder_int(terms[kk], this->ladder_width));
+       }
+       return out;
+    }
 
 } QubitOperator_t;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Fermionic components ---------------------------------------------------------------------------

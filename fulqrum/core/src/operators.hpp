@@ -20,34 +20,6 @@
 
 
 
-
-inline unsigned int term_ladder_int(const OperatorTerm_t& term, unsigned int ladder_width)
-{
-    unsigned int subset = 0;
-    unsigned int kk, counter = 0;
-    for(kk = 0; kk < term.indices.size(); kk++)
-    {
-        if(term.values[kk] > 4)
-        {
-            subset = subset | ((unsigned int)term.values[kk] - 5U) << counter;
-            counter += 1;
-        }
-    }
-    if(counter < ladder_width)
-    {
-        ladder_width = counter;
-    }
-    if(!counter)
-    {
-        subset = MAX_UINT;
-    }
-    else
-    {
-        subset = subset & ((1U << ladder_width) - 1U);
-    }
-    return subset;
-}
-
 void offdiag_weight_sort(QubitOperator_t& oper)
 {
     // sort by group index

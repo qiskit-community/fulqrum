@@ -70,33 +70,7 @@ void set_group_offdiag_indices(const std::vector<OperatorTerm_t>& terms,
     }
 }
 
-inline void sort_groups_by_ladder_int(QubitOperator_t& oper,
-                                      const std::size_t* group_ptrs,
-                                      unsigned int num_groups,
-                                      unsigned int ladder_width)
-{
 
-    unsigned int kk;
-#pragma omp parallel for if(num_groups > 128)
-    for(kk = 0; kk < num_groups; kk++)
-    {
-        std::size_t start, stop;
-        start = group_ptrs[kk];
-        stop = group_ptrs[kk + 1];
-        if(!oper.terms[start].group)
-        {
-            continue;
-        }
-        std::sort(&oper.terms[start],
-                  &oper.terms[stop],
-                  [=](const OperatorTerm_t& a, const OperatorTerm_t& b) {
-                      unsigned int res_a, res_b;
-                      res_a = term_ladder_int(a, ladder_width);
-                      res_b = term_ladder_int(b, ladder_width);
-                      return res_a < res_b;
-                  });
-    }
-}
 
 void ladder_bin_starts(const std::vector<OperatorTerm_t>& terms,
                        const std::size_t* group_ptrs,
