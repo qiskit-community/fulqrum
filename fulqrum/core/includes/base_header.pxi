@@ -61,6 +61,7 @@ cdef extern from "../src/base.hpp":
         double constant_energy()
         QubitOperator_t remove_constant_terms()
         pair[QubitOperator_t, QubitOperator_t] split_diagonal()
+        QubitOperator_t terms_by_group(int)
 
 
     ctypedef struct Subspace_t:

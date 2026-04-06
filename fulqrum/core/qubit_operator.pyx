@@ -739,14 +739,7 @@ cdef class QubitOperator():
         cdef size_t kk, ll, start, stop
         cdef size_t[::1] ptrs = self.group_ptrs()
         cdef QubitOperator out = QubitOperator(self.width)
-        for kk in range(<size_t>(ptrs.shape[0]-1)):
-            if (self.oper.terms[ptrs[kk]].group == number):
-                start = ptrs[kk]
-                stop = ptrs[kk+1]
-                for ll in range(start, stop):
-                    out.oper.terms.push_back(self.oper.terms[ll])
-                break
-        out.oper.type = self.oper.type
+        out.oper = self.oper.terms_by_group(number)
         return out
 
     @cython.boundscheck(False)
