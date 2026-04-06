@@ -50,14 +50,7 @@ include "includes/constants.pxi"
 cdef const OperatorTerm_t EmptyOperatorTerm
 
 
-@cython.boundscheck(False)
-cdef inline int diagonal_term(OperatorTerm_t * term):
-    """Check if term is diagonal in computational basis
 
-    Returns:
-        bool: True if diagonal
-    """
-    return term.offdiag_weight == 0
 
 
 cdef class QubitOperator():
@@ -588,21 +581,13 @@ cdef class QubitOperator():
             out[kk] = self.oper.terms[kk].offdiag_weight
         return np.asarray(out)
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    cpdef int is_diagonal(self):
+    def is_diagonal(self):
         """Check if operator is diagonal in computational basis
 
         Returns:
-            int: True if diagonal, False otherwise
+            bool: True if diagonal, False otherwise
         """
-        cdef size_t kk, jj
-        for kk in range(self.oper.terms.size()):
-            for jj in range(self.oper.terms[kk].values.size()):
-                if self.oper.terms[kk].values[jj] > 2:
-                    return 0
-        return 1
-
+        return self.oper.is_diagonal()
 
     @cython.boundscheck(False)
     def remove_constant_terms(self, bool return_value=True):

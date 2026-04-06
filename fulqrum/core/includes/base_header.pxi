@@ -49,6 +49,7 @@ cdef extern from "../src/base.hpp":
         QubitOperator_t(unsigned int)
         size_t size()
         bool is_real()
+        bool is_diagonal()
         QubitOperator_t copy()
         QubitOperator_t& weight_sort()
         QubitOperator_t& offdiag_weight_sort()
