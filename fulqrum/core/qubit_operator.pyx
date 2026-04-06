@@ -1034,9 +1034,3 @@ cdef class QubitOperator():
         out = QubitOperator.from_dict(dic)
         return out
 
-
-def _offdiag_sort(QubitOperator self):
-    if self.oper.off_weight_sorted:
-        return
-    term_offdiag_sort(self.oper.terms)
-    self.oper.off_weight_sorted = 1
