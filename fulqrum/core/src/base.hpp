@@ -1376,17 +1376,15 @@ typedef struct QubitOperator
     */
     QubitOperator& group_term_sort_by_ladder_int(unsigned int ladder_width=4)
     {
-        if(!this->ladder_sorted)
+
+        if(!this->sorted)
         {
-            if(!this->sorted)
-            {
-                this->group_sort();
-            }
-            std::vector<std::size_t> ptrs = this->group_ptrs();
-            sort_groups_by_ladder_int(this->terms, &ptrs[0], ptrs.size()-1, ladder_width);
-            this->ladder_width = ladder_width;
-            this->ladder_sorted = 1;
+            this->group_sort();
         }
+        std::vector<std::size_t> ptrs = this->group_ptrs();
+        sort_groups_by_ladder_int(this->terms, &ptrs[0], ptrs.size()-1, ladder_width);
+        this->ladder_width = ladder_width;
+        this->ladder_sorted = 1;
         return *this;
     }
     /**

@@ -14,6 +14,7 @@
 #include "doctest.h"
 #include <complex>
 #include <vector>
+#include <string>
 #include "fulqrum.hpp"
 
 
@@ -160,4 +161,23 @@ TEST_CASE("Verify that off-diag indices are correct for ladder operator terms 2"
     CHECK(inds_list[3] == std::vector<unsigned int>{1, 2});
     CHECK(inds_list[4] == std::vector<unsigned int>{0, 2, 3});
     CHECK(inds_list[5] == std::vector<unsigned int>{0, 1, 2, 3});
+}
+
+
+
+
+TEST_CASE("Test ladder integers works for various ladder widths") {
+    QubitOperator op = QubitOperator::from_label("I+-Z0X+-+Y");
+    
+    op.set_type(2);
+    op.group_term_sort_by_ladder_int(5);
+    CHECK(op.ladder_integers()[0] == std::stoi("10101", 0, 2));
+    op.group_term_sort_by_ladder_int(4);
+    CHECK(op.ladder_integers()[0] == std::stoi("0101", 0, 2));
+    op.group_term_sort_by_ladder_int(3);
+    CHECK(op.ladder_integers()[0] == std::stoi("101", 0, 2));
+    op.group_term_sort_by_ladder_int(2);
+    CHECK(op.ladder_integers()[0] == std::stoi("01", 0, 2));
+    op.group_term_sort_by_ladder_int(1);
+    CHECK(op.ladder_integers()[0] == std::stoi("1", 0, 2));
 }
