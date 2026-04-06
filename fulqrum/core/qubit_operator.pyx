@@ -721,28 +721,10 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of ints giving pointers to group starts and stops
         """
-        if self.num_terms == 0:
-            return np.zeros(0, dtype=np.uintp)
-        if not self.oper.sorted:
-            self.offdiag_term_grouping()
-        cdef OperatorTerm_t * terms = &self.oper.terms[0]
-        cdef int idx = 0
-        cdef size_t kk
-        cdef size_t num_groups = 1
-        cdef int val = terms[0].group
-        for kk in range(self.oper.terms.size()):
-            if terms[kk].group > val:
-                num_groups += 1
-                val = terms[kk].group
-        cdef size_t[::1] ptrs = np.zeros(num_groups+1, dtype=np.uintp)
-        val = terms[0].group
-        for kk in range(self.oper.terms.size()):
-            if terms[kk].group > val:
-                ptrs[idx+1] = kk
-                idx += 1
-                val += 1
-        ptrs[idx+1] = self.oper.terms.size()
-        return np.asarray(ptrs)
+        cdef vector[size_t] ptrs = self.oper.group_ptrs()
+        cdef size_t[::1] out = np.empty(ptrs.size(), dtype=np.uintp)
+        memcpy(&out[0], &ptrs[0], ptrs.size() * sizeof(size_t))
+        return np.asarray(out)
 
     @cython.boundscheck(False)
     def terms_by_group(self, int number):
