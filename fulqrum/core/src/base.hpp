@@ -974,7 +974,7 @@ typedef struct QubitOperator
      * Subtraction by another QubitOperator
      * 
      * @param[in] other Operator to subject to this one
-     * @param[out] out New operator
+     * @return New operator
      * @throw Error if operators do not share the same width
      */
     QubitOperator operator-(QubitOperator other)
@@ -998,7 +998,7 @@ typedef struct QubitOperator
      * Addition by another QubitOperator
      * 
      * @param[in] other Operator to add to this one
-     * @param[out] out The new operator
+     * @return The new operator
      * @throw Error if operators do not share the same width
      */
     QubitOperator operator+(QubitOperator other) const
@@ -1063,14 +1063,14 @@ typedef struct QubitOperator
     /**
      * The number of terms in the operator
      *
-     * @param[out] size The number of terms in the operator
+     * @return The number of terms in the operator
      */
     std::size_t size() const {return terms.size();}
     std::size_t num_terms() const {return terms.size();}
     /**
      * The number of terms in the operator
      *
-     * @param[out] out A copy of the current operator
+     * @return A copy of the current operator
      */
     QubitOperator copy() const
     {
@@ -1144,7 +1144,7 @@ typedef struct QubitOperator
     /**
      * Split operator into diagonal and off-diagonal components
      * 
-     * @param[out] pair Diagonal and off-diagonal operators
+     * @return Diagonal and off-diagonal operators
      */
     std::pair<QubitOperator, QubitOperator> split_diagonal() const
     {
@@ -1163,7 +1163,6 @@ typedef struct QubitOperator
         }
         off.type = this->type;
         diag.type = this->type;
-
         return {diag, off};
     }
     /**Constant energy of operator

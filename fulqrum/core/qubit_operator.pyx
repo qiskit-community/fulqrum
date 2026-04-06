@@ -350,7 +350,6 @@ cdef class QubitOperator():
                 diag.oper.terms.push_back(term)
             else:
                 offdiag.oper.terms.push_back(term)
-
         diag.oper.type = self.oper.type
         offdiag.oper.type = self.oper.type
         return diag, offdiag
