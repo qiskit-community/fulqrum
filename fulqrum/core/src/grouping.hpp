@@ -18,57 +18,7 @@
 #include <cstdlib>
 #include <vector>
 
-/**
- * Compute the offdiag indices for the first term in a group and add it to the group
- * offdiag indices vector
- *
- * @param term Operator term
- * @param ladder_inds Pre-sized array (size=num_inds) to store indices in
- * @param num_inds Number of elements to consider for appending
- *
- */
-inline void compute_term_offdiag_inds(const OperatorTerm_t& term,
-                                      unsigned int* offdiag_inds,
-                                      unsigned int num_inds)
-{
-    unsigned int kk;
-    unsigned int counter = 0;
-    for(kk = 0; kk < term.indices.size(); kk++)
-    {
-        if(term.values[kk] > 2)
-        {
-            offdiag_inds[counter] = term.indices[kk];
-            counter += 1;
-        }
-    }
-}
 
-/**
- * Set the offdiag indices for each group in a off-diagonal type=2 Hamiltonian
- *
- * @param terms Operator terms
- * @param group_indices Vector of vectors of group_indices
- * @param group_ptrs Pointer of array of group pointers
- * @param num_groups Number of groups = len(group_ptrs) - 1
- * @param ladder_width Target ladder indices width for type=2 operators
- * @param oper_type Type of operator, 1 or 2
- *
- */
-void set_group_offdiag_indices(const std::vector<OperatorTerm_t>& terms,
-                               std::vector<std::vector<unsigned int>>& group_indices,
-                               const std::size_t* group_ptrs,
-                               unsigned int num_groups)
-{
-    unsigned int kk;
-    unsigned int inds_len;
-    group_indices.resize(num_groups);
-    for(kk = 0; kk < num_groups; kk++)
-    {
-        inds_len = terms[group_ptrs[kk]].offdiag_weight;
-        group_indices[kk].resize(inds_len);
-        compute_term_offdiag_inds(terms[group_ptrs[kk]], &(group_indices[kk])[0], inds_len);
-    }
-}
 
 
 
