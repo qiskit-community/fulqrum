@@ -52,6 +52,8 @@ cdef extern from "../src/base.hpp":
         QubitOperator_t combine_repeated_terms(double)
         vector[size_t] offdiag_weight_ptrs()
         QubitOperator_t& from_label(string)
+        double constant_energy()
+        QubitOperator_t remove_constant_terms()
 
 
     ctypedef struct Subspace_t:

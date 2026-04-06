@@ -331,12 +331,7 @@ cdef class QubitOperator():
         Returns:
             float
         """
-        cdef size_t kk
-        cdef double complex out = 0
-        for kk in range(self.oper.terms.size()):
-            if (self.oper.terms[kk].indices.size() == 0):
-                out += self.oper.terms[kk].coeff
-        return out.real
+        return self.oper.constant_energy()
 
     @cython.boundscheck(False)
     def split_diagonal(self):
@@ -655,21 +650,17 @@ cdef class QubitOperator():
 
         Returns:
             QubitOperator: Operator with no identity terms
-            complex: Sum of identity coefficients, if `return_value=True`
+            double: Sum of identity coefficients, if `return_value=True`
         """
-        cdef size_t kk
-        cdef OperatorTerm_t * term_ptr
-        cdef double complex val = 0
-        cdef QubitOperator out = QubitOperator(self.oper.width)
-        for kk in range(self.oper.terms.size()):
-            term_ptr = &self.oper.terms[kk]
-            if term_ptr.indices.size() != 0:
-                out.oper.terms.push_back(dereference(term_ptr))
-            else:
-                val += term_ptr.coeff
-        out.oper.type = self.oper.type
+        cdef double val = 0
         if return_value:
-            return out, val.real
+            val = self.oper.constant_energy()
+        cdef QubitOperator_t temp = self.oper.remove_constant_terms()
+        cdef QubitOperator out = QubitOperator(self.width)
+        out.oper.terms = temp.terms
+        out.oper.type = temp.type
+        if return_value:
+            return out, val
         return out
 
     @cython.boundscheck(False)

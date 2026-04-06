@@ -1195,6 +1195,7 @@ typedef struct QubitOperator
                 out.terms.push_back(terms[kk]);
             } 
         }
+        out.type = this->type;
         return out;
     }
     /**
