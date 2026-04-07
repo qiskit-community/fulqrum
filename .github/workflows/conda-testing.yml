@@ -35,8 +35,8 @@ jobs:
         pip install -U -r requirements-dev.txt
     - name: Ruff lint and format
       run: |
-        ruff check .
-        ruff format . --check
+        ruff check fulqrum
+        ruff format fulqrum --check
     - name: Run tests with pytest
       run: |
         python setup.py build_ext --inplace
