@@ -39,6 +39,7 @@ PACKAGES = setuptools.find_packages()
 PACKAGE_DATA = {
     f"{ROOT}/core": ["*.pxd"],
     f"{ROOT}/core/src": ["*.hpp"],
+    f"{ROOT}/include": ["*.hpp"],
 }
 
 CYTHON_EXTS = [
