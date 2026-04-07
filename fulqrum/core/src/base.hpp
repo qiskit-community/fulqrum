@@ -1376,7 +1376,6 @@ typedef struct QubitOperator
     */
     QubitOperator& group_term_sort_by_ladder_int(unsigned int ladder_width=4)
     {
-
         if(!this->sorted)
         {
             this->group_sort();

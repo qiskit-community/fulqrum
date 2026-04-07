@@ -250,10 +250,9 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of group values
         """
-        cdef size_t kk
+        cdef vector[int] grps = self.oper.groups()
         cdef int[::1] out = np.empty(self.oper.terms.size(), dtype=np.int32)
-        for kk in range(self.oper.terms.size()):
-            out[kk] = self.oper.terms[kk].group
+        memcpy(&out[0], &grps[0], grps.size()*sizeof(int))
         return np.asarray(out)
 
     @property

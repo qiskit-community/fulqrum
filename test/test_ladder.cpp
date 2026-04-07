@@ -164,8 +164,6 @@ TEST_CASE("Verify that off-diag indices are correct for ladder operator terms 2"
 }
 
 
-
-
 TEST_CASE("Test ladder integers works for various ladder widths") {
     QubitOperator op = QubitOperator::from_label("I+-Z0X+-+Y");
     
