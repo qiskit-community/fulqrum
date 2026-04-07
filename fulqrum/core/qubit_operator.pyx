@@ -770,10 +770,9 @@ cdef class QubitOperator():
         """
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
+        cdef vector[unsigned int] ladder_ints = self.oper.ladder_integers()
         cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
-        cdef size_t kk
-        for kk in range(self.oper.terms.size()):
-            out[kk] = term_ladder_int(self.oper.terms[kk], self.oper.ladder_width)
+        memcpy(&out[0], &ladder_ints[0], ladder_ints.size() * sizeof(unsigned int))
         return np.asarray(out)
 
     @cython.boundscheck(False)
