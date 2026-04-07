@@ -40,7 +40,6 @@ include "includes/csr_utils_header.pxi"
 include "includes/csr2_header.pxi"
 include "includes/csrlike_builder_header.pxi"
 include "includes/csrlike_builder2_header.pxi"
-include "includes/grouping_header.pxi"
 
 
 cdef class FulqrumSpMV():

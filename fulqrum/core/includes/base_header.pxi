@@ -92,5 +92,10 @@ cdef extern from "../src/base.hpp":
 
     size_t max_offdiag_ptr_size(vector[size_t]&)
 
+    void set_group_offdiag_indices(vector[OperatorTerm_t]& terms,
+                                   vector[vector[unsigned int]]& group_indices,
+                                   size_t* group_ptrs,
+                                   unsigned int num_groups)
+
     # cdef cppclass TermData:
     #    TermData()
