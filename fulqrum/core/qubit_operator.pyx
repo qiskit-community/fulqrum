@@ -821,19 +821,10 @@ cdef class QubitOperator():
     def group_ladder_bin_starts(self):
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
-        if not self.oper.ladder_sorted:
-            raise FulqrumError("Operator must have groups sorted by ladder ints")
-        cdef size_t[::1] group_ptrs = self.group_ptrs()
-        cdef unsigned int num_ladder_bins = 2**self.oper.ladder_width
-        cdef unsigned int num_groups = group_ptrs.shape[0] - 1
-        cdef unsigned int[::1] group_counts
-        cdef size_t[::1] group_ranges
-        group_counts = np.zeros(num_ladder_bins*num_groups, dtype=np.uint32)
-        group_ranges = np.zeros(num_ladder_bins*num_groups + 1, dtype=np.uintp)
-        ladder_bin_starts(self.oper.terms, &group_ptrs[0], &group_counts[0], &group_ranges[0],
-                        num_groups, num_ladder_bins, self.oper.ladder_width)
-
-        return np.asarray(group_ranges)
+        cdef vector[size_t] ptrs = self.oper.group_ladder_int_ptrs()
+        cdef size_t[::1] out = np.empty(ptrs.size(), dtype=np.uintp)
+        memcpy(&out[0], &ptrs[0], ptrs.size()*sizeof(size_t))
+        return np.asarray(out)
 
     @cython.boundscheck(False)
     def projector_oper_validation(self, Bitset bits):

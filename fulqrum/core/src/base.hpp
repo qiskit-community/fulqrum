@@ -801,6 +801,41 @@ inline void set_group_offdiag_indices(const std::vector<OperatorTerm_t>& terms,
 }
 
 
+/**
+ * Term indices corresponding to ladder integers for each group
+ *
+ */
+inline void ladder_int_starts(const std::vector<OperatorTerm>& terms,
+                       const std::size_t* group_ptrs,
+                       unsigned int* group_counts,
+                       std::size_t* group_ranges,
+                       unsigned int num_groups,
+                       unsigned int num_ladder_bins,
+                       unsigned int ladder_width)
+{
+    std::size_t start, stop, kk, mm;
+    unsigned int term_int;
+    std::size_t total;
+    total = 0;
+    for(kk = 0; kk < num_groups; kk++)
+    {
+        start = group_ptrs[kk];
+        stop = group_ptrs[kk + 1];
+
+        for(mm = start; mm < stop; mm++)
+        {
+            term_int = term_ladder_int(terms[mm], ladder_width);
+            group_counts[kk * num_ladder_bins + term_int] += 1;
+        }
+        group_ranges[kk * num_ladder_bins] = total;
+        for(mm = 1; mm < num_ladder_bins + 1; mm++)
+        {
+            total += group_counts[kk * num_ladder_bins + mm - 1];
+            group_ranges[kk * num_ladder_bins + mm] = total;
+        }
+    }
+}
+
 
 
 
@@ -1418,6 +1453,10 @@ typedef struct QubitOperator
     */
     QubitOperator& group_term_sort_by_ladder_int(unsigned int ladder_width=4)
     {
+        if(!(this->type == 2))
+        {
+            throw std::runtime_error("Operator must be type=2");
+        }
         if(!this->sorted)
         {
             this->group_sort();
@@ -1466,6 +1505,26 @@ typedef struct QubitOperator
             out[kk] = std::min(this->ladder_width, terms[ptrs[kk]].offdiag_weight);
        }
        return out;
+    }
+    /**
+    * Flat vector containing pointers to terms within a group with given 
+    * ladder integer value
+    * 
+    */
+    std::vector<std::size_t> group_ladder_int_ptrs()
+    {
+       if(!this->ladder_sorted)
+       {
+        this->group_term_sort_by_ladder_int();
+       }
+       std::vector<std::size_t> ptrs = this->group_ptrs();
+       unsigned int num_ladder_ints = std::pow(2, this->ladder_width);
+       unsigned int num_groups = ptrs.size() - 1;
+       std::vector<unsigned int> group_counts(num_ladder_ints*num_groups);
+       std::vector<std::size_t> group_ranges(num_ladder_ints*num_groups + 1);
+       ladder_int_starts(terms, &ptrs[0], &group_counts[0], &group_ranges[0],
+                         num_groups, num_ladder_ints, ladder_width);
+       return group_ranges;
     }
 
 } QubitOperator_t;
