@@ -100,4 +100,3 @@ def test_offdiag_weight_ptrs_all_diag():
     op += fq.QubitOperator.from_label("IIZII")
     op += fq.QubitOperator.from_label("IZZZI")
     assert np.allclose(op.offdiag_weight_ptrs(), [0, 3])
-
