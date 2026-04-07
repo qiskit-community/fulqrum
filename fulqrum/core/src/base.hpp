@@ -1129,7 +1129,7 @@ typedef struct QubitOperator
     /**
     * Return vector of weights for each term
     * 
-    * @param[out] out Vector of weights for terms
+    * @return Vector of weights for terms
     * 
     */
     std::vector<unsigned int> weights() const
@@ -1138,6 +1138,20 @@ typedef struct QubitOperator
         for(std::size_t kk=0; kk<this->size(); kk++)
         {
             out.push_back(this->terms[kk].weight());
+        }
+        return out; 
+    }
+     /**
+    * Return vector of real-phases for each term
+    * 
+    * @return Vector of real-phases for terms
+    */
+    std::vector<int> real_phases() const
+    {
+        std::vector<int> out;
+        for(std::size_t kk=0; kk<this->size(); kk++)
+        {
+            out.push_back(this->terms[kk].real_phase);
         }
         return out; 
     }

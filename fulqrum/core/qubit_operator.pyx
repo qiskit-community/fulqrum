@@ -303,10 +303,9 @@ cdef class QubitOperator():
         Returns:
             ndarray: real phase of each term in operator
         """
-        cdef size_t kk
+        cdef vector[int] phases = self.oper.real_phases()
         cdef int[::1] out = np.empty(self.oper.terms.size(), dtype=np.int32)
-        for kk in range(self.oper.terms.size()):
-            out[kk] = self.oper.terms[kk].real_phase
+        memcpy(&out[0], &phases[0], phases.size()*sizeof(int))
         return np.asarray(out)
 
     @cython.boundscheck(False)
