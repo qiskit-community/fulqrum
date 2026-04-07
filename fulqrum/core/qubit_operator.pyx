@@ -802,18 +802,11 @@ cdef class QubitOperator():
         """
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
-        if not self.oper.ladder_sorted:
-            raise FulqrumError("Operator be sorted by ladder ints to set ladder_width")
-        cdef size_t[::1] group_ptrs = self.group_ptrs()
-        cdef size_t kk, jj
-        cdef list out = []
-        cdef unsigned int num_groups = group_ptrs.shape[0] - 1
-        cdef unsigned int[::1] group_rowint_length = np.empty(num_groups, dtype=np.uint32)
-        cdef unsigned int temp
-        for kk in range(num_groups):
-            temp = self.oper.terms[group_ptrs[kk]].offdiag_weight
-            group_rowint_length[kk] = min(self.oper.ladder_width, temp)
-        return np.asarray(group_rowint_length)
+       
+        cdef vector[unsigned int] group_bit_len = self.oper.group_ladder_int_bit_lengths()
+        cdef unsigned int[::1] out = np.empty(group_bit_len.size(), dtype=np.uint32)
+        memcpy(&out[0], &group_bit_len[0], group_bit_len.size()*sizeof(unsigned int))
+        return np.asarray(out)
 
     def group_term_sort_by_ladder_int(self, unsigned int ladder_width=4):
         """Sort groups by ladder integer if operator is type=2

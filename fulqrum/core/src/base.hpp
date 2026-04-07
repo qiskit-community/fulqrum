@@ -1447,6 +1447,26 @@ typedef struct QubitOperator
        }
        return out;
     }
+    /**
+    * Vector of group ladder integer bit lengths
+    * 
+    */
+    std::vector<unsigned int> group_ladder_int_bit_lengths()
+    {
+       std::vector<unsigned int> out;
+       if(!this->ladder_sorted)
+       {
+        this->group_term_sort_by_ladder_int();
+       }
+       std::vector<std::size_t> ptrs = this->group_ptrs();
+       unsigned int num_groups = ptrs.size() - 1;
+       out.resize(num_groups);
+       for(std::size_t kk = 0; kk < num_groups; kk++)
+       {
+            out[kk] = std::min(this->ladder_width, terms[ptrs[kk]].offdiag_weight);
+       }
+       return out;
+    }
 
 } QubitOperator_t;
 
@@ -1644,6 +1664,21 @@ typedef struct FermionicOperator
      */
     std::size_t size() const {return terms.size();}
 } FermionicOperator_t;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Subspace components ---------------------------------------------------------------------------

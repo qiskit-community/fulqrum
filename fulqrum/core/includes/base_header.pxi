@@ -68,6 +68,7 @@ cdef extern from "../src/base.hpp":
         vector[complex] coefficients()
         vector[int] extended_terms()
         vector[unsigned int] ladder_integers()
+        vector[unsigned int] group_ladder_int_bit_lengths()
 
 
     ctypedef struct Subspace_t:
