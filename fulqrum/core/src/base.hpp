@@ -1127,6 +1127,20 @@ typedef struct QubitOperator
         return *this;
     }
     /**
+    * Return vector of coefficients for each term
+    * 
+    * @return Vector of coefficients for terms
+    */
+    std::vector<std::complex<double>> coefficients() const
+    {
+        std::vector<std::complex<double>> out;
+        for(std::size_t kk=0; kk<this->size(); kk++)
+        {
+            out.push_back(this->terms[kk].coeff);
+        }
+        return out; 
+    }
+    /**
     * Return vector of weights for each term
     * 
     * @return Vector of weights for terms
@@ -1141,7 +1155,7 @@ typedef struct QubitOperator
         }
         return out; 
     }
-     /**
+    /**
     * Return vector of real-phases for each term
     * 
     * @return Vector of real-phases for terms
@@ -1152,6 +1166,20 @@ typedef struct QubitOperator
         for(std::size_t kk=0; kk<this->size(); kk++)
         {
             out.push_back(this->terms[kk].real_phase);
+        }
+        return out; 
+    }
+    /**
+    * Return vector of showing which terms are extended alphabet
+    * 
+    * @return Vector of showing which terms are extended alphabet
+    */
+    std::vector<int> extended_terms() const
+    {
+        std::vector<int> out;
+        for(std::size_t kk=0; kk<this->size(); kk++)
+        {
+            out.push_back(this->terms[kk].extended);
         }
         return out; 
     }

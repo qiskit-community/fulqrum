@@ -65,6 +65,8 @@ cdef extern from "../src/base.hpp":
         pair[QubitOperator_t, QubitOperator_t] split_diagonal()
         QubitOperator_t terms_by_group(int)
         vector[int] real_phases()
+        vector[complex] coefficients()
+        vector[int] extended_terms()
 
 
     ctypedef struct Subspace_t:

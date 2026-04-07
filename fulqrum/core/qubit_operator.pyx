@@ -338,12 +338,10 @@ cdef class QubitOperator():
         Returns:
             ndarray: complex-valued array of coefficients
         """
-        cdef size_t kk
-        if self.oper.terms.size() == 0:
-            raise FulqrumError('QubitOperator has zero terms')
+        
+        cdef vector[complex] coeffs = self.oper.coefficients()
         cdef double complex[::1] out = np.empty(self.oper.terms.size(), dtype=complex)
-        for kk in range(self.oper.terms.size()):
-            out[kk] = self.oper.terms[kk].coeff
+        memcpy(&out[0], &coeffs[0], coeffs.size()*sizeof(complex))
         return np.asarray(out)
 
     @property
@@ -709,10 +707,9 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of ints indicating if terms are extended or not
         """
-        cdef size_t kk
+        cdef vector[int] exten = self.oper.extended_terms()
         cdef int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.int32)
-        for kk in range(self.oper.terms.size()):
-            out[kk] = self.oper.terms[kk].extended
+        memcpy(&out[0], &exten[0], exten.size() * sizeof(int))
         return np.asarray(out)
 
 
