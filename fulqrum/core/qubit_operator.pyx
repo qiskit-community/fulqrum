@@ -264,9 +264,8 @@ cdef class QubitOperator():
         """
         if self.num_terms == 0:
             return 0
-        if not self.oper.sorted:
-            self.offdiag_term_grouping()
-        return self.group_ptrs().shape[0] - 1
+        self.oper.group_sort()
+        return self.oper.group_ptrs().size() - 1
 
     @property
     def ladder_width(self):
