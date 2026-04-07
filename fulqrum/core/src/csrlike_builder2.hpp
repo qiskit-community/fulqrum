@@ -12,6 +12,8 @@
  * that they have been altered from the originals.
  */
 #pragma once
+#include <array>
+#include <iostream>
 #include <complex>
 #include <cstdlib>
 #include <mutex>
@@ -47,12 +49,43 @@ void csrlike_builder2(const OperatorTerm_t* terms,
 {
     std::size_t kk;
     const auto* bitsets = subspace.get_bitsets();
-
+    size_t survived_groups0 = 0, survived_groups1 = 0, survived_groups2 = 0;
     cols.resize(subspace_dim);
     data.resize(subspace_dim);
 
     std::vector<std::mutex> mutex1(subspace_dim);
 
+    // -------------------------------------
+    // Convert group_rowint_length to uint16
+    // -------------------------------------
+    std::vector<uint16_t> group_rowint_length_u16(num_groups);
+    for(std::size_t i = 0; i < num_groups; i++)
+    {
+        group_rowint_length_u16[i] = (uint16_t)group_rowint_length[i];
+    }
+
+    // -------------------------------------------------------------------------------------
+    // Convert group_offdiag_inds to array-based structure; trim inds size: 32-bit -> 16-bit
+    // -------------------------------------------------------------------------------------
+    // last element of inner array is the group size
+    std::vector<std::array<uint16_t, 5>> group_offdiag_inds_array(num_groups);
+    for(std::size_t i = 0; i < num_groups; i++)
+    {
+        group_offdiag_inds_array[i][4] = static_cast<uint16_t>(group_offdiag_inds[i].size());
+        for(std::size_t j = 0; j < group_offdiag_inds[i].size(); j++)
+        {
+            group_offdiag_inds_array[i][j] = static_cast<uint16_t>(group_offdiag_inds[i][j]);
+        }
+        // Fill unused slots with 0 (for size-2 groups)
+        for(std::size_t j = group_offdiag_inds[i].size(); j < 4; j++)
+        {
+            group_offdiag_inds_array[i][j] = 0;
+        }
+    }
+
+    // ------------------------------------------------
+    // Collect max inds of a group in a separate vector
+    // ------------------------------------------------
     std::vector<uint16_t> grp_max_inds(num_groups, width);
     get_group_max_inds(grp_max_inds, group_offdiag_inds, num_groups);
 
@@ -71,6 +104,7 @@ void csrlike_builder2(const OperatorTerm_t* terms,
         }
     }
 
+size_t row_no_for_stats = (subspace_dim - 1);
 #pragma omp parallel for schedule(dynamic) if(subspace_dim > 4096)
     for(kk = 0; kk < subspace_dim; kk++)
     { // begin loop over all rows
@@ -82,11 +116,14 @@ void csrlike_builder2(const OperatorTerm_t* terms,
         std::size_t group_int_start, group_int_stop;
         const OperatorTerm_t* term;
         boost::dynamic_bitset<std::size_t> col_vec;
-        const std::vector<unsigned int>* group_inds;
+        const std::array<uint16_t, 5>* group_inds;
+        uint8_t group_size;
         std::size_t* col_ptr;
         std::size_t col_idx;
         T val;
-        unsigned int row_int;
+        unsigned int row_int=0;
+        uint8_t _p, _q, _r = 0, _s = 1;
+        uint16_t pos0, pos1, pos2 = 0, pos3 = 0;
 
         std::vector<uint8_t> row_set_bits(row.size(), 0);
         bitset_to_bitvec(row, row_set_bits);
@@ -101,27 +138,84 @@ void csrlike_builder2(const OperatorTerm_t* terms,
             {
                 continue;
             }
-
-            group_inds = &group_offdiag_inds[group];
-            row_int = bitset_ladder_int(
-                row_set_bits.data(), group_inds->data(), group_rowint_length[group]);
-            group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
-            group_int_stop = group_ladder_ptrs[group * ladder_offset + row_int + 1];
-            val = 0;
-
-            if(group_int_start < group_int_stop)
+            if (kk == row_no_for_stats)
             {
-                col_vec = row;
-                flip_bits(col_vec, group_inds->data(), group_inds->size());
-
-                col_ptr = subspace.get_ptr(col_vec);
-                if(col_ptr == nullptr)
-                {
-                    continue;
-                } // column is NOT in the subspace so break group
-                col_idx = *col_ptr;
+                survived_groups0 += 1;
             }
 
+            group_inds = &group_offdiag_inds_array[group];
+            group_size = (uint8_t)(*group_inds)[4];
+            
+            pos0 = (*group_inds)[0];
+            pos1 = (*group_inds)[1];
+            
+            _p = row_set_bits[pos0];
+            _q = row_set_bits[pos1];
+
+            // Connected determinants filter
+            if (group_size == 4)
+            {
+                // _s == 1 after lower triangle check
+
+                pos2 = (*group_inds)[2];
+                _r = row_set_bits[pos2];
+
+                if ((_p + _q + _r) != 1)
+                {
+                    continue;
+                }
+
+                if ((pos1 < width/2) && (pos2 >= width/2))
+                {
+                    if ((_p == _q) || (_r))
+                    {
+                        continue;
+                    }
+                }
+            }
+            else // (group_size == 2)
+            {
+                // _q == 1 for size-2 after lower triangle check
+
+                if (_p)
+                {
+                    continue;
+                }
+            }
+            // ----
+            if (kk == row_no_for_stats)
+            {
+                survived_groups1 += 1;
+            }
+
+            col_vec = row;
+            // flip_bits(col_vec, group_inds->data(), group_size);
+            flip_bits_u16(col_vec, group_inds->data(), group_size);
+
+            col_ptr = subspace.get_ptr(col_vec);
+            if(col_ptr == nullptr)
+            {
+                continue;
+            } // column is NOT in the subspace; skip group
+            col_idx = *col_ptr;
+
+            if (kk == row_no_for_stats)
+            {
+                survived_groups2 += 1;
+            }
+
+            // row_int = bitset_ladder_int(
+            //     row_set_bits.data(), group_inds->data(), group_rowint_length[group]);
+
+            row_int = bitset_ladder_int_u16(
+                row_set_bits.data(), group_inds->data(),
+                group_rowint_length_u16[group]
+            );
+            
+            group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
+            group_int_stop = group_ladder_ptrs[group * ladder_offset + row_int + 1];
+
+            val = 0;
             for(idx = group_int_start; idx < group_int_stop; idx++)
             { // begin loop over terms in this group
                 term = &terms[idx];
@@ -139,6 +233,7 @@ void csrlike_builder2(const OperatorTerm_t* terms,
             } // end loop over terms in this group
 
             if(std::abs(val) > ATOL)
+            // if(std::abs(val) > (1e-6 * std::abs(diag_vec[kk])))
             {
                 // see fulqrum/core/src/csr.hpp for details
                 // about these Mutex locks
@@ -167,5 +262,9 @@ void csrlike_builder2(const OperatorTerm_t* terms,
         } // end loop over groups
     }
 
+    std::cout << "Num groups: " << num_groups << std::endl;
+    std::cout << "[kk=" << row_no_for_stats << "] surviving groups lower-tri filter: " << survived_groups0 << std::endl;
+    std::cout << "[kk=" << row_no_for_stats << "] surviving groups conndets filter:  " << survived_groups1 << std::endl;
+    std::cout << "[kk=" << row_no_for_stats << "] surviving groups hashmap:          " << survived_groups2 << std::endl;
     sort_paired(cols, data);
 } // end function

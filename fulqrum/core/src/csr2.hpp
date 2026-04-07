@@ -113,6 +113,28 @@ void csr_matrix_builder2(const OperatorTerm_t* terms,
             }
 
             group_inds = &group_offdiag_inds[group];
+            // if (group_inds->size() == 4)
+            // {
+            //     uint8_t _p, _q, _r, _s;
+            //     _p = row_set_bits[group_inds->data()[0]];
+            //     _q = row_set_bits[group_inds->data()[1]];
+            //     _r = row_set_bits[group_inds->data()[2]];
+            //     _s = row_set_bits[group_inds->data()[3]];
+            //     if ((_p + _q + _r + _s) != 2)
+            //     {
+            //         continue;
+            //     }
+            // }
+            // else if (group_inds->size() == 2)
+            // {
+            //     uint8_t _p, _q;
+            //     _p = row_set_bits[group_inds->data()[0]];
+            //     _q = row_set_bits[group_inds->data()[1]];
+            //     if ((_p + _q) != 1)
+            //     {
+            //         continue;
+            //     }
+            // }
             row_int = bitset_ladder_int(
                 row_set_bits.data(), group_inds->data(), group_rowint_length[group]);
             group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
