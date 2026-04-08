@@ -159,3 +159,6 @@ cdef class Bitset:
         cdef vector[uint8_t] c_vec_row_set_bits = <vector[uint8_t]>row_set_bits
 
         return bitset_ladder_int(c_vec_row_set_bits.data(), &inds[0], ladder_width)
+
+    def zero_bit_indices(self):
+        return zero_bit_indices(self.bits)

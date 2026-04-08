@@ -10,6 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 from libcpp.vector cimport vector
+from libcpp.unordered_set cimport unordered_set
 from libc.stdint cimport uint8_t
 from libcpp cimport bool
 from ..core.bitset cimport bitset_t
@@ -37,3 +38,6 @@ cdef extern from "../src/bitset_utils.hpp":
 
     bool passes_proj_validation(const OperatorTerm_t * term,
                                 const bitset_t& row) nogil
+
+
+    unordered_set[unsigned int] zero_bit_indices(bitset_t& row)

@@ -19,6 +19,7 @@
 #include "bitset_hashmap.hpp"
 #include "constants.hpp"
 #include <algorithm>
+#include <unordered_set>
 #include <boost/dynamic_bitset.hpp>
 #include <vector>
 
@@ -204,3 +205,33 @@ void bitset_to_bitvec(const boost::dynamic_bitset<size_t>& row, std::vector<uint
         }
     }
 }
+
+
+
+/**
+ * Finds the set of zero bit indices in a bitset
+ *
+ * @param row Bitstring in boost::dynamic_bitset<> format
+ * 
+ * @return Unordered map with indices of zero bits in the bit-string 
+ */
+std::unordered_set<unsigned int> zero_bit_indices(boost::dynamic_bitset<size_t> row)
+{
+    std::unordered_set<unsigned int> zero_set;
+    row = row.flip(); //In-place flip of all the bits
+    // Now use code that finds set bits since those are now the locations
+    // of the zero bits in the original bitset
+    for(unsigned int block = 0; block < row.num_blocks(); block++)
+    {
+        auto bitset = row.m_bits[block];
+        while(bitset != 0)
+        {
+            uint64_t t = bitset & -bitset;
+            int r = __builtin_ctzll(bitset);
+            zero_set.insert(block * BITS_PER_BLOCK + r);
+            bitset ^= t;
+        }
+    }
+    return zero_set;
+}
+
