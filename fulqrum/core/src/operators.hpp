@@ -179,6 +179,7 @@ void set_offdiag_weight(OperatorTerm_t& term)
     std::size_t kk;
     unsigned int weight = 0;
     unsigned int temp, num_y = 0;
+    if(!term.values.size()){return;}
     unsigned char* values = &term.values[0];
     for(kk = 0; kk < term.values.size(); kk++)
     {
