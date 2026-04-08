@@ -535,6 +535,7 @@ inline void set_extended_flag(OperatorTerm_t& term)
  */
 inline void set_offdiag_weight_and_phase(OperatorTerm_t& term)
 {
+    if(!term.values.size()){return;}
     std::size_t kk;
     unsigned int weight = 0;
     unsigned int temp, num_y = 0;
