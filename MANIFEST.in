@@ -5,3 +5,4 @@ recursive-include fulqrum/core/includes *.pxi
 recursive-include fulqrum/core *.pxd
 recursive-include fulqrum/core/src *.hpp
 recursive-include fulqrum/test/data *.json
+recursive-include fulqrum/include *.hpp

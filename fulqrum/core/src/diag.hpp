@@ -78,14 +78,8 @@ inline void single_bitstring_diagonal(const boost::dynamic_bitset<size_t>& row,
         weight = term->indices.size();
         if(passes_proj_validation(term, row))
         {
-            accum_element(row,
-                          row,
-                          &term->indices[0],
-                          &term->values[0],
-                          term->coeff,
-                          term->real_phase,
-                          weight,
-                          val);
+            accum_element(
+                row, row, term->indices, term->values, term->coeff, term->real_phase, weight, val);
         }
     }
 }

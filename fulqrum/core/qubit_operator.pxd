@@ -10,7 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
-
+from libcpp cimport bool
 include "includes/base_header.pxi"
 
 cdef class QubitOperator:
@@ -18,4 +18,3 @@ cdef class QubitOperator:
     cdef unsigned int _iter_index
 
     cpdef void append(self, QubitOperator other)
-    cpdef int is_diagonal(self)

@@ -135,10 +135,11 @@ cdef class Bitset:
             raise FulqrumError('Bitset and Operator must have same size')
         cdef Bitset out = Bitset()
         out.bits = self.bits
-        get_column_bitset(out.bits,
-                          &op.oper.terms[0].indices[0],
-                          &op.oper.terms[0].values[0],
-                          op.oper.terms[0].indices.size())
+        if op.oper.size():
+            get_column_bitset(out.bits,
+                              op.oper.terms[0].indices,
+                              op.oper.terms[0].values,
+                              op.oper.terms[0].indices.size())
         return out
 
 

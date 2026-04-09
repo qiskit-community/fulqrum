@@ -84,7 +84,7 @@ cdef class FermionicOperator():
                         term.coeff = coeff
                 else:
                     term.coeff = 1
-                insertion_sort_term(&term)
+                term.insertion_sort()
                 self.oper.terms.push_back(term)
 
 
@@ -246,7 +246,7 @@ cdef class FermionicOperator():
                 ind = STR_TO_IND[(<string>temp[0]).c_str()[0]]
                 term.values.push_back(ind)
         term.coeff = coeff
-        insertion_sort_term(&term)
+        term.insertion_sort()
         out.oper.terms.push_back(term)
         return out
 
@@ -475,37 +475,6 @@ cdef class FermionicOperator():
         dic = json_to_dict(filename)
         out = FermionicOperator.from_dict(dic)
         return out
-
-
-
-@cython.cdivision(True)
-@cython.boundscheck(False)
-cdef void insertion_sort_term(FermionicTerm_t * term):
-    cdef size_t kk
-    cdef int ll
-    cdef size_t num_elems = term.indices.size()
-    cdef unsigned int temp_index
-    cdef unsigned char temp_value
-    cdef int prefactor = 1
-    for kk in range(1, num_elems):
-        temp_index = term.indices[kk]
-        temp_value = term.values[kk]
-        ll = kk - 1
-        # Only switch elements if they are of different indices
-        # In this case we always pick up a minus sign that
-        # we need to keep track of with the 'prefactor'
-        while ll >= 0 and temp_index < term.indices[ll]:
-            term.indices[ll + 1] = term.indices[ll]
-            term.values[ll + 1] = term.values[ll]
-            # Only add a minus sign if both operators (values)
-            # are not projectors (ie. > 4 since '-'=5 and '+'=6)
-            if (temp_value > 4) and (term.values[ll] > 4):
-                prefactor *= -1
-            ll -= 1
-        term.indices[ll + 1] = temp_index
-        term.values[ll + 1] = temp_value
-    term.coeff *= prefactor
-
 
 # DEFLATION ROUTINES
 

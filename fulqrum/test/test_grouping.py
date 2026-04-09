@@ -58,7 +58,7 @@ def test_grouping_split():
     H.offdiag_term_grouping()
     diag, offdiag = H.split_diagonal()
     diag_ans = np.zeros(len(diag))
-    offdiag_ans = np.array([1, 2, 3, 3])
+    offdiag_ans = np.array([1, 1, 2, 3])
     assert np.allclose(diag.groups(), diag_ans)
     assert np.allclose(offdiag.groups(), offdiag_ans)
 
@@ -198,8 +198,8 @@ def test_group_ladder_indices1():
     op.set_type(2)
     op.group_term_sort_by_ladder_int()
     inds_list = op.group_offdiag_indices()
-    assert np.allclose(inds_list[0], np.array([0, 2], dtype=np.uint32))
-    assert np.allclose(inds_list[1], np.array([3], dtype=np.uint32))
+    assert np.allclose(inds_list[0], np.array([3], dtype=np.uint32))
+    assert np.allclose(inds_list[1], np.array([0, 2], dtype=np.uint32))
     assert np.allclose(inds_list[2], np.array([0, 3], dtype=np.uint32))
     assert np.allclose(inds_list[3], np.array([1, 2], dtype=np.uint32))
     assert np.allclose(inds_list[4], np.array([0, 2, 3], dtype=np.uint32))
@@ -218,8 +218,8 @@ def test_group_ladder_indices2():
     op += fq.QubitOperator.from_label("YYIY")
     op.offdiag_term_grouping()
     inds_list = op.group_offdiag_indices()
-    assert np.allclose(inds_list[0], np.array([0, 2], dtype=np.uint32))
-    assert np.allclose(inds_list[1], np.array([3], dtype=np.uint32))
+    assert np.allclose(inds_list[0], np.array([3], dtype=np.uint32))
+    assert np.allclose(inds_list[1], np.array([0, 2], dtype=np.uint32))
     assert np.allclose(inds_list[2], np.array([0, 3], dtype=np.uint32))
     assert np.allclose(inds_list[3], np.array([1, 2], dtype=np.uint32))
     assert np.allclose(inds_list[4], np.array([0, 2, 3], dtype=np.uint32))
@@ -294,11 +294,11 @@ def test_group_terms_ladder_int_width4():
 
 def test_group_ladder_bin_starts1():
     """Verify that ladder bin starts show correct locations of elements based on int values"""
-    # group 2
+    # group 1
     op = fq.QubitOperator.from_label("-II+")  # int = 1
     op += fq.QubitOperator.from_label("+II-")  # int = 2
     op += fq.QubitOperator.from_label("+II+")  # int = 3
-    # group 1
+    # group 2
     op += fq.QubitOperator.from_label("II+-")  # int = 2
     op += fq.QubitOperator.from_label("II-+")  # int = 1
     # group 3
@@ -309,8 +309,8 @@ def test_group_ladder_bin_starts1():
     op.offdiag_term_grouping()
     op.group_term_sort_by_ladder_int()
 
-    assert np.allclose(op.terms_by_group(1).ladder_ints(), [1, 2])
-    assert np.allclose(op.terms_by_group(2).ladder_ints(), [1, 2, 3])
+    assert np.allclose(op.terms_by_group(1).ladder_ints(), [1, 2, 3])
+    assert np.allclose(op.terms_by_group(2).ladder_ints(), [1, 2])
     assert np.allclose(op.terms_by_group(3).ladder_ints(), [0, 6, 7])
 
 
@@ -347,8 +347,8 @@ def test_group_ladder_bin_starts3():
     op.set_type(2)
     op.offdiag_term_grouping()
     op.group_term_sort_by_ladder_int()
-    assert np.allclose(op.terms_by_group(1).ladder_ints(), [0, 1, 1, 2, 2, 3, 3])
-    assert np.allclose(op.terms_by_group(2).ladder_ints(), [0, 1, 1, 2, 2, 3])
+    assert np.allclose(op.terms_by_group(1).ladder_ints(), [0, 1, 1, 2, 2, 3])
+    assert np.allclose(op.terms_by_group(2).ladder_ints(), [0, 1, 1, 2, 2, 3, 3])
 
 
 def test_group_ladder_bin_starts4():

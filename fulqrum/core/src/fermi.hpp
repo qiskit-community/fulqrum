@@ -91,8 +91,9 @@ void extended_jw_transform(const FermionicOperator_t& fermi,
     for(kk = 0; kk < num_terms; kk++)
     {
         jw_term(fermi.terms[kk], out.terms[kk]);
-        sort_term_data(out.terms[kk].indices, out.terms[kk].values);
-        set_offdiag_weight(out.terms[kk]);
-        set_proj_indices(out.terms[kk]);
+        out.terms[kk].sort_term_data();
+        set_offdiag_weight_and_phase(out.terms[kk]);
+        set_extended_flag(out.terms[kk]);
+        out.terms[kk].set_proj_indices();
     }
 }
