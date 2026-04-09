@@ -88,7 +88,7 @@ inline void sort_groups_by_ladder_int(QubitOperator_t& oper,
             continue;
         }
         std::sort(&oper.terms[start],
-                  &oper.terms[stop],
+                  &oper.terms[stop-1],
                   [=](const OperatorTerm_t& a, const OperatorTerm_t& b) {
                       unsigned int res_a, res_b;
                       res_a = term_ladder_int(a, ladder_width);
