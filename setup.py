@@ -124,7 +124,7 @@ if sys.platform == "win32" and os.environ.get("MSYSTEM", None) is None:
 else:
     COMPILER_FLAGS = ["-O3", "-std=c++17", "-ffast-math"]
 
-if os.getenv("FQ_DEBUG", 0) == 1:
+if os.getenv("FQ_DEBUG", 0):
     COMPILER_FLAGS.append("-D_GLIBCXX_ASSERTIONS")
 
 EXT_MODULES = []

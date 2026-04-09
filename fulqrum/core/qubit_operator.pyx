@@ -243,18 +243,6 @@ cdef class QubitOperator():
         return self.oper.off_weight_sorted
 
     @property
-    def groups(self):
-        """Group for each term
-
-        Returns:
-            ndarray: Array of group values
-        """
-        cdef vector[int] grps = self.oper.groups()
-        cdef int[::1] out = np.empty(self.oper.terms.size(), dtype=np.int32)
-        memcpy(&out[0], &grps[0], grps.size()*sizeof(int))
-        return np.asarray(out)
-
-    @property
     def num_groups(self):
         """Number of off-diagonal groupings
 
@@ -665,10 +653,10 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of ints indicating group of each term
         """
-        cdef size_t kk
         cdef vector[int] groups = self.oper.groups()
         cdef int[::1] out = np.empty(groups.size(), dtype=np.int32)
-        memcpy(&out[0], &groups[0], groups.size() * sizeof(int))
+        if groups.size():
+            memcpy(&out[0], &groups[0], groups.size() * sizeof(int))
         return np.asarray(out)
 
     @cython.boundscheck(False)
@@ -680,7 +668,8 @@ cdef class QubitOperator():
         """
         cdef vector[size_t] ptrs = self.oper.group_ptrs()
         cdef size_t[::1] out = np.empty(ptrs.size(), dtype=np.uintp)
-        memcpy(&out[0], &ptrs[0], ptrs.size() * sizeof(size_t))
+        if ptrs.size():
+            memcpy(&out[0], &ptrs[0], ptrs.size() * sizeof(size_t))
         return np.asarray(out)
 
     @cython.boundscheck(False)
@@ -708,7 +697,8 @@ cdef class QubitOperator():
         """
         cdef vector[int] exten = self.oper.extended_terms()
         cdef int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.int32)
-        memcpy(&out[0], &exten[0], exten.size() * sizeof(int))
+        if self.oper.terms.size():
+            memcpy(&out[0], &exten[0], exten.size() * sizeof(int))
         return np.asarray(out)
 
 
@@ -737,7 +727,8 @@ cdef class QubitOperator():
         """
         cdef vector[size_t] vec = self.oper.offdiag_weight_ptrs()
         cdef size_t[::1] out = np.empty(vec.size(), dtype=np.uintp)
-        memcpy(&out[0], &vec[0], vec.size() * sizeof(size_t))
+        if vec.size():
+            memcpy(&out[0], &vec[0], vec.size() * sizeof(size_t))
         return np.asarray(out)
 
 
@@ -771,7 +762,8 @@ cdef class QubitOperator():
             raise FulqrumError("Operator must be type=2")
         cdef vector[unsigned int] ladder_ints = self.oper.ladder_integers()
         cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
-        memcpy(&out[0], &ladder_ints[0], ladder_ints.size() * sizeof(unsigned int))
+        if self.oper.terms.size():
+            memcpy(&out[0], &ladder_ints[0], ladder_ints.size() * sizeof(unsigned int))
         return np.asarray(out)
 
     @cython.boundscheck(False)
@@ -804,7 +796,8 @@ cdef class QubitOperator():
        
         cdef vector[unsigned int] group_bit_len = self.oper.group_ladder_int_bit_lengths()
         cdef unsigned int[::1] out = np.empty(group_bit_len.size(), dtype=np.uint32)
-        memcpy(&out[0], &group_bit_len[0], group_bit_len.size()*sizeof(unsigned int))
+        if group_bit_len.size():
+            memcpy(&out[0], &group_bit_len[0], group_bit_len.size()*sizeof(unsigned int))
         return np.asarray(out)
 
     def group_term_sort_by_ladder_int(self, unsigned int ladder_width=4):
@@ -822,7 +815,8 @@ cdef class QubitOperator():
             raise FulqrumError("Operator must be type=2")
         cdef vector[size_t] ptrs = self.oper.group_ladder_int_ptrs()
         cdef size_t[::1] out = np.empty(ptrs.size(), dtype=np.uintp)
-        memcpy(&out[0], &ptrs[0], ptrs.size()*sizeof(size_t))
+        if ptrs.size():
+            memcpy(&out[0], &ptrs[0], ptrs.size()*sizeof(size_t))
         return np.asarray(out)
 
     @cython.boundscheck(False)
