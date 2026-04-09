@@ -51,8 +51,8 @@ inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
  * @param N Number of non-ID operators in the term
  */
 inline void get_column_bitset(boost::dynamic_bitset<std::size_t>& col,
-                              const unsigned int* __restrict pos,
-                              const unsigned char* __restrict val,
+                              const std::vector<unsigned int>& __restrict pos,
+                              const std::vector<unsigned char>& __restrict val,
                               const unsigned int N)
 {
     unsigned int block_num, block_idx;

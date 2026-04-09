@@ -639,7 +639,7 @@ cdef class QubitOperator():
             term = &self.oper.terms[kk]
             weight = term.indices.size()
             nonzero_vec = row_vec #copy row vec into nonzero vec
-            get_column_bitset(nonzero_vec, &term.indices[0], &term.values[0], weight)
+            get_column_bitset(nonzero_vec, term.indices, term.values, weight)
             # Input col string matches that of nonzero column
             if col_vec == nonzero_vec:
                 accum_element(row_vec, nonzero_vec,

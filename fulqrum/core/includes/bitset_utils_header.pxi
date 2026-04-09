@@ -22,8 +22,8 @@ cdef extern from "../src/bitset_utils.hpp":
     void flip_bits(bitset_t& b, const unsigned int * arr, const unsigned int size) nogil
 
     void get_column_bitset(bitset_t& col,
-                           const unsigned int * pos,
-                           const unsigned char * val,
+                           const vector[unsigned int]& pos,
+                           const vector[unsigned char]& val,
                            const unsigned int N) nogil
 
     unsigned int bitset_ladder_int(const uint8_t * row,
