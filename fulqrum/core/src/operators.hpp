@@ -18,8 +18,6 @@
 #include <cstdlib>
 #include <vector>
 
-
-
 void offdiag_weight_sort(QubitOperator_t& oper)
 {
     // sort by group index
