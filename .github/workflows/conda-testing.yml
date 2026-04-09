@@ -39,7 +39,7 @@ jobs:
         ruff format fulqrum --check
     - name: Run tests with pytest
       run: |
-        python setup.py build_ext --inplace
+        FQ_DEBUG=1 python setup.py build_ext --inplace
         pytest -p no:warnings --pyargs fulqrum/test
     - name: Build docs
       run: |
