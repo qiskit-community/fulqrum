@@ -174,7 +174,7 @@ void term_group_sort(std::vector<OperatorTerm_t>& terms,
             } // end ll for-loop
         } // end kk for-loop
         // sort by group index within the start and stop indices
-        std::sort(&terms[start], &terms[stop], offdiag_group_comp);
+        std::sort(&terms[start], &terms[stop-1], offdiag_group_comp);
     } // end ii loop
 
     // relabel groups into continuous integers
