@@ -310,7 +310,7 @@ cdef class FulqrumSpMV():
             if int_64:
                 if self.oper.type == 2:
                     if self.is_real:
-                        csr_matrix_builder2(&self.oper.terms[0],
+                        csr_matrix_builder2(self.oper.terms,
                                             self.subspace.subspace.bitstrings,
                                             &self.real_diag_vec[0],
                                             self.width,
@@ -327,7 +327,7 @@ cdef class FulqrumSpMV():
                                             &real_data[0],
                                             compute_values)
                     else:
-                        csr_matrix_builder2(&self.oper.terms[0],
+                        csr_matrix_builder2(self.oper.terms,
                                             self.subspace.subspace.bitstrings,
                                             &self.complex_diag_vec[0],
                                             self.width,
@@ -345,7 +345,7 @@ cdef class FulqrumSpMV():
                                             compute_values)
                 else:
                     if self.is_real:
-                        csr_matrix_builder(&self.oper.terms[0],
+                        csr_matrix_builder(self.oper.terms,
                                             self.subspace.subspace.bitstrings,
                                             &self.real_diag_vec[0],
                                             self.width,
@@ -359,7 +359,7 @@ cdef class FulqrumSpMV():
                                             &real_data[0],
                                             compute_values)
                     else:
-                        csr_matrix_builder(&self.oper.terms[0],
+                        csr_matrix_builder(self.oper.terms,
                                             self.subspace.subspace.bitstrings,
                                             &self.complex_diag_vec[0],
                                             self.width,
@@ -375,7 +375,7 @@ cdef class FulqrumSpMV():
             else:
                 if self.oper.type == 2:
                     if self.is_real:
-                        csr_matrix_builder2(&self.oper.terms[0],
+                        csr_matrix_builder2(self.oper.terms,
                                             self.subspace.subspace.bitstrings,
                                             &self.real_diag_vec[0],
                                             self.width,
@@ -392,7 +392,7 @@ cdef class FulqrumSpMV():
                                             &real_data[0],
                                             compute_values)
                     else:
-                        csr_matrix_builder2(&self.oper.terms[0],
+                        csr_matrix_builder2(self.oper.terms,
                                             self.subspace.subspace.bitstrings,
                                             &self.complex_diag_vec[0],
                                             self.width,
@@ -410,7 +410,7 @@ cdef class FulqrumSpMV():
                                             compute_values)
                 else:
                     if self.is_real:
-                        csr_matrix_builder(&self.oper.terms[0],
+                        csr_matrix_builder(self.oper.terms,
                                             self.subspace.subspace.bitstrings,
                                             &self.real_diag_vec[0],
                                             self.width,
@@ -424,7 +424,7 @@ cdef class FulqrumSpMV():
                                             &real_data[0],
                                             compute_values)
                     else:
-                        csr_matrix_builder(&self.oper.terms[0],
+                        csr_matrix_builder(self.oper.terms,
                                             self.subspace.subspace.bitstrings,
                                             &self.complex_diag_vec[0],
                                             self.width,
@@ -478,7 +478,7 @@ cdef class FulqrumSpMV():
         start = time.perf_counter()
         if csrlike.type_string == 'd32':
             if self.oper.type == 1:
-                csrlike_builder(&self.oper.terms[0],
+                csrlike_builder(self.oper.terms,
                             self.subspace.subspace.bitstrings,
                             &self.real_diag_vec[0],
                             self.width,
@@ -491,7 +491,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_d32.data)
 
             else:
-                csrlike_builder2(&self.oper.terms[0],
+                csrlike_builder2(self.oper.terms,
                             self.subspace.subspace.bitstrings,
                             &self.real_diag_vec[0],
                             self.width,
@@ -507,7 +507,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_d32.data)
         elif csrlike.type_string == 'd64':
             if self.oper.type == 1:
-                csrlike_builder(&self.oper.terms[0],
+                csrlike_builder(self.oper.terms,
                             self.subspace.subspace.bitstrings,
                             &self.real_diag_vec[0],
                             self.width,
@@ -520,7 +520,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_d64.data)
 
             else:
-                csrlike_builder2(&self.oper.terms[0],
+                csrlike_builder2(self.oper.terms,
                             self.subspace.subspace.bitstrings,
                             &self.real_diag_vec[0],
                             self.width,
@@ -536,7 +536,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_d64.data)
         elif csrlike.type_string == 'z32':
             if self.oper.type == 1:
-                csrlike_builder(&self.oper.terms[0],
+                csrlike_builder(self.oper.terms,
                             self.subspace.subspace.bitstrings,
                             &self.complex_diag_vec[0],
                             self.width,
@@ -549,7 +549,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_z32.data)
 
             else:
-                csrlike_builder2(&self.oper.terms[0],
+                csrlike_builder2(self.oper.terms,
                             self.subspace.subspace.bitstrings,
                             &self.complex_diag_vec[0],
                             self.width,
@@ -565,7 +565,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_z32.data)
         elif csrlike.type_string == 'z64':
             if self.oper.type == 1:
-                csrlike_builder(&self.oper.terms[0],
+                csrlike_builder(self.oper.terms,
                             self.subspace.subspace.bitstrings,
                             &self.complex_diag_vec[0],
                             self.width,
@@ -578,7 +578,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_z64.data)
 
             else:
-                csrlike_builder2(&self.oper.terms[0],
+                csrlike_builder2(self.oper.terms,
                             self.subspace.subspace.bitstrings,
                             &self.complex_diag_vec[0],
                             self.width,

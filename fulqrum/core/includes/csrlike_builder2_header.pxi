@@ -18,7 +18,7 @@ include "csrlike_header.pxi"
 
 cdef extern from "../src/csrlike_builder2.hpp":
 
-    void csrlike_builder2[T, U](const OperatorTerm_t * terms,
+    void csrlike_builder2[T, U](const vector[OperatorTerm_t]& terms,
                               const BitsetHashMapWrapper& subspace,
                               const T * diag_vec,
                               size_t width,

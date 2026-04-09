@@ -27,7 +27,7 @@
 #include <boost/dynamic_bitset.hpp>
 
 template <typename T, typename U>
-void csr_matrix_builder2(const OperatorTerm_t* terms,
+void csr_matrix_builder2(const std::vector<OperatorTerm_t>& terms,
                          const bitset_map_namespace::BitsetHashMapWrapper& subspace,
                          const U* __restrict diag_vec,
                          const unsigned int width,
