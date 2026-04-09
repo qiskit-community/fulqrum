@@ -655,7 +655,7 @@ cdef class QubitOperator():
             # Input col string matches that of nonzero column
             if col_vec == nonzero_vec:
                 accum_element(row_vec, nonzero_vec,
-                              &term.indices[0], &term.values[0], term.coeff, term.real_phase, weight, out)
+                              term.indices, term.values, term.coeff, term.real_phase, weight, out)
         return out
 
     @cython.boundscheck(False)

@@ -124,6 +124,9 @@ if sys.platform == "win32" and os.environ.get("MSYSTEM", None) is None:
 else:
     COMPILER_FLAGS = ["-O3", "-std=c++17", "-ffast-math"]
 
+if os.getenv("FQ_DEBUG", False):
+    COMPILER_FLAGS.append("-D_GLIBCXX_ASSERTIONS")
+
 EXT_MODULES = []
 # Add Cython Extensions
 for idx, ext in enumerate(CYTHON_EXTS):

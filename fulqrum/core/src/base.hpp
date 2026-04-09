@@ -662,7 +662,7 @@ inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
             } // end ll for-loop
         } // end kk for-loop
         // sort by group index within the start and stop indices
-        std::sort(&terms[start], &terms[stop], offdiag_group_comp);
+        std::sort(terms.begin() + start, terms.begin() + stop, offdiag_group_comp);
     } // end ii loop
 
     // relabel groups into continuous integers
@@ -738,8 +738,8 @@ inline void sort_groups_by_ladder_int(std::vector<OperatorTerm>& terms,
         {
             continue;
         }
-        std::sort(&terms[start],
-                  &terms[stop],
+        std::sort(terms.begin() + start,
+                  terms.begin() + stop,
                   [=](const OperatorTerm& a, const OperatorTerm& b) {
                       unsigned int res_a, res_b;
                       res_a = term_ladder_int(a, ladder_width);

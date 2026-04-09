@@ -44,7 +44,7 @@ void compute_diag_vector(const bitset_map_namespace::BitsetHashMapWrapper& data,
     std::size_t kk;
     const auto* bitsets = data.get_bitsets();
 
-#pragma omp parallel for if(subspace_dim > 4096)
+    #pragma omp parallel for if(subspace_dim > 4096)
     for(kk = 0; kk < subspace_dim; kk++)
     {
         T val = 0;
@@ -80,8 +80,8 @@ inline void single_bitstring_diagonal(const boost::dynamic_bitset<size_t>& row,
         {
             accum_element(row,
                           row,
-                          &term->indices[0],
-                          &term->values[0],
+                          term->indices,
+                          term->values,
                           term->coeff,
                           term->real_phase,
                           weight,
