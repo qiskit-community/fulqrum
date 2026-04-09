@@ -1,0 +1,1444 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Using QubitOperators" href="qubit_operators.html" /><link rel="prev" title="Citing" href="citing.html" />
+
+    <!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+        <title>Getting started - Fulqrum 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/qiskit-sphinx-theme.css?v=8ff9dcb6" />
+    <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=14156800" />
+    <link rel="stylesheet" type="text/css" href="_static/gallery.css?v=6e7c130a" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet"></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 2H2C1.73478 2 1.48043 2.10536 1.29289 2.29289C1.10536 2.48043 1 2.73478 1 3V13C1 13.2652 1.10536 13.5196 1.29289 13.7071C1.48043 13.8946 1.73478 14 2 14H14C14.2652 14 14.5196 13.8946 14.7071 13.7071C14.8946 13.5196 15 13.2652 15 13V3C15 2.73478 14.8946 2.48043 14.7071 2.29289C14.5196 2.10536 14.2652 2 14 2V2ZM2 3H10V13H2V3ZM14 13H11V3H14V13Z" fill="currentColor"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 3H2V4H14V3Z" fill="currentColor"/>
+      <path d="M14 12H2V13H14V12Z" fill="currentColor"/>
+      <path d="M14 6H2V7H14V6Z" fill="currentColor"/>
+      <path d="M14 9H2V10H14V9Z" fill="currentColor"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11 8L6.00005 13L5.30005 12.3L9.60005 8L5.30005 3.7L6.00005 3L11 8Z" fill="currentColor"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M15 13H1V14H15V13Z" fill="currentColor"/>
+      <path d="M12.7 4.5C13.1 4.1 13.1 3.5 12.7 3.1L10.9 1.3C10.5 0.9 9.9 0.9 9.5 1.3L2 8.8V12H5.2L12.7 4.5ZM10.2 2L12 3.8L10.5 5.3L8.7 3.5L10.2 2ZM3 11V9.2L8 4.2L9.8 6L4.8 11H3Z" fill="currentColor"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11 13.0002C11.5523 13.0002 12 12.5525 12 12.0002C12 11.4479 11.5523 11.0002 11 11.0002C10.4477 11.0002 10 11.4479 10 12.0002C10 12.5525 10.4477 13.0002 11 13.0002Z" fill="currentColor"/>
+      <path d="M14.8884 11.7394C14.5795 10.9524 14.0464 10.2734 13.3552 9.78646C12.664 9.29954 11.8451 9.02615 11 9.00017C10.1549 9.02615 9.33604 9.29954 8.64484 9.78646C7.95365 10.2734 7.42052 10.9524 7.11155 11.7394L7 12.0002L7.11155 12.2609C7.42052 13.0479 7.95365 13.727 8.64484 14.2139C9.33604 14.7008 10.1549 14.9742 11 15.0002C11.8451 14.9742 12.664 14.7008 13.3552 14.2139C14.0464 13.727 14.5795 13.0479 14.8884 12.2609L15 12.0002L14.8884 11.7394ZM11 14.0002C10.6044 14.0002 10.2178 13.8829 9.88886 13.6631C9.55996 13.4433 9.30362 13.131 9.15224 12.7655C9.00087 12.4001 8.96126 11.998 9.03843 11.61C9.1156 11.222 9.30608 10.8657 9.58579 10.586C9.86549 10.3063 10.2219 10.1158 10.6098 10.0386C10.9978 9.96143 11.3999 10.001 11.7654 10.1524C12.1308 10.3038 12.4432 10.5601 12.6629 10.889C12.8827 11.2179 13 11.6046 13 12.0002C12.9994 12.5304 12.7885 13.0388 12.4136 13.4137C12.0386 13.7887 11.5303 13.9996 11 14.0002Z" fill="currentColor"/>
+      <path d="M6 14.0002H4V2.00017H8V5.00017C8.00077 5.26515 8.10637 5.51906 8.29374 5.70643C8.48111 5.8938 8.73502 5.99941 9 6.00017H12V8.00017H13V5.00017C13.0018 4.93446 12.9893 4.86913 12.9634 4.80871C12.9375 4.74828 12.8988 4.6942 12.85 4.65017L9.35 1.15017C9.30599 1.10134 9.2519 1.06263 9.19147 1.03674C9.13104 1.01084 9.06572 0.998364 9 1.00017H4C3.73502 1.00094 3.48111 1.10654 3.29374 1.29391C3.10637 1.48128 3.00077 1.73519 3 2.00017V14.0002C3.00077 14.2652 3.10637 14.5191 3.29374 14.7064C3.48111 14.8938 3.73502 14.9994 4 15.0002H6V14.0002ZM9 2.20017L11.8 5.00017H9V2.20017Z" fill="currentColor"/>
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">Fulqrum 0.1.0  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">Fulqrum 0.1.0  documentation</span>
+  
+</a>
+<form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Fulqrum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">Citing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qubit_operators.html">Using QubitOperators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fermi_operators.html">Using FermionicOperators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="subspaces.html">Defining Subspaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="operator_io.html">Operator IO</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/heisenberg_spin_model.html">Heisenberg spin model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/n2_full_sqd_loop.html">Sample-based quantum diagonalization with Fulqrum</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Docs</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="apidocs/core.html">Core</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Core</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.core.QubitOperator.html">fulqrum.core.QubitOperator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.core.FermionicOperator.html">fulqrum.core.FermionicOperator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.core.Subspace.html">fulqrum.core.Subspace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.core.Bitset.html">fulqrum.core.Bitset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.core.SubspaceHamiltonian.html">fulqrum.core.SubspaceHamiltonian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.core.CSRLinearOperator.html">fulqrum.core.CSRLinearOperator</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="apidocs/utils.html">Utilities</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Utilities</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.utils.dict_to_json.html">fulqrum.utils.dict_to_json</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.utils.json_to_dict.html">fulqrum.utils.json_to_dict</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="apidocs/ramps.html">RAMPS</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of RAMPS</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.ramps.ramps_restricted_simple.html">fulqrum.ramps.ramps_restricted_simple</a></li>
+</ul>
+</li>
+</ul>
+
+</div></div>
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="_sources/started.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="getting-started">
+<span id="started"></span><h1>Getting started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h1>
+<section id="simple-example">
+<h2>Simple example<a class="headerlink" href="#simple-example" title="Link to this heading">¶</a></h2>
+<p>Here we demonstrate the standard workflow using a simple example solving a Heisenberg problem on a 5x5 grid.</p>
+<p>To begin, we import the required libraries, and build our Hamiltonian as a <code class="docutils literal notranslate"><span class="pre">QubitOperator</span></code>:</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">scipy.sparse.linalg</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spla</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">qiskit.transpiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">CouplingMap</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">fulqrum</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">fq</span>
+
+<span class="c1"># Build 16-qubit coupling map</span>
+<span class="n">cmap</span> <span class="o">=</span> <span class="n">CouplingMap</span><span class="o">.</span><span class="n">from_grid</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">num_qubits</span> <span class="o">=</span> <span class="n">cmap</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+
+<span class="c1"># Generate Hamiltonian</span>
+<span class="n">H</span> <span class="o">=</span> <span class="n">fq</span><span class="o">.</span><span class="n">QubitOperator</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">,</span> <span class="p">[])</span>
+<span class="n">touched_edges</span> <span class="o">=</span> <span class="nb">set</span><span class="p">({})</span>
+<span class="n">coeffs</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">cmap</span><span class="o">.</span><span class="n">get_edges</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">edge</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">touched_edges</span><span class="p">:</span>
+        <span class="n">touched_edges</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span>
+        <span class="n">H</span> <span class="o">+=</span> <span class="n">fq</span><span class="o">.</span><span class="n">QubitOperator</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;XX&quot;</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                                           <span class="p">(</span><span class="s2">&quot;YY&quot;</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                           <span class="p">(</span><span class="s2">&quot;ZZ&quot;</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">2</span><span class="p">])])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p>The subspace in which our Hamiltonian will be defined is derived from the counts sampled from a quantum computer
+and stored as a <code class="docutils literal notranslate"><span class="pre">Subspace</span></code> object (note that we do not use the counts data itself):</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">counts</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">kk</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">num_qubits</span><span class="p">):</span>
+    <span class="n">counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">bin</span><span class="p">(</span><span class="n">kk</span><span class="p">)[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">))</span>
+
+<span class="n">S</span> <span class="o">=</span> <span class="n">fq</span><span class="o">.</span><span class="n">Subspace</span><span class="p">([</span><span class="n">counts</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p>Right now we have a Hamiltonian and a subspace, but they know nothing about each other.  We can combine
+them into a <code class="docutils literal notranslate"><span class="pre">SubspaceHamiltonian</span></code> object, which is where all the magic happens, and is what we pass on
+to the eigensolver:</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Hsub</span> <span class="o">=</span> <span class="n">fq</span><span class="o">.</span><span class="n">SubspaceHamiltonian</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span>
+<span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">eigsh</span><span class="p">(</span><span class="n">Hsub</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;SA&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p>In passing the <code class="docutils literal notranslate"><span class="pre">SubspaceHamiltonian</span></code> object directly we have solved the problem using a matrix-free method,
+but one can build a collection of different, more performant, matrix-representations from this object.
+The found eigenenergy is:</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Eigenvalue:&quot;</span><span class="p">,</span> <span class="n">evals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Eigenvalue: -24.00000000000003
+</pre></div>
+</div>
+</div>
+</div>
+<p>there is of course an associated eigenvector, but because of the way Fulqrum solves the problem, it is not
+immediately usable.  Instead, we can use <code class="docutils literal notranslate"><span class="pre">SubspaceHamiltonian.interpret_vector()</span></code> to cast the solution
+as a dictionary the statevector amplitudes as values:</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Hsub</span><span class="o">.</span><span class="n">interpret_vector</span><span class="p">(</span><span class="n">evecs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>{&#39;0000000000000000&#39;: 0.9217448050426924,
+ &#39;0000000000000001&#39;: -4.2230192378159394e-13,
+ &#39;0000000000000010&#39;: -3.801700371301064e-13,
+ &#39;0000000000000011&#39;: -1.8860909514462274e-12,
+ &#39;0000000000000100&#39;: 5.346512869135644e-13,
+ &#39;0000000000000101&#39;: -5.907132048842256e-14,
+ &#39;0000000000000110&#39;: -3.1458036814679365e-13,
+ &#39;0000000000000111&#39;: -9.68512544000872e-14,
+ &#39;0000000000001000&#39;: -2.2362152735120963e-13,
+ &#39;0000000000001001&#39;: 2.3624617406323872e-14,
+ &#39;0000000000001010&#39;: -5.264286226906536e-13,
+ &#39;0000000000001011&#39;: -2.48578712073759e-13,
+ &#39;0000000000001100&#39;: -1.058134920304095e-12,
+ &#39;0000000000001101&#39;: -2.439756573016957e-13,
+ &#39;0000000000001110&#39;: 6.753177602250606e-13,
+ &#39;0000000000001111&#39;: 1.4270945424216226e-13,
+ &#39;0000000000010000&#39;: 4.962602206860465e-14,
+ &#39;0000000000010001&#39;: 2.3936340005456808e-12,
+ &#39;0000000000010010&#39;: -2.5092954089060814e-13,
+ &#39;0000000000010011&#39;: -1.5329735873102474e-12,
+ &#39;0000000000010100&#39;: -2.846319966670727e-13,
+ &#39;0000000000010101&#39;: -3.5471855471162804e-13,
+ &#39;0000000000010110&#39;: 1.843505518927032e-13,
+ &#39;0000000000010111&#39;: 5.601415406157849e-13,
+ &#39;0000000000011000&#39;: -1.135804130289039e-12,
+ &#39;0000000000011001&#39;: 3.662789962051991e-14,
+ &#39;0000000000011010&#39;: 3.534004767718286e-14,
+ &#39;0000000000011011&#39;: 2.5304637741439767e-14,
+ &#39;0000000000011100&#39;: -1.2284642749630278e-13,
+ &#39;0000000000011101&#39;: -2.4515543249905165e-14,
+ &#39;0000000000011110&#39;: -1.432248109204743e-13,
+ &#39;0000000000011111&#39;: 1.3718337041105433e-13,
+ &#39;0000000000100000&#39;: -4.1092772343177587e-13,
+ &#39;0000000000100001&#39;: -2.2935846684587296e-13,
+ &#39;0000000000100010&#39;: -8.825001812790529e-13,
+ &#39;0000000000100011&#39;: 8.658742759447321e-13,
+ &#39;0000000000100100&#39;: -3.592470799667937e-13,
+ &#39;0000000000100101&#39;: 1.8082097030045028e-13,
+ &#39;0000000000100110&#39;: 4.0288075998713363e-13,
+ &#39;0000000000100111&#39;: 9.879776730431857e-14,
+ &#39;0000000000101000&#39;: -6.548438550004111e-13,
+ &#39;0000000000101001&#39;: 8.13180345352592e-14,
+ &#39;0000000000101010&#39;: 1.1513234841084403e-13,
+ &#39;0000000000101011&#39;: 2.0123823916324274e-14,
+ &#39;0000000000101100&#39;: -7.950261403900057e-14,
+ &#39;0000000000101101&#39;: 1.1452440312518349e-14,
+ &#39;0000000000101111&#39;: 2.0462833733074393e-13,
+ &#39;0000000000110000&#39;: -9.640115094468291e-14,
+ &#39;0000000000110001&#39;: -6.805344882996543e-13,
+ &#39;0000000000110010&#39;: 3.829337836046922e-13,
+ &#39;0000000000110011&#39;: -7.082936460172632e-14,
+ &#39;0000000000110100&#39;: 1.9943524295027375e-13,
+ &#39;0000000000110101&#39;: 6.631929328155547e-14,
+ &#39;0000000000110110&#39;: -7.714637460021448e-14,
+ &#39;0000000000110111&#39;: -1.5952349289548656e-13,
+ &#39;0000000000111000&#39;: 2.2573691613216134e-14,
+ &#39;0000000000111001&#39;: 5.2496891586772596e-14,
+ &#39;0000000000111010&#39;: -5.846022732456448e-14,
+ &#39;0000000000111011&#39;: -4.2292186681319713e-14,
+ &#39;0000000000111100&#39;: -9.195891068803093e-14,
+ &#39;0000000000111101&#39;: 6.139071716313863e-14,
+ &#39;0000000000111110&#39;: 5.848186204156567e-14,
+ &#39;0000000000111111&#39;: 3.901640714320009e-13,
+ &#39;0000000001000000&#39;: 1.4864413996820123e-13,
+ &#39;0000000001000001&#39;: -1.4080629134528303e-13,
+ &#39;0000000001000010&#39;: -2.2828266325888206e-13,
+ &#39;0000000001000011&#39;: 4.33426660274235e-13,
+ &#39;0000000001000100&#39;: 4.583533010163159e-13,
+ &#39;0000000001000101&#39;: 2.1697849100909808e-13,
+ &#39;0000000001000110&#39;: 2.2827131432053173e-13,
+ &#39;0000000001000111&#39;: -1.1864103859481363e-13,
+ &#39;0000000001001000&#39;: -9.77782968398303e-14,
+ &#39;0000000001001001&#39;: 2.7086840095190014e-14,
+ &#39;0000000001001010&#39;: 7.871469843942956e-14,
+ &#39;0000000001001011&#39;: -1.5170568952115987e-14,
+ &#39;0000000001001100&#39;: -1.7340416898994802e-13,
+ &#39;0000000001001101&#39;: -2.821532859111061e-14,
+ &#39;0000000001001110&#39;: 4.991301481907005e-14,
+ &#39;0000000001001111&#39;: 1.0464596040839803e-13,
+ &#39;0000000001010000&#39;: -1.1337131477303708e-13,
+ &#39;0000000001010001&#39;: 3.782096339420998e-14,
+ &#39;0000000001010010&#39;: 1.4388981579482196e-13,
+ &#39;0000000001010100&#39;: 1.5773639738390296e-13,
+ &#39;0000000001010101&#39;: -3.1993842933040994e-14,
+ &#39;0000000001010110&#39;: -6.832836209726749e-14,
+ &#39;0000000001010111&#39;: -3.623251687173969e-14,
+ &#39;0000000001011001&#39;: -4.085299800533268e-14,
+ &#39;0000000001011010&#39;: -5.0568326990915305e-14,
+ &#39;0000000001011011&#39;: 4.6365790129686647e-14,
+ &#39;0000000001011100&#39;: -8.157611970484124e-14,
+ &#39;0000000001011101&#39;: 7.127245774314047e-14,
+ &#39;0000000001011110&#39;: 3.495500329629791e-14,
+ &#39;0000000001011111&#39;: 1.5595502456131367e-13,
+ &#39;0000000001100000&#39;: -2.976734932858994e-13,
+ &#39;0000000001100001&#39;: 1.843074813024707e-13,
+ &#39;0000000001100010&#39;: 1.3163317256016074e-13,
+ &#39;0000000001100011&#39;: -1.0083502892703074e-13,
+ &#39;0000000001100100&#39;: 2.2206065614686563e-13,
+ &#39;0000000001100101&#39;: -5.4359581187382146e-14,
+ &#39;0000000001100110&#39;: -1.2580997317857973e-13,
+ &#39;0000000001100111&#39;: 1.2555905762440788e-13,
+ &#39;0000000001101000&#39;: 1.2785506206611893e-14,
+ &#39;0000000001101001&#39;: -1.1013261772315569e-14,
+ &#39;0000000001101010&#39;: -5.20791336625346e-14,
+ &#39;0000000001101011&#39;: 8.0139981218003e-14,
+ &#39;0000000001101100&#39;: 3.0379130277333907e-14,
+ &#39;0000000001101101&#39;: 7.885035562884737e-14,
+ &#39;0000000001101110&#39;: 1.8840683285786803e-13,
+ &#39;0000000001101111&#39;: 3.384309094570894e-14,
+ &#39;0000000001110000&#39;: 6.639458121979943e-14,
+ &#39;0000000001110001&#39;: -8.307156974300322e-14,
+ &#39;0000000001110010&#39;: -4.988902924382328e-14,
+ &#39;0000000001110011&#39;: 5.3583021648302076e-14,
+ &#39;0000000001110100&#39;: 8.814204734651878e-14,
+ &#39;0000000001110101&#39;: 7.18047046069545e-14,
+ &#39;0000000001110110&#39;: 1.638102376191769e-13,
+ &#39;0000000001110111&#39;: -8.550970875888919e-13,
+ &#39;0000000001111000&#39;: 2.2943826295938884e-14,
+ &#39;0000000001111001&#39;: 2.4865172903387435e-14,
+ &#39;0000000001111010&#39;: 7.137281632259694e-14,
+ &#39;0000000001111011&#39;: -5.69113339896228e-14,
+ &#39;0000000001111100&#39;: 1.6176347155958655e-14,
+ &#39;0000000001111101&#39;: 6.727864112020948e-14,
+ &#39;0000000001111110&#39;: 6.653011349457716e-14,
+ &#39;0000000001111111&#39;: 5.222031776370301e-13,
+ &#39;0000000010000000&#39;: -1.0121363426426423e-12,
+ &#39;0000000010000001&#39;: -7.628713162193244e-13,
+ &#39;0000000010000010&#39;: -4.753813586171743e-13,
+ &#39;0000000010000011&#39;: 2.6206348894204333e-13,
+ &#39;0000000010000100&#39;: -9.02959480301322e-14,
+ &#39;0000000010000101&#39;: 6.173164256737683e-14,
+ &#39;0000000010000110&#39;: 1.7470551632788923e-13,
+ &#39;0000000010000111&#39;: -1.2776321809186546e-13,
+ &#39;0000000010001000&#39;: -9.529344121462438e-13,
+ &#39;0000000010001001&#39;: -3.957172244308105e-14,
+ &#39;0000000010001010&#39;: 3.78855843061825e-14,
+ &#39;0000000010001011&#39;: -8.69308894762083e-14,
+ &#39;0000000010001100&#39;: 1.508187542262321e-14,
+ &#39;0000000010001101&#39;: 4.015095198685631e-14,
+ &#39;0000000010001110&#39;: 5.359778744492246e-13,
+ &#39;0000000010001111&#39;: -2.6960893621339355e-13,
+ &#39;0000000010010000&#39;: -7.407938984666246e-13,
+ &#39;0000000010010010&#39;: 6.899690989978084e-14,
+ &#39;0000000010010011&#39;: -9.85298477642719e-14,
+ &#39;0000000010010100&#39;: 1.21196858112361e-14,
+ &#39;0000000010010101&#39;: -8.855300011726241e-14,
+ &#39;0000000010010110&#39;: -1.0470886543058788e-13,
+ &#39;0000000010010111&#39;: -2.2131724032995156e-14,
+ &#39;0000000010011000&#39;: 5.1458455989397794e-14,
+ &#39;0000000010011001&#39;: -6.772565800352408e-14,
+ &#39;0000000010011010&#39;: -9.590442910990108e-14,
+ &#39;0000000010011011&#39;: 6.321926530732021e-14,
+ &#39;0000000010011100&#39;: -8.040302208934077e-14,
+ &#39;0000000010011101&#39;: -1.8727834088326886e-14,
+ &#39;0000000010011110&#39;: -1.0334156208375864e-13,
+ &#39;0000000010100000&#39;: -3.0482546249150856e-13,
+ &#39;0000000010100001&#39;: 1.1895481101920732e-13,
+ &#39;0000000010100010&#39;: 1.6792050899039578e-14,
+ &#39;0000000010100011&#39;: -1.1231542040519956e-13,
+ &#39;0000000010100101&#39;: -5.879082117373097e-14,
+ &#39;0000000010100110&#39;: -8.686112821395694e-14,
+ &#39;0000000010100111&#39;: 1.960741111151643e-14,
+ &#39;0000000010101000&#39;: -1.1706103450049346e-13,
+ &#39;0000000010101001&#39;: -6.073289283401247e-14,
+ &#39;0000000010101010&#39;: -1.0869797364128842e-13,
+ &#39;0000000010101011&#39;: 5.746407051721759e-14,
+ &#39;0000000010101100&#39;: 6.683439977327454e-14,
+ &#39;0000000010101101&#39;: 1.9486119919970006e-14,
+ &#39;0000000010101110&#39;: 1.0814121306122691e-13,
+ &#39;0000000010101111&#39;: 1.617453901502574e-13,
+ &#39;0000000010110000&#39;: 3.77281448382595e-14,
+ &#39;0000000010110001&#39;: -8.625053545413534e-14,
+ &#39;0000000010110010&#39;: -5.002381683701344e-14,
+ &#39;0000000010110011&#39;: 1.4815133309849797e-13,
+ &#39;0000000010110100&#39;: -1.7959901277874268e-14,
+ &#39;0000000010110101&#39;: 4.0171569322257274e-14,
+ &#39;0000000010110111&#39;: -8.93878702849354e-14,
+ &#39;0000000010111000&#39;: -6.948569008911624e-14,
+ &#39;0000000010111001&#39;: 4.380077278662416e-14,
+ &#39;0000000010111010&#39;: 1.4199861709988118e-14,
+ &#39;0000000010111011&#39;: -1.4655569769603006e-14,
+ &#39;0000000010111100&#39;: -2.6196828848737074e-14,
+ &#39;0000000010111101&#39;: -4.7069706914506257e-14,
+ &#39;0000000010111110&#39;: -4.1312001554870526e-14,
+ &#39;0000000010111111&#39;: 1.930569463986639e-13,
+ &#39;0000000011000000&#39;: 3.877711109084116e-14,
+ &#39;0000000011000011&#39;: -1.2343542626846217e-13,
+ &#39;0000000011000100&#39;: -2.5992575020404417e-13,
+ &#39;0000000011000101&#39;: -4.474247237613699e-14,
+ &#39;0000000011000110&#39;: 3.1265007070319596e-14,
+ &#39;0000000011000111&#39;: 2.1704244538546323e-14,
+ &#39;0000000011001000&#39;: -3.62601904078194e-13,
+ &#39;0000000011001001&#39;: -9.832033636007982e-14,
+ &#39;0000000011001010&#39;: 6.630112537936221e-14,
+ &#39;0000000011001100&#39;: -7.403639312685239e-14,
+ &#39;0000000011001110&#39;: 1.0575468242515673e-13,
+ &#39;0000000011001111&#39;: 2.040418679643938e-13,
+ &#39;0000000011010001&#39;: -9.775166261359015e-14,
+ &#39;0000000011010010&#39;: -5.186463374479881e-14,
+ &#39;0000000011010011&#39;: 2.3609670226404685e-14,
+ &#39;0000000011010100&#39;: -5.313681709169223e-14,
+ &#39;0000000011010101&#39;: 4.273639491544595e-14,
+ &#39;0000000011010110&#39;: 1.6554907496200972e-14,
+ &#39;0000000011010111&#39;: 2.0499732840307462e-14,
+ &#39;0000000011011000&#39;: -1.2290269632184304e-13,
+ &#39;0000000011011001&#39;: 2.1908097118121732e-14,
+ &#39;0000000011011011&#39;: -1.0703787915120478e-14,
+ &#39;0000000011011100&#39;: -1.1753299448872781e-13,
+ &#39;0000000011011101&#39;: 4.481260916639249e-14,
+ &#39;0000000011011110&#39;: -3.2569265468235446e-14,
+ &#39;0000000011011111&#39;: -1.690891222377217e-13,
+ &#39;0000000011100000&#39;: 5.478904657016831e-14,
+ &#39;0000000011100001&#39;: -6.409318393145805e-14,
+ &#39;0000000011100010&#39;: -1.581244666921521e-13,
+ &#39;0000000011100011&#39;: 1.516623467346736e-14,
+ &#39;0000000011100101&#39;: 3.515297338848344e-14,
+ &#39;0000000011100110&#39;: 8.425769787661417e-14,
+ &#39;0000000011100111&#39;: -6.011708539568361e-14,
+ &#39;0000000011101001&#39;: 5.962798192927034e-14,
+ &#39;0000000011101010&#39;: 6.912324608462262e-14,
+ &#39;0000000011101011&#39;: 8.446487872876955e-14,
+ &#39;0000000011101100&#39;: -1.0816252868133965e-13,
+ &#39;0000000011101101&#39;: 7.874759645059858e-14,
+ &#39;0000000011101110&#39;: -7.495630243731082e-14,
+ &#39;0000000011101111&#39;: -4.517599371588615e-13,
+ &#39;0000000011110000&#39;: 7.305758643161242e-14,
+ &#39;0000000011110001&#39;: -2.196733886407225e-14,
+ &#39;0000000011110011&#39;: -5.916410270743659e-14,
+ &#39;0000000011110100&#39;: 2.565070916856152e-14,
+ &#39;0000000011110101&#39;: -3.09374000986271e-14,
+ &#39;0000000011110111&#39;: 2.088382928088546e-13,
+ &#39;0000000011111000&#39;: 6.592697940713588e-14,
+ &#39;0000000011111001&#39;: -8.520137054860912e-14,
+ &#39;0000000011111010&#39;: -4.3906339331136995e-14,
+ &#39;0000000011111011&#39;: 3.495401723363947e-14,
+ &#39;0000000011111100&#39;: -1.216083413406777e-14,
+ &#39;0000000011111101&#39;: -2.764609437599451e-14,
+ &#39;0000000011111110&#39;: -1.9902800583044686e-13,
+ &#39;0000000011111111&#39;: -1.3561363912497334e-13,
+ &#39;0000000100000000&#39;: 1.97959969496736e-13,
+ &#39;0000000100000001&#39;: 9.783299641028443e-13,
+ &#39;0000000100000010&#39;: 2.905665797380938e-13,
+ &#39;0000000100000011&#39;: -4.425622341830984e-13,
+ &#39;0000000100000100&#39;: 1.3922839846866307e-13,
+ &#39;0000000100000101&#39;: -6.671536519559887e-14,
+ &#39;0000000100000110&#39;: 1.9609793053292947e-14,
+ &#39;0000000100000111&#39;: -1.4549232708910945e-14,
+ &#39;0000000100001000&#39;: -6.48362268149948e-13,
+ &#39;0000000100001001&#39;: 9.780004387442821e-14,
+ &#39;0000000100001011&#39;: -4.167009449101389e-14,
+ &#39;0000000100001100&#39;: -9.840824482417302e-14,
+ &#39;0000000100001101&#39;: 7.130383369975001e-14,
+ &#39;0000000100001110&#39;: -5.160363401281542e-14,
+ &#39;0000000100001111&#39;: -1.061365093871039e-13,
+ &#39;0000000100010000&#39;: -3.2550129614559656e-13,
+ &#39;0000000100010001&#39;: 4.4692371822821923e-13,
+ &#39;0000000100010010&#39;: 3.1267600067420753e-14,
+ &#39;0000000100010011&#39;: 3.720670618956294e-13,
+ &#39;0000000100010100&#39;: 1.782906193033056e-13,
+ &#39;0000000100010101&#39;: 1.3182960817058035e-13,
+ &#39;0000000100010110&#39;: -7.938030567629972e-14,
+ &#39;0000000100010111&#39;: -7.635512809759426e-14,
+ &#39;0000000100011000&#39;: -2.0228583244554093e-14,
+ &#39;0000000100011001&#39;: -2.168201256806904e-13,
+ &#39;0000000100011010&#39;: -8.706137970121388e-14,
+ &#39;0000000100011011&#39;: -5.378652121008863e-14,
+ &#39;0000000100011100&#39;: -4.552750496021794e-14,
+ &#39;0000000100011101&#39;: 1.8316208951368655e-14,
+ &#39;0000000100011110&#39;: -1.1345038398287606e-14,
+ &#39;0000000100011111&#39;: -7.945755950444232e-14,
+ &#39;0000000100100000&#39;: 9.59258264851202e-14,
+ &#39;0000000100100001&#39;: 4.6462282782407396e-14,
+ &#39;0000000100100010&#39;: 1.2024207338567788e-13,
+ &#39;0000000100100011&#39;: 4.751879347949723e-14,
+ &#39;0000000100100100&#39;: 6.881906323535636e-14,
+ &#39;0000000100100101&#39;: -2.432710146748686e-14,
+ &#39;0000000100100110&#39;: -7.283900103445489e-14,
+ &#39;0000000100100111&#39;: -4.8770277099849366e-14,
+ &#39;0000000100101000&#39;: -4.228417676216595e-14,
+ &#39;0000000100101001&#39;: -4.788267454650059e-14,
+ &#39;0000000100101010&#39;: -7.855271859840548e-14,
+ &#39;0000000100101011&#39;: -4.67206713803769e-14,
+ &#39;0000000100101100&#39;: -5.894823196845085e-14,
+ &#39;0000000100101110&#39;: 3.43930831320412e-14,
+ &#39;0000000100101111&#39;: 5.972716428107623e-14,
+ &#39;0000000100110000&#39;: 6.374280017893072e-14,
+ &#39;0000000100110001&#39;: 7.397320629231489e-14,
+ &#39;0000000100110010&#39;: 2.29217069134264e-14,
+ &#39;0000000100110011&#39;: -4.520031370048687e-13,
+ &#39;0000000100110100&#39;: -3.738882295470877e-14,
+ &#39;0000000100110101&#39;: -9.41011724013101e-14,
+ &#39;0000000100110110&#39;: -2.4000135812733003e-14,
+ &#39;0000000100110111&#39;: -2.805542955908941e-13,
+ &#39;0000000100111000&#39;: -3.9452136707816396e-14,
+ &#39;0000000100111001&#39;: -5.377877043876768e-14,
+ &#39;0000000100111010&#39;: -2.3058727154783058e-14,
+ &#39;0000000100111011&#39;: -4.8231807586761875e-14,
+ &#39;0000000100111100&#39;: -4.656100340435874e-14,
+ &#39;0000000100111101&#39;: 1.8162345501832258e-14,
+ &#39;0000000100111110&#39;: 3.8288335196074644e-14,
+ &#39;0000000100111111&#39;: -2.7717816911084088e-14,
+ &#39;0000000101000000&#39;: 5.1742892775461483e-14,
+ &#39;0000000101000001&#39;: 6.836607098405807e-14,
+ &#39;0000000101000011&#39;: -1.7790214323678858e-14,
+ &#39;0000000101000101&#39;: -4.747108590467513e-14,
+ &#39;0000000101000110&#39;: -3.604835897613703e-14,
+ &#39;0000000101000111&#39;: -3.348344311796086e-14,
+ &#39;0000000101001000&#39;: -3.315700404914095e-14,
+ &#39;0000000101001010&#39;: -2.8037510768046832e-14,
+ &#39;0000000101001011&#39;: -2.244179531791874e-14,
+ &#39;0000000101001100&#39;: -1.0379533423531587e-13,
+ &#39;0000000101001110&#39;: 1.6525313898832724e-14,
+ &#39;0000000101001111&#39;: 1.4288332653485096e-14,
+ &#39;0000000101010000&#39;: 1.0534182829524562e-13,
+ &#39;0000000101010001&#39;: -6.789288544806741e-14,
+ &#39;0000000101010010&#39;: -5.76630177055836e-14,
+ &#39;0000000101010011&#39;: -7.251628648233126e-14,
+ &#39;0000000101010100&#39;: -3.855334452524683e-14,
+ &#39;0000000101010111&#39;: -1.247262205995793e-13,
+ &#39;0000000101011001&#39;: -2.6390541268511603e-14,
+ &#39;0000000101011010&#39;: -1.4631000437667464e-14,
+ &#39;0000000101011011&#39;: -1.739265778671974e-14,
+ &#39;0000000101011100&#39;: 1.0866370723145768e-14,
+ &#39;0000000101011101&#39;: 2.4107581040715245e-14,
+ &#39;0000000101011110&#39;: -1.0730079471949255e-14,
+ &#39;0000000101011111&#39;: 1.0329762207123356e-13,
+ &#39;0000000101100001&#39;: -4.919104071850553e-14,
+ &#39;0000000101100110&#39;: -2.2097305566084482e-14,
+ &#39;0000000101100111&#39;: -1.7316341770829713e-13,
+ &#39;0000000101101000&#39;: -1.952434686327966e-14,
+ &#39;0000000101101011&#39;: -1.5756484715458906e-14,
+ &#39;0000000101101100&#39;: 1.0590339442419445e-14,
+ &#39;0000000101101111&#39;: 7.910220513456909e-14,
+ &#39;0000000101110000&#39;: -7.718596970678321e-14,
+ &#39;0000000101110001&#39;: -6.267857981024194e-14,
+ &#39;0000000101110011&#39;: -8.582402685933212e-14,
+ &#39;0000000101110100&#39;: 1.32993078109361e-14,
+ &#39;0000000101110110&#39;: -2.0617027867142183e-14,
+ &#39;0000000101110111&#39;: -1.9956397045934244e-14,
+ &#39;0000000101111000&#39;: -2.0076774370552105e-14,
+ &#39;0000000101111010&#39;: -1.8785192955330447e-14,
+ &#39;0000000101111011&#39;: -4.961000109753378e-14,
+ &#39;0000000101111100&#39;: -1.6076186675316663e-14,
+ &#39;0000000101111101&#39;: 3.264144133016338e-14,
+ &#39;0000000101111110&#39;: -7.367143817655228e-14,
+ &#39;0000000101111111&#39;: -1.3509846747978763e-13,
+ &#39;0000000110000000&#39;: -1.2158267278356806e-13,
+ &#39;0000000110000001&#39;: 3.264251206293156e-14,
+ &#39;0000000110000010&#39;: 2.3705010526644976e-14,
+ &#39;0000000110000011&#39;: -3.119593082221671e-14,
+ &#39;0000000110000100&#39;: -3.860248503653773e-14,
+ &#39;0000000110000101&#39;: -1.530333927494452e-14,
+ &#39;0000000110000110&#39;: -4.781767637268676e-14,
+ &#39;0000000110001000&#39;: 1.5570714275109327e-13,
+ &#39;0000000110001001&#39;: 4.4988627842547535e-14,
+ &#39;0000000110001010&#39;: -2.0987718484666322e-14,
+ &#39;0000000110001011&#39;: 2.5133507541276155e-14,
+ &#39;0000000110001100&#39;: -8.922783335637726e-14,
+ &#39;0000000110001101&#39;: -1.1959680044154029e-14,
+ &#39;0000000110001110&#39;: -2.0072947798273902e-14,
+ &#39;0000000110001111&#39;: -8.128429860595552e-14,
+ &#39;0000000110010000&#39;: -4.82197470448473e-14,
+ &#39;0000000110010001&#39;: -1.6915491481573037e-13,
+ &#39;0000000110010010&#39;: -4.325359920629464e-14,
+ &#39;0000000110010100&#39;: 1.3169138415411374e-14,
+ &#39;0000000110010101&#39;: 2.4193563106925383e-14,
+ &#39;0000000110010110&#39;: -1.243071481163207e-14,
+ &#39;0000000110010111&#39;: -4.892433654013608e-14,
+ &#39;0000000110011000&#39;: 2.8908199385333507e-14,
+ &#39;0000000110011001&#39;: -3.592366149673569e-14,
+ &#39;0000000110011010&#39;: -1.6558592303904138e-14,
+ &#39;0000000110011011&#39;: 2.7642282726053907e-14,
+ &#39;0000000110011100&#39;: 5.6452505310019596e-14,
+ &#39;0000000110011101&#39;: -1.7520990662207737e-14,
+ &#39;0000000110011110&#39;: -7.19987932095974e-14,
+ &#39;0000000110011111&#39;: -2.7090489826756797e-14,
+ &#39;0000000110100000&#39;: -1.474862989951182e-14,
+ &#39;0000000110100001&#39;: -3.4125319166495726e-14,
+ &#39;0000000110100010&#39;: -2.1440357020038023e-14,
+ &#39;0000000110100111&#39;: -1.8216785968617313e-14,
+ &#39;0000000110101000&#39;: -6.205192868726245e-14,
+ &#39;0000000110101010&#39;: -1.2671939321538737e-14,
+ &#39;0000000110101100&#39;: -1.1847413698453806e-14,
+ &#39;0000000110101101&#39;: -2.598844744612096e-14,
+ &#39;0000000110101110&#39;: -4.679940600678374e-14,
+ &#39;0000000110101111&#39;: 3.275789850091838e-14,
+ &#39;0000000110110001&#39;: -5.141488599254131e-14,
+ &#39;0000000110110011&#39;: -1.4596776998501325e-13,
+ &#39;0000000110110100&#39;: -1.1722372085163144e-14,
+ &#39;0000000110110111&#39;: 2.294752023634714e-14,
+ &#39;0000000110111001&#39;: 1.9509380019324257e-14,
+ &#39;0000000110111010&#39;: -2.0323006762589616e-14,
+ &#39;0000000110111011&#39;: -3.8463775884412405e-14,
+ &#39;0000000110111100&#39;: -1.985537202489072e-14,
+ &#39;0000000110111101&#39;: 1.0301841375662875e-14,
+ &#39;0000000110111110&#39;: -7.847807499210263e-14,
+ &#39;0000000110111111&#39;: -4.412885613892815e-14,
+ &#39;0000000111000000&#39;: -9.392630949469058e-14,
+ &#39;0000000111000001&#39;: -4.474166461077772e-14,
+ &#39;0000000111000010&#39;: -1.1412277561923584e-14,
+ &#39;0000000111000100&#39;: -3.681431052371859e-14,
+ &#39;0000000111000101&#39;: -1.2478599989938829e-14,
+ &#39;0000000111001000&#39;: -9.930169661808013e-14,
+ &#39;0000000111001010&#39;: -2.9552592235490326e-14,
+ &#39;0000000111001011&#39;: -1.9276261647061784e-14,
+ &#39;0000000111001100&#39;: -7.126120016271178e-14,
+ &#39;0000000111001110&#39;: 3.052353748875938e-14,
+ &#39;0000000111001111&#39;: -6.224974821421906e-14,
+ &#39;0000000111010000&#39;: 1.3715153833185975e-14,
+ &#39;0000000111010001&#39;: -2.119744079989502e-14,
+ &#39;0000000111010011&#39;: -2.276151508407535e-14,
+ &#39;0000000111010100&#39;: -4.552016843231427e-14,
+ &#39;0000000111010111&#39;: 6.884279600794272e-14,
+ &#39;0000000111011001&#39;: -1.0788850738948049e-14,
+ &#39;0000000111011010&#39;: -3.8873235940757664e-14,
+ &#39;0000000111011011&#39;: 3.520343157137379e-14,
+ &#39;0000000111011101&#39;: 5.1267899555170434e-14,
+ &#39;0000000111011110&#39;: -4.431382037522676e-14,
+ &#39;0000000111100000&#39;: 4.477772824776946e-14,
+ &#39;0000000111100010&#39;: -1.100963337534061e-14,
+ &#39;0000000111100011&#39;: -4.6503282260853677e-14,
+ &#39;0000000111100101&#39;: -1.4628600537360496e-14,
+ &#39;0000000111100111&#39;: 6.564066264629243e-14,
+ &#39;0000000111101001&#39;: -1.944934628072766e-14,
+ &#39;0000000111101010&#39;: -2.56404408929786e-14,
+ &#39;0000000111101011&#39;: 1.481340015366338e-14,
+ &#39;0000000111101100&#39;: 5.810630156438427e-14,
+ &#39;0000000111101101&#39;: 2.0544615500795537e-14,
+ &#39;0000000111101110&#39;: -4.8384142730211675e-14,
+ &#39;0000000111101111&#39;: -7.877625939549969e-14,
+ &#39;0000000111110100&#39;: -1.3997784596050588e-14,
+ &#39;0000000111110111&#39;: -7.166469138853617e-14,
+ &#39;0000000111111000&#39;: -4.859152987010293e-14,
+ &#39;0000000111111001&#39;: 1.4481997507458893e-14,
+ &#39;0000000111111010&#39;: -5.4049724100345417e-14,
+ &#39;0000000111111011&#39;: -6.529431475376672e-14,
+ &#39;0000000111111100&#39;: -8.753624887805554e-14,
+ &#39;0000000111111111&#39;: -1.0836282879350591e-13,
+ &#39;0000001000000000&#39;: -1.1549784234065347e-13,
+ &#39;0000001000000001&#39;: 3.5102768198568864e-13,
+ &#39;0000001000000010&#39;: -1.3342558969614932e-13,
+ &#39;0000001000000011&#39;: 3.7678307350962445e-13,
+ &#39;0000001000000100&#39;: 1.3279693481739506e-13,
+ &#39;0000001000000101&#39;: 1.301059295646201e-13,
+ &#39;0000001000000110&#39;: 4.425999120747505e-14,
+ &#39;0000001000000111&#39;: -1.745179135100373e-14,
+ &#39;0000001000001000&#39;: 6.970111396706739e-14,
+ &#39;0000001000001001&#39;: 1.19212570938223e-13,
+ &#39;0000001000001010&#39;: 2.1513204644216463e-14,
+ &#39;0000001000001011&#39;: -4.706931481365694e-14,
+ &#39;0000001000001100&#39;: -9.40375750872859e-14,
+ &#39;0000001000001101&#39;: -1.0185736480621557e-14,
+ &#39;0000001000001110&#39;: -7.003886294308432e-14,
+ &#39;0000001000001111&#39;: 2.5485217647710705e-14,
+ &#39;0000001000010000&#39;: 3.1175373117383627e-13,
+ &#39;0000001000010001&#39;: -3.797063954766976e-14,
+ &#39;0000001000010010&#39;: 9.222346174263296e-14,
+ &#39;0000001000010011&#39;: 5.280591286224938e-14,
+ &#39;0000001000010100&#39;: 5.921928356965165e-14,
+ &#39;0000001000010110&#39;: -2.015587808537486e-14,
+ &#39;0000001000010111&#39;: -4.331268431382115e-14,
+ &#39;0000001000011000&#39;: 1.659861222459193e-14,
+ &#39;0000001000011001&#39;: -8.635301837516072e-14,
+ &#39;0000001000011010&#39;: -4.028264934243246e-14,
+ &#39;0000001000011011&#39;: -1.2186960942852445e-14,
+ &#39;0000001000011100&#39;: -7.683097729347958e-14,
+ &#39;0000001000011101&#39;: -1.5698170889326996e-14,
+ &#39;0000001000011111&#39;: 5.613655261902553e-14,
+ &#39;0000001000100000&#39;: -1.7452138652005744e-13,
+ &#39;0000001000100001&#39;: 1.7817439966209526e-13,
+ &#39;0000001000100010&#39;: 1.0690812895559995e-13,
+ &#39;0000001000100011&#39;: -3.868129253831349e-14,
+ &#39;0000001000100100&#39;: 3.499202473368179e-14,
+ &#39;0000001000100101&#39;: -2.6536365458711703e-14,
+ &#39;0000001000100110&#39;: 3.722933852981876e-14,
+ &#39;0000001000100111&#39;: -4.483017186409128e-14,
+ &#39;0000001000101000&#39;: -1.0355792664706789e-14,
+ &#39;0000001000101010&#39;: -3.7626748044221994e-14,
+ &#39;0000001000101011&#39;: -1.0663782422373537e-14,
+ &#39;0000001000101100&#39;: -5.160859509482974e-14,
+ &#39;0000001000101101&#39;: 5.969793840745642e-14,
+ &#39;0000001000101110&#39;: 9.821139617214258e-14,
+ &#39;0000001000101111&#39;: 1.6447890550396202e-14,
+ &#39;0000001000110000&#39;: 1.307880908055068e-13,
+ &#39;0000001000110001&#39;: -5.740081206814258e-14,
+ &#39;0000001000110010&#39;: -5.446081100707747e-14,
+ &#39;0000001000110011&#39;: -1.966005867106846e-14,
+ &#39;0000001000110100&#39;: -6.127085489730492e-14,
+ &#39;0000001000110111&#39;: -1.9380965968053793e-13,
+ &#39;0000001000111000&#39;: 1.3505109077176467e-14,
+ &#39;0000001000111001&#39;: -2.2096363124754395e-14,
+ &#39;0000001000111011&#39;: -5.459401217663422e-14,
+ &#39;0000001000111101&#39;: 1.545120617406387e-14,
+ &#39;0000001000111110&#39;: 3.055027645253441e-14,
+ &#39;0000001000111111&#39;: 3.002943222332371e-14,
+ &#39;0000001001000000&#39;: -1.7925470902845176e-14,
+ &#39;0000001001000001&#39;: 6.651160106645292e-14,
+ &#39;0000001001000010&#39;: 1.013030095836084e-14,
+ &#39;0000001001000011&#39;: -2.9692078039275254e-14,
+ &#39;0000001001000100&#39;: 6.66840256921136e-14,
+ &#39;0000001001000101&#39;: -3.3014861181919496e-14,
+ &#39;0000001001000110&#39;: -1.742666091744511e-14,
+ &#39;0000001001000111&#39;: 1.4868003664316205e-14,
+ &#39;0000001001001001&#39;: -1.9745190140213007e-14,
+ &#39;0000001001001010&#39;: -3.0099400134424694e-14,
+ &#39;0000001001001100&#39;: -2.555292432724812e-14,
+ &#39;0000001001001101&#39;: 4.315080297819979e-14,
+ &#39;0000001001001110&#39;: 8.781053226494494e-14,
+ &#39;0000001001001111&#39;: 1.6529974521819582e-14,
+ &#39;0000001001010000&#39;: 5.942162974869398e-14,
+ &#39;0000001001010001&#39;: -6.804426829496195e-14,
+ &#39;0000001001010010&#39;: -2.151572858366727e-14,
+ &#39;0000001001010101&#39;: 1.5409482563288476e-14,
+ &#39;0000001001010111&#39;: -1.101777596077399e-13,
+ &#39;0000001001011101&#39;: 1.1970160803715711e-14,
+ &#39;0000001001011111&#39;: 8.850225898733573e-14,
+ &#39;0000001001100000&#39;: 6.148756881183308e-14,
+ &#39;0000001001100001&#39;: -2.5789988160290066e-14,
+ &#39;0000001001100010&#39;: 2.2060777267993482e-14,
+ &#39;0000001001100011&#39;: 3.194089158601825e-14,
+ &#39;0000001001100100&#39;: -2.3502141971192356e-14,
+ &#39;0000001001100101&#39;: -1.4748688288654782e-14,
+ &#39;0000001001100110&#39;: -9.794550592937786e-14,
+ &#39;0000001001100111&#39;: -6.046094674906644e-14,
+ &#39;0000001001101000&#39;: -5.775155546855234e-14,
+ &#39;0000001001101001&#39;: 1.0916353522727475e-14,
+ &#39;0000001001101010&#39;: 1.2728262490387749e-14,
+ &#39;0000001001101100&#39;: 1.8546766940070788e-14,
+ &#39;0000001001101110&#39;: 1.1500655008410589e-14,
+ &#39;0000001001101111&#39;: 8.660016647035281e-14,
+ &#39;0000001001110000&#39;: -1.697267780063163e-14,
+ &#39;0000001001110001&#39;: -2.788418784892898e-14,
+ &#39;0000001001110010&#39;: 3.7572518214751736e-14,
+ &#39;0000001001110011&#39;: -1.1898895065371122e-13,
+ &#39;0000001001110100&#39;: 3.058058650708943e-14,
+ &#39;0000001001110101&#39;: -3.560175051863237e-14,
+ &#39;0000001001110110&#39;: 2.3792757296002704e-14,
+ &#39;0000001001110111&#39;: -2.168532703129407e-14,
+ &#39;0000001001111010&#39;: 1.6667369936054597e-14,
+ &#39;0000001001111011&#39;: 1.4854416276923633e-14,
+ &#39;0000001001111100&#39;: -1.8596968948684943e-14,
+ &#39;0000001001111101&#39;: 1.4425178452378135e-14,
+ &#39;0000001001111110&#39;: -1.157243823439966e-14,
+ &#39;0000001001111111&#39;: -7.191262690315326e-14,
+ &#39;0000001010000000&#39;: 4.3013246820925205e-14,
+ &#39;0000001010000001&#39;: 6.057984549235995e-14,
+ &#39;0000001010000011&#39;: -2.9791579148574257e-14,
+ &#39;0000001010000100&#39;: 1.0170749763557546e-14,
+ &#39;0000001010000101&#39;: -1.5586903066556446e-14,
+ &#39;0000001010000110&#39;: -1.2943194011959249e-14,
+ &#39;0000001010000111&#39;: 3.376609925561058e-14,
+ &#39;0000001010001001&#39;: -1.2013672229657048e-14,
+ &#39;0000001010001010&#39;: -1.0793496052154473e-14,
+ &#39;0000001010001100&#39;: -4.123896357647509e-14,
+ &#39;0000001010001101&#39;: 1.2057575881037534e-14,
+ &#39;0000001010001110&#39;: 1.8554492097759227e-14,
+ &#39;0000001010010000&#39;: 8.679232439016332e-14,
+ &#39;0000001010010001&#39;: -7.104530354268837e-14,
+ &#39;0000001010010010&#39;: -3.121408527802954e-14,
+ &#39;0000001010010011&#39;: 4.1334073481754715e-14,
+ &#39;0000001010010100&#39;: -1.5865170327476023e-14,
+ &#39;0000001010010110&#39;: -1.1773726116474364e-14,
+ &#39;0000001010010111&#39;: -1.7830133888971266e-14,
+ &#39;0000001010011001&#39;: -1.2363246331938386e-14,
+ &#39;0000001010011010&#39;: -1.3929376080394884e-14,
+ &#39;0000001010011100&#39;: 1.0432541773206705e-14,
+ &#39;0000001010011101&#39;: -3.9794541124999715e-14,
+ &#39;0000001010011110&#39;: -2.2995216190596402e-14,
+ &#39;0000001010100000&#39;: 3.102135067439962e-14,
+ &#39;0000001010100001&#39;: -1.2935265159128629e-14,
+ &#39;0000001010100011&#39;: 1.7783290609904643e-14,
+ &#39;0000001010100110&#39;: -1.1679852935035437e-14,
+ &#39;0000001010101000&#39;: -3.701392944754443e-14,
+ &#39;0000001010101010&#39;: 1.7214384055629142e-14,
+ &#39;0000001010101011&#39;: -1.2991285578075645e-14,
+ &#39;0000001010101110&#39;: -5.40556685976081e-14,
+ &#39;0000001010110001&#39;: 1.2252794929342942e-14,
+ &#39;0000001010110010&#39;: 1.7584346582253223e-14,
+ &#39;0000001010110011&#39;: -7.827790611576059e-14,
+ &#39;0000001010110111&#39;: -2.2510798246208656e-14,
+ &#39;0000001010111000&#39;: -1.234938842690809e-14,
+ &#39;0000001010111001&#39;: -2.695760073402056e-14,
+ &#39;0000001010111011&#39;: -1.123315445179837e-14,
+ &#39;0000001010111101&#39;: -3.403125751885088e-14,
+ &#39;0000001010111110&#39;: -3.713979111058666e-14,
+ &#39;0000001010111111&#39;: -6.139306632764613e-14,
+ &#39;0000001011000001&#39;: -4.2284260121041694e-14,
+ &#39;0000001011000010&#39;: -2.4577756355988533e-14,
+ &#39;0000001011000011&#39;: 1.0112217468109901e-14,
+ &#39;0000001011000100&#39;: -1.4823011092460917e-14,
+ &#39;0000001011000101&#39;: 1.7182948744266142e-14,
+ &#39;0000001011000111&#39;: -1.0962356819788984e-14,
+ &#39;0000001011001000&#39;: -2.2234177508988848e-14,
+ &#39;0000001011001100&#39;: -5.903511105149449e-14,
+ &#39;0000001011001111&#39;: -6.20441226583783e-14,
+ &#39;0000001011010011&#39;: -1.409575571219893e-14,
+ &#39;0000001011010100&#39;: -1.3434787155571329e-14,
+ &#39;0000001011010101&#39;: -2.5986836423469e-14,
+ &#39;0000001011010111&#39;: 4.294410407979306e-14,
+ &#39;0000001011011000&#39;: 1.610474368800472e-14,
+ &#39;0000001011011001&#39;: -1.1231945511825479e-14,
+ &#39;0000001011011100&#39;: 1.6867577923489074e-14,
+ &#39;0000001011011110&#39;: -3.1274150711403725e-14,
+ &#39;0000001011011111&#39;: -1.7896478562941648e-14,
+ &#39;0000001011100001&#39;: 2.259711101451288e-14,
+ &#39;0000001011100010&#39;: 1.3797450811716755e-14,
+ &#39;0000001011100011&#39;: -1.3218298597690512e-14,
+ &#39;0000001011100100&#39;: 2.6029893565584167e-14,
+ &#39;0000001011100110&#39;: -1.4929788616951576e-14,
+ &#39;0000001011100111&#39;: 6.874094850620213e-14,
+ &#39;0000001011101000&#39;: 2.4727674370675678e-14,
+ &#39;0000001011101001&#39;: -1.3236396457862953e-14,
+ &#39;0000001011101010&#39;: -2.489189983107999e-14,
+ &#39;0000001011101011&#39;: -1.8249341828845298e-14,
+ &#39;0000001011101100&#39;: 2.1505696327044704e-14,
+ &#39;0000001011101101&#39;: 2.2364776122835757e-14,
+ &#39;0000001011101110&#39;: 2.7203261482759994e-14,
+ &#39;0000001011110000&#39;: -2.8941521841517237e-14,
+ &#39;0000001011110010&#39;: 2.1409506525258207e-14,
+ &#39;0000001011110011&#39;: 1.725852614863385e-14,
+ &#39;0000001011110100&#39;: -1.1432878788005702e-14,
+ &#39;0000001011110101&#39;: 2.3076616977392014e-14,
+ &#39;0000001011110110&#39;: 1.4406637406724965e-14,
+ &#39;0000001011110111&#39;: 3.843123709311403e-14,
+ &#39;0000001011111001&#39;: 1.847202852523302e-14,
+ &#39;0000001011111011&#39;: -2.0954710915496335e-14,
+ &#39;0000001011111100&#39;: -1.3332567763386581e-14,
+ &#39;0000001011111101&#39;: -1.8972068001108138e-14,
+ &#39;0000001011111111&#39;: -7.943144648554972e-14,
+ &#39;0000001100000000&#39;: 1.362366480294302e-12,
+ &#39;0000001100000001&#39;: 4.8824166438062256e-14,
+ &#39;0000001100000010&#39;: 6.396390086594441e-14,
+ &#39;0000001100000011&#39;: 4.058284711790289e-14,
+ &#39;0000001100000100&#39;: 6.193109537033674e-14,
+ &#39;0000001100000101&#39;: -7.598360482207002e-14,
+ &#39;0000001100000110&#39;: -4.920315208440654e-14,
+ &#39;0000001100000111&#39;: -1.66038218491391e-14,
+ &#39;0000001100001001&#39;: -6.60002444368419e-14,
+ &#39;0000001100001010&#39;: -9.84458850323101e-14,
+ &#39;0000001100001011&#39;: -1.0274454652679575e-14,
+ &#39;0000001100001100&#39;: -1.492526025533743e-13,
+ &#39;0000001100001101&#39;: -1.2222014319061338e-14,
+ &#39;0000001100010000&#39;: 2.642767483840848e-13,
+ &#39;0000001100010001&#39;: -9.58381545367181e-14,
+ &#39;0000001100010010&#39;: -2.567618650016223e-14,
+ &#39;0000001100010011&#39;: -1.8154665479732767e-13,
+ &#39;0000001100010100&#39;: -3.3564729225864665e-14,
+ &#39;0000001100010101&#39;: -5.374159845328048e-14,
+ &#39;0000001100010110&#39;: -1.0130116160113682e-14,
+ &#39;0000001100010111&#39;: 8.414797101413257e-14,
+ &#39;0000001100011000&#39;: -1.9059558116375876e-14,
+ &#39;0000001100011001&#39;: -3.9884695407812566e-14,
+ &#39;0000001100011010&#39;: 1.2743355583551436e-14,
+ &#39;0000001100011011&#39;: 2.5338023400336422e-14,
+ &#39;0000001100011100&#39;: -1.598767158704777e-14,
+ &#39;0000001100011101&#39;: 3.1605431197781546e-14,
+ &#39;0000001100100000&#39;: -1.7074629641276537e-14,
+ &#39;0000001100100001&#39;: -5.160241815814092e-14,
+ &#39;0000001100100010&#39;: -8.413168346385552e-14,
+ &#39;0000001100100011&#39;: -6.435529453084643e-14,
+ &#39;0000001100100100&#39;: -5.288705487681729e-14,
+ &#39;0000001100100110&#39;: 2.5152585258898044e-14,
+ &#39;0000001100100111&#39;: -1.2418949144527762e-14,
+ &#39;0000001100101000&#39;: 1.0695347648170025e-14,
+ &#39;0000001100101011&#39;: 1.3435014948073335e-14,
+ &#39;0000001100101100&#39;: -3.796292031365253e-14,
+ &#39;0000001100110000&#39;: -2.4847363736738017e-14,
+ &#39;0000001100110001&#39;: -1.47624615151301e-13,
+ &#39;0000001100110010&#39;: -7.832783248008504e-14,
+ &#39;0000001100110011&#39;: -3.9881361568049856e-13,
+ &#39;0000001100110100&#39;: 1.6676094763500972e-14,
+ &#39;0000001100110101&#39;: -6.180378479341504e-14,
+ &#39;0000001100110110&#39;: -5.562205947641047e-14,
+ &#39;0000001100110111&#39;: 9.424415818925632e-14,
+ &#39;0000001100111000&#39;: 4.56995693797683e-14,
+ &#39;0000001100111001&#39;: -1.0646507909455733e-13,
+ &#39;0000001100111010&#39;: -8.476631506999147e-14,
+ &#39;0000001100111100&#39;: -5.913787740223895e-14,
+ &#39;0000001100111101&#39;: -2.5383709466183602e-14,
+ &#39;0000001100111110&#39;: -9.882206248817858e-14,
+ &#39;0000001100111111&#39;: 1.2432321465767438e-13,
+ &#39;0000001101000000&#39;: 1.210497296463114e-14,
+ &#39;0000001101000001&#39;: -6.277350928225656e-14,
+ &#39;0000001101000010&#39;: -2.3102174374776858e-14,
+ &#39;0000001101000011&#39;: -2.5300552774327738e-14,
+ &#39;0000001101000100&#39;: 1.3862529636364225e-14,
+ &#39;0000001101000110&#39;: 1.6611081099878846e-14,
+ &#39;0000001101000111&#39;: -2.1241663108997877e-14,
+ &#39;0000001101001010&#39;: 1.409754486800391e-14,
+ &#39;0000001101001011&#39;: 1.204765781697213e-14,
+ &#39;0000001101001100&#39;: -3.4710133341557384e-14,
+ &#39;0000001101001101&#39;: 1.823301034663867e-14,
+ &#39;0000001101010000&#39;: -1.385585070615044e-14,
+ &#39;0000001101010001&#39;: -3.911196104410055e-14,
+ &#39;0000001101010010&#39;: -2.178049181275878e-14,
+ &#39;0000001101010101&#39;: 2.7447917020327824e-14,
+ &#39;0000001101010111&#39;: -1.1602240552891402e-14,
+ &#39;0000001101011010&#39;: -1.693166900961631e-14,
+ &#39;0000001101011011&#39;: -2.298812089881663e-14,
+ &#39;0000001101011100&#39;: 1.0823626108971854e-14,
+ &#39;0000001101011110&#39;: -2.6728778217277094e-14,
+ &#39;0000001101011111&#39;: 2.722999258343758e-14,
+ &#39;0000001101100000&#39;: -1.3579535829034432e-14,
+ &#39;0000001101100001&#39;: -4.4643030362073855e-14,
+ &#39;0000001101100101&#39;: 1.0182679516558721e-14,
+ &#39;0000001101100111&#39;: 3.200671799127765e-14,
+ &#39;0000001101101100&#39;: 1.3816720490227613e-14,
+ &#39;0000001101101111&#39;: 1.7702672439404923e-14,
+ &#39;0000001101110000&#39;: -2.2483056092902112e-14,
+ &#39;0000001101110010&#39;: -3.164480453790664e-14,
+ &#39;0000001101110011&#39;: 2.5845923160646125e-14,
+ &#39;0000001101110100&#39;: -1.217935426908726e-14,
+ &#39;0000001101110101&#39;: 4.439497094775201e-14,
+ &#39;0000001101110110&#39;: 7.218174882267584e-14,
+ &#39;0000001101110111&#39;: 4.2064800522597056e-14,
+ &#39;0000001101111000&#39;: -4.807028309276182e-14,
+ &#39;0000001101111001&#39;: 1.1501249168479594e-14,
+ &#39;0000001101111011&#39;: -1.760211618894345e-14,
+ &#39;0000001101111100&#39;: 2.815746112359274e-14,
+ &#39;0000001101111101&#39;: 3.652480823424419e-14,
+ &#39;0000001101111110&#39;: 1.2939005080248686e-13,
+ &#39;0000001101111111&#39;: 1.1507694797269821e-13,
+ &#39;0000001110000000&#39;: 6.369462432398104e-14,
+ &#39;0000001110000001&#39;: -3.206963959490811e-14,
+ &#39;0000001110000011&#39;: -1.628000574704703e-14,
+ &#39;0000001110000100&#39;: -1.1219310554648402e-14,
+ &#39;0000001110001000&#39;: 7.600146404040438e-14,
+ &#39;0000001110001010&#39;: -1.2342625230527393e-14,
+ &#39;0000001110001011&#39;: 2.893272948774988e-14,
+ &#39;0000001110001110&#39;: -2.143030890037121e-14,
+ &#39;0000001110010000&#39;: 2.294592242788029e-14,
+ &#39;0000001110010001&#39;: -3.3069771234538364e-14,
+ &#39;0000001110010010&#39;: -1.050598510791617e-14,
+ &#39;0000001110010011&#39;: -4.310788442280409e-14,
+ &#39;0000001110010100&#39;: -1.5802368660683803e-14,
+ &#39;0000001110010110&#39;: -1.1062942844277847e-14,
+ &#39;0000001110010111&#39;: 1.2101037588803689e-14,
+ &#39;0000001110011000&#39;: -3.1593334906828535e-14,
+ &#39;0000001110011001&#39;: -1.642858608939203e-14,
+ &#39;0000001110011010&#39;: -1.1591433284003449e-14,
+ &#39;0000001110011011&#39;: 1.369041059868528e-14,
+ &#39;0000001110011100&#39;: -3.152155329893843e-14,
+ &#39;0000001110011101&#39;: 1.9811988683191805e-14,
+ &#39;0000001110011110&#39;: -1.6932105340916887e-14,
+ &#39;0000001110011111&#39;: -3.334287355099668e-14,
+ &#39;0000001110100000&#39;: 5.0693322965399694e-14,
+ &#39;0000001110100010&#39;: 1.8658762621280518e-14,
+ &#39;0000001110100011&#39;: -3.333120722831984e-14,
+ &#39;0000001110100101&#39;: -1.566753328834988e-14,
+ &#39;0000001110101010&#39;: 1.1314925640101703e-14,
+ &#39;0000001110101100&#39;: 1.079408238975724e-14,
+ &#39;0000001110101101&#39;: 2.2001438043703873e-14,
+ &#39;0000001110101110&#39;: -1.9994992731649196e-14,
+ &#39;0000001110101111&#39;: -3.4077608960679714e-14,
+ &#39;0000001110110001&#39;: -7.992828634433723e-14,
+ &#39;0000001110110010&#39;: -6.059509160881752e-14,
+ &#39;0000001110110100&#39;: -1.5544889279796896e-14,
+ &#39;0000001110110110&#39;: 1.0461402746138605e-14,
+ &#39;0000001110110111&#39;: -2.939797412962613e-14,
+ &#39;0000001110111000&#39;: -3.58099413195866e-14,
+ &#39;0000001110111001&#39;: 2.9287296102896443e-14,
+ &#39;0000001110111010&#39;: 2.4412178185786518e-14,
+ &#39;0000001110111011&#39;: -1.50516588472403e-13,
+ &#39;0000001110111101&#39;: -1.0284875746719294e-14,
+ &#39;0000001110111110&#39;: 1.6687730909988498e-14,
+ &#39;0000001110111111&#39;: 8.030451957420742e-14,
+ &#39;0000001111000000&#39;: 2.709607011063031e-14,
+ &#39;0000001111000001&#39;: -1.2266007992075457e-14,
+ &#39;0000001111000011&#39;: -1.7541935407132188e-14,
+ &#39;0000001111000100&#39;: -1.4599643402531695e-14,
+ &#39;0000001111000110&#39;: 1.4799629898261957e-14,
+ &#39;0000001111001001&#39;: -1.0228400062138749e-14,
+ &#39;0000001111001010&#39;: 1.6950121406830592e-14,
+ &#39;0000001111001011&#39;: 1.4942598201680056e-14,
+ &#39;0000001111001100&#39;: 4.0640052494811136e-14,
+ &#39;0000001111001101&#39;: 1.5423667055517037e-14,
+ &#39;0000001111001110&#39;: -1.0559007698250803e-14,
+ &#39;0000001111001111&#39;: -1.0791159222993115e-14,
+ &#39;0000001111010000&#39;: -1.1733608633464763e-14,
+ &#39;0000001111010100&#39;: 1.0930792754658952e-14,
+ &#39;0000001111010110&#39;: -1.9992249302382553e-14,
+ &#39;0000001111011001&#39;: 1.800580811575134e-14,
+ &#39;0000001111011011&#39;: -4.7332561794187166e-14,
+ &#39;0000001111011101&#39;: -3.3602101081204935e-14,
+ &#39;0000001111011110&#39;: -3.337414358891479e-14,
+ &#39;0000001111100000&#39;: 2.6396942962454075e-14,
+ &#39;0000001111100001&#39;: -2.5333976370989212e-14,
+ &#39;0000001111100011&#39;: -2.276377099504287e-14,
+ &#39;0000001111100110&#39;: -1.4666750559049697e-14,
+ &#39;0000001111100111&#39;: 2.8360417816116188e-14,
+ &#39;0000001111101001&#39;: 1.4096440437723574e-14,
+ &#39;0000001111101010&#39;: 4.7446552487929066e-14,
+ &#39;0000001111101101&#39;: -1.730631626408303e-14,
+ &#39;0000001111101110&#39;: -5.857170382686367e-14,
+ &#39;0000001111101111&#39;: -6.08957863986239e-14,
+ &#39;0000001111110000&#39;: -3.5252747130594994e-14,
+ &#39;0000001111110010&#39;: 1.0917147444085986e-14,
+ &#39;0000001111110011&#39;: -2.2660597750238223e-14,
+ &#39;0000001111110100&#39;: 5.321949308223813e-14,
+ &#39;0000001111110101&#39;: 1.3897542358362112e-14,
+ &#39;0000001111110110&#39;: 6.9826080167536e-14,
+ &#39;0000001111110111&#39;: 6.583002679629015e-14,
+ &#39;0000001111111000&#39;: 1.872882770861756e-14,
+ &#39;0000001111111011&#39;: 9.035258786970595e-14,
+ &#39;0000001111111100&#39;: -4.537530438639691e-14,
+ &#39;0000001111111101&#39;: 1.5501131303031862e-14,
+ &#39;0000001111111110&#39;: -2.220074887996501e-14,
+ &#39;0000001111111111&#39;: 8.412194089905536e-13,
+ &#39;0000010000000000&#39;: 2.700812617984415e-13,
+ &#39;0000010000000001&#39;: 9.088531229832318e-14,
+ &#39;0000010000000010&#39;: 1.1609252331449592e-13,
+ &#39;0000010000000011&#39;: 2.9825259909660654e-13,
+ &#39;0000010000000100&#39;: 7.699336216579039e-13,
+ &#39;0000010000000101&#39;: 5.6202071831563646e-14,
+ &#39;0000010000000110&#39;: 2.0161988057971985e-14,
+ &#39;0000010000000111&#39;: -2.8170486220277422e-14,
+ &#39;0000010000001000&#39;: 1.335444092794256e-12,
+ &#39;0000010000001001&#39;: 2.7856788302559328e-14,
+ &#39;0000010000001010&#39;: 2.937519777808892e-14,
+ &#39;0000010000001011&#39;: -3.840367055641945e-14,
+ &#39;0000010000001100&#39;: -4.464889169897819e-14,
+ &#39;0000010000001101&#39;: -6.229601468591005e-14,
+ &#39;0000010000001110&#39;: -1.0142967821948739e-13,
+ &#39;0000010000001111&#39;: -1.9252115266131227e-14,
+ &#39;0000010000010000&#39;: 1.941614532011289e-13,
+ &#39;0000010000010001&#39;: -2.0998739903248282e-14,
+ &#39;0000010000010010&#39;: 6.110783146177071e-14,
+ &#39;0000010000010011&#39;: -1.5216365307362243e-13,
+ &#39;0000010000010100&#39;: 3.9982278358799566e-14,
+ &#39;0000010000010101&#39;: -7.025084578461048e-14,
+ &#39;0000010000010110&#39;: -4.399421876017957e-14,
+ &#39;0000010000010111&#39;: 3.596808564566467e-14,
+ &#39;0000010000011000&#39;: -1.0307632653156068e-14,
+ &#39;0000010000011001&#39;: -8.782339261319902e-14,
+ &#39;0000010000011010&#39;: -2.1351929418470097e-14,
+ &#39;0000010000011011&#39;: 6.230802405202074e-14,
+ &#39;0000010000011100&#39;: -3.122879297276587e-14,
+ &#39;0000010000011101&#39;: 1.578586528112538e-14,
+ &#39;0000010000011110&#39;: -2.1048677683244702e-14,
+ &#39;0000010000011111&#39;: 8.040744164846132e-14,
+ &#39;0000010000100000&#39;: 9.40964198373328e-14,
+ &#39;0000010000100010&#39;: -1.1173197457059469e-14,
+ &#39;0000010000100011&#39;: -1.178120187261984e-13,
+ &#39;0000010000100101&#39;: -5.755531816308261e-14,
+ &#39;0000010000100110&#39;: -7.820772964636024e-14,
+ &#39;0000010000100111&#39;: 2.8743665875721246e-14,
+ &#39;0000010000101000&#39;: -1.8972387357084294e-14,
+ &#39;0000010000101001&#39;: -3.640552254498753e-14,
+ &#39;0000010000101010&#39;: -4.1813809838096645e-14,
+ &#39;0000010000101100&#39;: -1.6368882782680814e-14,
+ &#39;0000010000101101&#39;: 2.3090966287150455e-14,
+ &#39;0000010000101110&#39;: 7.662426091965924e-14,
+ &#39;0000010000110000&#39;: 2.2146861955624115e-14,
+ &#39;0000010000110001&#39;: -1.2255914644469513e-13,
+ &#39;0000010000110010&#39;: -7.205543003630537e-14,
+ &#39;0000010000110011&#39;: 8.617109469106402e-14,
+ &#39;0000010000110100&#39;: -3.26003583013362e-14,
+ &#39;0000010000110101&#39;: 3.040333329767694e-14,
+ &#39;0000010000110111&#39;: -1.1449333604824638e-13,
+ &#39;0000010000111001&#39;: 1.7330303110344844e-14,
+ &#39;0000010000111011&#39;: -4.2732396291676456e-14,
+ &#39;0000010000111101&#39;: 1.1508824807599487e-14,
+ &#39;0000010000111111&#39;: 6.895595518696339e-14,
+ &#39;0000010001000000&#39;: 4.938489095670363e-13,
+ &#39;0000010001000001&#39;: -3.9381687955090096e-14,
+ &#39;0000010001000010&#39;: -9.015409460854498e-14,
+ &#39;0000010001000011&#39;: -1.0112591823045752e-13,
+ &#39;0000010001000100&#39;: -1.0459721630962754e-13,
+ &#39;0000010001000101&#39;: -1.1215894196496854e-13,
+ &#39;0000010001000110&#39;: -1.9750490446874622e-13,
+ &#39;0000010001000111&#39;: 1.8740472492906607e-13,
+ &#39;0000010001001000&#39;: -5.3803017052153464e-14,
+ &#39;0000010001001001&#39;: -6.236592738431794e-14,
+ &#39;0000010001001010&#39;: -7.395438226609791e-14,
+ &#39;0000010001001011&#39;: -3.146209765266551e-14,
+ &#39;0000010001001100&#39;: -6.042373158924036e-14,
+ &#39;0000010001001110&#39;: 6.642165548484682e-14,
+ &#39;0000010001001111&#39;: -5.184892435952995e-14,
+ &#39;0000010001010001&#39;: -9.313591781805933e-14,
+ &#39;0000010001010010&#39;: -5.174519684970529e-14,
+ &#39;0000010001010011&#39;: 7.964260900841508e-14,
+ &#39;0000010001010100&#39;: -3.9946780994054174e-14,
+ &#39;0000010001010101&#39;: 3.160662662475695e-14,
+ &#39;0000010001011000&#39;: -2.0215961936507624e-14,
+ &#39;0000010001011001&#39;: 1.7145518127451016e-14,
+ &#39;0000010001011011&#39;: 2.8075203645542487e-14,
+ &#39;0000010001011101&#39;: 1.6313442335332263e-14,
+ &#39;0000010001100000&#39;: -4.156726586752365e-14,
+ &#39;0000010001100001&#39;: -3.634562068861453e-14,
+ &#39;0000010001100010&#39;: -4.4602216888071914e-14,
+ &#39;0000010001100011&#39;: 5.988317700712687e-14,
+ &#39;0000010001100100&#39;: -8.893691987536428e-14,
+ &#39;0000010001100101&#39;: 1.8988709396825354e-14,
+ &#39;0000010001100110&#39;: -5.833129815346875e-14,
+ &#39;0000010001100111&#39;: 4.255764516517492e-14,
+ &#39;0000010001101000&#39;: -2.6060643901601346e-14,
+ &#39;0000010001101010&#39;: 1.746439358565024e-14,
+ &#39;0000010001101011&#39;: 5.546993539848442e-14,
+ &#39;0000010001101101&#39;: 1.5645716554404287e-14,
+ &#39;0000010001101110&#39;: 5.53189919172091e-14,
+ &#39;0000010001101111&#39;: -4.8204306475249196e-14,
+ &#39;0000010001110000&#39;: -3.483585207946712e-14,
+ &#39;0000010001110010&#39;: 3.663605411905324e-14,
+ &#39;0000010001110011&#39;: -8.447402943497063e-14,
+ &#39;0000010001110100&#39;: 3.3253285130737784e-14,
+ &#39;0000010001110101&#39;: 1.9608823534298686e-14,
+ &#39;0000010001110110&#39;: 2.6385790500085824e-14,
+ &#39;0000010001110111&#39;: 2.939194296107983e-14,
+ &#39;0000010001111000&#39;: 1.4952715139022288e-14,
+ &#39;0000010001111001&#39;: 1.668244530928885e-14,
+ &#39;0000010001111011&#39;: -1.0636827200471044e-14,
+ &#39;0000010001111101&#39;: -1.2228191256059707e-14,
+ &#39;0000010001111110&#39;: -4.0004324218119205e-14,
+ &#39;0000010001111111&#39;: -7.597463927902905e-14,
+ &#39;0000010010000000&#39;: 6.81411706139279e-13,
+ &#39;0000010010000001&#39;: -1.2545623991486947e-14,
+ &#39;0000010010000010&#39;: -3.300022405607015e-14,
+ &#39;0000010010000011&#39;: -6.255002535166371e-14,
+ &#39;0000010010000100&#39;: -3.9215271694698575e-14,
+ &#39;0000010010000101&#39;: -4.6354957868752733e-14,
+ &#39;0000010010000110&#39;: -2.8168377900788993e-14,
+ &#39;0000010010000111&#39;: 3.403786640706603e-14,
+ &#39;0000010010001000&#39;: -5.709958387302236e-14,
+ &#39;0000010010001001&#39;: -9.290091062913315e-14,
+ &#39;0000010010001010&#39;: -2.1317990974044763e-14,
+ &#39;0000010010001011&#39;: -1.5775689521541147e-14,
+ &#39;0000010010001100&#39;: -1.2723237620730331e-14,
+ &#39;0000010010001110&#39;: 3.958929850819417e-14,
+ &#39;0000010010010001&#39;: -9.511841083460542e-14,
+ &#39;0000010010010010&#39;: -3.0564886031615395e-14,
+ &#39;0000010010010011&#39;: 5.5447138642841815e-14,
+ &#39;0000010010010100&#39;: -2.525925579724858e-14,
+ &#39;0000010010010101&#39;: 1.2686001388816011e-14,
+ &#39;0000010010010110&#39;: 1.2180714573454759e-14,
+ &#39;0000010010010111&#39;: 1.6373125991553893e-14,
+ &#39;0000010010011000&#39;: -4.256775328455748e-14,
+ &#39;0000010010011001&#39;: 3.395840751546935e-14,
+ &#39;0000010010011010&#39;: 1.2788461036033026e-14,
+ &#39;0000010010011100&#39;: -1.630513582019391e-14,
+ &#39;0000010010011101&#39;: -2.1581429018010552e-14,
+ &#39;0000010010011111&#39;: -2.9359933569691087e-14,
+ &#39;0000010010100000&#39;: -2.5752683720389865e-14,
+ &#39;0000010010100001&#39;: -4.3927181582316135e-14,
+ &#39;0000010010100010&#39;: -3.941424557851353e-14,
+ &#39;0000010010100011&#39;: 2.1834328104784388e-14,
+ &#39;0000010010100100&#39;: -1.3864170228903487e-14,
+ &#39;0000010010100101&#39;: 3.4533765117569194e-14,
+ &#39;0000010010100110&#39;: 2.8722975789659766e-14,
+ &#39;0000010010101000&#39;: -2.3447038731738787e-14,
+ &#39;0000010010101111&#39;: -7.774040201037763e-14,
+ &#39;0000010010110011&#39;: -6.708211792346773e-14,
+ &#39;0000010010110101&#39;: -1.8675927452313317e-14,
+ &#39;0000010010110111&#39;: 1.0316599282103905e-14,
+ &#39;0000010010111010&#39;: -1.5202181543329557e-14,
+ &#39;0000010010111101&#39;: -2.1640451212788903e-14,
+ &#39;0000010010111110&#39;: -4.346721303460258e-14,
+ &#39;0000010010111111&#39;: -3.6637189069463213e-14,
+ &#39;0000010011000000&#39;: -1.0565471763920244e-13,
+ &#39;0000010011000001&#39;: -5.155357752773744e-14,
+ &#39;0000010011000010&#39;: -5.010810300025943e-14,
+ &#39;0000010011000011&#39;: -1.6572940947727473e-14,
+ &#39;0000010011000100&#39;: 1.9760215196024875e-14,
+ &#39;0000010011000110&#39;: 2.4963571108510196e-14,
+ &#39;0000010011000111&#39;: -3.7810431065206236e-14,
+ &#39;0000010011001000&#39;: 3.286797614768659e-14,
+ &#39;0000010011001010&#39;: -2.881890790455388e-14,
+ &#39;0000010011001011&#39;: -2.154800909764897e-14,
+ &#39;0000010011001100&#39;: -2.6043142740677655e-13,
+ &#39;0000010011001101&#39;: 4.094586212668292e-14,
+ &#39;0000010011001110&#39;: 1.116983533955129e-13,
+ &#39;0000010011001111&#39;: -8.969943204881924e-14,
+ &#39;0000010011010001&#39;: 1.7144926130498656e-14,
+ &#39;0000010011010010&#39;: -1.1157905125453971e-14,
+ &#39;0000010011010101&#39;: -3.3672386936206323e-14,
+ &#39;0000010011010110&#39;: 1.8385131299785796e-14,
+ &#39;0000010011011000&#39;: 2.1020112129134584e-14,
+ &#39;0000010011011001&#39;: -2.914926784323775e-14,
+ &#39;0000010011011101&#39;: -4.9787366769889756e-14,
+ &#39;0000010011011110&#39;: -3.2837621103857603e-14,
+ &#39;0000010011100000&#39;: -1.0855533099408074e-14,
+ &#39;0000010011100010&#39;: 2.8399206558621098e-14,
+ &#39;0000010011100011&#39;: 1.8068285991820953e-14,
+ &#39;0000010011100100&#39;: 1.4936688349233037e-14,
+ &#39;0000010011100110&#39;: 4.70974476591162e-14,
+ &#39;0000010011101000&#39;: -1.839660692574358e-14,
+ &#39;0000010011101011&#39;: -5.424679194888509e-14,
+ &#39;0000010011101110&#39;: -9.548520551896064e-14,
+ &#39;0000010011110000&#39;: 1.1632138949498325e-14,
+ &#39;0000010011110001&#39;: -3.217915889071675e-14,
+ &#39;0000010011110011&#39;: 3.852652398699971e-14,
+ &#39;0000010011110100&#39;: 1.5453033090019404e-14,
+ &#39;0000010011110110&#39;: -4.9167636339782514e-14,
+ &#39;0000010011110111&#39;: 2.5467547886288528e-14,
+ &#39;0000010011111011&#39;: -1.4984267589750843e-14,
+ &#39;0000010011111100&#39;: 2.3282783858768632e-14,
+ &#39;0000010011111101&#39;: -2.384374238958562e-14,
+ &#39;0000010011111110&#39;: 1.357389644438318e-14,
+ &#39;0000010011111111&#39;: -1.754040292960897e-14,
+ &#39;0000010100000000&#39;: 4.715201822770965e-13,
+ &#39;0000010100000001&#39;: 1.0779894191178845e-14,
+ ...}
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="qubit_operators.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Using QubitOperators</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="citing.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Citing</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, IBM Quantum
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            <div class="last-updated">
+              Last updated on 2026/04/09</div>
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Getting started</a><ul>
+<li><a class="reference internal" href="#simple-example">Simple example</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
+</html>
