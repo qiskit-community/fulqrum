@@ -47,11 +47,11 @@ def test_eigen1():
 
     subspace_dict = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
-    ans_evals, _ = spla.eigsh(B, k=2, which="SA")
+    ans_evals, _ = spla.eigsh(B, k=2, which="SA", v0=np.ones(B.shape[0]))
 
     S = Subspace([list(subspace_dict.keys())])
     Hsub = SubspaceHamiltonian(H, S)
-    evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
+    evals, evecs = spla.eigsh(Hsub, k=2, which="SA", v0=np.ones(len(S)))
     assert np.allclose(ans_evals, evals)
     for kk in range(2):
         assert (
@@ -62,7 +62,7 @@ def test_eigen1():
     # hashing only the first (`bitset.m_bits[0]`) bitset block
     S = Subspace([list(subspace_dict.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
-    evals, evecs = spla.eigsh(Hsub, k=2, which="SA")
+    evals, evecs = spla.eigsh(Hsub, k=2, which="SA", v0=np.ones(len(S)))
     assert np.allclose(ans_evals, evals)
     for kk in range(2):
         assert (
