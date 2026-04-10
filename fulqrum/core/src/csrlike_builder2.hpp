@@ -50,6 +50,7 @@ void csrlike_builder2(const OperatorTerm_t* terms,
                       std::vector<std::vector<T>>& data)
 {
     std::size_t kk;
+    const unsigned int half_width = width >> 1;
     const auto* bitsets = subspace.get_bitsets();
     // size_t survived_groups0 = 0, survived_groups1 = 0, survived_groups2 = 0;
     cols.resize(subspace_dim);
@@ -95,8 +96,15 @@ void csrlike_builder2(const OperatorTerm_t* terms,
     // groups_by_maxbit[b] holds all groups whose max flip-position == b.
     std::vector<std::vector<uint32_t>> groups_by_maxbit(width);
     for (std::size_t g = 0; g < num_groups; g++)
+    {
         groups_by_maxbit[grp_max_inds[g]].push_back(static_cast<uint32_t>(g));
+    }
 
+    // Sort inner arrays in ascending order for better cache locality
+    for (std::size_t b = 0; b < width; b++)
+    {
+        std::sort(groups_by_maxbit[b].begin(), groups_by_maxbit[b].end());
+    }
 
     if(has_nonzero_diag)
     {
@@ -112,6 +120,10 @@ void csrlike_builder2(const OperatorTerm_t* terms,
         }
     }
 
+    // get number of 1 bits
+    // const boost::dynamic_bitset<size_t>& first_bitset = bitsets[0].first;
+    // const uint16_t num_ones = (uint16_t)first_bitset.count();
+
 // size_t row_no_for_stats = (subspace_dim - 1);
 #pragma omp parallel for schedule(dynamic) if(subspace_dim > 4096)
     for(kk = 0; kk < subspace_dim; kk++)
@@ -123,8 +135,8 @@ void csrlike_builder2(const OperatorTerm_t* terms,
         std::size_t group_int_start, group_int_stop;
         const OperatorTerm_t* term;
         boost::dynamic_bitset<std::size_t> col_vec;
-        const std::array<uint16_t, 5>* group_inds;
-        uint8_t group_size;
+        // const std::array<uint16_t, 5>* group_inds;
+        // uint8_t group_size;
         std::size_t* col_ptr;
         std::size_t col_idx;
         T val;
@@ -133,48 +145,79 @@ void csrlike_builder2(const OperatorTerm_t* terms,
         uint16_t pos0, pos1, pos2 = 0;
 
         std::vector<uint8_t> row_set_bits(row.size(), 0);
+        // std::vector<uint16_t> set_inds;
+        // set_inds.reserve(row.size());
+        
         bitset_to_bitvec(row, row_set_bits);
+        // bitset_to_bitvec2(row, row_set_bits, set_inds);
 
         // Iterate over bits of the row and do the lower-triangle check.
         for (std::size_t b = 0; b < static_cast<std::size_t>(width); b++)
+        // for (auto& b : set_inds)
+        // for (std::size_t b = 0; b < num_ones; b++)
         {
             if (!row_set_bits[b]) continue;
             for (const uint32_t group : groups_by_maxbit[b])
             {
                 // if (kk == row_no_for_stats) survived_groups0++;
 
-                group_inds = &group_offdiag_inds_array[group];
-                group_size = (uint8_t)(*group_inds)[4];
+                const auto& group_inds = group_offdiag_inds_array[group];
+                const uint8_t group_size = (uint8_t)group_inds[4];
 
-                pos0 = (*group_inds)[0];
-                pos1 = (*group_inds)[1];
+                // // Connected determinants filter
+                // if (group_size == 4)
+                // {
+                //     const uint16_t pos0 = group_inds[0];
+                //     const uint16_t pos1 = group_inds[1];
+                //     const uint16_t pos2 = group_inds[2];
+                    
+                //     const uint8_t _p = row_set_bits[pos0];
+                //     const uint8_t _q = row_set_bits[pos1];
+                //     const uint8_t _r = row_set_bits[pos2];
+                    
+                //     const bool aabb_group = (pos1 < half_width) && (pos2 >= half_width);
+                    
+                //     if (aabb_group && (_r || (_p == _q))) continue;
+                //     if ((_p + _q + _r) != 1) continue;
+                // }
+                // else // group_size == 2
+                // {
+                //     // _p = row_set_bits[(*group_inds)[0]];
+                //     // if (_p) continue;
+                //      if (row_set_bits[group_inds[0]]) continue;
+                // }
 
-                _p = row_set_bits[pos0];
-                _q = row_set_bits[pos1];
-
-                // Connected determinants filter
+                // ---
+                bool passes_filter = true;
+        
                 if (group_size == 4)
                 {
-                    pos2 = (*group_inds)[2];
-                    _r = row_set_bits[pos2];
-
-                    if ((_p + _q + _r) != 1)
-                        continue;
-
-                    if ((pos1 < width/2) && (pos2 >= width/2))
-                        if ((_p == _q) || (_r))
-                            continue;
+                    const uint16_t pos0 = group_inds[0];
+                    const uint16_t pos1 = group_inds[1];
+                    const uint16_t pos2 = group_inds[2];
+                    
+                    const uint8_t _p = row_set_bits[pos0];
+                    const uint8_t _q = row_set_bits[pos1];
+                    const uint8_t _r = row_set_bits[pos2];
+                    
+                    const bool aabb_group = (pos1 < half_width) && (pos2 >= half_width);
+                    
+                    // Combine conditions to reduce branches
+                    passes_filter = !(aabb_group && (_r || (_p == _q))) && 
+                                    ((_p + _q + _r) == 1);
                 }
                 else // group_size == 2
                 {
-                    if (_p)
-                        continue;
+                    passes_filter = !row_set_bits[group_inds[0]];
                 }
+                
+                if (!passes_filter) continue;
+                // ---
 
                 // if (kk == row_no_for_stats) survived_groups1++;
 
                 col_vec = row;
-                flip_bits_u16(col_vec, group_inds->data(), group_size);
+                flip_bits_u16_2(col_vec, group_inds, group_size);
 
                 col_ptr = subspace.get_ptr(col_vec);
                 if (col_ptr == nullptr) continue;
@@ -182,8 +225,8 @@ void csrlike_builder2(const OperatorTerm_t* terms,
 
                 // if (kk == row_no_for_stats) survived_groups2++;
 
-                row_int = bitset_ladder_int_u16(
-                    row_set_bits.data(), group_inds->data(),
+                row_int = bitset_ladder_int_u16_2(
+                    row_set_bits.data(), group_inds,
                     group_rowint_length_u16[group]);
                 group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
                 group_int_stop  = group_ladder_ptrs[group * ladder_offset + row_int + 1];

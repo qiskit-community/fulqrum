@@ -19,6 +19,7 @@
 #include "bitset_hashmap.hpp"
 #include "constants.hpp"
 #include <algorithm>
+#include <array>
 #include <boost/dynamic_bitset.hpp>
 #include <cstdint>
 #include <vector>
@@ -54,6 +55,26 @@ inline void flip_bits_u16(boost::dynamic_bitset<std::size_t> &bitset,
         pos = arr[kk];
         bitset.m_bits[pos >> BLOCK_EXPONENT] ^=
             ((size_t(1) << (pos & BLOCK_SHIFT)));
+    }
+}
+
+inline void flip_bits_u16_2(boost::dynamic_bitset<std::size_t> &bitset,
+                          const std::array<uint16_t, 5>& arr, const uint8_t size)
+{
+    if (size == 2) {
+        const uint16_t pos0 = arr[0];
+        const uint16_t pos1 = arr[1];
+        bitset.m_bits[pos0 >> BLOCK_EXPONENT] ^= (size_t(1) << (pos0 & BLOCK_SHIFT));
+        bitset.m_bits[pos1 >> BLOCK_EXPONENT] ^= (size_t(1) << (pos1 & BLOCK_SHIFT));
+    } else if (size == 4) {
+        const uint16_t pos0 = arr[0];
+        const uint16_t pos1 = arr[1];
+        const uint16_t pos2 = arr[2];
+        const uint16_t pos3 = arr[3];
+        bitset.m_bits[pos0 >> BLOCK_EXPONENT] ^= (size_t(1) << (pos0 & BLOCK_SHIFT));
+        bitset.m_bits[pos1 >> BLOCK_EXPONENT] ^= (size_t(1) << (pos1 & BLOCK_SHIFT));
+        bitset.m_bits[pos2 >> BLOCK_EXPONENT] ^= (size_t(1) << (pos2 & BLOCK_SHIFT));
+        bitset.m_bits[pos3 >> BLOCK_EXPONENT] ^= (size_t(1) << (pos3 & BLOCK_SHIFT));
     }
 }
 
@@ -153,6 +174,23 @@ inline unsigned int bitset_ladder_int(const uint8_t *row,
 
 inline unsigned int bitset_ladder_int_u16(const uint8_t *row,
                                           const uint16_t *__restrict inds,
+                                          const uint16_t num_bits)
+{
+    unsigned int row_int, out_int = 0;
+    uint16_t kk, pos;
+
+    for (kk = 0; kk < num_bits; kk++)
+    {
+        pos = inds[kk];
+        row_int = (unsigned int)row[pos];
+        out_int |= (row_int << kk);
+    }
+
+    return out_int;
+}
+
+inline unsigned int bitset_ladder_int_u16_2(const uint8_t *row,
+                                          const std::array<uint16_t, 5>& inds,
                                           const uint16_t num_bits)
 {
     unsigned int row_int, out_int = 0;
@@ -296,6 +334,54 @@ void bitset_to_bitvec(const boost::dynamic_bitset<size_t> &row,
             uint64_t t = bitset & -bitset;
             int r = __builtin_ctzll(bitset);
             row_set_bits[block * BITS_PER_BLOCK + r] = 1;
+            bitset ^= t;
+        }
+    }
+
+    // Pre-allocate space for set bit positions
+    // std::array<uint16_t, 64> positions;
+    // uint8_t pos_count = 0;
+    
+    // for (size_t block = 0; block < row.num_blocks(); block++)
+    // {
+    //     auto bitset = row.m_bits[block];
+    //     const size_t block_offset = block * BITS_PER_BLOCK;
+        
+    //     while (bitset != 0)
+    //     {
+    //         int r = __builtin_ctzll(bitset);
+    //         positions[pos_count++] = block_offset + r;
+    //         bitset &= bitset - 1;  // Clear lowest set bit
+            
+    //         // Batch store when buffer is full
+    //         if (pos_count == 64) {
+    //             for (uint8_t i = 0; i < pos_count; i++) {
+    //                 row_set_bits[positions[i]] = 1;
+    //             }
+    //             pos_count = 0;
+    //         }
+    //     }
+    // }
+    
+    // // Store remaining positions
+    // for (uint8_t i = 0; i < pos_count; i++) {
+    //     row_set_bits[positions[i]] = 1;
+    // }
+}
+
+void bitset_to_bitvec2(const boost::dynamic_bitset<size_t> &row,
+                      std::vector<uint8_t> &row_set_bits,
+                    std::vector<uint16_t> &set_bits)
+{
+    for (size_t block = 0; block < row.num_blocks(); block++)
+    {
+        auto bitset = row.m_bits[block];
+        while (bitset != 0)
+        {
+            uint64_t t = bitset & -bitset;
+            int r = __builtin_ctzll(bitset);
+            row_set_bits[block * BITS_PER_BLOCK + r] = 1;
+            set_bits.push_back(static_cast<uint16_t>(block * BITS_PER_BLOCK + r));
             bitset ^= t;
         }
     }
