@@ -19,6 +19,8 @@
 #include <mutex>
 #include <vector>
 
+// #include <gperftools/profiler.h>
+
 #include "base.hpp"
 #include "bitset_hashmap.hpp"
 #include "bitset_utils.hpp"
@@ -49,7 +51,7 @@ void csrlike_builder2(const OperatorTerm_t* terms,
 {
     std::size_t kk;
     const auto* bitsets = subspace.get_bitsets();
-    size_t survived_groups0 = 0, survived_groups1 = 0, survived_groups2 = 0;
+    // size_t survived_groups0 = 0, survived_groups1 = 0, survived_groups2 = 0;
     cols.resize(subspace_dim);
     data.resize(subspace_dim);
 
@@ -89,7 +91,13 @@ void csrlike_builder2(const OperatorTerm_t* terms,
     std::vector<uint16_t> grp_max_inds(num_groups, width);
     get_group_max_inds(grp_max_inds, group_offdiag_inds, num_groups);
 
-    // Populate diagonal elements first separately
+    // Collect groups with same max inds for the lower-triangle check.
+    // groups_by_maxbit[b] holds all groups whose max flip-position == b.
+    std::vector<std::vector<uint32_t>> groups_by_maxbit(width);
+    for (std::size_t g = 0; g < num_groups; g++)
+        groups_by_maxbit[grp_max_inds[g]].push_back(static_cast<uint32_t>(g));
+
+
     if(has_nonzero_diag)
     {
 #pragma omp parallel for schedule(dynamic) if(subspace_dim > 4096)
@@ -104,7 +112,7 @@ void csrlike_builder2(const OperatorTerm_t* terms,
         }
     }
 
-size_t row_no_for_stats = (subspace_dim - 1);
+// size_t row_no_for_stats = (subspace_dim - 1);
 #pragma omp parallel for schedule(dynamic) if(subspace_dim > 4096)
     for(kk = 0; kk < subspace_dim; kk++)
     { // begin loop over all rows
@@ -112,7 +120,6 @@ size_t row_no_for_stats = (subspace_dim - 1);
 
         // define variables locally for omp for loop
         std::size_t idx;
-        std::size_t group;
         std::size_t group_int_start, group_int_stop;
         const OperatorTerm_t* term;
         boost::dynamic_bitset<std::size_t> col_vec;
@@ -122,149 +129,99 @@ size_t row_no_for_stats = (subspace_dim - 1);
         std::size_t col_idx;
         T val;
         unsigned int row_int=0;
-        uint8_t _p, _q, _r = 0, _s = 1;
-        uint16_t pos0, pos1, pos2 = 0, pos3 = 0;
+        uint8_t _p, _q, _r = 0;
+        uint16_t pos0, pos1, pos2 = 0;
 
         std::vector<uint8_t> row_set_bits(row.size(), 0);
         bitset_to_bitvec(row, row_set_bits);
 
-        for(group = 0; group < num_groups; group++)
-        { // begin loop over groups
-            // Detects a lower or an upper
-            // triangle matrix element.
-            // See details in ``get_group_max_inds()``
-            // in fulqrum/core/src/offdiag_grouping.hpp
-            if(!row_set_bits[grp_max_inds[group]])
+        // Iterate over bits of the row and do the lower-triangle check.
+        for (std::size_t b = 0; b < static_cast<std::size_t>(width); b++)
+        {
+            if (!row_set_bits[b]) continue;
+            for (const uint32_t group : groups_by_maxbit[b])
             {
-                continue;
-            }
-            if (kk == row_no_for_stats)
-            {
-                survived_groups0 += 1;
-            }
+                // if (kk == row_no_for_stats) survived_groups0++;
 
-            group_inds = &group_offdiag_inds_array[group];
-            group_size = (uint8_t)(*group_inds)[4];
-            
-            pos0 = (*group_inds)[0];
-            pos1 = (*group_inds)[1];
-            
-            _p = row_set_bits[pos0];
-            _q = row_set_bits[pos1];
+                group_inds = &group_offdiag_inds_array[group];
+                group_size = (uint8_t)(*group_inds)[4];
 
-            // Connected determinants filter
-            if (group_size == 4)
-            {
-                // _s == 1 after lower triangle check
+                pos0 = (*group_inds)[0];
+                pos1 = (*group_inds)[1];
 
-                pos2 = (*group_inds)[2];
-                _r = row_set_bits[pos2];
+                _p = row_set_bits[pos0];
+                _q = row_set_bits[pos1];
 
-                if ((_p + _q + _r) != 1)
+                // Connected determinants filter
+                if (group_size == 4)
                 {
-                    continue;
-                }
+                    pos2 = (*group_inds)[2];
+                    _r = row_set_bits[pos2];
 
-                if ((pos1 < width/2) && (pos2 >= width/2))
-                {
-                    if ((_p == _q) || (_r))
-                    {
+                    if ((_p + _q + _r) != 1)
                         continue;
-                    }
+
+                    if ((pos1 < width/2) && (pos2 >= width/2))
+                        if ((_p == _q) || (_r))
+                            continue;
                 }
-            }
-            else // (group_size == 2)
-            {
-                // _q == 1 for size-2 after lower triangle check
-
-                if (_p)
+                else // group_size == 2
                 {
-                    continue;
-                }
-            }
-            // ----
-            if (kk == row_no_for_stats)
-            {
-                survived_groups1 += 1;
-            }
-
-            col_vec = row;
-            // flip_bits(col_vec, group_inds->data(), group_size);
-            flip_bits_u16(col_vec, group_inds->data(), group_size);
-
-            col_ptr = subspace.get_ptr(col_vec);
-            if(col_ptr == nullptr)
-            {
-                continue;
-            } // column is NOT in the subspace; skip group
-            col_idx = *col_ptr;
-
-            if (kk == row_no_for_stats)
-            {
-                survived_groups2 += 1;
-            }
-
-            // row_int = bitset_ladder_int(
-            //     row_set_bits.data(), group_inds->data(), group_rowint_length[group]);
-
-            row_int = bitset_ladder_int_u16(
-                row_set_bits.data(), group_inds->data(),
-                group_rowint_length_u16[group]
-            );
-            
-            group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
-            group_int_stop = group_ladder_ptrs[group * ladder_offset + row_int + 1];
-
-            val = 0;
-            for(idx = group_int_start; idx < group_int_stop; idx++)
-            { // begin loop over terms in this group
-                term = &terms[idx];
-                if(passes_proj_validation(term, row))
-                {
-                    accum_element(row,
-                                  col_vec,
-                                  &term->indices[0],
-                                  &term->values[0],
-                                  term->coeff,
-                                  term->real_phase,
-                                  term->indices.size(),
-                                  val);
-                }
-            } // end loop over terms in this group
-
-            if(std::abs(val) > ATOL)
-            // if(std::abs(val) > (1e-6 * std::abs(diag_vec[kk])))
-            {
-                // see fulqrum/core/src/csr.hpp for details
-                // about these Mutex locks
-                {
-                    std::lock_guard<std::mutex> lock_kk(mutex1[kk]);
-                    cols[kk].push_back(col_idx);
-                    data[kk].push_back(val);
+                    if (_p)
+                        continue;
                 }
 
+                // if (kk == row_no_for_stats) survived_groups1++;
+
+                col_vec = row;
+                flip_bits_u16(col_vec, group_inds->data(), group_size);
+
+                col_ptr = subspace.get_ptr(col_vec);
+                if (col_ptr == nullptr) continue;
+                col_idx = *col_ptr;
+
+                // if (kk == row_no_for_stats) survived_groups2++;
+
+                row_int = bitset_ladder_int_u16(
+                    row_set_bits.data(), group_inds->data(),
+                    group_rowint_length_u16[group]);
+                group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
+                group_int_stop  = group_ladder_ptrs[group * ladder_offset + row_int + 1];
+
+                val = 0;
+                for (idx = group_int_start; idx < group_int_stop; idx++)
                 {
-                    std::lock_guard<std::mutex> lock_col_idx(mutex1[col_idx]);
-                    cols[col_idx].push_back(kk);
-                    if constexpr(std::is_same_v<T, double>)
+                    term = &terms[idx];
+                    if (passes_proj_validation(term, row))
+                        accum_element(row, col_vec,
+                                      &term->indices[0], &term->values[0],
+                                      term->coeff, term->real_phase,
+                                      term->indices.size(), val);
+                }
+
+                if (std::abs(val) > ATOL)
+                {
                     {
-                        data[col_idx].push_back(val);
+                        std::lock_guard<std::mutex> lock_kk(mutex1[kk]);
+                        cols[kk].push_back(col_idx);
+                        data[kk].push_back(val);
                     }
-                    else
                     {
-                        // for complex-valued matrix, the upper triangle
-                        // element will be complex conjugate of the lower
-                        // triangle element
-                        data[col_idx].push_back(std::conj(val));
+                        std::lock_guard<std::mutex> lock_col_idx(mutex1[col_idx]);
+                        cols[col_idx].push_back(kk);
+                        if constexpr(std::is_same_v<T, double>)
+                            data[col_idx].push_back(val);
+                        else
+                            data[col_idx].push_back(std::conj(val));
                     }
                 }
             }
-        } // end loop over groups
+        }
     }
 
     std::cout << "Num groups: " << num_groups << std::endl;
-    std::cout << "[kk=" << row_no_for_stats << "] surviving groups lower-tri filter: " << survived_groups0 << std::endl;
-    std::cout << "[kk=" << row_no_for_stats << "] surviving groups conndets filter:  " << survived_groups1 << std::endl;
-    std::cout << "[kk=" << row_no_for_stats << "] surviving groups hashmap:          " << survived_groups2 << std::endl;
+    // std::cout << "[kk=" << row_no_for_stats << "] surviving groups lower-tri filter: " << survived_groups0 << std::endl;
+    // std::cout << "[kk=" << row_no_for_stats << "] surviving groups conndets filter:  " << survived_groups1 << std::endl;
+    // std::cout << "[kk=" << row_no_for_stats << "] surviving groups hashmap:          " << survived_groups2 << std::endl;
     sort_paired(cols, data);
 } // end function

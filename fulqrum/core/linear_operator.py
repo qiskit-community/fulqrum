@@ -12,6 +12,8 @@
 
 """Fulqrum linearoperator module"""
 
+import time
+
 import numpy as np
 from scipy.sparse.linalg import LinearOperator
 
@@ -32,9 +34,17 @@ class SubspaceHamiltonian(LinearOperator):
         """A SciPy `LinearOperator` that represents a Hamiltonian restricted to the given
         subspace.
         """
+        print(f"SubspaceHamiltonian time break-down")
+        print( "-----------------------------------")
+        st = time.perf_counter()
         self.diag_H, self.off_H = hamiltonian.split_diagonal()
+        print(f"  Split diagonal: {time.perf_counter()-st:.4f} seconds")
+
         # if there are no off-diagonal terms then we pass a dummy empty array of len=1
+        st = time.perf_counter()
         self.off_H.offdiag_term_grouping()
+        print(f"  Offdiag grouping: {time.perf_counter()-st:.4f} seconds")
+        
         self.group_ptrs = np.zeros(1, dtype=np.uintp)
         self.group_ladder_ptrs = np.zeros(1, dtype=np.uintp)
 
@@ -45,9 +55,12 @@ class SubspaceHamiltonian(LinearOperator):
                 self.off_H.group_term_sort_by_ladder_int(4)
                 self.group_ladder_ptrs = self.off_H.group_ladder_bin_starts()
 
+        st = time.perf_counter()
         self.spmv = FulqrumSpMV(
             self.diag_H, self.off_H, subspace, self.group_ptrs, self.group_ladder_ptrs
         )
+        print(f"  FulqrumSpMV: {time.perf_counter()-st:.4f} seconds")
+        
         self._matvec = self.matvec
         self.shape = (len(subspace),) * 2
         self.dtype = np.dtype(float) if self.spmv.is_real else np.dtype(complex)
