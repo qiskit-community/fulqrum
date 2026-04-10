@@ -142,37 +142,41 @@ QubitOperator& diag_proj_index_sort(QubitOperator& oper)
 }
 
 
-std::pair<std::vector<std::size_t>, std::size_t> projector_ptrs_and_offset(QubitOperator& oper)
+std::pair<std::vector<std::pair<std::size_t, std::size_t>>, std::size_t> projector_ptrs_and_offset(QubitOperator& oper)
 {
-    std::pair<std::vector<std::size_t>, std::size_t> out;
-    std::vector<std::size_t> ptrs(oper.width+1, 0);
+    std::pair<std::vector<std::pair<std::size_t, std::size_t>>, std::size_t> out;
+    std::vector<std::pair<std::size_t, std::size_t>> ptrs(oper.width);
     std::size_t offset=0;
+    std::size_t kk;
     unsigned int current_ind;
 
     // compute the index (offset) at which terms begin to have projection operators
-    for(std::size_t kk=0; kk < oper.size(); kk++){
+    for(kk=0; kk < oper.size(); kk++)
+    {
         if(oper.terms[kk].proj_indices.size())
         {
             break;
         }
         offset += 1;
     }
-    out.second = offset;
-    // set the current index to be the first projector index at terms[offset]
-    current_ind = oper.terms[offset].proj_indices[0];
-    // set the start pointer for this current index to be offset
-    ptrs[current_ind] = offset;
-
-    for(std::size_t kk=offset; kk < oper.size(); kk++){
-        if(oper.terms[kk].proj_indices[0] > current_ind)
-        {
-            ptrs[current_ind+1] = kk;
-            current_ind = oper.terms[kk].proj_indices[0];
-            ptrs[current_ind+1] = kk;
+    out.second = offset; // set output second
+    if(offset != oper.size()) // if there are terms with projectors do stuff
+    {
+        // set the current index to be the first projector index at terms[offset]
+        current_ind = oper.terms[offset].proj_indices[0];
+        // set the start pointer for this current index to be offset
+        ptrs[current_ind].first = offset;
+        for(kk=offset; kk < oper.size(); kk++){
+            if(oper.terms[kk].proj_indices[0] > current_ind)
+            {
+                ptrs[current_ind].second = kk;
+                current_ind = oper.terms[kk].proj_indices[0];
+                ptrs[current_ind].first = kk;
+            }
         }
+        ptrs[current_ind].second = oper.size();
     }
-    ptrs[oper.width] = oper.size();
-    out.first = ptrs;
+    out.first = ptrs; // set output first
     return out;
 }
 

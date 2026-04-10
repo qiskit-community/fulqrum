@@ -26,4 +26,4 @@ cdef extern from "../src/diag.hpp":
 
     QubitOperator_t& diag_proj_index_sort(QubitOperator_t&) except +
 
-    pair[vector[size_t], size_t] projector_ptrs_and_offset(QubitOperator_t&) except +
+    pair[vector[pair[size_t, size_t]], size_t] projector_ptrs_and_offset(QubitOperator_t&) except +

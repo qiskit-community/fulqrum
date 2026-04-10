@@ -31,8 +31,9 @@ def proj_index_sort(QubitOperator op):
     return op
 
 def proj_ptrs_and_offset(QubitOperator op):
-    cdef pair[vector[size_t], size_t] out = projector_ptrs_and_offset(op.oper)
-    cdef size_t[::1] ptrs = np.empty(out.first.size(), np.uintp)
-    if out.first.size():
-        memcpy(&ptrs[0], &out.first[0], out.first.size()*sizeof(size_t))
-    return np.asarray(ptrs), out.second
+    cdef pair[vector[pair[size_t, size_t]], size_t] out = projector_ptrs_and_offset(op.oper)
+    cdef list ptrs = []
+    cdef size_t kk
+    for kk in range(out.first.size()):
+        ptrs.append(out.first[kk])
+    return ptrs, out.second
