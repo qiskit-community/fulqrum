@@ -89,3 +89,90 @@ inline void single_bitstring_diagonal(const boost::dynamic_bitset<size_t>& row,
         }
     }
 }
+
+
+/**
+ * Compare terms based on the index of their 1st projector index, if any
+ * 
+ * This is used for sorting terms in a diagonal Hamiltonian so that computing
+ * the energy along the diagonal is more efficient for type=2 Hamiltonians
+ * 
+ * If there are no projectors then the index value = -1, i.e. no projector terms
+ * come first
+ *
+ * @param term1 The first term
+ * @param term2 The second term
+ *
+ * @return comparator value
+ */
+inline int proj_index_term_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
+{
+    int term1_index = -1;
+    int term2_index = -1;
+    if(term1.proj_indices.size())
+    {
+        term1_index = term1.proj_indices[0];
+    }
+    if(term2.proj_indices.size())
+    {
+        term2_index = term2.proj_indices[0];
+    }
+    return term1_index < term2_index;
+}
+
+
+ /**
+* In-place sorting of terms by projector index
+*/
+QubitOperator& diag_proj_index_sort(QubitOperator& oper)
+{
+    if(oper.type != 2)
+    {
+        throw std::runtime_error("Operator must be type=2 for this to make sense");
+    }
+    if(!oper.is_diagonal())
+    {
+        throw std::runtime_error("Operator must be diagonal");
+    }
+    std::sort(oper.terms.begin(), oper.terms.end(), proj_index_term_comp);
+    oper.off_weight_sorted = 0;
+    oper.weight_sorted = 0;
+    oper.sorted = 0;
+    return oper;
+}
+
+
+std::pair<std::vector<std::size_t>, std::size_t> projector_ptrs_and_offset(QubitOperator& oper)
+{
+    std::pair<std::vector<std::size_t>, std::size_t> out;
+    std::vector<std::size_t> ptrs(oper.width+1, 0);
+    std::size_t offset=0;
+    unsigned int current_ind;
+
+    // compute the index (offset) at which terms begin to have projection operators
+    for(std::size_t kk=0; kk < oper.size(); kk++){
+        if(oper.terms[kk].proj_indices.size())
+        {
+            break;
+        }
+        offset += 1;
+    }
+    out.second = offset;
+    // set the current index to be the first projector index at terms[offset]
+    current_ind = oper.terms[offset].proj_indices[0];
+    // set the start pointer for this current index to be offset
+    ptrs[current_ind] = offset;
+
+    for(std::size_t kk=offset; kk < oper.size(); kk++){
+        if(oper.terms[kk].proj_indices[0] > current_ind)
+        {
+            ptrs[current_ind+1] = kk;
+            current_ind = oper.terms[kk].proj_indices[0];
+            ptrs[current_ind+1] = kk;
+        }
+    }
+    ptrs[oper.width] = oper.size();
+    out.first = ptrs;
+    return out;
+}
+

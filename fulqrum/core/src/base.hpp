@@ -842,6 +842,7 @@ inline void ladder_int_starts(const std::vector<OperatorTerm>& terms,
 
 
 
+
 /** @struct QubitOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
  *

@@ -10,6 +10,8 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 from libcpp.vector cimport vector
+from libcpp.pair cimport pair
+from ..core.qubit_operator cimport QubitOperator_t
 from ..core.bitset cimport bitset_t
 from ..core.bitset_hashmap cimport BitsetHashMapWrapper
 
@@ -21,3 +23,7 @@ cdef extern from "../src/diag.hpp":
                                 const QubitOperator_t& diag_oper,
                                 const unsigned int width,
                                 const size_t subspace_dim) nogil
+
+    QubitOperator_t& diag_proj_index_sort(QubitOperator_t&) except +
+
+    pair[vector[size_t], size_t] projector_ptrs_and_offset(QubitOperator_t&) except +

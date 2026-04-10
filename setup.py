@@ -46,6 +46,7 @@ CYTHON_EXTS = [
     "subspace",
     "bitset",
     "bitset_view",
+    "diag",
     "qubit_operator",
     "fermi_operator",
     "spmv",
@@ -68,6 +69,7 @@ CYTHON_MODULES = [
     f"{ROOT}.core",
     f"{ROOT}.core",
     f"{ROOT}.core",
+    f"{ROOT}.core",
     f"{ROOT}.convert",
     f"{ROOT}.convert",
     f"{ROOT}.convert",
@@ -76,6 +78,7 @@ CYTHON_MODULES = [
     f"{ROOT}.ramps",
 ]
 CYTHON_SOURCE_DIRS = [
+    f"{ROOT}/core",
     f"{ROOT}/core",
     f"{ROOT}/core",
     f"{ROOT}/core",

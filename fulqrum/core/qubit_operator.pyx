@@ -50,8 +50,6 @@ cdef const OperatorTerm_t EmptyOperatorTerm
 
 
 
-
-
 cdef class QubitOperator():
     """Operator class for qubit terms consisting of Pauli
     operators,projection operators, and ladder operators
