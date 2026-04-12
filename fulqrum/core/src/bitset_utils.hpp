@@ -78,6 +78,27 @@ inline void flip_bits_u16_2(boost::dynamic_bitset<std::size_t> &bitset,
     }
 }
 
+/** Pointer-based variant of flip_bits_u16_2: same unrolled body, accepts uint16_t* directly. */
+inline void flip_bits_u16_3(boost::dynamic_bitset<std::size_t>& bitset,
+                             const uint16_t* arr, const uint8_t size)
+{
+    if (size == 2) {
+        const uint16_t pos0 = arr[0];
+        const uint16_t pos1 = arr[1];
+        bitset.m_bits[pos0 >> BLOCK_EXPONENT] ^= (size_t(1) << (pos0 & BLOCK_SHIFT));
+        bitset.m_bits[pos1 >> BLOCK_EXPONENT] ^= (size_t(1) << (pos1 & BLOCK_SHIFT));
+    } else if (size == 4) {
+        const uint16_t pos0 = arr[0];
+        const uint16_t pos1 = arr[1];
+        const uint16_t pos2 = arr[2];
+        const uint16_t pos3 = arr[3];
+        bitset.m_bits[pos0 >> BLOCK_EXPONENT] ^= (size_t(1) << (pos0 & BLOCK_SHIFT));
+        bitset.m_bits[pos1 >> BLOCK_EXPONENT] ^= (size_t(1) << (pos1 & BLOCK_SHIFT));
+        bitset.m_bits[pos2 >> BLOCK_EXPONENT] ^= (size_t(1) << (pos2 & BLOCK_SHIFT));
+        bitset.m_bits[pos3 >> BLOCK_EXPONENT] ^= (size_t(1) << (pos3 & BLOCK_SHIFT));
+    }
+}
+
 /**
  * Same as flip_bits(); but only for op-type2
  *
@@ -192,6 +213,24 @@ inline unsigned int bitset_ladder_int_u16(const uint8_t *row,
 inline unsigned int bitset_ladder_int_u16_2(const uint8_t *row,
                                           const std::array<uint16_t, 5>& inds,
                                           const uint16_t num_bits)
+{
+    unsigned int row_int, out_int = 0;
+    uint16_t kk, pos;
+
+    for (kk = 0; kk < num_bits; kk++)
+    {
+        pos = inds[kk];
+        row_int = (unsigned int)row[pos];
+        out_int |= (row_int << kk);
+    }
+
+    return out_int;
+}
+
+/** Pointer-based variant of bitset_ladder_int_u16_2: accepts uint16_t* directly. */
+inline unsigned int bitset_ladder_int_u16_3(const uint8_t* row,
+                                             const uint16_t* inds,
+                                             const uint16_t num_bits)
 {
     unsigned int row_int, out_int = 0;
     uint16_t kk, pos;

@@ -492,20 +492,38 @@ cdef class FulqrumSpMV():
                             csrlike.data_d32.data)
 
             else:
-                csrlike_builder2(&self.oper.terms[0],
-                            self.subspace.subspace.bitstrings,
-                            &self.real_diag_vec[0],
-                            self.width,
-                            self.subspace_dim,
-                            self.has_nonzero_diag,
-                            &self.group_ptrs[0],
-                            &self.group_ladder_ptrs[0],
-                            &self.group_rowint_length[0],
-                            self.group_offdiag_inds,
-                            self.num_groups,
-                            self.ladder_offset,
-                            csrlike.data_d32.cols,
-                            csrlike.data_d32.data)
+                if self.subspace.is_half_str:
+                    csrlike_builder2(&self.oper.terms[0],
+                                self.subspace.subspace.bitstrings,
+                                &self.real_diag_vec[0],
+                                self.width,
+                                self.subspace_dim,
+                                self.has_nonzero_diag,
+                                &self.group_ptrs[0],
+                                &self.group_ladder_ptrs[0],
+                                &self.group_rowint_length[0],
+                                self.group_offdiag_inds,
+                                self.num_groups,
+                                self.ladder_offset,
+                                self.subspace.alpha_dets,
+                                self.subspace.beta_dets,
+                                csrlike.data_d32.cols,
+                                csrlike.data_d32.data)
+                else:
+                    csrlike_builder2(&self.oper.terms[0],
+                                self.subspace.subspace.bitstrings,
+                                &self.real_diag_vec[0],
+                                self.width,
+                                self.subspace_dim,
+                                self.has_nonzero_diag,
+                                &self.group_ptrs[0],
+                                &self.group_ladder_ptrs[0],
+                                &self.group_rowint_length[0],
+                                self.group_offdiag_inds,
+                                self.num_groups,
+                                self.ladder_offset,
+                                csrlike.data_d32.cols,
+                                csrlike.data_d32.data)
         elif csrlike.type_string == 'd64':
             if self.oper.type == 1:
                 csrlike_builder(&self.oper.terms[0],
@@ -521,20 +539,38 @@ cdef class FulqrumSpMV():
                             csrlike.data_d64.data)
 
             else:
-                csrlike_builder2(&self.oper.terms[0],
-                            self.subspace.subspace.bitstrings,
-                            &self.real_diag_vec[0],
-                            self.width,
-                            self.subspace_dim,
-                            self.has_nonzero_diag,
-                            &self.group_ptrs[0],
-                            &self.group_ladder_ptrs[0],
-                            &self.group_rowint_length[0],
-                            self.group_offdiag_inds,
-                            self.num_groups,
-                            self.ladder_offset,
-                            csrlike.data_d64.cols,
-                            csrlike.data_d64.data)
+                if self.subspace.is_half_str:
+                    csrlike_builder2(&self.oper.terms[0],
+                                self.subspace.subspace.bitstrings,
+                                &self.real_diag_vec[0],
+                                self.width,
+                                self.subspace_dim,
+                                self.has_nonzero_diag,
+                                &self.group_ptrs[0],
+                                &self.group_ladder_ptrs[0],
+                                &self.group_rowint_length[0],
+                                self.group_offdiag_inds,
+                                self.num_groups,
+                                self.ladder_offset,
+                                self.subspace.alpha_dets,
+                                self.subspace.beta_dets,
+                                csrlike.data_d64.cols,
+                                csrlike.data_d64.data)
+                else:
+                    csrlike_builder2(&self.oper.terms[0],
+                                self.subspace.subspace.bitstrings,
+                                &self.real_diag_vec[0],
+                                self.width,
+                                self.subspace_dim,
+                                self.has_nonzero_diag,
+                                &self.group_ptrs[0],
+                                &self.group_ladder_ptrs[0],
+                                &self.group_rowint_length[0],
+                                self.group_offdiag_inds,
+                                self.num_groups,
+                                self.ladder_offset,
+                                csrlike.data_d64.cols,
+                                csrlike.data_d64.data)
         elif csrlike.type_string == 'z32':
             if self.oper.type == 1:
                 csrlike_builder(&self.oper.terms[0],
@@ -550,20 +586,38 @@ cdef class FulqrumSpMV():
                             csrlike.data_z32.data)
 
             else:
-                csrlike_builder2(&self.oper.terms[0],
-                            self.subspace.subspace.bitstrings,
-                            &self.complex_diag_vec[0],
-                            self.width,
-                            self.subspace_dim,
-                            self.has_nonzero_diag,
-                            &self.group_ptrs[0],
-                            &self.group_ladder_ptrs[0],
-                            &self.group_rowint_length[0],
-                            self.group_offdiag_inds,
-                            self.num_groups,
-                            self.ladder_offset,
-                            csrlike.data_z32.cols,
-                            csrlike.data_z32.data)
+                if self.subspace.is_half_str:
+                    csrlike_builder2(&self.oper.terms[0],
+                                self.subspace.subspace.bitstrings,
+                                &self.complex_diag_vec[0],
+                                self.width,
+                                self.subspace_dim,
+                                self.has_nonzero_diag,
+                                &self.group_ptrs[0],
+                                &self.group_ladder_ptrs[0],
+                                &self.group_rowint_length[0],
+                                self.group_offdiag_inds,
+                                self.num_groups,
+                                self.ladder_offset,
+                                self.subspace.alpha_dets,
+                                self.subspace.beta_dets,
+                                csrlike.data_z32.cols,
+                                csrlike.data_z32.data)
+                else:
+                    csrlike_builder2(&self.oper.terms[0],
+                                self.subspace.subspace.bitstrings,
+                                &self.complex_diag_vec[0],
+                                self.width,
+                                self.subspace_dim,
+                                self.has_nonzero_diag,
+                                &self.group_ptrs[0],
+                                &self.group_ladder_ptrs[0],
+                                &self.group_rowint_length[0],
+                                self.group_offdiag_inds,
+                                self.num_groups,
+                                self.ladder_offset,
+                                csrlike.data_z32.cols,
+                                csrlike.data_z32.data)
         elif csrlike.type_string == 'z64':
             if self.oper.type == 1:
                 csrlike_builder(&self.oper.terms[0],
@@ -579,20 +633,38 @@ cdef class FulqrumSpMV():
                             csrlike.data_z64.data)
 
             else:
-                csrlike_builder2(&self.oper.terms[0],
-                            self.subspace.subspace.bitstrings,
-                            &self.complex_diag_vec[0],
-                            self.width,
-                            self.subspace_dim,
-                            self.has_nonzero_diag,
-                            &self.group_ptrs[0],
-                            &self.group_ladder_ptrs[0],
-                            &self.group_rowint_length[0],
-                            self.group_offdiag_inds,
-                            self.num_groups,
-                            self.ladder_offset,
-                            csrlike.data_z64.cols,
-                            csrlike.data_z64.data)
+                if self.subspace.is_half_str:
+                    csrlike_builder2(&self.oper.terms[0],
+                                self.subspace.subspace.bitstrings,
+                                &self.complex_diag_vec[0],
+                                self.width,
+                                self.subspace_dim,
+                                self.has_nonzero_diag,
+                                &self.group_ptrs[0],
+                                &self.group_ladder_ptrs[0],
+                                &self.group_rowint_length[0],
+                                self.group_offdiag_inds,
+                                self.num_groups,
+                                self.ladder_offset,
+                                self.subspace.alpha_dets,
+                                self.subspace.beta_dets,
+                                csrlike.data_z64.cols,
+                                csrlike.data_z64.data)
+                else:
+                    csrlike_builder2(&self.oper.terms[0],
+                                self.subspace.subspace.bitstrings,
+                                &self.complex_diag_vec[0],
+                                self.width,
+                                self.subspace_dim,
+                                self.has_nonzero_diag,
+                                &self.group_ptrs[0],
+                                &self.group_ladder_ptrs[0],
+                                &self.group_rowint_length[0],
+                                self.group_offdiag_inds,
+                                self.num_groups,
+                                self.ladder_offset,
+                                csrlike.data_z64.cols,
+                                csrlike.data_z64.data)
 
         stop = time.perf_counter()
         if verbose:

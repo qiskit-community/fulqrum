@@ -130,6 +130,10 @@ cdef class Subspace():
                 Default: `True`.
         """
         cdef int input_bitsets = 0
+        cdef unsigned int half_width_a
+        cdef unsigned int half_width_b
+        cdef string _temp_s
+        cdef bitset_t _temp_bs
         if len(subspace_strs) == 0:
             return
         elif len(subspace_strs) == 1:
@@ -150,6 +154,18 @@ cdef class Subspace():
             )
             num_qubits = len(next(iter(alpha_strs))) + len(next(iter(beta_strs)))
             size = len(alpha_strs) * len(beta_strs)
+            # Store individual half-det bitsets for the XOR-based connection scan
+            half_width_a = len(alpha_strs[0])
+            half_width_b = len(beta_strs[0])
+            for _a in alpha_strs:
+                _temp_s = _a
+                _temp_bs = bitset_t(_temp_s, 0, half_width_a)
+                self.alpha_dets.push_back(_temp_bs)
+            for _b in beta_strs:
+                _temp_s = _b
+                _temp_bs = bitset_t(_temp_s, 0, half_width_b)
+                self.beta_dets.push_back(_temp_bs)
+            self.is_half_str = True
         else:
             raise ValueError("bitstrings are wrongly formatted")
 

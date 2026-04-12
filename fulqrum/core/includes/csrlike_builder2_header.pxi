@@ -18,6 +18,7 @@ include "csrlike_header.pxi"
 
 cdef extern from "../src/csrlike_builder2.hpp":
 
+    # Original: no half-det parameters
     void csrlike_builder2[T, U](const OperatorTerm_t * terms,
                               const BitsetHashMapWrapper& subspace,
                               const T * diag_vec,
@@ -30,6 +31,25 @@ cdef extern from "../src/csrlike_builder2.hpp":
                               const vector[vector[unsigned int]]& group_offdiag_inds,
                               size_t num_groups,
                               unsigned int ladder_offset,
+                              vector[vector[U]]& cols,
+                              vector[vector[T]]& data,
+                              ) nogil
+
+    # New: half-str version
+    void csrlike_builder2[T, U](const OperatorTerm_t * terms,
+                              const BitsetHashMapWrapper& subspace,
+                              const T * diag_vec,
+                              size_t width,
+                              size_t subspace_dim,
+                              int has_nonzero_diag,
+                              const size_t * group_ptrs,
+                              const size_t * group_ladder_ptrs,
+                              unsigned int * group_rowint_length,
+                              const vector[vector[unsigned int]]& group_offdiag_inds,
+                              size_t num_groups,
+                              unsigned int ladder_offset,
+                              const vector[bitset_t]& all_alpha_dets,
+                              const vector[bitset_t]& all_beta_dets,
                               vector[vector[U]]& cols,
                               vector[vector[T]]& data,
                               ) nogil
