@@ -18,6 +18,7 @@
 #include <iostream>
 #include <mutex>
 #include <unordered_map>
+#include "external/hash_table8.hpp"
 #include <vector>
 
 // #include <gperftools/profiler.h>
@@ -376,8 +377,18 @@ void csrlike_builder2(const OperatorTerm_t* terms,
     //   size-2 group key: pack2 -> uint32  (p0 | p1<<16)
     //   size-4 group key: pack4 -> uint64  (p0 | p1<<16 | p2<<32 | p3<<48)
     // -----------------------------------------------------------------------
-    std::unordered_map<uint32_t, uint32_t> inds_to_group2;
-    std::unordered_map<uint64_t, uint32_t> inds_to_group4;
+    struct HashU32 {
+        std::size_t operator()(uint32_t k) const noexcept {
+            return rapidhash(&k, sizeof(k));
+        }
+    };
+    struct HashU64 {
+        std::size_t operator()(uint64_t k) const noexcept {
+            return rapidhash(&k, sizeof(k));
+        }
+    };
+    emhash8::HashMap<uint32_t, uint32_t, HashU32> inds_to_group2;
+    emhash8::HashMap<uint64_t, uint32_t, HashU64> inds_to_group4;
     inds_to_group2.reserve(num_groups);
     inds_to_group4.reserve(num_groups);
 
@@ -410,62 +421,46 @@ void csrlike_builder2(const OperatorTerm_t* terms,
     const std::size_t N_alpha = all_alpha_dets.size();
     const std::size_t N_beta = all_beta_dets.size();
 
-    // ------------------------------------------------------------------------------
-    // Main loop: XOR-based valid group filter
+    // -----------------------------------------------------------------------
+    // Main loop:
     //
-    // For each row (ia, ib) we find connected columns via five excitation types:
-    //   aa   : alpha single -> size-2 group, both p < half_width
-    //   aaaa : alpha double -> size-4 group, all  p < half_width
-    //   bb   : beta  single -> size-2 group, both p >= half_width
-    //   bbbb : beta  double -> size-4 group, all  p >= half_width
-    //   aabb : cross double  (alpha single x beta single)  -> size-4 group, mixed p
+    // Insertion order in subspace is beta-outer x alpha-inner (ascending full
+    // bitset value), so kk = ib*N_alpha + ia.
     //
-    // Cross-double positions must be sorted.
-    //
-    // For a strict Cartesian-product subspace subspace hashmap subsapce look up
-    // can be replaced by direct index arithmetic (col_idx = ja * N_beta + jb)
-    // -----------------------------------------------------------------------------
+    // Five excitation types per row (ia, ib):
+    //   aa   : alpha single, col_idx = ib*N_a + ja
+    //   aaaa : alpha double, col_idx = ib*N_a + ja
+    //   bb   : beta  single, col_idx = jb*N_a + ia
+    //   bbbb : beta  double, col_idx = jb*N_a + ia
+    //   aabb : cross double, col_idx = jb*N_a + ja
+    // -----------------------------------------------------------------------
 #pragma omp parallel for schedule(dynamic) if(subspace_dim > 4096)
     for(kk = 0; kk < subspace_dim; kk++)
     {
         const boost::dynamic_bitset<std::size_t>& row = bitsets[kk].first;
-
-        // consider getting rid of row_set_bits
-        std::vector<uint8_t> row_set_bits(width, 0);
-        bitset_to_bitvec(row, row_set_bits);
-
-        // col_vec is allocated once per row and reused across all process_group calls.
-        // Flipped twice to restore row for a different group
         boost::dynamic_bitset<std::size_t> col_vec = row;
 
-        // inds (uint16_t*) and gsz are passed from the call site (already known from the
-        // XOR scan), avoiding the group_offdiag_inds_array[g] lookup
-        // _3 variants of flip and bitset_ladder_int accept uint16_t*.
         auto process_group =
             [&](uint32_t g, std::size_t col_idx, const uint16_t* inds, uint8_t gsz) {
-                flip_bits_u16_3(col_vec, inds, gsz); // flip row to get col
+                flip_bits_u16_3(col_vec, inds, gsz);
 
                 const unsigned int row_int =
-                    bitset_ladder_int_u16_3(row_set_bits.data(), inds, group_rowint_length_u16[g]);
+                    bitset_ladder_int_direct(row, inds, gsz); //group_rowint_length_u16[g]);
                 const std::size_t g_start = group_ladder_ptrs[g * ladder_offset + row_int];
-                const std::size_t g_stop = group_ladder_ptrs[g * ladder_offset + row_int + 1];
+                const std::size_t g_stop  = group_ladder_ptrs[g * ladder_offset + row_int + 1];
 
                 T val = 0;
                 for(std::size_t idx = g_start; idx < g_stop; idx++)
                 {
                     const auto* term = &terms[idx];
                     if(passes_proj_validation(term, row))
-                        accum_element(row,
-                                      col_vec,
-                                      &term->indices[0],
-                                      &term->values[0],
-                                      term->coeff,
-                                      term->real_phase,
-                                      term->indices.size(),
-                                      val);
+                        accum_element(row, col_vec,
+                                      &term->indices[0], &term->values[0],
+                                      term->coeff, term->real_phase,
+                                      term->indices.size(), val);
                 }
 
-                flip_bits_u16_3(col_vec, inds, gsz); // flip col to restore row
+                flip_bits_u16_3(col_vec, inds, gsz);
 
                 if(std::abs(val) > ATOL)
                 {
@@ -474,7 +469,6 @@ void csrlike_builder2(const OperatorTerm_t* terms,
                         cols[kk].push_back(col_idx);
                         data[kk].push_back(val);
                     }
-
                     {
                         std::lock_guard<std::mutex> lock(mutex1[col_idx]);
                         cols[col_idx].push_back(kk);
@@ -486,92 +480,110 @@ void csrlike_builder2(const OperatorTerm_t* terms,
                 }
             };
 
-        // -------------------------------------------------------------------------
-        // ia/ib are the Cartesian-product indices of this row: kk = ia*N_beta + ib.
-        // They let us check the lower triangle (col_idx <= kk).
-        // -------------------------------------------------------------------------
         uint16_t pos[4];
-        const std::size_t ia = kk / N_beta;
-        const std::size_t ib = kk % N_beta;
-        // a_singles/b_singles store (det_index, flip_positions) for cross doubles.
+        const std::size_t ib = kk / N_alpha;
+        const std::size_t ia = kk % N_alpha;
         std::vector<std::pair<std::size_t, std::array<uint16_t, 2>>> a_singles, b_singles;
 
-        // ------------------------------------------------------------------
-        // Alpha XOR: aa (single) and aaaa (double)
-        // col_idx = ja * N_beta + ib  =>  col_idx > kk  only if  ja > ia
-        // ------------------------------------------------------------------
+        // --- per-row lookup profiling (kk == subspace_dim/2 as a mid-row sample) ---
+        const bool do_profile = (kk == subspace_dim / 2);
+        std::size_t prof_aa_lookup=0,   prof_aa_hit=0;
+        std::size_t prof_aaaa_lookup=0, prof_aaaa_hit=0;
+        std::size_t prof_bb_lookup=0,   prof_bb_hit=0;
+        std::size_t prof_bbbb_lookup=0, prof_bbbb_hit=0;
+        std::size_t prof_aabb_lookup=0, prof_aabb_hit=0;
+
+        // Alpha XOR: aa and aaaa (lower triangle: ja < ia)
         for(std::size_t ja = 0; ja < N_alpha; ja++)
         {
             const int d = alpha_xor_positions(row, all_alpha_dets[ja], half_width, pos);
             if(d == 2)
             {
-                if(ja > ia)
+                if(ja < ia)
                 {
                     const auto it = inds_to_group2.find(pack2(pos));
+                    if(do_profile) { ++prof_aa_lookup; if(it != inds_to_group2.end()) ++prof_aa_hit; }
                     if(it != inds_to_group2.end())
-                        process_group(it->second, ja * N_beta + ib, pos, 2u);
+                        process_group(it->second, ib * N_alpha + ja, pos, 2u);
                 }
                 a_singles.push_back({ja, {pos[0], pos[1]}});
             }
-            else if(d == 4)
+            else if(d == 4 && ja < ia)
             {
-                if(ja > ia)
-                {
-                    const auto it = inds_to_group4.find(pack4(pos));
-                    if(it != inds_to_group4.end())
-                        process_group(it->second, ja * N_beta + ib, pos, 4u);
-                }
+                const auto it = inds_to_group4.find(pack4(pos));
+                if(do_profile) { ++prof_aaaa_lookup; if(it != inds_to_group4.end()) ++prof_aaaa_hit; }
+                if(it != inds_to_group4.end())
+                    process_group(it->second, ib * N_alpha + ja, pos, 4u);
             }
         }
 
-        // ------------------------------------------------------------------
-        // Beta XOR: bb (single) and bbbb (double)
-        // col_idx = ia * N_beta + jb  =>  col_idx > kk  only if  jb > ib
-        // ------------------------------------------------------------------
+        // Beta XOR: bb and bbbb (lower triangle: jb < ib)
         for(std::size_t jb = 0; jb < N_beta; jb++)
         {
             const int d = beta_xor_positions(row, all_beta_dets[jb], half_width, pos);
             if(d == 2)
             {
-                if(jb > ib)
+                if(jb < ib)
                 {
                     const auto it = inds_to_group2.find(pack2(pos));
+                    if(do_profile) { ++prof_bb_lookup; if(it != inds_to_group2.end()) ++prof_bb_hit; }
                     if(it != inds_to_group2.end())
-                        process_group(it->second, ia * N_beta + jb, pos, 2u);
+                        process_group(it->second, jb * N_alpha + ia, pos, 2u);
                 }
                 b_singles.push_back({jb, {pos[0], pos[1]}});
             }
-            else if(d == 4)
+            else if(d == 4 && jb < ib)
             {
-                if(jb > ib)
-                {
-                    const auto it = inds_to_group4.find(pack4(pos));
-                    if(it != inds_to_group4.end())
-                        process_group(it->second, ia * N_beta + jb, pos, 4u);
-                }
+                const auto it = inds_to_group4.find(pack4(pos));
+                if(do_profile) { ++prof_bbbb_lookup; if(it != inds_to_group4.end()) ++prof_bbbb_hit; }
+                if(it != inds_to_group4.end())
+                    process_group(it->second, jb * N_alpha + ia, pos, 4u);
             }
         }
 
-        // ------------------------------------------------------------------
-        // aa x bb cross doubles: Cartesian product of alpha and beta singles.
-        // {a[0], a[1], b[0], b[1]} is always sorted ascending because
-        // a < half_width <= b, so no extra sorting is needed.
-        // col_idx = ja * N_beta + jb  =>  col_idx > kk  checked directly.
-        // ------------------------------------------------------------------
-        for(const auto& [ja_idx, ap] : a_singles)
+        // aabb: b_singles (jb < ib only) x a_singles (all ja)
+        // jb < ib guarantees col_idx = jb*N_a + ja < ib*N_a + ia = kk for all ja
+        for(const auto& [jb_idx, bp] : b_singles)
         {
-            for(const auto& [jb_idx, bp] : b_singles)
+            if(jb_idx >= ib) continue;
+            for(const auto& [ja_idx, ap] : a_singles)
             {
-                const std::size_t col_idx = ja_idx * N_beta + jb_idx;
-                if(col_idx <= kk)
-                    continue;
                 const uint16_t cross[4] = {ap[0], ap[1], bp[0], bp[1]};
                 const auto it = inds_to_group4.find(pack4(cross));
+                if(do_profile)
+                {
+                    ++prof_aabb_lookup;
+                    if(it != inds_to_group4.end())
+                        ++prof_aabb_hit;
+                    else
+                        std::cout << "  [aabb miss] ja=" << ja_idx << " jb=" << jb_idx
+                                  << " cross=["  << cross[0] << "," << cross[1]
+                                  << "," << cross[2] << "," << cross[3] << "]"
+                                  << " ap=[" << ap[0] << "," << ap[1] << "]"
+                                  << " bp=[" << bp[0] << "," << bp[1] << "]\n";
+                }
                 if(it != inds_to_group4.end())
-                    process_group(it->second, col_idx, cross, 4u);
+                    process_group(it->second, jb_idx * N_alpha + ja_idx, cross, 4u);
             }
         }
 
+        if(do_profile)
+        {
+            std::size_t total_lookup = prof_aa_lookup + prof_aaaa_lookup
+                                     + prof_bb_lookup + prof_bbbb_lookup + prof_aabb_lookup;
+            std::size_t total_hit    = prof_aa_hit + prof_aaaa_hit
+                                     + prof_bb_hit + prof_bbbb_hit + prof_aabb_hit;
+            std::cout << "[profile kk=" << kk << " ib=" << ib << " ia=" << ia << "]\n"
+                      << "  aa  : " << prof_aa_hit   << "/" << prof_aa_lookup   << " hits\n"
+                      << "  aaaa: " << prof_aaaa_hit << "/" << prof_aaaa_lookup << " hits\n"
+                      << "  bb  : " << prof_bb_hit   << "/" << prof_bb_lookup   << " hits\n"
+                      << "  bbbb: " << prof_bbbb_hit << "/" << prof_bbbb_lookup << " hits\n"
+                      << "  aabb: " << prof_aabb_hit << "/" << prof_aabb_lookup << " hits\n"
+                      << "  total: " << total_hit << "/" << total_lookup << " hits ("
+                      << (total_lookup ? 100.0*total_hit/total_lookup : 0.0) << "%)\n"
+                      << "  a_singles=" << a_singles.size()
+                      << " b_singles(all)=" << b_singles.size() << "\n";
+        }
     } // end parallel for over rows
 
     std::cout << "Num groups: " << num_groups << std::endl;

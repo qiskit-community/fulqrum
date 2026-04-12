@@ -245,6 +245,22 @@ inline unsigned int bitset_ladder_int_u16_3(const uint8_t* row,
     return out_int;
 }
 
+
+//Reads bits directly from a boost::dynamic_bitset instead of row_set_bits
+inline unsigned int bitset_ladder_int_direct(
+    const boost::dynamic_bitset<std::size_t>& bs,
+    const uint16_t* inds,
+    const uint8_t num_bits)
+{
+    unsigned int out_int = 0;
+    for (uint8_t k = 0; k < num_bits; k++)
+    {
+        const uint16_t pos = inds[k];
+        out_int |= (unsigned int)((bs.m_bits[pos >> 6] >> (pos & 63)) & 1u) << k;
+    }
+    return out_int;
+}
+
 /**
  * Same as bitset_ladder_int(); just takes inds explicitly
  *
@@ -260,7 +276,7 @@ inline unsigned int bitset_ladder_int2(const std::vector<uint8_t> &row,
                                        const uint8_t &bit2, const uint8_t &bit3,
                                        const uint32_t num_bits)
 {
-    unsigned int row_int, out_int = 0;
+    unsigned int out_int = 0;
 
     // row_int = row[pos0];
     out_int |= (bit0 << 0);

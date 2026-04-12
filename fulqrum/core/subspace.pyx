@@ -149,8 +149,8 @@ cdef class Subspace():
             alpha_strs.sort()
             beta_strs.sort()
             iterator = map(
-                lambda ab: ab[1] + ab[0],
-                itertools.product(alpha_strs, beta_strs)
+                lambda ab: ab[0] + ab[1],
+                itertools.product(beta_strs, alpha_strs)
             )
             num_qubits = len(next(iter(alpha_strs))) + len(next(iter(beta_strs)))
             size = len(alpha_strs) * len(beta_strs)
