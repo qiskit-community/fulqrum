@@ -17,7 +17,6 @@
 #include <cstdlib>
 #include <vector>
 
-
 /**
  * Constructs a vector of max offdiagonal group indices.
  *
@@ -74,8 +73,8 @@
  * @param num_groups The number of groups.
  */
 inline void get_group_max_inds(std::vector<uint16_t>& grp_max_inds,
-                        const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
-                        const std::size_t& num_groups)
+                               const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
+                               const std::size_t& num_groups)
 {
 #pragma omp parallel for schedule(dynamic) if(num_groups > 4096)
     for(size_t group = 0; group < num_groups; group++)

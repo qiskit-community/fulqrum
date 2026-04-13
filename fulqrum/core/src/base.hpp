@@ -15,36 +15,27 @@
 #pragma once
 #include "bitset_hashmap.hpp"
 #include "constants.hpp"
+#include <algorithm>
 #include <boost/dynamic_bitset.hpp>
 #include <cmath>
 #include <complex>
 #include <cstdlib>
-#include <vector>
-#include <unordered_map>
-#include <string>
-#include <stdexcept>
-#include <algorithm>
 #include <ostream>
-
-
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 // Map converting standard char values into continuous values
-inline std::unordered_map<unsigned char, unsigned char> oper_map =
-    {
-        {90, 0}, {48, 1}, {49, 2}, {88, 3}, {89, 4}, {45, 5}, {43, 6}
-    };
+inline std::unordered_map<unsigned char, unsigned char> oper_map = {
+    {90, 0}, {48, 1}, {49, 2}, {88, 3}, {89, 4}, {45, 5}, {43, 6}};
 
 // Reverse map back to standard char values
-inline std::unordered_map<unsigned char, unsigned char> rev_oper_map =
-    {
-        {0, 90}, {1, 48}, {2, 49}, {3, 88}, {4, 89}, {5, 45}, {6, 43}
-    };
-
-
+inline std::unordered_map<unsigned char, unsigned char> rev_oper_map = {
+    {0, 90}, {1, 48}, {2, 49}, {3, 88}, {4, 89}, {5, 45}, {6, 43}};
 
 typedef std::tuple<std::string, std::vector<unsigned int>, std::complex<double>> TermData;
 typedef std::tuple<std::string, std::vector<unsigned int>> OpData;
-
 
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
  *
@@ -66,8 +57,11 @@ typedef struct OperatorTerm
     int group{-1}; // -1 means unset here
 
     OperatorTerm() {}
-    OperatorTerm(std::complex<double> c): coeff(c) {} // Init empty term with given coefficient
-    OperatorTerm(std::string vals, std::vector<unsigned int> inds, std::complex<double> c): coeff(c)
+    OperatorTerm(std::complex<double> c)
+        : coeff(c)
+    {} // Init empty term with given coefficient
+    OperatorTerm(std::string vals, std::vector<unsigned int> inds, std::complex<double> c)
+        : coeff(c)
     {
         //check that length of values == length of indices
         if(vals.size() != inds.size())
@@ -84,10 +78,11 @@ typedef struct OperatorTerm
             {
                 continue;
             }
-            else{
+            else
+            {
                 val = oper_map[*it];
                 values.push_back(val);
-                indices.push_back(inds[counter-1]);
+                indices.push_back(inds[counter - 1]);
                 this->offdiag_weight += (val > 2);
             }
         }
@@ -145,7 +140,10 @@ typedef struct OperatorTerm
     /**
      * Return the size of the term
      */
-    std::size_t size() const {return indices.size();}
+    std::size_t size() const
+    {
+        return indices.size();
+    }
     /**
      * Return the weight (num. non-identity) operators
      * 
@@ -165,7 +163,8 @@ typedef struct OperatorTerm
         {
             unsigned int key = indices[i];
             char val = values[i];
-            std::size_t j = std::lower_bound(indices.begin(), indices.begin() + i, key) - indices.begin();
+            std::size_t j =
+                std::lower_bound(indices.begin(), indices.begin() + i, key) - indices.begin();
 
             for(std::size_t k = i; k > j; k--)
             {
@@ -180,7 +179,7 @@ typedef struct OperatorTerm
     std::vector<OpData> operators() const
     {
         std::vector<OpData> out;
-        for(std::size_t kk=0; kk < indices.size(); kk++)
+        for(std::size_t kk = 0; kk < indices.size(); kk++)
         {
             OpData item{std::string(1, static_cast<char>(rev_oper_map[values[kk]])), indices[kk]};
             out.push_back(item);
@@ -194,7 +193,7 @@ typedef struct OperatorTerm
     {
         std::size_t kk;
         bool diag = 1;
-        for(kk=0; kk < values.size(); kk++)
+        for(kk = 0; kk < values.size(); kk++)
         {
             if(values[kk] > 2)
             {
@@ -206,16 +205,16 @@ typedef struct OperatorTerm
     }
 } OperatorTerm_t;
 
-
 /**
  * Validate that term indices are less than operator width
  *
  * @param[in] indices Indices for the given term
  * @param[in] width The operator width
  */
-inline void _validate_indices(std::vector<unsigned int>& inds, unsigned int width){
+inline void _validate_indices(std::vector<unsigned int>& inds, unsigned int width)
+{
     std::size_t size = inds.size();
-    for(std::size_t kk=0; kk < size; kk++)
+    for(std::size_t kk = 0; kk < size; kk++)
     {
         if(inds[kk] >= width)
         {
@@ -224,7 +223,7 @@ inline void _validate_indices(std::vector<unsigned int>& inds, unsigned int widt
     }
 }
 
- /**
+/**
  * In-pace set the projector indices and bits for term in a Hamiltonian
  */
 inline OperatorTerm& set_proj_indices(OperatorTerm& term)
@@ -271,8 +270,8 @@ inline int offweight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
     return term1.offdiag_weight < term2.offdiag_weight;
 }
 
-
-inline void set_weight_ptrs(std::vector<OperatorTerm>& __restrict terms, std::vector<std::size_t>& vec)
+inline void set_weight_ptrs(std::vector<OperatorTerm>& __restrict terms,
+                            std::vector<std::size_t>& vec)
 {
     vec.resize(0);
     vec.push_back(0);
@@ -289,8 +288,8 @@ inline void set_weight_ptrs(std::vector<OperatorTerm>& __restrict terms, std::ve
     vec.push_back(terms.size());
 }
 
-
-inline void set_group_ptrs(const std::vector<OperatorTerm>& __restrict terms, std::vector<std::size_t>& vec)
+inline void set_group_ptrs(const std::vector<OperatorTerm>& __restrict terms,
+                           std::vector<std::size_t>& vec)
 {
     vec.resize(0);
     vec.push_back(0);
@@ -307,8 +306,6 @@ inline void set_group_ptrs(const std::vector<OperatorTerm>& __restrict terms, st
     vec.push_back(terms.size());
 }
 
-
-
 /**
  * Combine repeated terms that represent same
  * operators, dropping terms smaller than requested tolerance.
@@ -323,17 +320,17 @@ inline void set_group_ptrs(const std::vector<OperatorTerm>& __restrict terms, st
  *
  */
 inline void combine_qubit_terms(std::vector<OperatorTerm>& __restrict terms,
-                         std::vector<OperatorTerm>& __restrict out_terms,
-                         unsigned int* touched,
-                         double atol)
+                                std::vector<OperatorTerm>& __restrict out_terms,
+                                unsigned int* touched,
+                                double atol)
 {
     std::size_t kk, qq, num_terms = terms.size();
     std::vector<std::size_t> weight_ptrs;
     set_weight_ptrs(terms, weight_ptrs);
     std::vector<std::vector<OperatorTerm_t>> temp_terms;
     temp_terms.resize(weight_ptrs.size() - 1);
-    // do sort over each collection of terms with same weight
-    #pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
+// do sort over each collection of terms with same weight
+#pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
     for(kk = 0; kk < weight_ptrs.size() - 1; kk++)
     {
         std::size_t jj, mm, pp;
@@ -417,7 +414,8 @@ inline std::size_t term_offdiag_structure(const OperatorTerm_t& term)
     {
         out +=
             (term.indices[kk] + 1) *
-            (term.values[kk] > 2); // need plus one here so that an offdiag on 0 index does not look like a diagonal term
+            (term.values[kk] >
+             2); // need plus one here so that an offdiag on 0 index does not look like a diagonal term
     }
     return out;
 }
@@ -454,7 +452,7 @@ inline void term_offdiag_sort(std::vector<OperatorTerm>& terms)
  *
  */
 inline void set_offdiag_weight_ptrs(const std::vector<OperatorTerm>& __restrict terms,
-                             std::vector<std::size_t>& vec)
+                                    std::vector<std::size_t>& vec)
 {
     vec.resize(0);
     std::size_t kk;
@@ -492,7 +490,7 @@ inline std::size_t max_offdiag_ptr_size(std::vector<std::size_t>& vec)
     }
     else
     {
-    for(kk = 0; kk < vec.size() - 1; kk++)
+        for(kk = 0; kk < vec.size() - 1; kk++)
         {
             temp = vec[kk + 1] - vec[kk];
             if(temp > max)
@@ -500,14 +498,13 @@ inline std::size_t max_offdiag_ptr_size(std::vector<std::size_t>& vec)
                 max = temp;
             }
         }
-    }   
+    }
     return max;
 }
 
 // Reverse mask for marking terms as extended or not
 // Z, 0, 1, X, Y, -, +
 const int REV_EXT_MASK[7] = {1, 0, 0, 1, 1, 0, 0};
-
 
 /**
  * In-place marks a term as extended or not
@@ -552,7 +549,6 @@ inline void set_offdiag_weight_and_phase(OperatorTerm_t& term)
     }
 }
 
-
 /**
  * Comparator for term grouping
  *
@@ -566,16 +562,15 @@ inline int offdiag_group_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
     return term1.group < term2.group;
 }
 
-
 /**
  * Sort terms with same off-diagonal weight into groups that share the
  * same off-diagonal structure
  *
  */
 inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
-                     std::size_t* __restrict offdiag_weight_ptrs,
-                     std::size_t len_ptrs,
-                     std::size_t max_group_size)
+                            std::size_t* __restrict offdiag_weight_ptrs,
+                            std::size_t len_ptrs,
+                            std::size_t max_group_size)
 {
     std::size_t ii;
     // Reset all groupings
@@ -588,10 +583,8 @@ inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
         }
     } // end reset
 
- 
-
     std::ptrdiff_t dist;
-    #pragma omp parallel for schedule(dynamic) if(terms.size() > 1024)
+#pragma omp parallel for schedule(dynamic) if(terms.size() > 1024)
     for(ii = 0; ii < len_ptrs - 1; ii++)
     {
         std::size_t start = offdiag_weight_ptrs[ii];
@@ -713,8 +706,6 @@ inline unsigned int term_ladder_int(const OperatorTerm& term, unsigned int ladde
     return subset;
 }
 
-
-
 /**
  * Sort terms within each group by their ladder integer values
  *
@@ -726,7 +717,7 @@ inline void sort_groups_by_ladder_int(std::vector<OperatorTerm>& terms,
 {
 
     unsigned int kk;
-    #pragma omp parallel for if(num_groups > 128)
+#pragma omp parallel for if(num_groups > 128)
     for(kk = 0; kk < num_groups; kk++)
     {
         std::size_t start, stop;
@@ -736,17 +727,14 @@ inline void sort_groups_by_ladder_int(std::vector<OperatorTerm>& terms,
         {
             continue;
         }
-        std::sort(&terms[start],
-                  &terms[stop],
-                  [=](const OperatorTerm& a, const OperatorTerm& b) {
-                      unsigned int res_a, res_b;
-                      res_a = term_ladder_int(a, ladder_width);
-                      res_b = term_ladder_int(b, ladder_width);
-                      return res_a < res_b;
-                  });
+        std::sort(&terms[start], &terms[stop], [=](const OperatorTerm& a, const OperatorTerm& b) {
+            unsigned int res_a, res_b;
+            res_a = term_ladder_int(a, ladder_width);
+            res_b = term_ladder_int(b, ladder_width);
+            return res_a < res_b;
+        });
     }
 }
-
 
 /**
  * Compute the offdiag indices for the first term in a group and add it to the group
@@ -757,8 +745,7 @@ inline void sort_groups_by_ladder_int(std::vector<OperatorTerm>& terms,
  * @param num_inds Number of elements to consider for appending
  *
  */
-inline void compute_term_offdiag_inds(const OperatorTerm_t& term,
-                                      unsigned int* offdiag_inds)
+inline void compute_term_offdiag_inds(const OperatorTerm_t& term, unsigned int* offdiag_inds)
 {
     unsigned int kk;
     unsigned int counter = 0;
@@ -784,9 +771,9 @@ inline void compute_term_offdiag_inds(const OperatorTerm_t& term,
  *
  */
 inline void set_group_offdiag_indices(const std::vector<OperatorTerm_t>& terms,
-                               std::vector<std::vector<unsigned int>>& group_indices,
-                               const std::size_t* group_ptrs,
-                               unsigned int num_groups)
+                                      std::vector<std::vector<unsigned int>>& group_indices,
+                                      const std::size_t* group_ptrs,
+                                      unsigned int num_groups)
 {
     unsigned int kk;
     unsigned int inds_len;
@@ -799,18 +786,17 @@ inline void set_group_offdiag_indices(const std::vector<OperatorTerm_t>& terms,
     }
 }
 
-
 /**
  * Term indices corresponding to ladder integers for each group
  *
  */
 inline void ladder_int_starts(const std::vector<OperatorTerm>& terms,
-                       const std::size_t* group_ptrs,
-                       unsigned int* group_counts,
-                       std::size_t* group_ranges,
-                       unsigned int num_groups,
-                       unsigned int num_ladder_bins,
-                       unsigned int ladder_width)
+                              const std::size_t* group_ptrs,
+                              unsigned int* group_counts,
+                              std::size_t* group_ranges,
+                              unsigned int num_groups,
+                              unsigned int num_ladder_bins,
+                              unsigned int ladder_width)
 {
     std::size_t start, stop, kk, mm;
     unsigned int term_int;
@@ -834,13 +820,6 @@ inline void ladder_int_starts(const std::vector<OperatorTerm>& terms,
         }
     }
 }
-
-
-
-
-
-
-
 
 /** @struct QubitOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
@@ -866,32 +845,39 @@ typedef struct QubitOperator
      *
      * @param[in] width The width (number of qubits) of the operator
      */
-    QubitOperator(unsigned int x){width = x;}
-
-    QubitOperator(unsigned int x, std::vector<TermData> data): width(x)
+    QubitOperator(unsigned int x)
     {
-       unsigned int num_terms = data.size();
-       std::size_t kk;
-       TermData tdata;
-       OperatorTerm term;
-       std::complex<double> coeff = 1.0;
-       for(kk =0; kk < num_terms; kk++)
-       {
-        tdata = data[kk];
-        _validate_indices(std::get<1>(tdata), width); // validate that all indices are less than operator width
-        // If there are no indices and the coeff==0 then the term should be an identity term with coeff=1
-        if(std::get<1>(tdata).size() == 0 && std::get<2>(tdata) == std::complex<double>(0,0)){
-            coeff = 1.0;
+        width = x;
+    }
+
+    QubitOperator(unsigned int x, std::vector<TermData> data)
+        : width(x)
+    {
+        unsigned int num_terms = data.size();
+        std::size_t kk;
+        TermData tdata;
+        OperatorTerm term;
+        std::complex<double> coeff = 1.0;
+        for(kk = 0; kk < num_terms; kk++)
+        {
+            tdata = data[kk];
+            _validate_indices(std::get<1>(tdata),
+                              width); // validate that all indices are less than operator width
+            // If there are no indices and the coeff==0 then the term should be an identity term with coeff=1
+            if(std::get<1>(tdata).size() == 0 && std::get<2>(tdata) == std::complex<double>(0, 0))
+            {
+                coeff = 1.0;
+            }
+            else
+            {
+                coeff = std::get<2>(tdata);
+            }
+            term = OperatorTerm(std::get<0>(tdata), std::get<1>(tdata), coeff);
+            set_offdiag_weight_and_phase(term);
+            set_extended_flag(term);
+            set_proj_indices(term);
+            terms.push_back(term);
         }
-        else{
-            coeff = std::get<2>(tdata);
-        }
-        term = OperatorTerm(std::get<0>(tdata), std::get<1>(tdata), coeff);
-        set_offdiag_weight_and_phase(term);
-        set_extended_flag(term);
-        set_proj_indices(term);
-        terms.push_back(term);
-       }
     }
     // destructor
     ~QubitOperator()
@@ -905,10 +891,10 @@ typedef struct QubitOperator
     {
         unsigned int width = label.size();
         unsigned char val;
-        std::size_t counter=0;
+        std::size_t counter = 0;
         QubitOperator out = QubitOperator(width);
         OperatorTerm term = OperatorTerm(1.0); // start with term set with coeff = 1.0
-        for (auto it = label.rbegin(); it != label.rend(); it++)
+        for(auto it = label.rbegin(); it != label.rend(); it++)
         {
             if(*it != 73)
             {
@@ -927,7 +913,7 @@ typedef struct QubitOperator
     /**
      * Grab a single term by index
      */
-    OperatorTerm_t operator[] (std::size_t kk) const
+    OperatorTerm_t operator[](std::size_t kk) const
     {
         return terms[kk];
     }
@@ -936,7 +922,7 @@ typedef struct QubitOperator
      */
     QubitOperator& operator*=(std::complex<double> c)
     {
-        for(std::size_t kk=0; kk<this->size(); kk++)
+        for(std::size_t kk = 0; kk < this->size(); kk++)
         {
             terms[kk] *= c;
         }
@@ -948,7 +934,7 @@ typedef struct QubitOperator
     friend QubitOperator operator*(QubitOperator& op, std::complex<double> c)
     {
         QubitOperator out = op.copy();
-        for(std::size_t kk=0; kk<out.size(); kk++)
+        for(std::size_t kk = 0; kk < out.size(); kk++)
         {
             out.terms[kk] *= c;
         }
@@ -957,7 +943,7 @@ typedef struct QubitOperator
     friend QubitOperator operator*(std::complex<double> c, QubitOperator& op)
     {
         QubitOperator out = op.copy();
-        for(std::size_t kk=0; kk<out.size(); kk++)
+        for(std::size_t kk = 0; kk < out.size(); kk++)
         {
             out.terms[kk] *= c;
         }
@@ -975,7 +961,7 @@ typedef struct QubitOperator
         {
             throw std::runtime_error("Operators must have the same width");
         }
-        for(std::size_t kk=0; kk<other.size(); kk++)
+        for(std::size_t kk = 0; kk < other.size(); kk++)
         {
             this->terms.push_back(other.terms[kk]);
         }
@@ -994,9 +980,9 @@ typedef struct QubitOperator
         {
             throw std::runtime_error("Operators must have the same width");
         }
-        
+
         OperatorTerm term;
-        for(std::size_t kk=0; kk<other.size(); kk++)
+        for(std::size_t kk = 0; kk < other.size(); kk++)
         {
             term = other.terms[kk];
             term.coeff *= -1;
@@ -1018,10 +1004,10 @@ typedef struct QubitOperator
         {
             throw std::runtime_error("Operators must have the same width");
         }
-        
+
         OperatorTerm term;
         QubitOperator out = this->copy();
-        for(std::size_t kk=0; kk<other.size(); kk++)
+        for(std::size_t kk = 0; kk < other.size(); kk++)
         {
             term = other.terms[kk];
             term.coeff *= -1;
@@ -1043,7 +1029,7 @@ typedef struct QubitOperator
             throw std::runtime_error("Operators must have the same width");
         }
         QubitOperator out = this->copy();
-        for(std::size_t kk=0; kk<other.size(); kk++)
+        for(std::size_t kk = 0; kk < other.size(); kk++)
         {
             out.terms.push_back(other.terms[kk]);
         }
@@ -1053,7 +1039,7 @@ typedef struct QubitOperator
      * Print object to standard output stream
      */
     friend auto operator<<(std::ostream& os, const QubitOperator& self) -> std::ostream&
-    { 
+    {
         std::size_t num_terms = self.size();
         std::size_t total_terms = num_terms;
         OperatorTerm_t term;
@@ -1067,41 +1053,52 @@ typedef struct QubitOperator
             num_terms = 100;
         }
         os << "<QubitOperator["; // start output here
-        for(kk=0; kk < num_terms; kk++)
+        for(kk = 0; kk < num_terms; kk++)
         {
             term = self.terms[kk];
             os << "{";
-            for(jj=0; jj < term.indices.size(); jj++)
+            for(jj = 0; jj < term.indices.size(); jj++)
             {
                 os << rev_oper_map[term.values[jj]] << ":" << term.indices[jj];
-                if(jj!=term.indices.size()-1)
+                if(jj != term.indices.size() - 1)
                 {
                     os << " ";
                 }
-                
             }
             os << ", " << term.coeff;
             os << "}";
-            if(kk!=num_terms-1)
+            if(kk != num_terms - 1)
             {
                 os << ", ";
             }
         }
         if(too_many_terms)
         {
-            os << " + " << (total_terms-100) << "terms";
+            os << " + " << (total_terms - 100) << "terms";
         }
         return os << ", width=" << self.width << "]>";
     }
-    auto begin() { return terms.begin(); }
-    auto end()   { return terms.end(); } 
+    auto begin()
+    {
+        return terms.begin();
+    }
+    auto end()
+    {
+        return terms.end();
+    }
     /**
      * The number of terms in the operator
      *
      * @return The number of terms in the operator
      */
-    std::size_t size() const {return terms.size();}
-    std::size_t num_terms() const {return terms.size();}
+    std::size_t size() const
+    {
+        return terms.size();
+    }
+    std::size_t num_terms() const
+    {
+        return terms.size();
+    }
     /**
      * The number of terms in the operator
      *
@@ -1121,10 +1118,11 @@ typedef struct QubitOperator
     {
         std::size_t kk;
         bool diag = 1;
-        for(kk=0; kk<terms.size(); kk++)
+        for(kk = 0; kk < terms.size(); kk++)
         {
-            if(!terms[kk].is_diagonal()){
-                diag =0;
+            if(!terms[kk].is_diagonal())
+            {
+                diag = 0;
                 break;
             }
         }
@@ -1136,7 +1134,7 @@ typedef struct QubitOperator
     bool is_real() const
     {
         bool out = true;
-        for(std::size_t kk=0; kk < this->size(); kk++)
+        for(std::size_t kk = 0; kk < this->size(); kk++)
         {
             if(std::abs(terms[kk].coeff.imag()) > ATOL || !terms[kk].real_phase)
             {
@@ -1154,7 +1152,7 @@ typedef struct QubitOperator
      */
     QubitOperator& set_type(int x)
     {
-        if (x > 2 || x < 1)
+        if(x > 2 || x < 1)
         {
             throw std::runtime_error("Type must be 1 or 2");
         }
@@ -1169,11 +1167,11 @@ typedef struct QubitOperator
     std::vector<std::complex<double>> coefficients() const
     {
         std::vector<std::complex<double>> out;
-        for(std::size_t kk=0; kk<this->size(); kk++)
+        for(std::size_t kk = 0; kk < this->size(); kk++)
         {
             out.push_back(this->terms[kk].coeff);
         }
-        return out; 
+        return out;
     }
     /**
     * Return vector of weights for each term
@@ -1184,11 +1182,11 @@ typedef struct QubitOperator
     std::vector<unsigned int> weights() const
     {
         std::vector<unsigned int> out;
-        for(std::size_t kk=0; kk<this->size(); kk++)
+        for(std::size_t kk = 0; kk < this->size(); kk++)
         {
             out.push_back(this->terms[kk].weight());
         }
-        return out; 
+        return out;
     }
     /**
     * Return vector of real-phases for each term
@@ -1198,11 +1196,11 @@ typedef struct QubitOperator
     std::vector<int> real_phases() const
     {
         std::vector<int> out;
-        for(std::size_t kk=0; kk<this->size(); kk++)
+        for(std::size_t kk = 0; kk < this->size(); kk++)
         {
             out.push_back(this->terms[kk].real_phase);
         }
-        return out; 
+        return out;
     }
     /**
     * Return vector of showing which terms are extended alphabet
@@ -1212,11 +1210,11 @@ typedef struct QubitOperator
     std::vector<int> extended_terms() const
     {
         std::vector<int> out;
-        for(std::size_t kk=0; kk<this->size(); kk++)
+        for(std::size_t kk = 0; kk < this->size(); kk++)
         {
             out.push_back(this->terms[kk].extended);
         }
-        return out; 
+        return out;
     }
     /**
      * Split operator into diagonal and off-diagonal components
@@ -1227,7 +1225,7 @@ typedef struct QubitOperator
     {
         QubitOperator diag = QubitOperator(this->width);
         QubitOperator off = QubitOperator(this->width);
-        for(auto term: this->terms)
+        for(auto term : this->terms)
         {
             if(term.is_diagonal())
             {
@@ -1248,12 +1246,12 @@ typedef struct QubitOperator
     double constant_energy() const
     {
         double out = 0;
-        for(std::size_t kk=0; kk < terms.size(); kk++)
+        for(std::size_t kk = 0; kk < terms.size(); kk++)
         {
             if(!terms[kk].indices.size())
             {
                 out += terms[kk].coeff.real();
-            } 
+            }
         }
         return out;
     }
@@ -1264,12 +1262,12 @@ typedef struct QubitOperator
     QubitOperator remove_constant_terms()
     {
         QubitOperator out = QubitOperator(this->width);
-        for(std::size_t kk=0; kk < this->size(); kk++)
+        for(std::size_t kk = 0; kk < this->size(); kk++)
         {
             if(terms[kk].indices.size())
             {
                 out.terms.push_back(terms[kk]);
-            } 
+            }
         }
         out.type = this->type;
         return out;
@@ -1341,7 +1339,7 @@ typedef struct QubitOperator
     {
         std::vector<int> out;
         out.resize(terms.size());
-        for(std::size_t kk=0 ; kk < terms.size(); kk++)
+        for(std::size_t kk = 0; kk < terms.size(); kk++)
         {
             out[kk] = terms[kk].group;
         }
@@ -1376,13 +1374,13 @@ typedef struct QubitOperator
             throw std::runtime_error("Operator must be group sorted first");
         }
         QubitOperator out = QubitOperator(this->width);
-        for(std::size_t kk=0; kk < this->size(); kk++)
+        for(std::size_t kk = 0; kk < this->size(); kk++)
         {
             if(terms[kk].group == idx)
             {
                 out.terms.push_back(terms[kk]);
             }
-            else if (terms[kk].group > idx)
+            else if(terms[kk].group > idx)
             {
                 break;
             }
@@ -1407,7 +1405,7 @@ typedef struct QubitOperator
 
         std::vector<std::vector<unsigned int>> out;
         std::vector<std::size_t> ptrs = this->group_ptrs();
-        set_group_offdiag_indices(this->terms, out, &ptrs[0], ptrs.size()-1);
+        set_group_offdiag_indices(this->terms, out, &ptrs[0], ptrs.size() - 1);
         return out;
     }
     /**
@@ -1421,7 +1419,8 @@ typedef struct QubitOperator
     QubitOperator combine_repeated_terms(double atol = 1e-12)
     {
         QubitOperator out = QubitOperator(this->width);
-        if(!this->weight_sorted){
+        if(!this->weight_sorted)
+        {
             this->weight_sort();
         }
         std::vector<unsigned int> touched;
@@ -1441,7 +1440,7 @@ typedef struct QubitOperator
         std::vector<unsigned int> out;
         out.resize(terms.size());
         std::size_t kk;
-        for(kk=0; kk < terms.size(); kk++)
+        for(kk = 0; kk < terms.size(); kk++)
         {
             out[kk] = terms[kk].offdiag_weight;
         }
@@ -1451,7 +1450,7 @@ typedef struct QubitOperator
     * In-place sort terms in groups by their ladder integer values
     * 
     */
-    QubitOperator& group_term_sort_by_ladder_int(unsigned int ladder_width=4)
+    QubitOperator& group_term_sort_by_ladder_int(unsigned int ladder_width = 4)
     {
         if(!(this->type == 2))
         {
@@ -1462,7 +1461,7 @@ typedef struct QubitOperator
             this->group_sort();
         }
         std::vector<std::size_t> ptrs = this->group_ptrs();
-        sort_groups_by_ladder_int(this->terms, &ptrs[0], ptrs.size()-1, ladder_width);
+        sort_groups_by_ladder_int(this->terms, &ptrs[0], ptrs.size() - 1, ladder_width);
         this->ladder_width = ladder_width;
         this->ladder_sorted = 1;
         return *this;
@@ -1475,16 +1474,16 @@ typedef struct QubitOperator
     */
     std::vector<unsigned int> ladder_integers()
     {
-       std::vector<unsigned int> out;
-       if(!this->ladder_sorted)
-       {
-        this->group_term_sort_by_ladder_int();
-       }
-       for(std::size_t kk=0; kk < this->size(); kk++)
-       {
+        std::vector<unsigned int> out;
+        if(!this->ladder_sorted)
+        {
+            this->group_term_sort_by_ladder_int();
+        }
+        for(std::size_t kk = 0; kk < this->size(); kk++)
+        {
             out.push_back(term_ladder_int(terms[kk], this->ladder_width));
-       }
-       return out;
+        }
+        return out;
     }
     /**
     * Vector of group ladder integer bit lengths
@@ -1492,19 +1491,19 @@ typedef struct QubitOperator
     */
     std::vector<unsigned int> group_ladder_int_bit_lengths()
     {
-       std::vector<unsigned int> out;
-       if(!this->ladder_sorted)
-       {
-        this->group_term_sort_by_ladder_int();
-       }
-       std::vector<std::size_t> ptrs = this->group_ptrs();
-       unsigned int num_groups = ptrs.size() - 1;
-       out.resize(num_groups);
-       for(std::size_t kk = 0; kk < num_groups; kk++)
-       {
+        std::vector<unsigned int> out;
+        if(!this->ladder_sorted)
+        {
+            this->group_term_sort_by_ladder_int();
+        }
+        std::vector<std::size_t> ptrs = this->group_ptrs();
+        unsigned int num_groups = ptrs.size() - 1;
+        out.resize(num_groups);
+        for(std::size_t kk = 0; kk < num_groups; kk++)
+        {
             out[kk] = std::min(this->ladder_width, terms[ptrs[kk]].offdiag_weight);
-       }
-       return out;
+        }
+        return out;
     }
     /**
     * Flat vector containing pointers to terms within a group with given 
@@ -1513,47 +1512,28 @@ typedef struct QubitOperator
     */
     std::vector<std::size_t> group_ladder_int_ptrs()
     {
-       if(!this->ladder_sorted)
-       {
-        this->group_term_sort_by_ladder_int();
-       }
-       std::vector<std::size_t> ptrs = this->group_ptrs();
-       unsigned int num_ladder_ints = std::pow(2, this->ladder_width);
-       unsigned int num_groups = ptrs.size() - 1;
-       std::vector<unsigned int> group_counts(num_ladder_ints*num_groups);
-       std::vector<std::size_t> group_ranges(num_ladder_ints*num_groups + 1);
-       ladder_int_starts(terms, &ptrs[0], &group_counts[0], &group_ranges[0],
-                         num_groups, num_ladder_ints, ladder_width);
-       return group_ranges;
+        if(!this->ladder_sorted)
+        {
+            this->group_term_sort_by_ladder_int();
+        }
+        std::vector<std::size_t> ptrs = this->group_ptrs();
+        unsigned int num_ladder_ints = std::pow(2, this->ladder_width);
+        unsigned int num_groups = ptrs.size() - 1;
+        std::vector<unsigned int> group_counts(num_ladder_ints * num_groups);
+        std::vector<std::size_t> group_ranges(num_ladder_ints * num_groups + 1);
+        ladder_int_starts(terms,
+                          &ptrs[0],
+                          &group_counts[0],
+                          &group_ranges[0],
+                          num_groups,
+                          num_ladder_ints,
+                          ladder_width);
+        return group_ranges;
     }
 
 } QubitOperator_t;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Fermionic components ---------------------------------------------------------------------------
-
 
 /** @brief Data structure for each Fermionic operator term
  *
@@ -1568,8 +1548,12 @@ typedef struct FermionicTerm
     std::complex<double> coeff;
 
     FermionicTerm() {}
-    FermionicTerm(std::complex<double> c): coeff(c) {} // Init empty term with given coefficient
-    FermionicTerm(std::string vals, std::vector<unsigned int> inds, std::complex<double> c): indices(inds), coeff(c)
+    FermionicTerm(std::complex<double> c)
+        : coeff(c)
+    {} // Init empty term with given coefficient
+    FermionicTerm(std::string vals, std::vector<unsigned int> inds, std::complex<double> c)
+        : indices(inds)
+        , coeff(c)
     {
         // Iterate over string of values, mapping to new values and adding to term
         for(std::string::iterator it = vals.begin(); it != vals.end(); ++it)
@@ -1578,7 +1562,8 @@ typedef struct FermionicTerm
             {
                 throw std::runtime_error("Cannot use identity operators in sparse format.");
             }
-            else{
+            else
+            {
                 values.push_back(oper_map[*it]);
             }
         }
@@ -1598,7 +1583,10 @@ typedef struct FermionicTerm
     /**
      * Return the size of the term
      */
-    std::size_t size() const {return indices.size();}
+    std::size_t size() const
+    {
+        return indices.size();
+    }
     /**
      * Insertion sort indices (and values) in the term
      */
@@ -1610,7 +1598,7 @@ typedef struct FermionicTerm
         unsigned int temp_index;
         unsigned char temp_value;
         int prefactor = 1;
-        for(kk=1; kk < num_elems; kk++)
+        for(kk = 1; kk < num_elems; kk++)
         {
             temp_index = indices[kk];
             temp_value = values[kk];
@@ -1637,8 +1625,6 @@ typedef struct FermionicTerm
     }
 } FermionicTerm_t;
 
-
-
 /** @struct FermionicOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
  *
@@ -1656,18 +1642,24 @@ typedef struct FermionicOperator
      *
      * @param[in] width The width (number of qubits) of the operator
      */
-    FermionicOperator(unsigned int x){width = x;}
-    FermionicOperator(unsigned int x, std::vector<TermData> data): width(x)
+    FermionicOperator(unsigned int x)
     {
-       unsigned int num_terms = data.size();
-       std::size_t kk;
-       TermData tdata;
-       for(kk =0; kk < num_terms; kk++)
-       {
-        tdata = data[kk];
-        _validate_indices(std::get<1>(tdata), width); // validate that all indices are less than operator width
-        terms.push_back(FermionicTerm(std::get<0>(tdata), std::get<1>(tdata), std::get<2>(tdata)));
-       }
+        width = x;
+    }
+    FermionicOperator(unsigned int x, std::vector<TermData> data)
+        : width(x)
+    {
+        unsigned int num_terms = data.size();
+        std::size_t kk;
+        TermData tdata;
+        for(kk = 0; kk < num_terms; kk++)
+        {
+            tdata = data[kk];
+            _validate_indices(std::get<1>(tdata),
+                              width); // validate that all indices are less than operator width
+            terms.push_back(
+                FermionicTerm(std::get<0>(tdata), std::get<1>(tdata), std::get<2>(tdata)));
+        }
     }
     // deallocation
     ~FermionicOperator()
@@ -1678,7 +1670,7 @@ typedef struct FermionicOperator
      * Print object to standard output stream
      */
     friend auto operator<<(std::ostream& os, const FermionicOperator& self) -> std::ostream&
-    { 
+    {
         std::size_t num_terms = self.size();
         std::size_t total_terms = num_terms;
         FermionicTerm_t term;
@@ -1692,56 +1684,41 @@ typedef struct FermionicOperator
             num_terms = 100;
         }
         os << "<FermionicOperator["; // start output here
-        for(kk=0; kk < num_terms; kk++)
+        for(kk = 0; kk < num_terms; kk++)
         {
             term = self.terms[kk];
             os << "{";
-            for(jj=0; jj < term.indices.size(); jj++)
+            for(jj = 0; jj < term.indices.size(); jj++)
             {
                 os << rev_oper_map[term.values[jj]] << ":" << term.indices[jj];
-                if(jj!=term.indices.size()-1)
+                if(jj != term.indices.size() - 1)
                 {
                     os << " ";
                 }
-                
             }
             os << ", " << term.coeff;
             os << "}";
-            if(kk!=num_terms-1)
+            if(kk != num_terms - 1)
             {
                 os << ", ";
             }
         }
         if(too_many_terms)
         {
-            os << " + " << (total_terms-100) << "terms";
+            os << " + " << (total_terms - 100) << "terms";
         }
         return os << ", width=" << self.width << "]>";
     }
     /**
      * Return the size of the operator
      */
-    std::size_t size() const {return terms.size();}
+    std::size_t size() const
+    {
+        return terms.size();
+    }
 } FermionicOperator_t;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Subspace components ---------------------------------------------------------------------------
-
 
 /** @struct subspace
  * @brief Data structure for subspace defined by counts

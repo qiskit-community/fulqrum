@@ -205,8 +205,6 @@ void bitset_to_bitvec(const boost::dynamic_bitset<size_t>& row, std::vector<uint
     }
 }
 
-
-
 /**
  * Finds all the set bits in a bit-string
  *
@@ -231,4 +229,3 @@ inline std::vector<unsigned int> set_bit_indices(const boost::dynamic_bitset<siz
     }
     return set_bits;
 }
-
