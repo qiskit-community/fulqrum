@@ -38,7 +38,6 @@ template <typename T>
 void compute_diag_vector(const bitset_map_namespace::BitsetHashMapWrapper& data,
                          T* __restrict diag_vec,
                          const QubitOperator_t& diag_oper,
-                         const unsigned int width,
                          const std::size_t subspace_dim)
 {
     std::size_t kk;
@@ -92,6 +91,32 @@ inline void single_bitstring_diagonal(const boost::dynamic_bitset<size_t>& row,
 
 
 /**
+* Is diagonal fast_proj compatible 
+*/
+bool fast_diag_compatible(QubitOperator& oper)
+{
+    if(oper.type != 2)
+    {
+        throw std::runtime_error("Operator must be type=2 for fast diagonal compatibility");
+    }
+    bool out = true;
+    std::size_t kk;
+    for(auto term: oper.terms)
+    {
+        for(kk=0; kk < term.proj_indices.size(); kk++)
+        {
+            if(term.proj_indices[kk] == 1)
+            {
+                out = false;
+                break;
+            }
+        }
+    }
+    return out;
+}
+
+
+/**
  * Compare terms based on the index of their 1st projector index, if any
  * 
  * This is used for sorting terms in a diagonal Hamiltonian so that computing
@@ -121,7 +146,7 @@ inline int proj_index_term_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
 }
 
 
- /**
+/**
 * In-place sorting of terms by projector index
 */
 QubitOperator& diag_proj_index_sort(QubitOperator& oper)
@@ -180,3 +205,78 @@ std::pair<std::vector<std::pair<std::size_t, std::size_t>>, std::size_t> project
     return out;
 }
 
+
+/**
+ * Compute the diagonal matrix-element for a single bit-string
+ *
+ *
+ * @param row The row bit-string
+ * @param diag_terms The diagonal operator
+ * @param val Variable storing the element value
+ */
+template <typename T>
+inline void single_bitstring_diagonal_fast(const boost::dynamic_bitset<size_t>& row,
+                                           const std::vector<OperatorTerm_t>& diag_terms,
+                                           const std::vector<std::pair<std::size_t, std::size_t>>& ptrs,
+                                           const std::size_t offset,
+                                           T& val)
+{
+    val = 0;
+    //const std::size_t num_terms = diag_terms.size();
+    const OperatorTerm_t* term;
+    unsigned int weight;
+    std::size_t kk;
+    std::size_t ll;
+    std::size_t start, stop;
+
+    std::vector<unsigned int> set_bits = set_bit_indices(row);
+
+    // take care of all terms with no projectors
+    for(kk=0; kk < offset; kk++)
+    {
+         term = &diag_terms[kk];
+         weight = term->indices.size();
+         accum_element(row, row,
+                    &term->indices[0], &term->values[0],
+                    term->coeff, term->real_phase,
+                    weight, val);
+    }
+
+    for(auto bit: set_bits)
+    {
+        start = ptrs[bit].first;
+        stop = ptrs[bit].second;
+        for(ll=start; ll < stop; ll++)
+        {
+            term = &diag_terms[ll];
+            weight = term->indices.size();
+
+            accum_element(row, row,
+                          &term->indices[0], &term->values[0],
+                          term->coeff, term->real_phase,
+                          weight,val);
+        }
+    }
+}
+
+
+template <typename T>
+void compute_diag_vector_fast(const bitset_map_namespace::BitsetHashMapWrapper& data,
+                              T* __restrict diag_vec,
+                              const QubitOperator_t& diag_oper,
+                              const std::vector<std::pair<std::size_t, std::size_t>>& ptrs,
+                              const std::size_t offset,
+                              const std::size_t subspace_dim)
+{
+    std::size_t kk;
+    const auto* bitsets = data.get_bitsets();
+
+    #pragma omp parallel for if(subspace_dim > 4096) schedule(dynamic)
+    for(kk = 0; kk < subspace_dim; kk++)
+    {
+        T val = 0;
+        const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
+        single_bitstring_diagonal_fast(row, diag_oper.terms, ptrs, offset, val);
+        diag_vec[kk] = val;
+    }
+}

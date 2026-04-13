@@ -97,7 +97,6 @@ typedef struct OperatorTerm
             throw std::runtime_error("Size of values vector does not equal that of indices.");
         }
         sort_term_data(); // sort term data from low -> high indices
-        set_proj_indices(); // set projection operator indices, if any
     }
     // destructor
     ~OperatorTerm()
@@ -178,26 +177,6 @@ typedef struct OperatorTerm
         }
         return *this;
     }
-    /**
-     * Set the projector indices and bits for term
-     */
-    OperatorTerm& set_proj_indices()
-    {
-        std::size_t kk;
-        unsigned int val;
-        proj_indices.resize(0);
-        proj_bits.resize(0);
-        for(kk = 0; kk < values.size(); kk++)
-        {
-            val = values[kk];
-            if(val == 1 || val == 2)
-            {
-                proj_indices.push_back(indices[kk]);
-                proj_bits.push_back(val - 1);
-            }
-        }
-        return *this;
-    }
     std::vector<OpData> operators() const
     {
         std::vector<OpData> out;
@@ -245,6 +224,26 @@ inline void _validate_indices(std::vector<unsigned int>& inds, unsigned int widt
     }
 }
 
+ /**
+ * In-pace set the projector indices and bits for term in a Hamiltonian
+ */
+OperatorTerm& set_proj_indices(OperatorTerm& term)
+{
+    std::size_t kk;
+    unsigned int val;
+    term.proj_indices.resize(0);
+    term.proj_bits.resize(0);
+    for(kk = 0; kk < term.values.size(); kk++)
+    {
+        val = term.values[kk];
+        if(val == 1 || val == 2)
+        {
+            term.proj_indices.push_back(term.indices[kk]);
+            term.proj_bits.push_back(val - 1);
+        }
+    }
+    return term;
+}
 
 /**
  * Comparator for weight grouping
@@ -888,9 +887,9 @@ typedef struct QubitOperator
             coeff = std::get<2>(tdata);
         }
         term = OperatorTerm(std::get<0>(tdata), std::get<1>(tdata), coeff);
-        term.set_proj_indices();
         set_offdiag_weight_and_phase(term);
         set_extended_flag(term);
+        set_proj_indices(term);
         terms.push_back(term);
        }
     }
@@ -920,8 +919,8 @@ typedef struct QubitOperator
             counter += 1;
         }
         set_offdiag_weight_and_phase(term);
-        term.set_proj_indices();
         set_extended_flag(term);
+        set_proj_indices(term);
         out.terms.push_back(term);
         return out;
     }

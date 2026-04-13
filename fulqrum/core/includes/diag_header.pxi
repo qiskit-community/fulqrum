@@ -21,9 +21,17 @@ cdef extern from "../src/diag.hpp":
     void compute_diag_vector[T](const BitsetHashMapWrapper& data,
                                 T * diag_vec,
                                 const QubitOperator_t& diag_oper,
-                                const unsigned int width,
                                 const size_t subspace_dim) nogil
 
-    QubitOperator_t& diag_proj_index_sort(QubitOperator_t&) except +
+    QubitOperator_t& diag_proj_index_sort(QubitOperator_t&) except + nogil
 
-    pair[vector[pair[size_t, size_t]], size_t] projector_ptrs_and_offset(QubitOperator_t&) except +
+    pair[vector[pair[size_t, size_t]], size_t] projector_ptrs_and_offset(QubitOperator_t&) except + nogil
+
+    bool fast_diag_compatible(QubitOperator_t&) except + nogil
+
+    void compute_diag_vector_fast[T](const BitsetHashMapWrapper& data,
+                                     T * diag_vec,
+                                     const QubitOperator_t& diag_oper,
+                                     const vector[pair[size_t, size_t]] ptrs,
+                                     const size_t offset,
+                                     const size_t subspace_dim) nogil

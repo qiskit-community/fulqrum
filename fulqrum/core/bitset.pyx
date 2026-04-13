@@ -12,6 +12,7 @@
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 from .bitset cimport bitset_t, to_string
 from libcpp cimport string
+from libc.string cimport memcpy
 from libc.stdint cimport uint8_t
 from libcpp.vector cimport vector
 
@@ -160,5 +161,9 @@ cdef class Bitset:
 
         return bitset_ladder_int(c_vec_row_set_bits.data(), &inds[0], ladder_width)
 
-    def zero_bit_indices(self):
-        return zero_bit_indices(self.bits)
+    def set_bit_indices(self):
+        cdef vector[unsigned int] set_bits = set_bit_indices(self.bits)
+        cdef unsigned int[::1] out = np.empty(set_bits.size(), dtype=np.uint32)
+        if set_bits.size():
+            memcpy(&out[0], &set_bits[0], set_bits.size()*sizeof(unsigned int))
+        return np.asarray(out)

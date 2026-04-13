@@ -101,8 +101,8 @@ cdef class QubitOperator():
                     term.coeff = 1
                 term.sort_term_data()
                 set_offdiag_weight_and_phase(term)
-                term.set_proj_indices()
                 set_extended_flag(term)
+                set_proj_indices(term)
                 self.oper.terms.push_back(term)
 
 

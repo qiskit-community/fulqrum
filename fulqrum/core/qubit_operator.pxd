@@ -16,5 +16,4 @@ include "includes/base_header.pxi"
 cdef class QubitOperator:
     cdef QubitOperator_t oper
     cdef unsigned int _iter_index
-
     cpdef void append(self, QubitOperator other)
