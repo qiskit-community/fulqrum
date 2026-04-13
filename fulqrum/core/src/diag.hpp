@@ -105,7 +105,7 @@ bool fast_diag_compatible(QubitOperator& oper)
     {
         for(kk=0; kk < term.proj_indices.size(); kk++)
         {
-            if(term.proj_indices[kk] == 1)
+            if(term.proj_bits[kk] == 0)
             {
                 out = false;
                 break;

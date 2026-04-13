@@ -96,7 +96,7 @@ cdef class FulqrumSpMV():
 
 
     @cython.boundscheck(False)
-    cdef int compute_diag_vector(self):
+    cpdef int compute_diag_vector(self):
         if self.init_diag:
             return 0
         cdef bool fast_diag = 0
@@ -104,13 +104,11 @@ cdef class FulqrumSpMV():
         if self.diag_oper.type == 2:
             fast_diag = fast_diag_compatible(self.diag_oper)
         if fast_diag:
-            print('doing fast pipeline')
             diag_proj_index_sort(self.diag_oper)
             ptrs_and_offset =  projector_ptrs_and_offset(self.diag_oper)
         if self.is_real:
             self.real_diag_vec = np.empty(self.subspace_dim, dtype=float)
             if fast_diag:
-                print('doing fast pipeline')
                 compute_diag_vector_fast(self.subspace.subspace.bitstrings,
                                 &self.real_diag_vec[0],
                                 self.diag_oper,
