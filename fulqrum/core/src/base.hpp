@@ -227,7 +227,7 @@ inline void _validate_indices(std::vector<unsigned int>& inds, unsigned int widt
  /**
  * In-pace set the projector indices and bits for term in a Hamiltonian
  */
-OperatorTerm& set_proj_indices(OperatorTerm& term)
+inline OperatorTerm& set_proj_indices(OperatorTerm& term)
 {
     std::size_t kk;
     unsigned int val;
