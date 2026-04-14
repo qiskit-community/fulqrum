@@ -14,6 +14,7 @@
 cimport cython
 from libcpp.string cimport string
 from libcpp.vector cimport vector
+from libcpp.pair cimport pair
 from libc.string cimport memcpy
 from libc.math cimport floor, sqrt
 
@@ -95,22 +96,43 @@ cdef class FulqrumSpMV():
 
 
     @cython.boundscheck(False)
-    cdef int compute_diag_vector(self):
+    cpdef int compute_diag_vector(self):
         if self.init_diag:
             return 0
+        cdef bool fast_diag = 0
+        cdef pair[vector[pair[size_t, size_t]], size_t] ptrs_and_offset
+        if self.diag_oper.type == 2:
+            fast_diag = fast_diag_compatible(self.diag_oper)
+        if fast_diag:
+            diag_proj_index_sort(self.diag_oper)
+            ptrs_and_offset =  projector_ptrs_and_offset(self.diag_oper)
         if self.is_real:
             self.real_diag_vec = np.empty(self.subspace_dim, dtype=float)
-            compute_diag_vector(self.subspace.subspace.bitstrings,
+            if fast_diag:
+                compute_diag_vector_fast(self.subspace.subspace.bitstrings,
                                 &self.real_diag_vec[0],
                                 self.diag_oper,
-                                self.width,
+                                ptrs_and_offset.first,
+                                ptrs_and_offset.second,
+                                self.subspace_dim)
+            else:
+                compute_diag_vector(self.subspace.subspace.bitstrings,
+                                &self.real_diag_vec[0],
+                                self.diag_oper,
                                 self.subspace_dim)
         else:
             self.complex_diag_vec = np.empty(self.subspace_dim, dtype=complex)
-            compute_diag_vector(self.subspace.subspace.bitstrings,
+            if fast_diag:
+                compute_diag_vector_fast(self.subspace.subspace.bitstrings,
                                 &self.complex_diag_vec[0],
                                 self.diag_oper,
-                                self.width,
+                                ptrs_and_offset.first,
+                                ptrs_and_offset.second,
+                                self.subspace_dim)
+            else:
+                compute_diag_vector(self.subspace.subspace.bitstrings,
+                                &self.complex_diag_vec[0],
+                                self.diag_oper,
                                 self.subspace_dim)
         self.init_diag = 1
         return 1

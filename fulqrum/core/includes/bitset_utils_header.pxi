@@ -37,3 +37,5 @@ cdef extern from "../src/bitset_utils.hpp":
 
     bool passes_proj_validation(const OperatorTerm_t * term,
                                 const bitset_t& row) nogil
+
+    vector[unsigned int] set_bit_indices(bitset_t& row)
