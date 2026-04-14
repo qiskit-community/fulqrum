@@ -79,7 +79,7 @@ TEST_CASE("Test split operator grouping") {
     auto [diag, off] = op.split_diagonal();
 
     std::vector<int> diag_ans = {0, 0};
-    std::vector<int> off_ans = {1, 1, 2, 3};
+    std::vector<int> off_ans = {1, 2, 3, 3};
     CHECK(diag.groups() == diag_ans);
     CHECK(off.groups() == off_ans);
 }

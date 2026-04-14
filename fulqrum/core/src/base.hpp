@@ -621,7 +621,7 @@ inline int offdiag_group_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
  * same off-diagonal structure
  *
  */
-void term_group_sort(std::vector<OperatorTerm_t>& terms,
+inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
                      std::size_t* __restrict weight_ptrs,
                      std::size_t len_ptrs,
                      unsigned int max_group_size)

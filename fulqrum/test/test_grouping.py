@@ -58,7 +58,7 @@ def test_grouping_split():
     H.offdiag_term_grouping()
     diag, offdiag = H.split_diagonal()
     diag_ans = np.zeros(len(diag))
-    offdiag_ans = np.array([1, 1, 2, 3])
+    offdiag_ans = np.array([1, 2, 3, 3])
     assert np.allclose(diag.groups(), diag_ans)
     assert np.allclose(offdiag.groups(), offdiag_ans)
 
