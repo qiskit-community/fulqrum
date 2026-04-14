@@ -20,13 +20,13 @@
 #include <cmath>
 #include <complex>
 #include <cstdlib>
+#include <map>
+#include <numeric>
 #include <ostream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <numeric>
-#include <map>
 
 // Map converting standard char values into continuous values
 inline std::unordered_map<unsigned char, unsigned char> oper_map = {
@@ -331,8 +331,8 @@ inline void combine_qubit_terms(std::vector<OperatorTerm>& __restrict terms,
     set_weight_ptrs(terms, weight_ptrs);
     std::vector<std::vector<OperatorTerm_t>> temp_terms;
     temp_terms.resize(weight_ptrs.size() - 1);
-// do sort over each collection of terms with same weight
-    #pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
+    // do sort over each collection of terms with same weight
+#pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
     for(kk = 0; kk < weight_ptrs.size() - 1; kk++)
     {
         std::size_t jj, mm, pp;
@@ -411,10 +411,10 @@ inline std::size_t term_offdiag_structure(const OperatorTerm_t& term)
 {
     std::size_t kk;
     std::size_t out = 0;
-    #pragma omp simd reduction(+:out)
+#pragma omp simd reduction(+ : out)
     for(kk = 0; kk < term.values.size(); ++kk)
     {
-        out += (term.indices[kk]+1)*(term.values[kk] > 2);   
+        out += (term.indices[kk] + 1) * (term.values[kk] > 2);
     }
     return out;
 }
@@ -450,19 +450,15 @@ inline void term_offdiag_sort(std::vector<OperatorTerm_t>& terms)
 
     std::vector<std::size_t> order(n);
     std::iota(order.begin(), order.end(), 0);
-    std::sort(order.begin(), order.end(),
-              [&keys](std::size_t a, std::size_t b) { return keys[a] < keys[b]; });
-
+    std::sort(order.begin(), order.end(), [&keys](std::size_t a, std::size_t b) {
+        return keys[a] < keys[b];
+    });
 
     std::vector<OperatorTerm_t> tmp(n);
     for(std::size_t ii = 0; ii < n; ++ii)
         tmp[ii] = std::move(terms[order[ii]]);
     terms = std::move(tmp);
 }
-
-
-
-
 
 /**
  * Set the pointers for the off-diagonal weights
@@ -516,8 +512,6 @@ inline void set_offdiag_structure_ptrs(const std::vector<OperatorTerm>& __restri
         vec.push_back(terms.size());
     }
 }
-
-
 
 /**
  * Find max. number of elements with same off-diag weight
@@ -622,62 +616,62 @@ inline int offdiag_group_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
  *
  */
 inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
-                     std::size_t* __restrict weight_ptrs,
-                     std::size_t len_ptrs,
-                     unsigned int max_group_size)
+                            std::size_t* __restrict weight_ptrs,
+                            std::size_t len_ptrs,
+                            unsigned int max_group_size)
 {
     std::size_t ii;
-    #pragma omp parallel if(terms.size() > 1024)
+#pragma omp parallel if(terms.size() > 1024)
     {
-    // Reset all groupings
-    #pragma omp for schedule(dynamic)
-    for(ii = 0; ii < terms.size(); ii++)
-    {
-        terms[ii].group = 0; // diagonals are group 0 by convention
-        if(terms[ii].offdiag_weight > 0)
+// Reset all groupings
+#pragma omp for schedule(dynamic)
+        for(ii = 0; ii < terms.size(); ii++)
         {
-            terms[ii].group = -1;
-        }
-    } // end reset
-
-    #pragma omp for schedule(dynamic)
-    for(ii = 0; ii < len_ptrs - 1; ii++)
-    {
-        std::size_t start = weight_ptrs[ii];
-        std::size_t stop = weight_ptrs[ii + 1];
-        int group_idx = ii * (max_group_size);
-
-        if(terms[start].group == 0) // group is the diagonal group
-        {
-            continue;
-        }
-
-        std::map<std::vector<unsigned int>, int> pattern_to_group;
-
-        for(std::size_t kk = start; kk < stop; kk++)
-        {
-            OperatorTerm_t* term = &terms[kk];
-
-            // Build canonical key: sorted off-diagonal qubit indices
-            std::vector<unsigned int> key;
-            key.reserve(term->offdiag_weight);
-            for(std::size_t idx = 0; idx < term->values.size(); idx++)
-                if(term->values[idx] > 2)
-                    key.push_back(term->indices[idx]);
-            std::sort(key.begin(), key.end());
-
-            auto result = pattern_to_group.emplace(key, 0);
-            if(result.second) // new pattern: allocate a new group
+            terms[ii].group = 0; // diagonals are group 0 by convention
+            if(terms[ii].offdiag_weight > 0)
             {
-                group_idx += 1;
-                result.first->second = group_idx;
+                terms[ii].group = -1;
             }
-            term->group = result.first->second;
-        } // end kk loop
+        } // end reset
 
-        // sort by group index within the start and stop indices
-        std::sort(terms.begin() + start, terms.begin() + stop, offdiag_group_comp);
-    } // end ii loop
+#pragma omp for schedule(dynamic)
+        for(ii = 0; ii < len_ptrs - 1; ii++)
+        {
+            std::size_t start = weight_ptrs[ii];
+            std::size_t stop = weight_ptrs[ii + 1];
+            int group_idx = ii * (max_group_size);
+
+            if(terms[start].group == 0) // group is the diagonal group
+            {
+                continue;
+            }
+
+            std::map<std::vector<unsigned int>, int> pattern_to_group;
+
+            for(std::size_t kk = start; kk < stop; kk++)
+            {
+                OperatorTerm_t* term = &terms[kk];
+
+                // Build canonical key: sorted off-diagonal qubit indices
+                std::vector<unsigned int> key;
+                key.reserve(term->offdiag_weight);
+                for(std::size_t idx = 0; idx < term->values.size(); idx++)
+                    if(term->values[idx] > 2)
+                        key.push_back(term->indices[idx]);
+                std::sort(key.begin(), key.end());
+
+                auto result = pattern_to_group.emplace(key, 0);
+                if(result.second) // new pattern: allocate a new group
+                {
+                    group_idx += 1;
+                    result.first->second = group_idx;
+                }
+                term->group = result.first->second;
+            } // end kk loop
+
+            // sort by group index within the start and stop indices
+            std::sort(terms.begin() + start, terms.begin() + stop, offdiag_group_comp);
+        } // end ii loop
 
     } // end omp parallel
 
@@ -1339,7 +1333,7 @@ typedef struct QubitOperator
         set_offdiag_weight_ptrs(terms, ptrs);
         return ptrs;
     }
-     /**
+    /**
     * Pointers to starting indices for off-diagonally sorted operator
     * 
     */
