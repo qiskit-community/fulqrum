@@ -417,10 +417,11 @@ inline std::size_t term_offdiag_structure(const OperatorTerm_t& term)
     std::size_t out = 0;
     for(kk = 0; kk < term.values.size(); ++kk)
     {
-        out +=
-            (term.indices[kk] + 1) *
-            (term.values[kk] >
-             2); // need plus one here so that an offdiag on 0 index does not look like a diagonal term
+        if(term.values[kk] > 2)
+        {
+        out *= (term.indices[kk] + 1);
+        }
+
     }
     return out;
 }
