@@ -131,7 +131,7 @@ TEST_CASE("Verify diagonal operator returns true") {
     {
         op +=  QubitOperator(N, {{diag_ops[kk % 3], {kk}, 1.0/(N+kk)}});
     }
-    CHECK(op[kk].is_diagonal());
+    CHECK(op.is_diagonal());
 }
 
 
