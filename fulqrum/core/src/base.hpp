@@ -627,7 +627,10 @@ void term_group_sort(std::vector<OperatorTerm_t>& terms,
                      unsigned int max_group_size)
 {
     std::size_t ii;
+    #pragma omp parallel if(terms.size() > 1024)
+    {
     // Reset all groupings
+    #pragma omp for schedule(dynamic)
     for(ii = 0; ii < terms.size(); ii++)
     {
         terms[ii].group = 0; // diagonals are group 0 by convention
@@ -637,7 +640,7 @@ void term_group_sort(std::vector<OperatorTerm_t>& terms,
         }
     } // end reset
 
-    #pragma omp parallel for schedule(dynamic) if(terms.size() > 1024)
+    #pragma omp for schedule(dynamic)
     for(ii = 0; ii < len_ptrs - 1; ii++)
     {
         std::size_t start = weight_ptrs[ii];
@@ -675,6 +678,8 @@ void term_group_sort(std::vector<OperatorTerm_t>& terms,
         // sort by group index within the start and stop indices
         std::sort(terms.begin() + start, terms.begin() + stop, offdiag_group_comp);
     } // end ii loop
+
+    } // end omp parallel
 
     // relabel groups into continuous integers
     int current_group = 0;
