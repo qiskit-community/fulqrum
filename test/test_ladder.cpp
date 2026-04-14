@@ -78,11 +78,11 @@ TEST_CASE("Test group term sort ladder_width=3 2") {
 
 
 TEST_CASE("Verify that ladder integers are correct for terms in each group") {
-    // group 1
+    // group 2
     QubitOperator op = QubitOperator::from_label("-II+");  // int = 1
     op += QubitOperator::from_label("+II-");  // int = 2
     op += QubitOperator::from_label("+II+");  // int = 3
-    // group 2
+    // group 1
     op += QubitOperator::from_label("II+-");  // int = 2
     op += QubitOperator::from_label("II-+");  // int = 1
     // group 3
@@ -92,8 +92,8 @@ TEST_CASE("Verify that ladder integers are correct for terms in each group") {
     op.set_type(2);
     op.group_sort();
     op.group_term_sort_by_ladder_int();
-    CHECK(op.terms_by_group(1).ladder_integers() == std::vector<unsigned int>{1, 2, 3});
-    CHECK(op.terms_by_group(2).ladder_integers() == std::vector<unsigned int>{1, 2});
+    CHECK(op.terms_by_group(1).ladder_integers() == std::vector<unsigned int>{1, 2});
+    CHECK(op.terms_by_group(2).ladder_integers() == std::vector<unsigned int>{1, 2, 3});
     CHECK(op.terms_by_group(3).ladder_integers() == std::vector<unsigned int>{0, 6, 7});
 }
 
@@ -117,8 +117,8 @@ TEST_CASE("Verify that ladder integers are correct for terms in each group 2") {
     op.set_type(2);
     op.group_sort();
     op.group_term_sort_by_ladder_int();
-    CHECK(op.terms_by_group(1).ladder_integers() == std::vector<unsigned int>{0, 1, 1, 2, 2, 3});
-    CHECK(op.terms_by_group(2).ladder_integers() == std::vector<unsigned int>{0, 1, 1, 2, 2, 3, 3});
+    CHECK(op.terms_by_group(2).ladder_integers() == std::vector<unsigned int>{0, 1, 1, 2, 2, 3});
+    CHECK(op.terms_by_group(1).ladder_integers() == std::vector<unsigned int>{0, 1, 1, 2, 2, 3, 3});
 }
 
 
@@ -134,8 +134,8 @@ TEST_CASE("Verify that off-diag indices are correct for ladder operator terms") 
     op.set_type(2);
     op.group_sort();
     auto inds_list = op.group_offdiag_indices();
-    CHECK(inds_list[0] == std::vector<unsigned int>{3});
-    CHECK(inds_list[1] == std::vector<unsigned int>{0, 2});
+    CHECK(inds_list[0] == std::vector<unsigned int>{0, 2});
+    CHECK(inds_list[1] == std::vector<unsigned int>{3});
     CHECK(inds_list[2] == std::vector<unsigned int>{0, 3});
     CHECK(inds_list[3] == std::vector<unsigned int>{1, 2});
     CHECK(inds_list[4] == std::vector<unsigned int>{0, 2, 3});
@@ -155,8 +155,8 @@ TEST_CASE("Verify that off-diag indices are correct for ladder operator terms 2"
     op.set_type(2);
     op.group_sort();
     auto inds_list = op.group_offdiag_indices();
-    CHECK(inds_list[0] == std::vector<unsigned int>{3});
-    CHECK(inds_list[1] == std::vector<unsigned int>{0, 2});
+    CHECK(inds_list[0] == std::vector<unsigned int>{0, 2});
+    CHECK(inds_list[1] == std::vector<unsigned int>{3});
     CHECK(inds_list[2] == std::vector<unsigned int>{0, 3});
     CHECK(inds_list[3] == std::vector<unsigned int>{1, 2});
     CHECK(inds_list[4] == std::vector<unsigned int>{0, 2, 3});
