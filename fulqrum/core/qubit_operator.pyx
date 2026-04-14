@@ -731,6 +731,19 @@ cdef class QubitOperator():
             memcpy(&out[0], &vec[0], vec.size() * sizeof(size_t))
         return np.asarray(out)
 
+    @cython.boundscheck(False)
+    def offdiag_structure_ptrs(self):
+        """Off-diagonal structure pointers for the operator
+
+        Returns:
+            ndarray: Array of off-diagonal structure pointers
+        """
+        cdef vector[size_t] vec = self.oper.offdiag_structure_ptrs()
+        cdef size_t[::1] out = np.empty(vec.size(), dtype=np.uintp)
+        if vec.size():
+            memcpy(&out[0], &vec[0], vec.size() * sizeof(size_t))
+        return np.asarray(out)
+
 
     def combine_repeated_terms(self, double atol=1e-12):
         """Combine repeated terms that represent same
