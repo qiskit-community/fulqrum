@@ -17,7 +17,7 @@ include "base_header.pxi"
 
 cdef extern from "../src/csr.hpp":
 
-    void csr_matrix_builder[T,U](const OperatorTerm_t * terms,
+    void csr_matrix_builder[T,U](const vector[OperatorTerm_t]& terms,
                               const BitsetHashMapWrapper& subspace,
                               const U * diag_vec,
                               size_t width,

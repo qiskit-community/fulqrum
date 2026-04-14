@@ -27,7 +27,7 @@
 #include <boost/dynamic_bitset.hpp>
 
 template <typename T, typename U>
-void csr_matrix_builder(const OperatorTerm_t* terms,
+void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
                         const bitset_map_namespace::BitsetHashMapWrapper& subspace,
                         const U* __restrict diag_vec,
                         const unsigned int width,
@@ -129,8 +129,8 @@ void csr_matrix_builder(const OperatorTerm_t* terms,
                 {
                     accum_element(row,
                                   col_vec,
-                                  &term->indices[0],
-                                  &term->values[0],
+                                  term->indices,
+                                  term->values,
                                   term->coeff,
                                   term->real_phase,
                                   term->indices.size(),

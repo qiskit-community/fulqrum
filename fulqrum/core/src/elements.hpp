@@ -55,8 +55,8 @@ const double REAL_OPER_ELEMENTS[28] = {
 template <typename T>
 void accum_element(const boost::dynamic_bitset<std::size_t>& row,
                    const boost::dynamic_bitset<std::size_t>& col,
-                   const unsigned int* __restrict inds,
-                   const unsigned char* __restrict val,
+                   const std::vector<unsigned int>& inds,
+                   const std::vector<unsigned char>& val,
                    const std::complex<double>& coeff,
                    const int real_phase,
                    const unsigned int N,
