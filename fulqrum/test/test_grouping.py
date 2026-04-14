@@ -441,3 +441,32 @@ def test_group_ladder_bin_starts6():
     ]
     for kk in range(group_ladder_starts[idx], group_ladder_starts[idx + 1]):
         assert op[kk].operators in correct_terms
+
+
+def test_all_groups_have_unique_offdiag_structure():
+    """Validate all groups have unique off-diagonal stucture"""
+    # This is an ugly way to do it but works for testing
+    _path = Path(__file__).parent / "data/ch4_dimer_jw.json.xz"
+    op = QubitOperator.from_json(_path)
+    grps = op.groups()
+    ptrs = op.group_ptrs()
+    inds_dict = {}
+    for kk in range(ptrs.shape[0] - 1):
+        start = ptrs[kk]
+        stop = ptrs[kk + 1]
+        current_group = grps[start]
+        current_off_inds = [
+            item[1] for item in op[start].operators if item[0] in ["-", "+"]
+        ]
+        current_off_sum = sum(current_off_inds)
+        if current_off_sum in inds_dict:
+            if current_off_inds in inds_dict[current_off_sum]:
+                raise Exception("Off-diagonal structure already found")
+            inds_dict[current_off_sum].append(current_off_inds)
+        else:
+            inds_dict[current_off_sum] = [current_off_inds]
+        for ll in range(start + 1, stop):
+            assert grps[ll] == current_group
+            assert [
+                item[1] for item in op[ll].operators if item[0] in ["-", "+"]
+            ] == current_off_inds
