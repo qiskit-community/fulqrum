@@ -44,3 +44,10 @@ def about():
     print("(C) Copyright IBM 2024")
     print("Paul D. Nation, Abdullah Saki, and Hwajung Kang")
     print(f"Fulqrum version: {__version__}")
+
+
+
+def get_include():
+    import os 
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    return dir_path + os.sep +"include"
