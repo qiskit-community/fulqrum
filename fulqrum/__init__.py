@@ -46,8 +46,8 @@ def about():
     print(f"Fulqrum version: {__version__}")
 
 
-
 def get_include():
-    import os 
+    import os
+
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    return dir_path + os.sep +"include"
+    return dir_path + os.sep + "include"
