@@ -20,6 +20,7 @@ from libcpp cimport bool
 from libcpp.unordered_map cimport unordered_map
 from libcpp.map cimport map
 from libc.math cimport fabs
+from libc.stdint cimport uint32_t
 from libcpp.algorithm cimport sort as stdsort
 from cython.operator cimport dereference, preincrement
 from .. import __version__ as VERSION
@@ -989,9 +990,9 @@ cdef class QubitOperator():
         cdef unsigned int num_ladder_bins = 2**self.oper.ladder_width
         cdef unsigned int num_groups = group_ptrs.shape[0] - 1
         cdef unsigned int[::1] group_counts
-        cdef size_t[::1] group_ranges
+        cdef uint32_t[::1] group_ranges
         group_counts = np.zeros(num_ladder_bins*num_groups, dtype=np.uint32)
-        group_ranges = np.zeros(num_ladder_bins*num_groups + 1, dtype=np.uintp)
+        group_ranges = np.zeros(num_ladder_bins*num_groups + 1, dtype=np.uint32)
         ladder_bin_starts(self.oper.terms, &group_ptrs[0], &group_counts[0], &group_ranges[0],
                         num_groups, num_ladder_bins, self.oper.ladder_width)
 
@@ -1031,7 +1032,7 @@ cdef class QubitOperator():
         if diag_op.num_terms != 0:
             raise FulqrumError('Operator must contain off-diagonal terms only')
         cdef size_t[::1] group_ptrs = self.group_ptrs()
-        cdef size_t[::1] ladder_starts
+        cdef uint32_t[::1] ladder_starts
         cdef list out = []
         cdef double max_val, temp_val
         cdef size_t max_ladder_int

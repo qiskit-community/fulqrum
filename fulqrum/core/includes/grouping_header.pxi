@@ -10,6 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 from libcpp.vector cimport vector
+from libc.stdint cimport uint32_t
 include "base_header.pxi"
 
 cdef extern from "../src/grouping.hpp":
@@ -25,7 +26,7 @@ cdef extern from "../src/grouping.hpp":
                                  unsigned int ladder_width) nogil
 
     void ladder_bin_starts(const vector[OperatorTerm_t]& terms, const size_t * group_ptrs,
-                            unsigned int * group_counts, size_t * group_ranges,
+                            unsigned int * group_counts, uint32_t * group_ranges,
                             unsigned int num_groups, unsigned int num_bins, unsigned int ladder_width) nogil
 
     void set_group_offdiag_indices(const vector[OperatorTerm_t]& terms,

@@ -15,6 +15,7 @@ cimport cython
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libc.string cimport memcpy
+from libc.stdint cimport uint32_t
 from libc.math cimport floor, sqrt
 
 from .qubit_operator cimport QubitOperator
@@ -46,7 +47,7 @@ include "includes/grouping_header.pxi"
 cdef class FulqrumSpMV():
     def __cinit__(self, QubitOperator diag_hamiltonian,
                   QubitOperator hamiltonian, Subspace subspace,
-                  size_t[::1]& group_ptrs, size_t[::1]& group_ladder_ptrs):
+                  size_t[::1]& group_ptrs, uint32_t[::1]& group_ladder_ptrs):
 
         #if subspace.size() < 2:
         #    raise FulqrumError("Subspace dimension must be > 1 for solving")

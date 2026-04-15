@@ -10,6 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 from libcpp.vector cimport vector
+from libc.stdint cimport uint32_t
 from ..core.bitset cimport bitset_t
 from ..core.bitset_hashmap cimport BitsetHashMapWrapper
 include "base_header.pxi"
@@ -26,7 +27,7 @@ cdef extern from "../src/csrlike_builder2.hpp":
                               size_t subspace_dim,
                               int has_nonzero_diag,
                               const size_t * group_ptrs,
-                              const size_t * group_ladder_ptrs,
+                              const uint32_t * group_ladder_ptrs,
                               unsigned int * group_rowint_length,
                               const vector[vector[unsigned int]]& group_offdiag_inds,
                               size_t num_groups,
@@ -43,7 +44,7 @@ cdef extern from "../src/csrlike_builder2.hpp":
                               size_t subspace_dim,
                               int has_nonzero_diag,
                               const size_t * group_ptrs,
-                              const size_t * group_ladder_ptrs,
+                              const uint32_t * group_ladder_ptrs,
                               unsigned int * group_rowint_length,
                               const vector[vector[unsigned int]]& group_offdiag_inds,
                               size_t num_groups,

@@ -139,7 +139,7 @@ void csrlike_builder2(const OperatorTerm_t* terms,
                       const std::size_t subspace_dim,
                       const int has_nonzero_diag,
                       const std::size_t* __restrict group_ptrs,
-                      const std::size_t* __restrict group_ladder_ptrs,
+                      const uint32_t* __restrict group_ladder_ptrs,
                       const unsigned int* __restrict group_rowint_length,
                       const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
                       const std::size_t num_groups,
@@ -328,7 +328,7 @@ void csrlike_builder2(const OperatorTerm_t* terms,
                       const std::size_t subspace_dim,
                       const int has_nonzero_diag,
                       const std::size_t* __restrict group_ptrs,
-                      const std::size_t* __restrict group_ladder_ptrs,
+                      const uint32_t* __restrict group_ladder_ptrs,
                       const unsigned int* __restrict group_rowint_length,
                       const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
                       const std::size_t num_groups,
@@ -392,15 +392,29 @@ void csrlike_builder2(const OperatorTerm_t* terms,
     inds_to_group2.reserve(num_groups);
     inds_to_group4.reserve(num_groups);
 
+    // Keys must be packed in ascending position order to match the XOR scan output.
+    // group_offdiag_inds stores positions in term.indices traversal order, which may
+    // not be ascending (e.g. beta operators written before alpha operators in the JW
+    // transform). Sort a local copy before packing.
+    std::size_t n_unsorted_keys = 0;
     for(std::size_t g = 0; g < num_groups; g++)
     {
-        const auto& inds = group_offdiag_inds_array[g];
+        auto inds = group_offdiag_inds_array[g]; // copy — sort without mutating original
         const uint8_t sz = static_cast<uint8_t>(inds[4]);
+        // Check whether original order was already ascending
+        bool already_sorted = true;
+        for(uint8_t i = 1; i < sz; i++)
+            if(inds[i] < inds[i-1]) { already_sorted = false; break; }
+        if(!already_sorted) ++n_unsorted_keys;
+        std::sort(inds.begin(), inds.begin() + sz);
         if(sz == 2)
             inds_to_group2[pack2(inds.data())] = static_cast<uint32_t>(g);
         else if(sz == 4)
             inds_to_group4[pack4(inds.data())] = static_cast<uint32_t>(g);
     }
+    if(n_unsorted_keys)
+        std::cout << "[inds_to_group] " << n_unsorted_keys
+                  << " groups had non-ascending offdiag positions (keys re-sorted)\n";
 
     // -----------------------------------------------------------------------
     // Diagonal elements
@@ -442,10 +456,15 @@ void csrlike_builder2(const OperatorTerm_t* terms,
 
         auto process_group =
             [&](uint32_t g, std::size_t col_idx, const uint16_t* inds, uint8_t gsz) {
-                flip_bits_u16_3(col_vec, inds, gsz);
+                flip_bits_u16_3(col_vec, inds, gsz); // flip order is irrelevant
 
+                // row_int must use the same position order as term_ladder_int, which
+                // traverses term.indices (stored in group_offdiag_inds_array[g]).
+                // Using the XOR-derived `inds` (ascending) would give the wrong bin
+                // for groups whose operators are not in ascending position order.
+                const uint8_t rowint_len = group_rowint_length_u16[g];
                 const unsigned int row_int =
-                    bitset_ladder_int_direct(row, inds, gsz); //group_rowint_length_u16[g]);
+                    bitset_ladder_int_direct(row, group_offdiag_inds_array[g].data(), rowint_len);
                 const std::size_t g_start = group_ladder_ptrs[g * ladder_offset + row_int];
                 const std::size_t g_stop  = group_ladder_ptrs[g * ladder_offset + row_int + 1];
 
