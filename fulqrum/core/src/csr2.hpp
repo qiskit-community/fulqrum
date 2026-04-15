@@ -27,14 +27,14 @@
 #include <boost/dynamic_bitset.hpp>
 
 template <typename T, typename U>
-void csr_matrix_builder2(const OperatorTerm_t* terms,
+void csr_matrix_builder2(const std::vector<OperatorTerm_t>& terms,
                          const bitset_map_namespace::BitsetHashMapWrapper& subspace,
                          const U* __restrict diag_vec,
                          const unsigned int width,
                          const std::size_t subspace_dim,
                          const int has_nonzero_diag,
                          const std::size_t* __restrict group_ptrs,
-                         const uint32_t* __restrict group_ladder_ptrs,
+                         const std::size_t* __restrict group_ladder_ptrs,
                          const unsigned int* __restrict group_rowint_length,
                          const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
                          const std::size_t num_groups,
@@ -162,8 +162,8 @@ void csr_matrix_builder2(const OperatorTerm_t* terms,
                 {
                     accum_element(row,
                                   col_vec,
-                                  &term->indices[0],
-                                  &term->values[0],
+                                  term->indices,
+                                  term->values,
                                   term->coeff,
                                   term->real_phase,
                                   term->indices.size(),

@@ -15,6 +15,7 @@ cimport cython
 from cython.operator cimport dereference
 from libcpp.vector cimport vector
 from libcpp.string cimport string
+from libcpp.pair cimport pair
 from libc.string cimport memcpy
 from libcpp cimport bool
 from libcpp.unordered_map cimport unordered_map
@@ -41,7 +42,6 @@ include "includes/base_header.pxi"
 include "includes/elements_header.pxi"
 include "includes/bitset_utils_header.pxi"
 include "includes/operators_header.pxi"
-include "includes/grouping_header.pxi"
 include "includes/offdiag_grouping_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
@@ -50,14 +50,7 @@ include "includes/constants.pxi"
 cdef const OperatorTerm_t EmptyOperatorTerm
 
 
-@cython.boundscheck(False)
-cdef inline int diagonal_term(OperatorTerm_t * term):
-    """Check if term is diagonal in computational basis
 
-    Returns:
-        bool: True if diagonal
-    """
-    return term.offdiag_weight == 0
 
 
 cdef class QubitOperator():
@@ -94,7 +87,7 @@ cdef class QubitOperator():
                 term.offdiag_weight = 0
                 if any(item):
                     if len(item) == 1:
-                        term.coeff = item[0]
+                        term = OperatorTerm_t(item[0])
                     else:
                         op_str = (<string>item[0]).c_str()
                         inds = item[1] if isinstance(item[1], Iterable) else [item[1]]
@@ -109,9 +102,9 @@ cdef class QubitOperator():
                         term.coeff = coeff
                 else:
                     term.coeff = 1
-                sort_term_data(term.indices, term.values)
-                set_offdiag_weight(term)
-                set_proj_indices(term)
+                term.sort_term_data()
+                set_offdiag_weight_and_phase(term)
+                term.set_proj_indices()
                 set_extended_flag(term)
                 self.oper.terms.push_back(term)
 
@@ -124,25 +117,10 @@ cdef class QubitOperator():
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def from_label(self, string label, double complex coeff = 1.0):
-        cdef unsigned int num_qubits = label.size()
-        cdef OperatorTerm_t term = EmptyOperatorTerm
-        cdef QubitOperator out = QubitOperator(num_qubits)
-        cdef unsigned int kk
-        cdef const char * labels = label.c_str()
-        cdef char s, ind
-        for kk in range(num_qubits):
-            s = labels[num_qubits-kk-1]
-            if s != 73:
-                term.indices.push_back(kk)
-                ind = STR_TO_IND[s]
-                term.values.push_back(ind)
-                term.offdiag_weight += (ind > 2)
-        term.coeff = coeff
-        sort_term_data(term.indices, term.values)
-        set_offdiag_weight(term)
-        set_proj_indices(term)
-        set_extended_flag(term)
-        out.oper.terms.push_back(term)
+        cdef QubitOperator_t temp
+        cdef QubitOperator out = QubitOperator(label.size())
+        out.oper = temp.from_label(label)
+        out.oper.terms[0].coeff = coeff
         return out
 
     @classmethod
@@ -161,7 +139,7 @@ cdef class QubitOperator():
         return out
 
     def __len__(self):
-        return self.oper.terms.size()
+        return self.oper.size()
 
     def set_type(self, unsigned int value):
         """Manually set the type of the operator
@@ -217,7 +195,16 @@ cdef class QubitOperator():
         Returns:
             int: Number of terms in operator
         """
-        return self.oper.terms.size()
+        return self.oper.size()
+
+    @property
+    def size(self):
+        """Return the number of terms in the operator
+
+        Returns:
+            int: Number of terms in operator
+        """
+        return self.oper.size()
 
     @property
     def width(self):
@@ -257,19 +244,6 @@ cdef class QubitOperator():
         return self.oper.off_weight_sorted
 
     @property
-    def groups(self):
-        """Group for each term
-
-        Returns:
-            ndarray: Array of group values
-        """
-        cdef size_t kk
-        cdef int[::1] out = np.empty(self.oper.terms.size(), dtype=np.int32)
-        for kk in range(self.oper.terms.size()):
-            out[kk] = self.oper.terms[kk].group
-        return np.asarray(out)
-
-    @property
     def num_groups(self):
         """Number of off-diagonal groupings
 
@@ -278,9 +252,8 @@ cdef class QubitOperator():
         """
         if self.num_terms == 0:
             return 0
-        if not self.oper.sorted:
-            self.offdiag_term_grouping()
-        return self.group_ptrs().shape[0] - 1
+        self.oper.group_sort()
+        return self.oper.group_ptrs().size() - 1
 
     @property
     def ladder_width(self):
@@ -299,8 +272,7 @@ cdef class QubitOperator():
             QubitOperator
         """
         cdef QubitOperator out = QubitOperator(self.width)
-        out.oper.terms = self.oper.terms
-        out.oper.type = self.oper.type
+        out.oper = self.oper.copy()
         return out
 
     @cython.boundscheck(False)
@@ -310,13 +282,7 @@ cdef class QubitOperator():
         Returns:
             int: Is operator real-valued
         """
-        cdef size_t kk
-        cdef int out = 1
-        for kk in range(self.oper.terms.size()):
-            if fabs(self.oper.terms[kk].coeff.imag) > ATOL or ( not self.oper.terms[kk].real_phase):
-                out = 0
-                break
-        return out
+        return self.oper.is_real()
 
     @cython.boundscheck(False)
     def real_phases(self):
@@ -325,10 +291,9 @@ cdef class QubitOperator():
         Returns:
             ndarray: real phase of each term in operator
         """
-        cdef size_t kk
+        cdef vector[int] phases = self.oper.real_phases()
         cdef int[::1] out = np.empty(self.oper.terms.size(), dtype=np.int32)
-        for kk in range(self.oper.terms.size()):
-            out[kk] = self.oper.terms[kk].real_phase
+        memcpy(&out[0], &phases[0], phases.size()*sizeof(int))
         return np.asarray(out)
 
     @cython.boundscheck(False)
@@ -338,12 +303,7 @@ cdef class QubitOperator():
         Returns:
             float
         """
-        cdef size_t kk
-        cdef double complex out = 0
-        for kk in range(self.oper.terms.size()):
-            if (self.oper.terms[kk].indices.size() == 0):
-                out += self.oper.terms[kk].coeff
-        return out.real
+        return self.oper.constant_energy()
 
     @cython.boundscheck(False)
     def split_diagonal(self):
@@ -352,19 +312,11 @@ cdef class QubitOperator():
         Returns:
             tuple: QubitOperators for diagonal and non-diagonal parts
         """
-        cdef size_t kk
         cdef QubitOperator diag = QubitOperator(self.oper.width)
         cdef QubitOperator offdiag = QubitOperator(self.oper.width)
-        cdef OperatorTerm_t term
-        for kk in range(self.oper.terms.size()):
-            term = self.oper.terms[kk]
-            if diagonal_term(&term):
-                diag.oper.terms.push_back(term)
-            else:
-                offdiag.oper.terms.push_back(term)
-
-        diag.oper.type = self.oper.type
-        offdiag.oper.type = self.oper.type
+        cdef pair[QubitOperator_t, QubitOperator_t] out = self.oper.split_diagonal()
+        diag.oper = out.first
+        offdiag.oper = out.second
         return diag, offdiag
 
     @cython.boundscheck(False)
@@ -374,12 +326,10 @@ cdef class QubitOperator():
         Returns:
             ndarray: complex-valued array of coefficients
         """
-        cdef size_t kk
-        if self.oper.terms.size() == 0:
-            raise FulqrumError('QubitOperator has zero terms')
+        
+        cdef vector[complex] coeffs = self.oper.coefficients()
         cdef double complex[::1] out = np.empty(self.oper.terms.size(), dtype=complex)
-        for kk in range(self.oper.terms.size()):
-            out[kk] = self.oper.terms[kk].coeff
+        memcpy(&out[0], &coeffs[0], coeffs.size()*sizeof(complex))
         return np.asarray(out)
 
     @property
@@ -614,43 +564,13 @@ cdef class QubitOperator():
             out[kk] = self.oper.terms[kk].offdiag_weight
         return np.asarray(out)
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    cpdef int is_diagonal(self):
+    def is_diagonal(self):
         """Check if operator is diagonal in computational basis
 
         Returns:
-            int: True if diagonal, False otherwise
+            bool: True if diagonal, False otherwise
         """
-        cdef size_t kk, jj
-        for kk in range(self.oper.terms.size()):
-            for jj in range(self.oper.terms[kk].values.size()):
-                if self.oper.terms[kk].values[jj] > 2:
-                    return 0
-        return 1
-
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    def add_operator(self, unsigned int qubit, str operator, bool overwrite=False):
-        cdef size_t kk
-        cdef OperatorTerm_t temp_term
-        if self.oper.terms.size() == 0:
-            temp_term = EmptyOperatorTerm
-            temp_term.coeff = 1.0
-            self.oper.terms.push_back(temp_term)
-        if self.oper.terms.size() > 1:
-            raise FulqrumError('Can only add operators to single-term QubitOperators.')
-        if qubit >= self.oper.width:
-            raise FulqrumError(f"qubit number {qubit} out of range")
-        # Check if element already exists if overwrite=False
-        if not overwrite:
-            for kk in range(self.oper.terms[0].indices.size()):
-                if self.oper.terms[0].indices[kk] == qubit:
-                    raise FulqrumError(f"Operator {IND_TO_STR[self.oper.terms[0].indices[kk]]} already exists at qubit {qubit}")
-        if operator != 'I':
-            self.oper.terms[0].indices.push_back(qubit)
-            self.oper.terms[0].values.push_back(STR_TO_IND[operator])
-        self.oper.sorted = 0
+        return self.oper.is_diagonal()
 
     @cython.boundscheck(False)
     def remove_constant_terms(self, bool return_value=True):
@@ -662,21 +582,17 @@ cdef class QubitOperator():
 
         Returns:
             QubitOperator: Operator with no identity terms
-            complex: Sum of identity coefficients, if `return_value=True`
+            double: Sum of identity coefficients, if `return_value=True`
         """
-        cdef size_t kk
-        cdef OperatorTerm_t * term_ptr
-        cdef double complex val = 0
-        cdef QubitOperator out = QubitOperator(self.oper.width)
-        for kk in range(self.oper.terms.size()):
-            term_ptr = &self.oper.terms[kk]
-            if term_ptr.indices.size() != 0:
-                out.oper.terms.push_back(dereference(term_ptr))
-            else:
-                val += term_ptr.coeff
-        out.oper.type = self.oper.type
+        cdef double val = 0
         if return_value:
-            return out, val.real
+            val = self.oper.constant_energy()
+        cdef QubitOperator_t temp = self.oper.remove_constant_terms()
+        cdef QubitOperator out = QubitOperator(self.width)
+        out.oper.terms = temp.terms
+        out.oper.type = temp.type
+        if return_value:
+            return out, val
         return out
 
     @cython.boundscheck(False)
@@ -724,11 +640,11 @@ cdef class QubitOperator():
             term = &self.oper.terms[kk]
             weight = term.indices.size()
             nonzero_vec = row_vec #copy row vec into nonzero vec
-            get_column_bitset(nonzero_vec, &term.indices[0], &term.values[0], weight)
+            get_column_bitset(nonzero_vec, term.indices, term.values, weight)
             # Input col string matches that of nonzero column
             if col_vec == nonzero_vec:
                 accum_element(row_vec, nonzero_vec,
-                              &term.indices[0], &term.values[0], term.coeff, term.real_phase, weight, out)
+                              term.indices, term.values, term.coeff, term.real_phase, weight, out)
         return out
 
     @cython.boundscheck(False)
@@ -738,10 +654,10 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of ints indicating group of each term
         """
-        cdef size_t kk
-        cdef int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.int32)
-        for kk in range(self.oper.terms.size()):
-            out[kk] = self.oper.terms[kk].group
+        cdef vector[int] groups = self.oper.groups()
+        cdef int[::1] out = np.empty(groups.size(), dtype=np.int32)
+        if groups.size():
+            memcpy(&out[0], &groups[0], groups.size() * sizeof(int))
         return np.asarray(out)
 
     @cython.boundscheck(False)
@@ -751,28 +667,11 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of ints giving pointers to group starts and stops
         """
-        if self.num_terms == 0:
-            return np.zeros(0, dtype=np.uintp)
-        if not self.oper.sorted:
-            self.offdiag_term_grouping()
-        cdef OperatorTerm_t * terms = &self.oper.terms[0]
-        cdef int idx = 0
-        cdef size_t kk
-        cdef size_t num_groups = 1
-        cdef int val = terms[0].group
-        for kk in range(self.oper.terms.size()):
-            if terms[kk].group > val:
-                num_groups += 1
-                val = terms[kk].group
-        cdef size_t[::1] ptrs = np.zeros(num_groups+1, dtype=np.uintp)
-        val = terms[0].group
-        for kk in range(self.oper.terms.size()):
-            if terms[kk].group > val:
-                ptrs[idx+1] = kk
-                idx += 1
-                val += 1
-        ptrs[idx+1] = self.oper.terms.size()
-        return np.asarray(ptrs)
+        cdef vector[size_t] ptrs = self.oper.group_ptrs()
+        cdef size_t[::1] out = np.empty(ptrs.size(), dtype=np.uintp)
+        if ptrs.size():
+            memcpy(&out[0], &ptrs[0], ptrs.size() * sizeof(size_t))
+        return np.asarray(out)
 
     @cython.boundscheck(False)
     def terms_by_group(self, int number):
@@ -787,14 +686,7 @@ cdef class QubitOperator():
         cdef size_t kk, ll, start, stop
         cdef size_t[::1] ptrs = self.group_ptrs()
         cdef QubitOperator out = QubitOperator(self.width)
-        for kk in range(<size_t>(ptrs.shape[0]-1)):
-            if (self.oper.terms[ptrs[kk]].group == number):
-                start = ptrs[kk]
-                stop = ptrs[kk+1]
-                for ll in range(start, stop):
-                    out.oper.terms.push_back(self.oper.terms[ll])
-                break
-        out.oper.type = self.oper.type
+        out.oper = self.oper.terms_by_group(number)
         return out
 
     @cython.boundscheck(False)
@@ -804,56 +696,28 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of ints indicating if terms are extended or not
         """
-        cdef size_t kk
+        cdef vector[int] exten = self.oper.extended_terms()
         cdef int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.int32)
-        for kk in range(self.oper.terms.size()):
-            out[kk] = self.oper.terms[kk].extended
+        if self.oper.terms.size():
+            memcpy(&out[0], &exten[0], exten.size() * sizeof(int))
         return np.asarray(out)
 
-    @cython.boundscheck(False)
-    def offdiag_ptrs(self):
-        """Pointers for off-diagonal term sorting
-
-        Returns:
-            ndarray: Array of type size_t
-        """
-        cdef size_t kk
-        _offdiag_sort(self)
-        cdef vector[size_t] ptrs
-        cdef current_val = term_offdiag_structure(self.oper.terms[0])
-        ptrs.push_back(0)
-        for kk in range(1, self.oper.terms.size()):
-            if term_offdiag_structure(self.oper.terms[kk]) != current_val:
-                ptrs.push_back(kk)
-                current_val = term_offdiag_structure(self.oper.terms[kk])
-        ptrs.push_back(self.oper.terms.size())
-        cdef size_t[::1] out = np.empty(ptrs.size(), dtype=np.uintp)
-        memcpy(&out[0], &ptrs[0], ptrs.size() * sizeof(size_t))
-        return np.asarray(out)
 
     def offdiag_term_grouping(self):
         """Inplace sorting of operator terms according to off-diagonal
         structure.
         """
-        if not self.oper.terms.size():
-            return
-        if not self.oper.off_weight_sorted:
-            term_offdiag_sort(self.oper.terms)
-            self.oper.off_weight_sorted = 1
-        cdef size_t[::1] ptrs = self.offdiag_ptrs()
-        cdef unsigned int max_group_size = _max_offdiag_group_size(&ptrs[0], ptrs.shape[0])
-        term_group_sort(self.oper.terms, &ptrs[0], ptrs.shape[0], max_group_size)
-        self.oper.sorted = 1
+        self.oper.group_sort()
 
     def offdiag_weight_sort(self):
         """In-place sort terms by their off-diagonal weight
         """
-        offdiag_weight_sort(self.oper)
+        self.oper.offdiag_weight_sort()
 
     def weight_sort(self):
         """In-place sort terms by their standard weight
         """
-        weight_sort(self.oper)
+        self.oper.weight_sort()
 
     @cython.boundscheck(False)
     def offdiag_weight_ptrs(self):
@@ -862,27 +726,12 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of off-diagonal weight pointers
         """
-        if not self.oper.off_weight_sorted:
-            self.offdiag_weight_sort()
-        cdef vector[size_t] vec
-        set_offdiag_weight_ptrs(self.oper.terms, vec)
+        cdef vector[size_t] vec = self.oper.offdiag_weight_ptrs()
         cdef size_t[::1] out = np.empty(vec.size(), dtype=np.uintp)
-        cdef size_t kk
-        for kk in range(vec.size()):
-            out[kk] = vec[kk]
+        if vec.size():
+            memcpy(&out[0], &vec[0], vec.size() * sizeof(size_t))
         return np.asarray(out)
 
-    def max_offdiag_ptr_size(self):
-        """Maximum number of elements in an off-diagonal pointer term
-
-        Returns:
-            int: Number of terms
-        """
-        temp = self.offdiag_weight_ptrs()
-        if temp.shape[0] == 0:
-            return 0
-        cdef size_t[::1] out = temp
-        return max_offdiag_ptr_size(&out[0], out.shape[0])
 
     def combine_repeated_terms(self, double atol=1e-12):
         """Combine repeated terms that represent same
@@ -894,14 +743,8 @@ cdef class QubitOperator():
         Returns:
             QubitOperator: Operator with repeat terms combined
         """
-        cdef QubitOperator out = QubitOperator(self.width)
-        cdef size_t num_terms = self.oper.terms.size()
-        cdef unsigned int[::1] touched = np.zeros(num_terms, dtype=np.uint32)
-        if not self.oper.weight_sorted:
-            self.weight_sort()
-        combine_qubit_terms(self.oper.terms, out.oper.terms,
-                            &touched[0], atol)
-        out.oper.type = self.oper.type
+        cdef QubitOperator out = QubitOperator(self.oper.width)
+        out.oper = self.oper.combine_repeated_terms(atol)
         return out
 
     @cython.boundscheck(False)
@@ -918,10 +761,10 @@ cdef class QubitOperator():
         """
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
+        cdef vector[unsigned int] ladder_ints = self.oper.ladder_integers()
         cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
-        cdef size_t kk
-        for kk in range(self.oper.terms.size()):
-            out[kk] = term_ladder_int(self.oper.terms[kk], self.oper.ladder_width)
+        if self.oper.terms.size():
+            memcpy(&out[0], &ladder_ints[0], ladder_ints.size() * sizeof(unsigned int))
         return np.asarray(out)
 
     @cython.boundscheck(False)
@@ -951,18 +794,12 @@ cdef class QubitOperator():
         """
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
-        if not self.oper.ladder_sorted:
-            raise FulqrumError("Operator be sorted by ladder ints to set ladder_width")
-        cdef size_t[::1] group_ptrs = self.group_ptrs()
-        cdef size_t kk, jj
-        cdef list out = []
-        cdef unsigned int num_groups = group_ptrs.shape[0] - 1
-        cdef unsigned int[::1] group_rowint_length = np.empty(num_groups, dtype=np.uint32)
-        cdef unsigned int temp
-        for kk in range(num_groups):
-            temp = self.oper.terms[group_ptrs[kk]].offdiag_weight
-            group_rowint_length[kk] = min(self.oper.ladder_width, temp)
-        return np.asarray(group_rowint_length)
+       
+        cdef vector[unsigned int] group_bit_len = self.oper.group_ladder_int_bit_lengths()
+        cdef unsigned int[::1] out = np.empty(group_bit_len.size(), dtype=np.uint32)
+        if group_bit_len.size():
+            memcpy(&out[0], &group_bit_len[0], group_bit_len.size()*sizeof(unsigned int))
+        return np.asarray(out)
 
     def group_term_sort_by_ladder_int(self, unsigned int ladder_width=4):
         """Sort groups by ladder integer if operator is type=2
@@ -972,31 +809,16 @@ cdef class QubitOperator():
         """
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
-        if not self.oper.terms.size():
-            return
-        if not self.oper.sorted:
-            self.offdiag_term_grouping()
-        cdef size_t[::1] group_ptrs = self.group_ptrs()
-        sort_groups_by_ladder_int(self.oper, &group_ptrs[0], group_ptrs.shape[0]-1, ladder_width)
-        self.oper.ladder_width = ladder_width
-        self.oper.ladder_sorted = 1
+        self.oper.group_term_sort_by_ladder_int(ladder_width)
 
     def group_ladder_bin_starts(self):
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
-        if not self.oper.ladder_sorted:
-            raise FulqrumError("Operator must have groups sorted by ladder ints")
-        cdef size_t[::1] group_ptrs = self.group_ptrs()
-        cdef unsigned int num_ladder_bins = 2**self.oper.ladder_width
-        cdef unsigned int num_groups = group_ptrs.shape[0] - 1
-        cdef unsigned int[::1] group_counts
-        cdef uint32_t[::1] group_ranges
-        group_counts = np.zeros(num_ladder_bins*num_groups, dtype=np.uint32)
-        group_ranges = np.zeros(num_ladder_bins*num_groups + 1, dtype=np.uint32)
-        ladder_bin_starts(self.oper.terms, &group_ptrs[0], &group_counts[0], &group_ranges[0],
-                        num_groups, num_ladder_bins, self.oper.ladder_width)
-
-        return np.asarray(group_ranges)
+        cdef vector[size_t] ptrs = self.oper.group_ladder_int_ptrs()
+        cdef size_t[::1] out = np.empty(ptrs.size(), dtype=np.uintp)
+        if ptrs.size():
+            memcpy(&out[0], &ptrs[0], ptrs.size()*sizeof(size_t))
+        return np.asarray(out)
 
     @cython.boundscheck(False)
     def projector_oper_validation(self, Bitset bits):
@@ -1032,7 +854,7 @@ cdef class QubitOperator():
         if diag_op.num_terms != 0:
             raise FulqrumError('Operator must contain off-diagonal terms only')
         cdef size_t[::1] group_ptrs = self.group_ptrs()
-        cdef uint32_t[::1] ladder_starts
+        cdef size_t[::1] ladder_starts
         cdef list out = []
         cdef double max_val, temp_val
         cdef size_t max_ladder_int
@@ -1139,9 +961,3 @@ cdef class QubitOperator():
         out = QubitOperator.from_dict(dic)
         return out
 
-
-def _offdiag_sort(QubitOperator self):
-    if self.oper.off_weight_sorted:
-        return
-    term_offdiag_sort(self.oper.terms)
-    self.oper.off_weight_sorted = 1

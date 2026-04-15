@@ -23,7 +23,7 @@ cdef extern from "../src/matvec2.hpp":
                 size_t subspace_dim,
                 int has_nonzero_diag,
                 size_t * group_ptrs,
-                uint32_t * group_ladder_ptrs,
+                size_t * group_ladder_ptrs,
                 unsigned int * group_rowint_length,
                 const vector[vector[unsigned int]]& group_offdiag_inds,
                 unsigned int num_groups,

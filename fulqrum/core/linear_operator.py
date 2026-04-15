@@ -46,7 +46,7 @@ class SubspaceHamiltonian(LinearOperator):
         print(f"  Offdiag grouping: {time.perf_counter()-st:.4f} seconds")
         
         self.group_ptrs = np.zeros(1, dtype=np.uintp)
-        self.group_ladder_ptrs = np.zeros(1, dtype=np.uint32)
+        self.group_ladder_ptrs = np.zeros(1, dtype=np.uintp)
 
         if self.off_H.num_terms:
             self.group_ptrs = self.off_H.group_ptrs()

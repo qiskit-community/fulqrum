@@ -18,14 +18,14 @@ include "base_header.pxi"
 
 cdef extern from "../src/csr2.hpp":
 
-    void csr_matrix_builder2[T, U](const OperatorTerm_t * terms,
+    void csr_matrix_builder2[T, U](const vector[OperatorTerm_t]& terms,
                               const BitsetHashMapWrapper& subspace,
                               const U * diag_vec,
                               size_t width,
                               size_t subspace_dim,
                               int has_nonzero_diag,
                               const size_t * group_ptrs,
-                              const uint32_t * group_ladder_ptrs,
+                              const size_t * group_ladder_ptrs,
                               unsigned int * group_rowint_length,
                               const vector[vector[unsigned int]]& group_offdiag_inds,
                               size_t num_groups,

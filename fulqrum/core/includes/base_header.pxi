@@ -9,8 +9,12 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
+# cython: c_string_type=unicode, c_string_encoding=UTF-8
 
 from libcpp.vector cimport vector
+from libcpp.string cimport string
+from libcpp.pair cimport pair
+from libcpp cimport bool
 from ..core.bitset cimport bitset_t
 from ..core.bitset_hashmap cimport BitsetHashMapWrapper
 
@@ -26,6 +30,10 @@ cdef extern from "../src/base.hpp":
         int extended
         int real_phase
         int group
+        void sort_term_data()
+        void set_proj_indices()
+        OperatorTerm_t()
+        OperatorTerm_t(complex) except +
 
 
     ctypedef struct QubitOperator_t:
@@ -37,6 +45,31 @@ cdef extern from "../src/base.hpp":
         int weight_sorted
         int off_weight_sorted
         int ladder_sorted
+        QubitOperator_t()
+        QubitOperator_t(unsigned int)
+        size_t size()
+        bool is_real()
+        bool is_diagonal()
+        QubitOperator_t copy()
+        QubitOperator_t& weight_sort()
+        QubitOperator_t& offdiag_weight_sort()
+        QubitOperator_t& group_sort()
+        vector[int] groups()
+        vector[size_t] group_ptrs()
+        QubitOperator_t& group_term_sort_by_ladder_int(unsigned int)
+        QubitOperator_t combine_repeated_terms(double)
+        vector[size_t] offdiag_weight_ptrs()
+        QubitOperator_t& from_label(string)
+        double constant_energy()
+        QubitOperator_t remove_constant_terms()
+        pair[QubitOperator_t, QubitOperator_t] split_diagonal()
+        QubitOperator_t terms_by_group(int)
+        vector[int] real_phases()
+        vector[complex] coefficients()
+        vector[int] extended_terms()
+        vector[unsigned int] ladder_integers()
+        vector[unsigned int] group_ladder_int_bit_lengths()
+        vector[size_t] group_ladder_int_ptrs()
 
 
     ctypedef struct Subspace_t:
@@ -49,8 +82,17 @@ cdef extern from "../src/base.hpp":
         double complex coeff
         vector[unsigned int] indices
         vector[unsigned char] values
+        void insertion_sort()
 
 
     ctypedef struct FermionicOperator_t:
         unsigned int width
         vector[FermionicTerm_t] terms
+        size_t size()
+
+    size_t max_offdiag_ptr_size(vector[size_t]&)
+
+    void set_group_offdiag_indices(vector[OperatorTerm_t]& terms,
+                                   vector[vector[unsigned int]]& group_indices,
+                                   size_t* group_ptrs,
+                                   unsigned int num_groups)

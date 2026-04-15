@@ -11,7 +11,6 @@
 # that they have been altered from the originals.
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 from libcpp.vector cimport vector
-from libc.stdint cimport uint32_t
 from .subspace cimport Subspace
 
 include "includes/base_header.pxi"
@@ -30,7 +29,7 @@ cdef class FulqrumSpMV:
     cdef double complex[::1] complex_diag_vec
     cdef double[::1] real_diag_vec # Need to split this due to Cython fused type limitation
     cdef size_t[::1] group_ptrs
-    cdef uint32_t[::1] group_ladder_ptrs
+    cdef size_t[::1] group_ladder_ptrs
     cdef unsigned int[::1] group_rowint_length
     cdef int num_groups
     cdef public int is_real

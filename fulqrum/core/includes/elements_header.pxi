@@ -10,14 +10,14 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 from ..core.bitset cimport bitset_t
-
+from libcpp.vector cimport vector
 cdef extern from "../src/elements.hpp":
 
 
     void accum_element(const bitset_t& row,
                        const bitset_t& col,
-                       const unsigned int * inds,
-                       const unsigned char * val,
+                       const vector[unsigned int] inds,
+                       const vector[unsigned char] val,
                        const double complex& coeff,
                        const int real_phase,
                        const unsigned int N,

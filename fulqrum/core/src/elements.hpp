@@ -55,8 +55,8 @@ const double REAL_OPER_ELEMENTS[28] = {
 template <typename T>
 void accum_element(const boost::dynamic_bitset<std::size_t>& row,
                    const boost::dynamic_bitset<std::size_t>& col,
-                   const unsigned int* __restrict inds,
-                   const unsigned char* __restrict val,
+                   const std::vector<unsigned int>& inds,
+                   const std::vector<unsigned char>& val,
                    const std::complex<double>& coeff,
                    const int real_phase,
                    const unsigned int N,
@@ -77,7 +77,7 @@ void accum_element(const boost::dynamic_bitset<std::size_t>& row,
         {
             temp *= REAL_OPER_ELEMENTS[4 * val[kk] + offset];
             //
-            if (temp == 0.0) return;
+            // if (temp == 0.0) return; // not needed; proj_validation ensure no temp is 0
         }
         else
         {

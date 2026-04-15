@@ -20,7 +20,7 @@ cdef extern from "../src/grouping.hpp":
                                    unsigned int * offdiag_inds,
                                    unsigned int num_inds) nogil
 
-    void sort_groups_by_ladder_int(QubitOperator_t& oper,
+    void sort_groups_by_ladder_int(vector[OperatorTerm_t]& terms,
                                  size_t * group_ptrs,
                                  unsigned int num_groups,
                                  unsigned int ladder_width) nogil
