@@ -11,11 +11,20 @@
  * copyright notice, and modified files need to carry a notice indicating
  * that they have been altered from the originals.
  */
-
 #pragma once
-#include "constants.hpp"
-#include "fermi_oper.hpp"
-#include "fermi_term.hpp"
-#include "qubit_oper.hpp"
-#include "qubit_term.hpp"
-#include "subspace.hpp"
+#include "bitset_hashmap.hpp"
+#include <boost/dynamic_bitset.hpp>
+
+/** @struct subspace
+ * @brief Data structure for subspace defined by counts
+ *
+ * @var bitstrings The subspace bit-strings stored in a hash table
+ * @var num_qubits The number of qubits, i.e length of bitstrings
+ * @var size Dimension / number of bit-strings in the subspace
+ */
+typedef struct Subspace
+{
+    bitset_map_namespace::BitsetHashMapWrapper bitstrings;
+    unsigned int num_qubits;
+    std::size_t size;
+} Subspace_t;
