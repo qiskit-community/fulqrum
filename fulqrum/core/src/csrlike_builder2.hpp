@@ -310,8 +310,6 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
     cols.resize(subspace_dim);
     data.resize(subspace_dim);
 
-    std::vector<std::mutex> mutex1(subspace_dim);
-
     // -----------------------------------------------------------------------
     // Convert group_rowint_length to uint16
     // -----------------------------------------------------------------------
@@ -472,19 +470,8 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
 
                 if(std::abs(val) > ATOL)
                 {
-                    {
-                        std::lock_guard<std::mutex> lock(mutex1[kk]);
-                        cols[kk].push_back(col_idx);
-                        data[kk].push_back(val);
-                    }
-                    {
-                        std::lock_guard<std::mutex> lock(mutex1[col_idx]);
-                        cols[col_idx].push_back(kk);
-                        if constexpr(std::is_same_v<T, double>)
-                            data[col_idx].push_back(val);
-                        else
-                            data[col_idx].push_back(std::conj(val));
-                    }
+                    cols[kk].push_back(col_idx);
+                    data[kk].push_back(val);
                 }
             };
 
@@ -495,21 +482,18 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
         const boost::dynamic_bitset<std::size_t>& row_beta = all_beta_dets[ib];
         std::vector<std::pair<std::size_t, std::array<uint16_t, 2>>> a_singles, b_singles;
 
-        // Alpha XOR: aa and aaaa (lower triangle: ja < ia)
+        // Alpha XOR: aa and aaaa (all ja; each thread owns cols[kk])
         for(std::size_t ja = 0; ja < N_alpha; ja++)
         {
             const int d = half_xor_positions(row_alpha, all_alpha_dets[ja], 0u, pos);
             if(d == 2)
             {
-                if(ja < ia)
-                {
-                    const auto it = inds_to_group2.find(pack2(pos));
-                    if(it != inds_to_group2.end())
-                        process_group(it->second, ib * N_alpha + ja, pos, 2u);
-                }
+                const auto it = inds_to_group2.find(pack2(pos));
+                if(it != inds_to_group2.end())
+                    process_group(it->second, ib * N_alpha + ja, pos, 2u);
                 a_singles.push_back({ja, {pos[0], pos[1]}});
             }
-            else if(d == 4 && ja < ia)
+            else if(d == 4)
             {
                 const auto it = inds_to_group4.find(pack4(pos));
                 if(it != inds_to_group4.end())
@@ -517,22 +501,19 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
             }
         }
 
-        // Beta XOR: bb and bbbb (lower triangle: jb < ib)
+        // Beta XOR: bb and bbbb (all jb; each thread owns cols[kk])
         for(std::size_t jb = 0; jb < N_beta; jb++)
         {
             const int d = half_xor_positions(
                 row_beta, all_beta_dets[jb], static_cast<uint16_t>(half_width), pos);
             if(d == 2)
             {
-                if(jb < ib)
-                {
-                    const auto it = inds_to_group2.find(pack2(pos));
-                    if(it != inds_to_group2.end())
-                        process_group(it->second, jb * N_alpha + ia, pos, 2u);
-                }
+                const auto it = inds_to_group2.find(pack2(pos));
+                if(it != inds_to_group2.end())
+                    process_group(it->second, jb * N_alpha + ia, pos, 2u);
                 b_singles.push_back({jb, {pos[0], pos[1]}});
             }
-            else if(d == 4 && jb < ib)
+            else if(d == 4)
             {
                 const auto it = inds_to_group4.find(pack4(pos));
                 if(it != inds_to_group4.end())
@@ -542,11 +523,10 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
             }
         }
 
-        // aabb: b_singles (jb < ib only) x a_singles (all ja)
-        // jb < ib guarantees col_idx = jb*N_a + ja < ib*N_a + ia = kk for all ja
+        // aabb: all jb != ib, all ja; each thread owns cols[kk]
         for(const auto& [jb_idx, bp] : b_singles)
         {
-            if(jb_idx >= ib)
+            if(jb_idx == ib)
             {
                 continue;
             }
@@ -564,7 +544,7 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
                 }
 
                 const uint32_t g = it->second;
-                if(is_aabb_group[g])
+                // if(is_aabb_group[g])
                 {
                     // Direct formula: val = coeff(g) * asign * bsign
                     const int asign = jw_parity(row_alpha, ap[0], ap[1]);
@@ -572,25 +552,14 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
                     if(std::abs(val) > ATOL)
                     {
                         const std::size_t col_idx = jb_idx * N_alpha + ja_idx;
-                        {
-                            std::lock_guard<std::mutex> lock(mutex1[kk]);
-                            cols[kk].push_back(col_idx);
-                            data[kk].push_back(val);
-                        }
-                        {
-                            std::lock_guard<std::mutex> lock(mutex1[col_idx]);
-                            cols[col_idx].push_back(kk);
-                            if constexpr(std::is_same_v<T, double>)
-                                data[col_idx].push_back(val);
-                            else
-                                data[col_idx].push_back(std::conj(val));
-                        }
+                        cols[kk].push_back(col_idx);
+                        data[kk].push_back(val);
                     }
                 }
-                else
-                {
-                    process_group(g, jb_idx * N_alpha + ja_idx, cross, 4u);
-                }
+                // else
+                // {
+                //     process_group(g, jb_idx * N_alpha + ja_idx, cross, 4u);
+                // }
             }
         }
 
