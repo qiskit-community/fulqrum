@@ -86,22 +86,25 @@ inline void single_bitstring_diagonal(const boost::dynamic_bitset<size_t>& row,
 /**
 * Is diagonal fast_proj compatible 
 */
-bool fast_diag_compatible(QubitOperator& oper)
+bool fast_diag_compatible(const QubitOperator& oper)
 {
+    bool out = true;
     if(oper.type != 2)
     {
-        throw std::runtime_error("Operator must be type=2 for fast diagonal compatibility");
+        out = false;
     }
-    bool out = true;
-    std::size_t kk;
-    for(auto term : oper.terms)
+    else
     {
-        for(kk = 0; kk < term.proj_indices.size(); kk++)
+        std::size_t kk;
+        for(auto term : oper.terms)
         {
-            if(term.proj_bits[kk] == 0)
+            for(kk = 0; kk < term.proj_indices.size(); kk++)
             {
-                out = false;
-                break;
+                if(term.proj_bits[kk] == 0)
+                {
+                    out = false;
+                    break;
+                }
             }
         }
     }
@@ -158,7 +161,7 @@ QubitOperator& diag_proj_index_sort(QubitOperator& oper)
 }
 
 std::pair<std::vector<std::pair<std::size_t, std::size_t>>, std::size_t>
-projector_ptrs_and_offset(QubitOperator& oper)
+projector_ptrs_and_offset(const QubitOperator& oper)
 {
     std::pair<std::vector<std::pair<std::size_t, std::size_t>>, std::size_t> out;
     std::vector<std::pair<std::size_t, std::size_t>> ptrs(oper.width);
