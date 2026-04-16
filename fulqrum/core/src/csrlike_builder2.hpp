@@ -424,6 +424,62 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
     const std::size_t N_beta = all_beta_dets.size();
 
     // -----------------------------------------------------------------------
+    // Crude estimate of nnz per row
+    // -----------------------------------------------------------------------
+    std::vector<std::size_t> n_aa(N_alpha, 0), n_aaaa(N_alpha, 0);
+    std::vector<std::size_t> n_bb(N_beta,  0), n_bbbb(N_beta,  0);
+
+#pragma omp parallel for schedule(static)
+    for(std::size_t ia = 0; ia < 1; ia++)
+    {
+        uint16_t pos[4];
+        std::size_t ns = 0, nd = 0;
+        for(std::size_t ja = 0; ja < N_alpha; ja++)
+        {
+            const int d = half_xor_positions(all_alpha_dets[ia], all_alpha_dets[ja], 0u, pos);
+            if(d == 2)      ns++;
+            else if(d == 4) nd++;
+        }
+        n_aa[ia]   = ns;
+        n_aaaa[ia] = nd;
+    }
+
+#pragma omp parallel for schedule(static)
+    for(std::size_t ib = 0; ib < 1; ib++)
+    {
+        uint16_t pos[4];
+        std::size_t ns = 0, nd = 0;
+        for(std::size_t jb = 0; jb < N_beta; jb++)
+        {
+            const int d = half_xor_positions(
+                all_beta_dets[ib], all_beta_dets[jb], static_cast<uint16_t>(half_width), pos);
+            if(d == 2)      ns++;
+            else if(d == 4) nd++;
+        }
+        n_bb[ib]   = ns;
+        n_bbbb[ib] = nd;
+    }
+
+    const std::size_t est = n_aa[0] + n_aaaa[0]
+                              + n_bb[0] + n_bbbb[0]
+                              + n_aa[0] * n_bb[0];
+#pragma omp parallel for schedule(static)
+    for(std::size_t kk = 0; kk < subspace_dim; kk++)
+    {
+        // const std::size_t ia = kk % N_alpha;
+        // const std::size_t ib = kk / N_alpha;
+        // const std::size_t est = n_aa[0] + n_aaaa[0]
+        //                       + n_bb[0] + n_bbbb[0]
+        //                       + n_aa[0] * n_bb[0];
+        
+        // n_aa[ia] + n_aaaa[ia]
+        //                       + n_bb[ib] + n_bbbb[ib]
+        //                       + n_aa[ia] * n_bb[ib];
+        cols[kk].reserve(est);
+        data[kk].reserve(est);
+    }
+
+    // -----------------------------------------------------------------------
     // Main loop:
     //
     // Insertion order in subspace is beta-outer x alpha-inner (ascending full
