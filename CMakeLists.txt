@@ -14,7 +14,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_compile_options(-Wall -Wextra -O3 -fopenmp -D_GLIBCXX_ASSERTIONS)
 add_link_options(-fopenmp)
 
-include_directories(fulqrum/include third-party)
+include_directories(fulqrum/include)
 add_subdirectory(third-party/doctest)
 
 
