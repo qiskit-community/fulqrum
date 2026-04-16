@@ -440,7 +440,8 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
     for(kk = 0; kk < subspace_dim; kk++)
     {
         const boost::dynamic_bitset<std::size_t>& row = bitsets[kk].first;
-        boost::dynamic_bitset<std::size_t> col_vec = row;
+        thread_local boost::dynamic_bitset<std::size_t> col_vec;
+        col_vec = row;
 
         auto process_group =
             [&](uint32_t g, std::size_t col_idx, const uint16_t* inds, uint8_t gsz) {
