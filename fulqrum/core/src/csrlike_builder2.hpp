@@ -73,6 +73,27 @@ inline uint64_t pack4(const uint16_t* p)
            (static_cast<uint64_t>(p[2]) << 32) | (static_cast<uint64_t>(p[3]) << 48);
 }
 
+inline int jw_parity(const boost::dynamic_bitset<std::size_t>& bs, uint16_t lo, uint16_t hi)
+{
+    if(hi <= lo + 1)
+        return 1;
+    const uint16_t lo1 = lo + 1;
+    const uint16_t hi1 = hi - 1;
+    const std::size_t blk_lo = lo1 / 64;
+    const std::size_t blk_hi = hi1 / 64;
+    int cnt = 0;
+    for(std::size_t b = blk_lo; b <= blk_hi; b++)
+    {
+        std::size_t word = bs.m_bits[b];
+        if(b == blk_lo)
+            word &= ~((std::size_t(1) << (lo1 % 64)) - 1);
+        if(b == blk_hi && (hi1 % 64) < 63)
+            word &= (std::size_t(2) << (hi1 % 64)) - 1;
+        cnt += __builtin_popcountll(word);
+    }
+    return (cnt & 1) ? -1 : 1;
+}
+
 // ---------------------------------------------------------------------------
 // Original: without half-det parameters.
 // Works for full-str mode of Fulqrum.
@@ -354,6 +375,38 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
     }
 
     // -----------------------------------------------------------------------
+    // Precompute aabb coeff table.
+    // -----------------------------------------------------------------------
+    std::vector<bool> is_aabb_group(num_groups, false);
+    std::vector<T> aabb_coeff(num_groups, T(0));
+    for(std::size_t g = 0; g < num_groups; g++)
+    {
+        const auto& ginds = group_offdiag_inds_array[g];
+        if(ginds[4] != 4)
+            continue;
+
+        if(ginds[1] >= half_width || ginds[2] < half_width)
+            continue;
+        is_aabb_group[g] = true;
+
+        // extract the group coefficient
+        for(unsigned ri = 0; ri + 1 < ladder_offset; ri++)
+        {
+            const std::size_t t0 = group_ladder_ptrs[g * ladder_offset + ri];
+            const std::size_t t1 = group_ladder_ptrs[g * ladder_offset + ri + 1];
+            if(t0 < t1)
+            {
+                const double c = terms[t0].coeff.real() * static_cast<double>(terms[t0].real_phase);
+                if constexpr(std::is_same_v<T, double>)
+                    aabb_coeff[g] = c;
+                else
+                    aabb_coeff[g] = T(c, 0.0);
+                break;
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
     // Diagonal elements
     // -----------------------------------------------------------------------
     if(has_nonzero_diag)
@@ -483,7 +536,9 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
             {
                 const auto it = inds_to_group4.find(pack4(pos));
                 if(it != inds_to_group4.end())
+                {
                     process_group(it->second, jb * N_alpha + ia, pos, 4u);
+                }
             }
         }
 
@@ -492,13 +547,50 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
         for(const auto& [jb_idx, bp] : b_singles)
         {
             if(jb_idx >= ib)
+            {
                 continue;
+            }
+
+            const int bsign = jw_parity(row_beta,
+                                        static_cast<uint16_t>(bp[0] - half_width),
+                                        static_cast<uint16_t>(bp[1] - half_width));
             for(const auto& [ja_idx, ap] : a_singles)
             {
                 const uint16_t cross[4] = {ap[0], ap[1], bp[0], bp[1]};
                 const auto it = inds_to_group4.find(pack4(cross));
-                if(it != inds_to_group4.end())
-                    process_group(it->second, jb_idx * N_alpha + ja_idx, cross, 4u);
+                if(it == inds_to_group4.end())
+                {
+                    continue;
+                }
+
+                const uint32_t g = it->second;
+                if(is_aabb_group[g])
+                {
+                    // Direct formula: val = coeff(g) * asign * bsign
+                    const int asign = jw_parity(row_alpha, ap[0], ap[1]);
+                    const T val = aabb_coeff[g] * T(asign * bsign);
+                    if(std::abs(val) > ATOL)
+                    {
+                        const std::size_t col_idx = jb_idx * N_alpha + ja_idx;
+                        {
+                            std::lock_guard<std::mutex> lock(mutex1[kk]);
+                            cols[kk].push_back(col_idx);
+                            data[kk].push_back(val);
+                        }
+                        {
+                            std::lock_guard<std::mutex> lock(mutex1[col_idx]);
+                            cols[col_idx].push_back(kk);
+                            if constexpr(std::is_same_v<T, double>)
+                                data[col_idx].push_back(val);
+                            else
+                                data[col_idx].push_back(std::conj(val));
+                        }
+                    }
+                }
+                else
+                {
+                    process_group(g, jb_idx * N_alpha + ja_idx, cross, 4u);
+                }
             }
         }
 
