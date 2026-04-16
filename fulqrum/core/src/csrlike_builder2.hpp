@@ -424,34 +424,6 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
     const std::size_t N_beta = all_beta_dets.size();
 
     // -----------------------------------------------------------------------
-    // Estimate nnz per row using det 0 as a proxy: O(N_alpha + N_beta).
-    // -----------------------------------------------------------------------
-    {
-        uint16_t pos[4];
-        std::size_t n_aa = 0, n_aaaa = 0, n_bb = 0, n_bbbb = 0;
-        for(std::size_t ja = 0; ja < N_alpha; ja++)
-        {
-            const int d = half_xor_positions(all_alpha_dets[0], all_alpha_dets[ja], 0u, pos);
-            if(d == 2)      n_aa++;
-            else if(d == 4) n_aaaa++;
-        }
-        for(std::size_t jb = 0; jb < N_beta; jb++)
-        {
-            const int d = half_xor_positions(
-                all_beta_dets[0], all_beta_dets[jb], static_cast<uint16_t>(half_width), pos);
-            if(d == 2)      n_bb++;
-            else if(d == 4) n_bbbb++;
-        }
-        const std::size_t est = n_aa + n_aaaa + n_bb + n_bbbb; // + n_aa * n_bb;
-#pragma omp parallel for schedule(static)
-        for(std::size_t kk = 0; kk < subspace_dim; kk++)
-        {
-            cols[kk].reserve(est);
-            data[kk].reserve(est);
-        }
-    }
-
-    // -----------------------------------------------------------------------
     // Main loop:
     //
     // Insertion order in subspace is beta-outer x alpha-inner (ascending full
