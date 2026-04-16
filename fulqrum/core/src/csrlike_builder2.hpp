@@ -436,7 +436,7 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
     //   bbbb : beta  double, col_idx = jb*N_a + ia
     //   aabb : cross double, col_idx = jb*N_a + ja
     // -----------------------------------------------------------------------
-#pragma omp parallel for schedule(dynamic) if(subspace_dim > 4096)
+#pragma omp parallel for schedule(static) if(subspace_dim > 4096)
     for(kk = 0; kk < subspace_dim; kk++)
     {
         const boost::dynamic_bitset<std::size_t>& row = bitsets[kk].first;
@@ -480,7 +480,9 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
         const std::size_t ia = kk % N_alpha;
         const boost::dynamic_bitset<std::size_t>& row_alpha = all_alpha_dets[ia];
         const boost::dynamic_bitset<std::size_t>& row_beta = all_beta_dets[ib];
-        std::vector<std::pair<std::size_t, std::array<uint16_t, 2>>> a_singles, b_singles;
+        thread_local std::vector<std::pair<std::size_t, std::array<uint16_t, 2>>> a_singles, b_singles;
+        a_singles.clear();
+        b_singles.clear();
 
         // Alpha XOR: aa and aaaa (all ja; each thread owns cols[kk])
         for(std::size_t ja = 0; ja < N_alpha; ja++)
