@@ -19,4 +19,3 @@
 #include "qubit_oper.hpp"
 #include "qubit_term.hpp"
 #include "subspace.hpp"
-

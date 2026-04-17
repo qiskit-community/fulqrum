@@ -211,7 +211,6 @@ typedef struct OperatorTerm
     }
 } OperatorTerm_t;
 
-
 /**
  * In-pace set the projector indices and bits for term in a Hamiltonian
  */
