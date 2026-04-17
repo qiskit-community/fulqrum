@@ -18,10 +18,10 @@ include "../../core/includes/base_header.pxi"
 
 cdef extern from "../src/simple.hpp":
 
-    double simple_restricted(const OperatorTerm_t * terms,
+    double simple_restricted(const QubitOperator_t& oper,
                              const BitsetHashMapWrapper &restricted_subspace,
                              BitsetHashMapWrapper& out_subspace,
-                             const vector[OperatorTerm_t]& diag_terms,
+                             QubitOperator_t& diag_oper,
                              const unsigned int width,
                              const size_t subspace_dim,
                              const int has_nonzero_diag,
