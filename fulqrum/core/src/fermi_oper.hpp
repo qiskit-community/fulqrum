@@ -118,27 +118,24 @@ typedef struct FermionicOperator
     {
         return terms.size();
     }
+
+    QubitOperator extended_jw_transformation() const
+    {
+        QubitOperator_t out = QubitOperator(this->width);
+        std::size_t kk;
+        std::size_t num_terms = this->size();
+        out.terms.resize(num_terms);
+        #pragma omp parallel for schedule(dynamic) if(num_terms > 128)
+        for(kk = 0; kk < num_terms; kk++)
+        {
+            jw_term(terms[kk], out.terms[kk]);
+            out.terms[kk].sort_term_data();
+            set_offdiag_weight_and_phase(out.terms[kk]);
+            set_extended_flag(out.terms[kk]);
+            out.terms[kk].set_proj_indices();
+        }
+        out.type = 2; // set type=2
+        return out;
+    }
 } FermionicOperator_t;
 
-
-/**
- * Extended JW transformation
- *
- * @param[in] fermi Input FermionicOperator
- * @param[in,out] out Output QubitOperator
- */
-void extended_jw_transform(const FermionicOperator_t& fermi,
-                           QubitOperator_t& out,
-                           std::size_t num_terms)
-{
-    std::size_t kk;
-#pragma omp parallel for if(num_terms > 128)
-    for(kk = 0; kk < num_terms; kk++)
-    {
-        jw_term(fermi.terms[kk], out.terms[kk]);
-        out.terms[kk].sort_term_data();
-        set_offdiag_weight_and_phase(out.terms[kk]);
-        set_extended_flag(out.terms[kk]);
-        out.terms[kk].set_proj_indices();
-    }
-}

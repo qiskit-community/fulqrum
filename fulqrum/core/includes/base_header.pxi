@@ -89,6 +89,7 @@ cdef extern from "../src/base.hpp":
         unsigned int width
         vector[FermionicTerm_t] terms
         size_t size()
+        QubitOperator_t extended_jw_transformation()
 
     size_t max_offdiag_ptr_size(vector[size_t]&)
 

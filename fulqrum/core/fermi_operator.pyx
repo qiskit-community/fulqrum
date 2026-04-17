@@ -30,7 +30,6 @@ import numpy as np
 cimport numpy as np
 
 include "includes/base_header.pxi"
-include "includes/fermi_header.pxi"
 include "includes/operators_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
@@ -395,11 +394,8 @@ cdef class FermionicOperator():
         from Fermionic -> Qubit operator
         """
         cdef FermionicOperator fermi = self.deflate_repeated_indices()
-        cdef size_t num_terms = fermi.oper.terms.size()
-        cdef QubitOperator out = QubitOperator(fermi.width)
-        out.oper.terms.resize(num_terms)
-        extended_jw_transform(fermi.oper, out.oper, num_terms)
-        out.oper.type = 2
+        cdef QubitOperator out = QubitOperator(self.width)
+        out.oper = fermi.oper.extended_jw_transformation()
         return out.combine_repeated_terms()
 
     @cython.boundscheck(False)
