@@ -12,7 +12,11 @@
  * that they have been altered from the originals.
  */
 #pragma once
+#include <complex>
 #include <cstdlib>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 const double ATOL = 1e-14;
 const std::size_t MAX_SIZE_T = (std::size_t)-1;
@@ -21,3 +25,32 @@ const unsigned int BITS_PER_BLOCK = 8 * sizeof(std::size_t);
 const unsigned int DEFAULT_LADDER_WIDTH = 4;
 const unsigned int BLOCK_EXPONENT = __builtin_ctz(BITS_PER_BLOCK);
 const unsigned int BLOCK_SHIFT = BITS_PER_BLOCK - 1;
+
+typedef std::tuple<std::string, std::vector<unsigned int>, std::complex<double>> TermData;
+typedef std::tuple<std::string, std::vector<unsigned int>> OpData;
+
+// Map converting standard char values into continuous values
+inline std::unordered_map<unsigned char, unsigned char> oper_map = {
+    {90, 0}, {48, 1}, {49, 2}, {88, 3}, {89, 4}, {45, 5}, {43, 6}};
+
+// Reverse map back to standard char values
+inline std::unordered_map<unsigned char, unsigned char> rev_oper_map = {
+    {0, 90}, {1, 48}, {2, 49}, {3, 88}, {4, 89}, {5, 45}, {6, 43}};
+
+/**
+ * Validate that term indices are less than operator width
+ *
+ * @param[in] indices Indices for the given term
+ * @param[in] width The operator width
+ */
+inline void _validate_indices(std::vector<unsigned int>& inds, unsigned int width)
+{
+    std::size_t size = inds.size();
+    for(std::size_t kk = 0; kk < size; kk++)
+    {
+        if(inds[kk] >= width)
+        {
+            throw std::runtime_error("Index is larger than the operator width.");
+        }
+    }
+}
