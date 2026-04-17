@@ -14,6 +14,7 @@
 #pragma once
 #include "constants.hpp"
 #include "fermi_term.hpp"
+#include "qubit_oper.hpp"
 #include <algorithm>
 #include <cmath>
 #include <complex>
@@ -23,6 +24,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+
 
 /** @struct FermionicOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
@@ -116,3 +119,26 @@ typedef struct FermionicOperator
         return terms.size();
     }
 } FermionicOperator_t;
+
+
+/**
+ * Extended JW transformation
+ *
+ * @param[in] fermi Input FermionicOperator
+ * @param[in,out] out Output QubitOperator
+ */
+void extended_jw_transform(const FermionicOperator_t& fermi,
+                           QubitOperator_t& out,
+                           std::size_t num_terms)
+{
+    std::size_t kk;
+#pragma omp parallel for if(num_terms > 128)
+    for(kk = 0; kk < num_terms; kk++)
+    {
+        jw_term(fermi.terms[kk], out.terms[kk]);
+        out.terms[kk].sort_term_data();
+        set_offdiag_weight_and_phase(out.terms[kk]);
+        set_extended_flag(out.terms[kk]);
+        out.terms[kk].set_proj_indices();
+    }
+}
