@@ -199,3 +199,73 @@ void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
     } // end kk loop
     qubit_term.coeff *= phase; // multiple coefficient by phase factor
 }
+
+
+
+const std::vector<int> COLLAPSED_VALUES = {1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6, -1, 2, -1};
+
+// Converts a regular value index into a deflated one
+int collapse_value(unsigned char x)
+{
+    int out;
+    switch (x)
+    {
+    case 1:
+        out = 0;
+        break;
+    case 2:
+        out = 1;
+        break;
+    case 5:
+        out = 2;
+        break;
+    default: //  x=6
+        out = 3;
+        break;
+    }
+    return out;
+}
+
+void deflate_term_indices(FermionicTerm& term, std::vector<FermionicTerm>& out_terms)
+{
+    unsigned int num_elems = term.indices.size();
+    std::size_t kk, num_touched;
+    FermionicTerm_t new_term = FermionicTerm();
+    unsigned int current_index;
+    int temp_int;
+    unsigned char current_value;
+
+    num_touched = 0;
+    while(num_touched < num_elems)
+    {
+        current_index = term.indices[num_touched];
+        current_value = term.values[num_touched];
+        num_touched += 1;
+        for(kk=num_touched; kk < num_elems; kk++)
+        {
+            // next term has a matching index with the current one
+            if(term.indices[kk] == current_index)
+            {
+                temp_int = COLLAPSED_VALUES[4*collapse_value(current_value) + collapse_value(term.values[kk])];
+                // This operator becomes a null operator return
+                if(temp_int < 0)
+                {
+                    return;
+                }
+                else
+                {
+                    current_value = static_cast<unsigned char>(temp_int);
+                }
+                num_touched += 1;
+            }
+            else
+            {   // Move on to next index since not matching and we assume we index sorted already
+                break;
+            }
+        }
+        new_term.indices.push_back(current_index);
+        new_term.values.push_back(current_value);
+    }
+    new_term.coeff = term.coeff;
+    out_terms.push_back(new_term);
+}
