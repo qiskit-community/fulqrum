@@ -119,11 +119,24 @@ typedef struct FermionicOperator
     {
         return terms.size();
     }
-
+    /**
+     * Make a copy of the operator
+     *
+     * @return A copy of the current operator
+     */
+    FermionicOperator copy() const
+    {
+        FermionicOperator out = FermionicOperator(this->width);
+        out.terms = this->terms;
+        out.combined = this->combined;
+        return out;
+    }
     FermionicOperator combine_repeat_indices() const
     {
         FermionicOperator out = FermionicOperator(this->width);
         const std::vector<int> collapsed_values = {1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6, -1, 2, -1};
+        // This loop is not done in parallel because some of the terms zero out and the length
+        // of the input terms is not the same as the length of the out terms
         for(std::size_t kk=0; kk < terms.size(); kk++)
         {
             deflate_term_indices(terms[kk], out.terms, collapsed_values);
