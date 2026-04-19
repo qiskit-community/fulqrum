@@ -37,6 +37,7 @@
 typedef struct FermionicOperator
 {
     unsigned int width;
+    unsigned int combined = 0; // have the repeated operators indices been combined?
     std::vector<FermionicTerm_t> terms;
     FermionicOperator() {}
     /**
@@ -117,6 +118,18 @@ typedef struct FermionicOperator
     std::size_t size() const
     {
         return terms.size();
+    }
+
+    FermionicOperator combine_repeat_indices() const
+    {
+        FermionicOperator out = FermionicOperator(this->width);
+        const std::vector<int> collapsed_values = {1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6, -1, 2, -1};
+        for(std::size_t kk=0; kk < terms.size(); kk++)
+        {
+            deflate_term_indices(terms[kk], out.terms, collapsed_values);
+        }
+        out.combined = 1;
+        return out;
     }
 
     QubitOperator extended_jw_transformation() const

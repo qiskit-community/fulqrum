@@ -385,8 +385,7 @@ cdef class FermionicOperator():
         """
         cdef size_t kk
         cdef FermionicOperator out = FermionicOperator(self.width)
-        for kk in range(self.oper.terms.size()):
-            deflate_term_indices(&self.oper.terms[kk], &out.oper.terms)
+        out.oper = self.oper.combine_repeat_indices()
         return out
 
     def extended_jw_transformation(self):
@@ -471,54 +470,3 @@ cdef class FermionicOperator():
         dic = json_to_dict(filename)
         out = FermionicOperator.from_dict(dic)
         return out
-
-# DEFLATION ROUTINES
-
-# These are the values returned when compressing two values over the same index
-cdef int[16] COLLAPSED_VALUES = [1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6 , -1, 2, -1]
-
-
-cdef int collapse_value(unsigned char x):
-    """Converts a regular value index into a deflated one
-    """
-    if x == 1:
-        return 0
-    elif x == 2:
-        return 1
-    elif x == 5:
-        return 2
-    else: # x=6
-        return 3
-
-
-cdef void deflate_term_indices(FermionicTerm_t * term, vector[FermionicTerm_t] * out_terms):
-    cdef size_t num_elems = term.indices.size()
-    cdef size_t kk
-    cdef size_t start, num_touched
-    cdef FermionicTerm_t new_term = EmptyFermionicTerm
-    cdef unsigned int current_index
-    cdef int temp_int
-    cdef unsigned char current_value
-
-    num_touched = 0
-    while(num_touched < num_elems):
-        current_index = term.indices[num_touched]
-        current_value = term.values[num_touched]
-        num_touched += 1
-        for kk in range(num_touched, num_elems):
-            #next term has a matching index with the current one
-            if term.indices[kk] == current_index:
-                temp_int = COLLAPSED_VALUES[4*collapse_value(current_value) + collapse_value(term.values[kk])]
-                # This operator becomes a null operator return
-                if temp_int < 0:
-                    return
-                else:
-                    current_value = <unsigned char>temp_int
-                num_touched += 1
-            else:
-                # Move on to next index since not matching and we assume we index sorted already
-                break
-        new_term.indices.push_back(current_index)
-        new_term.values.push_back(current_value)
-    new_term.coeff = term.coeff
-    out_terms.push_back(new_term)

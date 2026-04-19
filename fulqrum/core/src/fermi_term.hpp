@@ -202,8 +202,6 @@ void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
 
 
 
-const std::vector<int> COLLAPSED_VALUES = {1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6, -1, 2, -1};
-
 // Converts a regular value index into a deflated one
 int collapse_value(unsigned char x)
 {
@@ -226,7 +224,8 @@ int collapse_value(unsigned char x)
     return out;
 }
 
-void deflate_term_indices(FermionicTerm& term, std::vector<FermionicTerm>& out_terms)
+void deflate_term_indices(const FermionicTerm& term, std::vector<FermionicTerm>& out_terms, 
+                          const std::vector<int>& collapsed_values)
 {
     unsigned int num_elems = term.indices.size();
     std::size_t kk, num_touched;
@@ -246,7 +245,7 @@ void deflate_term_indices(FermionicTerm& term, std::vector<FermionicTerm>& out_t
             // next term has a matching index with the current one
             if(term.indices[kk] == current_index)
             {
-                temp_int = COLLAPSED_VALUES[4*collapse_value(current_value) + collapse_value(term.values[kk])];
+                temp_int = collapsed_values[4*collapse_value(current_value) + collapse_value(term.values[kk])];
                 // This operator becomes a null operator return
                 if(temp_int < 0)
                 {
