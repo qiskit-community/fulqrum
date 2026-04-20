@@ -60,8 +60,67 @@ TEST_CASE("Test multiplication on right") {
 }
 
 
-TEST_CASE("Test simple operator with one term") {
-    FermionicOperator_t op = FermionicOperator(5, {{"XXXXX", {0,1,2,3,4}, 1}});
+TEST_CASE("Test in-place addition") {
+    width_t N = 5;
+    std::vector<OpData> ans;
+    FermionicOperator_t fop = FermionicOperator(N);
+    for(width_t kk=0; kk < N; kk++)
+    {
+        fop += FermionicOperator(N, {{"-", {kk}, 1.0 / (N + kk)}});
+    }
+    for(width_t kk=0; kk < N; kk++)
+    {
+        ans = {OpData("-", kk)};
+        CHECK(fop[kk].operators() == ans);
+        CHECK(fop[kk].coeff == 1.0 / (N + kk));
+    }
+}
+
+
+TEST_CASE("Test addition") {
+    width_t N = 5;
+    std::vector<OpData> ans;
+    FermionicOperator_t fop = FermionicOperator(N);
+    for(width_t kk=0; kk < N; kk++)
+    {
+        fop = fop + FermionicOperator(N, {{"+", {kk}, 1.0 / (N + kk)}});
+    }
+    for(width_t kk=0; kk < N; kk++)
+    {
+        ans = {OpData("+", kk)};
+        CHECK(fop[kk].operators() == ans);
+        CHECK(fop[kk].coeff == 1.0 / (N + kk));
+    }
+}
+
+
+TEST_CASE("Test simple one-term operator") {
+    FermionicOperator_t op = FermionicOperator(5, {{"XXXXX", {0, 1, 2, 3, 4}, 1}});
     std::vector<OpData> ans = {OpData("X", 0), OpData("X", 1), OpData("X", 2), OpData("X", 3), OpData("X", 4)};
     CHECK(op[0].operators() == ans);
 }
+
+
+TEST_CASE("Test repeated indices simple") {
+    FermionicOperator_t op = FermionicOperator(5, {{"+++++", {0, 0, 0, 0, 0}, 1}});
+    std::vector<OpData> ans = {OpData("+", 0), OpData("+", 0), OpData("+", 0), OpData("+", 0), OpData("+", 0)};
+    CHECK(op[0].operators() == ans);
+}
+
+
+TEST_CASE("Test repeated indices") {
+    FermionicOperator_t op = FermionicOperator(5, {{"+--+-", {2, 1, 1, 0, 0}, 1}});
+    std::vector<OpData> ans = {OpData("+", 0), OpData("-", 0), OpData("-", 1), OpData("-", 1), OpData("+", 2)};
+    CHECK(op[0].operators() == ans);
+}
+
+
+TEST_CASE("Test operator subtraction") {
+    width_t N = 5;
+    FermionicOperator_t op1 = FermionicOperator(N, {{"+", {0}, 1}}) - FermionicOperator(N, {{"-", {0}, 2}});
+    FermionicOperator_t op2 = FermionicOperator(N, {{"+", {0}, 1}}) + FermionicOperator(N, {{"-", {0}, -2}});
+    CHECK(op1[0].operators() == op2[0].operators());
+    CHECK(op1[0].coeff == op2[0].coeff);
+    CHECK(op1[1].coeff == op2[1].coeff);
+}
+

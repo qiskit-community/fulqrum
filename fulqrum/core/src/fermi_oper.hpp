@@ -156,6 +156,92 @@ typedef struct FermionicOperator
         return out;
     }
     /**
+     * Inplace addition by another FermionicOperator
+     * 
+     * @param[in] other Operator to add to this one
+     * @throw Error if operators do not share the same width
+     */
+    FermionicOperator& operator+=(FermionicOperator other)
+    {
+        if(other.width != this->width)
+        {
+            throw std::runtime_error("Operators must have the same width");
+        }
+        for(std::size_t kk = 0; kk < other.size(); kk++)
+        {
+            this->terms.push_back(other.terms[kk]);
+        }
+        this->combined = 0;
+        return *this;
+    }
+    /**
+     * Addition by another FermionicOperator
+     * 
+     * @param[in] other Operator to add to this one
+     * @return The new operator
+     * @throw Error if operators do not share the same width
+     */
+    FermionicOperator operator+(FermionicOperator other) const
+    {
+        if(other.width != this->width)
+        {
+            throw std::runtime_error("Operators must have the same width");
+        }
+        FermionicOperator out = this->copy();
+        for(std::size_t kk = 0; kk < other.size(); kk++)
+        {
+            out.terms.push_back(other.terms[kk]);
+        }
+        return out;
+    }
+    /**
+     * Inplace subtraction by another FermionicOperator
+     * 
+     * @param[in] other Operator to add to this one
+     * @throw Error if operators do not share the same width
+     */
+    FermionicOperator& operator-=(FermionicOperator other)
+    {
+        if(other.width != this->width)
+        {
+            throw std::runtime_error("Operators must have the same width");
+        }
+
+        FermionicTerm term;
+        for(std::size_t kk = 0; kk < other.size(); kk++)
+        {
+            term = other.terms[kk];
+            term.coeff *= -1;
+            this->terms.push_back(term);
+        }
+        this->combined = 0;
+        return *this;
+    }
+    /**
+     * Subtraction by another FermionicOperator
+     * 
+     * @param[in] other Operator to subject to this one
+     * @return New operator
+     * @throw Error if operators do not share the same width
+     */
+    FermionicOperator operator-(FermionicOperator other)
+    {
+        if(other.width != this->width)
+        {
+            throw std::runtime_error("Operators must have the same width");
+        }
+
+        FermionicTerm term;
+        FermionicOperator out = this->copy();
+        for(std::size_t kk = 0; kk < other.size(); kk++)
+        {
+            term = other.terms[kk];
+            term.coeff *= -1;
+            out.terms.push_back(term);
+        }
+        return out;
+    }
+    /**
      * Return the size of the operator
      */
     std::size_t size() const

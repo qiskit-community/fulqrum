@@ -18,6 +18,8 @@
 #include <unordered_map>
 #include <vector>
 
+typedef unsigned int width_t;
+
 const double ATOL = 1e-14;
 const std::size_t MAX_SIZE_T = (std::size_t)-1;
 const unsigned int MAX_UINT = (unsigned int)-1;
