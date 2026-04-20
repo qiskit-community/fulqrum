@@ -43,10 +43,10 @@ def ramps_restricted_simple(QubitOperator H, Subspace target_subspace, double ta
     cdef Subspace out = target_subspace.copy()
     Hsub = SubspaceHamiltonian(H, target_subspace)
     cdef FulqrumSpMV spmv = Hsub.spmv
-    cdef double energy = simple_restricted(&spmv.oper.terms[0],
+    cdef double energy = simple_restricted(spmv.oper,
                                            restricted_subspace.subspace.bitstrings,
                                            out.subspace.bitstrings,
-                                           spmv.diag_oper.terms,
+                                           spmv.diag_oper,
                                            spmv.width,
                                            restricted_subspace.size(),
                                            spmv.has_nonzero_diag,

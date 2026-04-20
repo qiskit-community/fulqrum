@@ -26,10 +26,10 @@
 #include "../../core/src/elements.hpp"
 #include "../../core/src/operators.hpp"
 
-double simple_restricted(const OperatorTerm_t* terms,
+double simple_restricted(const QubitOperator& oper,
                          const bitset_map_namespace::BitsetHashMapWrapper& restricted_subspace,
                          bitset_map_namespace::BitsetHashMapWrapper& out_subspace,
-                         const std::vector<OperatorTerm_t>& diag_terms,
+                         QubitOperator& diag_oper,
                          const unsigned int width,
                          const std::size_t subspace_dim,
                          const int has_nonzero_diag,
@@ -43,6 +43,16 @@ double simple_restricted(const OperatorTerm_t* terms,
                          const unsigned int max_recursion,
                          const double tol)
 {
+
+    // do stuff if the diagonal can be evaluated quickly
+    bool do_fast_diag = fast_diag_compatible(oper);
+    std::pair<std::vector<std::pair<std::size_t, std::size_t>>, std::size_t> ptrs_and_offset;
+    if(do_fast_diag)
+    {
+        diag_proj_index_sort(diag_oper);
+        ptrs_and_offset = projector_ptrs_and_offset(diag_oper);
+    }
+
     std::size_t recur, kk;
     const auto* input_bitsets = restricted_subspace.get_bitsets();
     auto* output_bitsets = out_subspace.get_bitsets();
@@ -107,7 +117,7 @@ double simple_restricted(const OperatorTerm_t* terms,
                         }
                         do_col_search = 0;
                     }
-                    term = &terms[idx];
+                    term = &oper.terms[idx];
                     if(passes_proj_validation(term, row))
                     {
                         accum_element(row,
@@ -124,8 +134,19 @@ double simple_restricted(const OperatorTerm_t* terms,
                 if(!do_col_search)
                 {
                     // If this column is in the subspace we need to compute the columns diagonal energy
-                    single_bitstring_diagonal(
-                        input_bitsets[*col_ptr].first, diag_terms, col_energy);
+                    if(do_fast_diag)
+                    {
+                        single_bitstring_diagonal_fast(input_bitsets[*col_ptr].first,
+                                                       diag_oper.terms,
+                                                       ptrs_and_offset.first,
+                                                       ptrs_and_offset.second,
+                                                       col_energy);
+                    }
+                    else
+                    {
+                        single_bitstring_diagonal(
+                            input_bitsets[*col_ptr].first, diag_oper.terms, col_energy);
+                    }
                     energy_amp = current_prefactors[kk] * std::pow(std::abs(val), 2) /
                                  (target_energy - col_energy + 1e-15);
                     // If the amplitude is larger than tol

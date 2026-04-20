@@ -210,3 +210,24 @@ typedef struct OperatorTerm
         return diag;
     }
 } OperatorTerm_t;
+
+/**
+ * In-pace set the projector indices and bits for term in a Hamiltonian
+ */
+inline OperatorTerm& set_proj_indices(OperatorTerm& term)
+{
+    std::size_t kk;
+    unsigned int val;
+    term.proj_indices.resize(0);
+    term.proj_bits.resize(0);
+    for(kk = 0; kk < term.values.size(); kk++)
+    {
+        val = term.values[kk];
+        if(val == 1 || val == 2)
+        {
+            term.proj_indices.push_back(term.indices[kk]);
+            term.proj_bits.push_back(val - 1);
+        }
+    }
+    return term;
+}
