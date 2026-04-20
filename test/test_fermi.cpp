@@ -310,3 +310,28 @@ TEST_CASE("Combine repeated indices for single pair of elements 16") {
     CHECK(op_deflate.size() == 1);
     CHECK(op_deflate[0].operators() == ans);
 }
+
+
+TEST_CASE("Combine repeated indices for three elements 1") {
+    FermionicOperator_t op = FermionicOperator(5, {{"+-+", {1, 1, 1}, 1}});
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    std::vector<OpData> ans = {OpData("+", 1)};
+    CHECK(op_deflate.size() == 1);
+    CHECK(op_deflate[0].operators() == ans);
+}
+
+
+TEST_CASE("Combine repeated indices for three elements 2") {
+    FermionicOperator_t op = FermionicOperator(5, {{"11-", {1, 1, 1}, 1}});
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    CHECK(op_deflate.size() == 0);
+}
+
+
+TEST_CASE("Combine repeated indices for three elements 3") {
+    FermionicOperator_t op = FermionicOperator(5, {{"-+-", {1, 1, 1}, 1}});
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    std::vector<OpData> ans = {OpData("-", 1)};
+    CHECK(op_deflate.size() == 1);
+    CHECK(op_deflate[0].operators() == ans);
+}
