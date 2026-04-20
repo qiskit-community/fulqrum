@@ -713,10 +713,14 @@ typedef struct QubitOperator
     }
     /**
      * Grab a single term by index
+     * 
+     * @param[in] Index of term to grab
+     * 
+     * @return OperatorTerm at the given index
      */
-    OperatorTerm_t operator[](std::size_t kk) const
+    OperatorTerm_t operator[](std::size_t index) const
     {
-        return terms[kk];
+        return terms[index];
     }
     /**
      * Inplace multiplication by a complex value

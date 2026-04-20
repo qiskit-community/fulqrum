@@ -113,6 +113,49 @@ typedef struct FermionicOperator
         return os << ", width=" << self.width << "]>";
     }
     /**
+     * Grab a single term by index
+     * 
+     * @param[in] Index of term to grab
+     * 
+     * @return FermionicTerm at the given index
+     */
+    FermionicTerm_t operator[](std::size_t index) const
+    {
+        return terms[index];
+    }
+    /**
+     * Inplace multiplication by a complex value
+     */
+    FermionicOperator& operator*=(std::complex<double> c)
+    {
+        for(std::size_t kk = 0; kk < this->size(); kk++)
+        {
+            terms[kk] *= c;
+        }
+        return *this;
+    }
+    /**
+     * multiplication by a complex value (need one for mult on each side)
+     */
+    friend FermionicOperator operator*(FermionicOperator& op, std::complex<double> c)
+    {
+        FermionicOperator out = op.copy();
+        for(std::size_t kk = 0; kk < out.size(); kk++)
+        {
+            out.terms[kk] *= c;
+        }
+        return out;
+    }
+    friend FermionicOperator operator*(std::complex<double> c, FermionicOperator& op)
+    {
+        FermionicOperator out = op.copy();
+        for(std::size_t kk = 0; kk < out.size(); kk++)
+        {
+            out.terms[kk] *= c;
+        }
+        return out;
+    }
+    /**
      * Return the size of the operator
      */
     std::size_t size() const

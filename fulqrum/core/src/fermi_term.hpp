@@ -71,12 +71,58 @@ typedef struct FermionicTerm
         std::vector<unsigned char>().swap(values);
         std::vector<unsigned int>().swap(indices);
     }
+    FermionicTerm copy() const
+    {
+        FermionicTerm out = FermionicTerm(this->coeff);
+        out.values = this->values;
+        out.indices = this->indices;
+        return out;
+    }
+     /**
+     * Inplace multiplication by a complex value
+     */
+    FermionicTerm& operator*=(std::complex<double> c)
+    {
+        coeff *= c;
+        return *this;
+    }
+    /**
+     * Term multiplication by a complex number
+     */
+    friend FermionicTerm operator*(FermionicTerm& op, std::complex<double> c)
+    {
+        FermionicTerm out = op.copy();
+        out.coeff *= c;
+        return out;
+    }
+    /**
+     * Term multiplication by a complex number
+     */
+    friend FermionicTerm operator*(std::complex<double> c, FermionicTerm& op)
+    {
+        FermionicTerm out = op.copy();
+        out.coeff *= c;
+        return out;
+    }
     /**
      * Return the size of the term
      */
     std::size_t size() const
     {
         return indices.size();
+    }
+    /**
+     * Return vector of operator and index pairs
+     */
+    std::vector<OpData> operators() const
+    {
+        std::vector<OpData> out;
+        for(std::size_t kk = 0; kk < indices.size(); kk++)
+        {
+            OpData item{std::string(1, static_cast<char>(rev_oper_map[values[kk]])), indices[kk]};
+            out.push_back(item);
+        }
+        return out;
     }
     /**
      * Insertion sort indices (and values) in the term
@@ -149,7 +195,7 @@ inline int jw_phase(const unsigned char op)
  * @param[in] fermi_term Input Fermionic term
  * @param[in,out] qubit_term Output qubit term
  */
-void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
+inline void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
 {
     int num_elems = fermi_term.indices.size();
     int kk, mm;
