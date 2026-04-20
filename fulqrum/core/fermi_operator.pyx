@@ -392,9 +392,8 @@ cdef class FermionicOperator():
         """Jordan-Wigner transformation over extended alphabet
         from Fermionic -> Qubit operator
         """
-        cdef FermionicOperator fermi = self.deflate_repeated_indices()
         cdef QubitOperator out = QubitOperator(self.width)
-        out.oper = fermi.oper.extended_jw_transformation()
+        out.oper = self.oper.extended_jw_transformation()
         return out.combine_repeated_terms()
 
     @cython.boundscheck(False)

@@ -145,8 +145,22 @@ typedef struct FermionicOperator
         return out;
     }
 
-    QubitOperator extended_jw_transformation() const
+    /**
+     * Extended Jordan-Wigner transformation
+     * 
+     * @note This routine requires combining repeated indices first,
+     * and will do so internally if the `combined` flag is not set
+     *
+     * @return QubitOperator after extended JW transformation
+     */
+    QubitOperator extended_jw_transformation()
     {
+        FermionicOperator& fermi = *this;
+        // This requires combining repeated indices
+        if(!this->combined)
+        {
+            fermi = this->combine_repeat_indices();
+        }
         QubitOperator_t out = QubitOperator(this->width);
         std::size_t kk;
         std::size_t num_terms = this->size();
@@ -154,7 +168,7 @@ typedef struct FermionicOperator
         #pragma omp parallel for schedule(dynamic) if(num_terms > 128)
         for(kk = 0; kk < num_terms; kk++)
         {
-            jw_term(terms[kk], out.terms[kk]);
+            jw_term(fermi.terms[kk], out.terms[kk]);
             out.terms[kk].sort_term_data();
             set_offdiag_weight_and_phase(out.terms[kk]);
             set_extended_flag(out.terms[kk]);
