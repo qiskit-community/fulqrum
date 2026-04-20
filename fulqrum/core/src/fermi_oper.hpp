@@ -25,8 +25,6 @@
 #include <unordered_map>
 #include <vector>
 
-
-
 /** @struct FermionicOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
  *
@@ -267,11 +265,12 @@ typedef struct FermionicOperator
     FermionicOperator combine_repeat_indices() const
     {
         FermionicOperator out = FermionicOperator(this->width);
-        const std::vector<int> collapsed_values = {1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6, -1, 2, -1};
+        const std::vector<int> collapsed_values = {
+            1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6, -1, 2, -1};
         // This loop is not done in parallel because some of the terms zero out and the length
         // of the input terms is not the same as the length of the out terms
         // @note this loop should probably also be moved inside of the deflate terms routine
-        for(std::size_t kk=0; kk < terms.size(); kk++)
+        for(std::size_t kk = 0; kk < terms.size(); kk++)
         {
             deflate_term_indices(terms[kk], out.terms, collapsed_values);
         }
@@ -299,7 +298,7 @@ typedef struct FermionicOperator
         std::size_t kk;
         std::size_t num_terms = this->size();
         out.terms.resize(num_terms);
-        #pragma omp parallel for schedule(dynamic) if(num_terms > 128)
+#pragma omp parallel for schedule(dynamic) if(num_terms > 128)
         for(kk = 0; kk < num_terms; kk++)
         {
             jw_term(fermi.terms[kk], out.terms[kk]);
@@ -312,4 +311,3 @@ typedef struct FermionicOperator
         return out.combine_repeated_terms();
     }
 } FermionicOperator_t;
-

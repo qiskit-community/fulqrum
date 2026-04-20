@@ -78,7 +78,7 @@ typedef struct FermionicTerm
         out.indices = this->indices;
         return out;
     }
-     /**
+    /**
      * Inplace multiplication by a complex value
      */
     FermionicTerm& operator*=(std::complex<double> c)
@@ -162,7 +162,6 @@ typedef struct FermionicTerm
     }
 } FermionicTerm_t;
 
-
 /**
  * Compute the JW phase for a given operator
  *
@@ -173,7 +172,7 @@ typedef struct FermionicTerm
 inline int jw_phase(const unsigned char op)
 {
     int out;
-    switch (op)
+    switch(op)
     {
     case 5: //minus sign if op = '-'
         out = -1;
@@ -187,7 +186,6 @@ inline int jw_phase(const unsigned char op)
     }
     return out;
 }
-
 
 /**
  * Compute the extended JW transformation for a single Fermionic term
@@ -246,13 +244,11 @@ inline void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_ter
     qubit_term.coeff *= phase; // multiple coefficient by phase factor
 }
 
-
-
 // Converts a regular value index into a deflated one
 inline int collapse_value(unsigned char x)
 {
     int out;
-    switch (x)
+    switch(x)
     {
     case 1:
         out = 0;
@@ -270,7 +266,8 @@ inline int collapse_value(unsigned char x)
     return out;
 }
 
-inline void deflate_term_indices(const FermionicTerm& term, std::vector<FermionicTerm>& out_terms, 
+inline void deflate_term_indices(const FermionicTerm& term,
+                                 std::vector<FermionicTerm>& out_terms,
                                  const std::vector<int>& collapsed_values)
 {
     unsigned int num_elems = term.indices.size();
@@ -286,12 +283,13 @@ inline void deflate_term_indices(const FermionicTerm& term, std::vector<Fermioni
         current_index = term.indices[num_touched];
         current_value = term.values[num_touched];
         num_touched += 1;
-        for(kk=num_touched; kk < num_elems; kk++)
+        for(kk = num_touched; kk < num_elems; kk++)
         {
             // next term has a matching index with the current one
             if(term.indices[kk] == current_index)
             {
-                temp_int = collapsed_values[4*collapse_value(current_value) + collapse_value(term.values[kk])];
+                temp_int = collapsed_values[4 * collapse_value(current_value) +
+                                            collapse_value(term.values[kk])];
                 // This operator becomes a null operator return
                 if(temp_int < 0)
                 {
@@ -304,7 +302,7 @@ inline void deflate_term_indices(const FermionicTerm& term, std::vector<Fermioni
                 num_touched += 1;
             }
             else
-            {   // Move on to next index since not matching and we assume we index sorted already
+            { // Move on to next index since not matching and we assume we index sorted already
                 break;
             }
         }

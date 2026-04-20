@@ -12,66 +12,65 @@
  * that they have been altered from the originals.
  */
 #include "doctest.h"
+#include "fulqrum.hpp"
 #include <complex>
 #include <vector>
-#include "fulqrum.hpp"
-
 
 typedef std::complex<double> complex;
 
-
-TEST_CASE("Test term grouping 1") {
+TEST_CASE("Test term grouping 1")
+{
     QubitOperator op = QubitOperator(2);
     std::vector<std::string> labels = {"XY", "XI", "IY", "YY", "IZ", "II", "Z0"};
-    for(auto label: labels)
+    for(auto label : labels)
     {
         op += QubitOperator::from_label(label);
     }
     op.group_sort();
     std::vector<int> ans = {0, 0, 0, 1, 2, 3, 3};
-    for(unsigned int kk=0; kk < op.size(); kk++)
+    for(unsigned int kk = 0; kk < op.size(); kk++)
     {
         CHECK(op[kk].group == ans[kk]);
     }
 }
 
-
-TEST_CASE("Test term grouping 2") {
+TEST_CASE("Test term grouping 2")
+{
     QubitOperator op = QubitOperator(3);
     std::vector<std::string> labels = {"III", "ZZ1", "Z0Z", "IZI", "ZI0"};
-    for(auto label: labels)
+    for(auto label : labels)
     {
         op += QubitOperator::from_label(label);
     }
     op.group_sort();
     std::vector<int> ans(5, 0);
-    for(unsigned int kk=0; kk < op.size(); kk++)
+    for(unsigned int kk = 0; kk < op.size(); kk++)
     {
         CHECK(op[kk].group == ans[kk]);
     }
 }
 
-
-TEST_CASE("Test term grouping 3") {
+TEST_CASE("Test term grouping 3")
+{
     QubitOperator op = QubitOperator(4);
     std::vector<std::string> labels = {"XIIY", "+ZZ-", "Y01X", "-00+"};
-    for(auto label: labels)
+    for(auto label : labels)
     {
         op += QubitOperator::from_label(label);
     }
     op.group_sort();
     std::vector<int> ans(4, 1);
-    for(unsigned int kk=0; kk < op.size(); kk++)
+    for(unsigned int kk = 0; kk < op.size(); kk++)
     {
         CHECK(op[kk].group == ans[kk]);
     }
 }
 
-
-TEST_CASE("Test split operator grouping") {
+TEST_CASE("Test split operator grouping")
+{
     QubitOperator op = QubitOperator(4);
     std::vector<std::string> labels = {"XIII", "ZYII", "ZIZI", "01+Z", "IIII", "+Z00"};
-    for(auto label: labels)
+    for(auto label : labels)
     {
         op += QubitOperator::from_label(label);
     }
@@ -84,8 +83,8 @@ TEST_CASE("Test split operator grouping") {
     CHECK(off.groups() == off_ans);
 }
 
-
-TEST_CASE("Test basic term group pointers1 ") {
+TEST_CASE("Test basic term group pointers1 ")
+{
     QubitOperator H = QubitOperator(5);
     H += QubitOperator::from_label("IIIIX");
     H += QubitOperator::from_label("IIIXI");
@@ -95,8 +94,8 @@ TEST_CASE("Test basic term group pointers1 ") {
     CHECK(H.group_ptrs() == std::vector<std::size_t>{0, 1, 2, 3, 4, 5});
 }
 
-
-TEST_CASE("Test basic term group pointers 2") {
+TEST_CASE("Test basic term group pointers 2")
+{
     QubitOperator H = QubitOperator(5);
     H += QubitOperator::from_label("IIIIX");
     H += QubitOperator::from_label("IIIIY");
@@ -107,8 +106,8 @@ TEST_CASE("Test basic term group pointers 2") {
     CHECK(H.group_ptrs() == std::vector<std::size_t>{0, 2, 3, 4, 5, 6});
 }
 
-
-TEST_CASE("Test basic term group pointers 3") {
+TEST_CASE("Test basic term group pointers 3")
+{
     QubitOperator H = QubitOperator(5);
     H += QubitOperator::from_label("IIIIX");
     H += QubitOperator::from_label("IIIXI");
@@ -119,8 +118,8 @@ TEST_CASE("Test basic term group pointers 3") {
     CHECK(H.group_ptrs() == std::vector<std::size_t>{0, 1, 2, 3, 4, 6});
 }
 
-
-TEST_CASE("Test basic term group pointers 4") {
+TEST_CASE("Test basic term group pointers 4")
+{
     QubitOperator H = QubitOperator(5);
     H += QubitOperator::from_label("IIIIX");
     H += QubitOperator::from_label("+IIII");
@@ -130,8 +129,8 @@ TEST_CASE("Test basic term group pointers 4") {
     CHECK(H.group_ptrs() == std::vector<std::size_t>{0, 1, 2, 5});
 }
 
-
-TEST_CASE("Test basic term group pointers 5") {
+TEST_CASE("Test basic term group pointers 5")
+{
     QubitOperator op = QubitOperator::from_label("IIII");
     op += QubitOperator::from_label("XIIX");
     op += QubitOperator::from_label("YIIX");

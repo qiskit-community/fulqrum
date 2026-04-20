@@ -12,67 +12,66 @@
  * that they have been altered from the originals.
  */
 #include "doctest.h"
+#include "fulqrum.hpp"
 #include <complex>
 #include <vector>
-#include "fulqrum.hpp"
-
 
 typedef std::complex<double> complex;
 
-
-
-TEST_CASE("Check off-diag weight for identity op is zero") {
+TEST_CASE("Check off-diag weight for identity op is zero")
+{
     QubitOperator op = QubitOperator::from_label("IIIII");
     std::vector<unsigned int> ans = {0};
     CHECK(op.offdiag_weights() == ans);
 }
 
-
-TEST_CASE("Check off-diag weight for diag op is zero") {
+TEST_CASE("Check off-diag weight for diag op is zero")
+{
     QubitOperator op = QubitOperator::from_label("IIZII");
     std::vector<unsigned int> ans = {0};
     CHECK(op.offdiag_weights() == ans);
 }
 
-
-TEST_CASE("Check off-diag weight for simple off-weight 1 op") {
+TEST_CASE("Check off-diag weight for simple off-weight 1 op")
+{
     QubitOperator op = QubitOperator::from_label("IIYII");
     std::vector<unsigned int> ans = {1};
     CHECK(op.offdiag_weights() == ans);
 }
 
-
-TEST_CASE("Check off-diag weight for simple off-weight op") {
+TEST_CASE("Check off-diag weight for simple off-weight op")
+{
     QubitOperator op = QubitOperator::from_label("+ZYZX");
     std::vector<unsigned int> ans = {3};
     CHECK(op.offdiag_weights() == ans);
 }
 
-
-TEST_CASE("Check off-diag weight for simple multi-term") {
+TEST_CASE("Check off-diag weight for simple multi-term")
+{
     QubitOperator op = QubitOperator::from_label("0IYI1") + QubitOperator::from_label("+ZYZX");
     std::vector<unsigned int> ans = {1, 3};
     CHECK(op.offdiag_weights() == ans);
 }
 
-
-TEST_CASE("Check off-diag weight for simple multi-term 2") {
+TEST_CASE("Check off-diag weight for simple multi-term 2")
+{
     unsigned int N = 5;
     QubitOperator op = QubitOperator(N, {{"Y", {2}, 1}}) + QubitOperator(N, {{"-X", {0, 2}, 5}});
     std::vector<unsigned int> ans = {1, 2};
     CHECK(op.offdiag_weights() == ans);
 }
 
-
-TEST_CASE("Check off-diag weight for simple multi-term 3") {
+TEST_CASE("Check off-diag weight for simple multi-term 3")
+{
     unsigned int N = 5;
-    QubitOperator op = QubitOperator(N, {{"Y", {2}, 1}}) + QubitOperator(N, {{"-XY", {4, 0, 2}, complex(-1, 1)}});
+    QubitOperator op =
+        QubitOperator(N, {{"Y", {2}, 1}}) + QubitOperator(N, {{"-XY", {4, 0, 2}, complex(-1, 1)}});
     std::vector<unsigned int> ans = {1, 3};
     CHECK(op.offdiag_weights() == ans);
 }
 
-
-TEST_CASE("Test off-diagonal weight sorting") {
+TEST_CASE("Test off-diagonal weight sorting")
+{
     QubitOperator op = QubitOperator::from_label("IXI");
     op += QubitOperator::from_label("YXX");
     op += QubitOperator::from_label("X1Y");
@@ -82,8 +81,8 @@ TEST_CASE("Test off-diagonal weight sorting") {
     CHECK(op.offdiag_weights() == ans);
 }
 
-
-TEST_CASE("Test off-diagonal weight pointers 1") {
+TEST_CASE("Test off-diagonal weight pointers 1")
+{
     QubitOperator op = QubitOperator::from_label("IIII+");
     op += QubitOperator::from_label("III+I");
     op += QubitOperator::from_label("II+II");
@@ -93,8 +92,8 @@ TEST_CASE("Test off-diagonal weight pointers 1") {
     CHECK(op.offdiag_weight_ptrs() == ans);
 }
 
-
-TEST_CASE("Test off-diagonal weight pointers 2") {
+TEST_CASE("Test off-diagonal weight pointers 2")
+{
     QubitOperator op = QubitOperator::from_label("IIIII");
     op += QubitOperator::from_label("IIZII");
     op += QubitOperator::from_label("IZZZI");
@@ -109,8 +108,8 @@ TEST_CASE("Test off-diagonal weight pointers 2") {
     CHECK(op[4].offdiag_weight == 2);
 }
 
-
-TEST_CASE("Test off-diagonal weight pointers all diag op") {
+TEST_CASE("Test off-diagonal weight pointers all diag op")
+{
     QubitOperator op = QubitOperator::from_label("IIIII");
     op += QubitOperator::from_label("IIZII");
     op += QubitOperator::from_label("IZZZI");
@@ -118,8 +117,8 @@ TEST_CASE("Test off-diagonal weight pointers all diag op") {
     CHECK(op.offdiag_weight_ptrs() == ans);
 }
 
-
-TEST_CASE("Test max offdiag pointer size 1") {
+TEST_CASE("Test max offdiag pointer size 1")
+{
     QubitOperator op = QubitOperator::from_label("IIII-");
     op += QubitOperator::from_label("IIIYI");
     op += QubitOperator::from_label("IIXII");
@@ -129,8 +128,8 @@ TEST_CASE("Test max offdiag pointer size 1") {
     CHECK(max_offdiag_ptr_size(ptrs) == 5);
 }
 
-
-TEST_CASE("Test max offdiag pointer size 2") {
+TEST_CASE("Test max offdiag pointer size 2")
+{
     QubitOperator op = QubitOperator::from_label("IIIII");
     op += QubitOperator::from_label("IIZII");
     op += QubitOperator::from_label("IZZZI");
@@ -140,8 +139,8 @@ TEST_CASE("Test max offdiag pointer size 2") {
     CHECK(max_offdiag_ptr_size(ptrs) == 3);
 }
 
-
-TEST_CASE("Test max offdiag pointer size 3") {
+TEST_CASE("Test max offdiag pointer size 3")
+{
     QubitOperator op = QubitOperator::from_label("+IIII");
     op += QubitOperator::from_label("IIZII");
     op += QubitOperator::from_label("IZZZI");
@@ -151,8 +150,8 @@ TEST_CASE("Test max offdiag pointer size 3") {
     CHECK(max_offdiag_ptr_size(ptrs) == 2);
 }
 
-
-TEST_CASE("Test max offdiag pointer size for all diagonals") {
+TEST_CASE("Test max offdiag pointer size for all diagonals")
+{
     QubitOperator op = QubitOperator::from_label("IIIII");
     op += QubitOperator::from_label("IIZII");
     op += QubitOperator::from_label("IZZZI");

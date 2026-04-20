@@ -12,16 +12,15 @@
  * that they have been altered from the originals.
  */
 #include "doctest.h"
-#include <complex>
-#include <vector>
-#include <string>
 #include "fulqrum.hpp"
-
+#include <complex>
+#include <string>
+#include <vector>
 
 typedef std::complex<double> complex;
 
-
-TEST_CASE("Test group term sort by ladder integers 1") {
+TEST_CASE("Test group term sort by ladder integers 1")
+{
     QubitOperator op = QubitOperator::from_label("III+");
     op += QubitOperator::from_label("-II+");
     op += QubitOperator::from_label("+II-");
@@ -35,8 +34,8 @@ TEST_CASE("Test group term sort by ladder integers 1") {
     CHECK(op.ladder_integers() == std::vector<unsigned int>{MAX_UINT, 1, 1, 2, 3, 0, 6});
 }
 
-
-TEST_CASE("Test group term sort by ladder_width=3") {
+TEST_CASE("Test group term sort by ladder_width=3")
+{
     QubitOperator op = QubitOperator::from_label("++++++");
     op += QubitOperator::from_label("------");
     op += QubitOperator::from_label("IIIZZI");
@@ -45,8 +44,8 @@ TEST_CASE("Test group term sort by ladder_width=3") {
     CHECK(op.ladder_integers() == std::vector<unsigned int>{MAX_UINT, 0, 7});
 }
 
-
-TEST_CASE("Test group term sort by ladder_width=2") {
+TEST_CASE("Test group term sort by ladder_width=2")
+{
     QubitOperator op = QubitOperator::from_label("++++++");
     op += QubitOperator::from_label("------");
     op += QubitOperator::from_label("IIIZZI");
@@ -55,8 +54,8 @@ TEST_CASE("Test group term sort by ladder_width=2") {
     CHECK(op.ladder_integers() == std::vector<unsigned int>{MAX_UINT, 0, 3});
 }
 
-
-TEST_CASE("Test group term sort by ladder_width=1") {
+TEST_CASE("Test group term sort by ladder_width=1")
+{
     QubitOperator op = QubitOperator::from_label("++++++");
     op += QubitOperator::from_label("------");
     op += QubitOperator::from_label("IIIZZI");
@@ -65,8 +64,8 @@ TEST_CASE("Test group term sort by ladder_width=1") {
     CHECK(op.ladder_integers() == std::vector<unsigned int>{MAX_UINT, 0, 1});
 }
 
-
-TEST_CASE("Test group term sort ladder_width=3 2") {
+TEST_CASE("Test group term sort ladder_width=3 2")
+{
     QubitOperator op = QubitOperator::from_label("_+II");
     op += QubitOperator::from_label("++II");
     op += QubitOperator::from_label("IIIZ");
@@ -75,20 +74,19 @@ TEST_CASE("Test group term sort ladder_width=3 2") {
     CHECK(op.ladder_integers() == std::vector<unsigned int>{MAX_UINT, 1, 3});
 }
 
-
-
-TEST_CASE("Verify that ladder integers are correct for terms in each group") {
+TEST_CASE("Verify that ladder integers are correct for terms in each group")
+{
     // group 2
-    QubitOperator op = QubitOperator::from_label("-II+");  // int = 1
-    op += QubitOperator::from_label("+II-");  // int = 2
-    op += QubitOperator::from_label("+II+");  // int = 3
+    QubitOperator op = QubitOperator::from_label("-II+"); // int = 1
+    op += QubitOperator::from_label("+II-"); // int = 2
+    op += QubitOperator::from_label("+II+"); // int = 3
     // group 1
-    op += QubitOperator::from_label("II+-");  // int = 2
-    op += QubitOperator::from_label("II-+");  // int = 1
+    op += QubitOperator::from_label("II+-"); // int = 2
+    op += QubitOperator::from_label("II-+"); // int = 1
     // group 3
-    op += QubitOperator::from_label("I++-");  // int = 6
-    op += QubitOperator::from_label("I---");  // int = 0
-    op += QubitOperator::from_label("I+++");  // int = 7
+    op += QubitOperator::from_label("I++-"); // int = 6
+    op += QubitOperator::from_label("I---"); // int = 0
+    op += QubitOperator::from_label("I+++"); // int = 7
     op.set_type(2);
     op.group_sort();
     op.group_term_sort_by_ladder_int();
@@ -97,23 +95,23 @@ TEST_CASE("Verify that ladder integers are correct for terms in each group") {
     CHECK(op.terms_by_group(3).ladder_integers() == std::vector<unsigned int>{0, 6, 7});
 }
 
-
-TEST_CASE("Verify that ladder integers are correct for terms in each group 2") {
+TEST_CASE("Verify that ladder integers are correct for terms in each group 2")
+{
     // group 1
-    QubitOperator op = QubitOperator::from_label("-II+");  // int = 1,
-    op += QubitOperator::from_label("-ZZ+");  // int = 1,
-    op += QubitOperator::from_label("+II-");  // int = 2,
-    op += QubitOperator::from_label("-ZZ-");  // int = 0,
-    op += QubitOperator::from_label("+0I-");  // int = 2,
-    op += QubitOperator::from_label("+01+");  // int = 3,
+    QubitOperator op = QubitOperator::from_label("-II+"); // int = 1,
+    op += QubitOperator::from_label("-ZZ+"); // int = 1,
+    op += QubitOperator::from_label("+II-"); // int = 2,
+    op += QubitOperator::from_label("-ZZ-"); // int = 0,
+    op += QubitOperator::from_label("+0I-"); // int = 2,
+    op += QubitOperator::from_label("+01+"); // int = 3,
     // group 2
-    op += QubitOperator::from_label("II-+");  // int = 1
-    op += QubitOperator::from_label("II++");  // int = 3
-    op += QubitOperator::from_label("ZZ--");  // int = 0
-    op += QubitOperator::from_label("ZZ+-");  // int = 2
-    op += QubitOperator::from_label("Z0+-");  // int = 2
-    op += QubitOperator::from_label("Z0-+");  // int = 1
-    op += QubitOperator::from_label("ZI++");  // int = 3
+    op += QubitOperator::from_label("II-+"); // int = 1
+    op += QubitOperator::from_label("II++"); // int = 3
+    op += QubitOperator::from_label("ZZ--"); // int = 0
+    op += QubitOperator::from_label("ZZ+-"); // int = 2
+    op += QubitOperator::from_label("Z0+-"); // int = 2
+    op += QubitOperator::from_label("Z0-+"); // int = 1
+    op += QubitOperator::from_label("ZI++"); // int = 3
     op.set_type(2);
     op.group_sort();
     op.group_term_sort_by_ladder_int();
@@ -121,8 +119,8 @@ TEST_CASE("Verify that ladder integers are correct for terms in each group 2") {
     CHECK(op.terms_by_group(1).ladder_integers() == std::vector<unsigned int>{0, 1, 1, 2, 2, 3, 3});
 }
 
-
-TEST_CASE("Verify that off-diag indices are correct for ladder operator terms") {
+TEST_CASE("Verify that off-diag indices are correct for ladder operator terms")
+{
     QubitOperator op = QubitOperator::from_label("I+I+");
     op += QubitOperator::from_label("+II+");
     op += QubitOperator::from_label("+III");
@@ -142,8 +140,8 @@ TEST_CASE("Verify that off-diag indices are correct for ladder operator terms") 
     CHECK(inds_list[5] == std::vector<unsigned int>{0, 1, 2, 3});
 }
 
-
-TEST_CASE("Verify that off-diag indices are correct for ladder operator terms 2") {
+TEST_CASE("Verify that off-diag indices are correct for ladder operator terms 2")
+{
     QubitOperator op = QubitOperator::from_label("IXIY");
     op += QubitOperator::from_label("XIIX");
     op += QubitOperator::from_label("YIII");
@@ -163,10 +161,10 @@ TEST_CASE("Verify that off-diag indices are correct for ladder operator terms 2"
     CHECK(inds_list[5] == std::vector<unsigned int>{0, 1, 2, 3});
 }
 
-
-TEST_CASE("Test ladder integers works for various ladder widths") {
+TEST_CASE("Test ladder integers works for various ladder widths")
+{
     QubitOperator op = QubitOperator::from_label("I+-Z0X+-+Y");
-    
+
     op.set_type(2);
     op.group_term_sort_by_ladder_int(5);
     CHECK(op.ladder_integers()[0] == std::stoi("10101", 0, 2));
