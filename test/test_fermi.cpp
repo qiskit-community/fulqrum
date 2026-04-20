@@ -130,6 +130,61 @@ TEST_CASE("Test operator subtraction") {
 }
 
 
+TEST_CASE("Test index ordering simple 1") {
+    width_t N = 5;
+    FermionicOperator_t op = FermionicOperator(N, {{"-++-+", {3, 2, 3, 0, 0}, 1}});
+    std::vector<OpData> ans = {OpData("-", 0), OpData("+", 0), OpData("+", 2), OpData("-", 3), OpData("+", 3)};
+    CHECK(op[0].operators() == ans);
+}
+
+
+TEST_CASE("Test index ordering simple 2") {
+    width_t N = 5;
+    FermionicOperator_t op = FermionicOperator(N, {{"-++-+", {2, 2, 3, 0, 0}, 1}});
+    std::vector<OpData> ans = {OpData("-", 0), OpData("+", 0), OpData("-", 2), OpData("+", 2), OpData("+", 3)};
+    CHECK(op[0].operators() == ans);
+}
+
+
+TEST_CASE("Test index ordering does not exchange elements with same indices") {
+    width_t N = 5;
+    FermionicOperator_t op = FermionicOperator(N, {{"-++--++-", {2, 2, 0, 0, 3, 3, 1, 1}, 1}});
+    std::vector<OpData> ans = {OpData("+", 0), OpData("-", 0), 
+                               OpData("+", 1), OpData("-", 1),
+                               OpData("-", 2), OpData("+", 2),
+                               OpData("-", 3), OpData("+", 3)};
+    CHECK(op[0].operators() == ans);
+}
+
+
+TEST_CASE("Test index ordering projectors 1") {
+    width_t N = 5;
+    FermionicOperator_t op = FermionicOperator(N, {{"-0", {1, 0}, 1}});
+    std::vector<OpData> ans = {OpData("0", 0), OpData("-", 1)};
+    CHECK(op[0].operators() == ans);
+    CHECK(op[0].coeff == complex(1, 0));
+}
+
+
+TEST_CASE("Test index ordering projectors 2") {
+    width_t N = 5;
+    FermionicOperator_t op = FermionicOperator(N, {{"-0+", {4, 0, 3}, 1}});
+    std::vector<OpData> ans = {OpData("0", 0), OpData("+", 3), OpData("-", 4)};
+    CHECK(op[0].operators() == ans);
+    CHECK(op[0].coeff == complex(-1, 0));
+}
+
+
+TEST_CASE("Test index ordering projectors 3") {
+    width_t N = 5;
+    FermionicOperator_t op = FermionicOperator(N, {{"-0+1", {3, 1, 0, 2}, 1}});
+    std::vector<OpData> ans = {OpData("+", 0), OpData("0", 1), OpData("1", 2), OpData("-", 3)};
+    CHECK(op[0].operators() == ans);
+    CHECK(op[0].coeff == complex(-1, 0));
+}
+
+
+
 /**
  * Test Fermi combine repeated indices
  *
