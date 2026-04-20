@@ -1242,6 +1242,10 @@ typedef struct QubitOperator
     QubitOperator combine_repeated_terms(double atol = 1e-12)
     {
         QubitOperator out = QubitOperator(this->width);
+        if(!this->size())
+        {
+            return out;
+        }
         if(!this->weight_sorted)
         {
             this->weight_sort();

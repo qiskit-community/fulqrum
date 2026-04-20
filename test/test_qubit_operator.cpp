@@ -262,6 +262,14 @@ TEST_CASE("Test operator splitting preserves operator type") {
     CHECK(off.type == 2);
 }
 
+
+TEST_CASE("Test combining terms doesn't crash for an empty operator") {
+    QubitOperator op = QubitOperator(5);
+    QubitOperator new_op = op.combine_repeated_terms();
+    CHECK(new_op.size() == 0);
+}
+
+
 TEST_CASE("Test QubitOperator combining terms") {
     QubitOperator op = QubitOperator::from_label("IZYXI");
     op += QubitOperator::from_label("IZYXI");
