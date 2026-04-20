@@ -25,6 +25,7 @@ add_executable(fulqrum_tests
     test/test_grouping.cpp
     test/test_ladder.cpp
     test/test_fermi.cpp
+    test/test_jw.cpp
 )
 target_include_directories(fulqrum_tests PRIVATE third-party/doctest/doctest)
 target_link_libraries(fulqrum_tests
