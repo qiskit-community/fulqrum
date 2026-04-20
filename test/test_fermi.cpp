@@ -335,3 +335,40 @@ TEST_CASE("Combine repeated indices for three elements 3") {
     CHECK(op_deflate.size() == 1);
     CHECK(op_deflate[0].operators() == ans);
 }
+
+TEST_CASE("Combine two pairs 1") {
+    FermionicOperator_t op = FermionicOperator(5, {{"+--+", {0, 0, 1, 1}, 1}});
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    std::vector<OpData> ans = {OpData("1", 0), OpData("0", 1)};
+    CHECK(op_deflate.size() == 1);
+    CHECK(op_deflate[0].operators() == ans);
+}
+
+
+TEST_CASE("Combine two pairs 2") {
+    FermionicOperator_t op = FermionicOperator(5, {{"+-++", {0, 0, 1, 1}, 1}});
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    CHECK(op_deflate.size() == 0);
+}
+
+
+TEST_CASE("Combine several elements") {
+    FermionicOperator_t op = FermionicOperator(5, {{"+-+-+", {0, 0, 1, 1, 1}, 1}});
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    std::vector<OpData> ans = {OpData("1", 0), OpData("+", 1)};
+    CHECK(op_deflate.size() == 1);
+    CHECK(op_deflate[0].operators() == ans);
+}
+
+
+TEST_CASE("Combine repeat indices over multiple terms") {
+    FermionicOperator_t op = FermionicOperator(3, {{"+--+", {0, 0, 1, 2}, 1}});
+    op += FermionicOperator(3, {{"-+", {1, 1}, 1}});
+    op += FermionicOperator(3, {{"+--++", {0, 0, 1, 2, 2}, 1}});
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    std::vector<OpData> ans0 = {OpData("1", 0), OpData("-", 1), OpData("+", 2)};
+    std::vector<OpData> ans1 = {OpData("0", 1)};
+    CHECK(op_deflate.size() == 2); // since last term is zero
+    CHECK(op_deflate[0].operators() == ans0);
+    CHECK(op_deflate[1].operators() == ans1);
+}
