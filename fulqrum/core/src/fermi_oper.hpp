@@ -270,6 +270,7 @@ typedef struct FermionicOperator
         const std::vector<int> collapsed_values = {1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6, -1, 2, -1};
         // This loop is not done in parallel because some of the terms zero out and the length
         // of the input terms is not the same as the length of the out terms
+        // @note this loop should probably also be moved inside of the deflate terms routine
         for(std::size_t kk=0; kk < terms.size(); kk++)
         {
             deflate_term_indices(terms[kk], out.terms, collapsed_values);
@@ -308,7 +309,7 @@ typedef struct FermionicOperator
             out.terms[kk].set_proj_indices();
         }
         out.type = 2; // set type=2
-        return out;
+        return out.combine_repeated_terms();
     }
 } FermionicOperator_t;
 
