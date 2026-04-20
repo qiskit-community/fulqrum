@@ -21,6 +21,11 @@
 typedef std::complex<double> complex;
 
 
+/**
+ * Test basic Fermi functionality
+ *
+ */
+
 TEST_CASE("Test empty FermionicOperator") {
     FermionicOperator_t fop = FermionicOperator(5);
     CHECK(fop.size() == 0);
@@ -124,3 +129,63 @@ TEST_CASE("Test operator subtraction") {
     CHECK(op1[1].coeff == op2[1].coeff);
 }
 
+
+/**
+ * Test Fermi combine repeated indices
+ *
+ */
+
+TEST_CASE("Test combine repeated indices for empty operator does not crash") {
+    FermionicOperator_t op = FermionicOperator(5);
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    CHECK(op_deflate.size() == 0);
+    CHECK(op_deflate.width == 5);
+}
+
+
+TEST_CASE("Test combine repeated indices for identity") {
+    FermionicOperator_t op = FermionicOperator(5, {{}});
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    std::vector<OpData> ans = {};
+    CHECK(op_deflate.size() == 1);
+    CHECK(op_deflate[0].operators() == ans);
+}
+
+
+TEST_CASE("Combine repeated indices does nothing for single element 1") {
+    FermionicOperator_t op = FermionicOperator(5, {{"-", {2}, 1}});
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    std::vector<OpData> ans = {OpData("-", 2)};
+    CHECK(op_deflate[0].operators() == ans);
+}
+
+
+TEST_CASE("Combine repeated indices does nothing for single element 2") {
+    FermionicOperator_t op = FermionicOperator(5, {{"+", {1}, 1}});
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    std::vector<OpData> ans = {OpData("+", 1)};
+    CHECK(op_deflate[0].operators() == ans);
+}
+
+
+TEST_CASE("Combine repeated indices does nothing for single element 3") {
+    FermionicOperator_t op = FermionicOperator(5, {{"0", {1}, 1}});
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    std::vector<OpData> ans = {OpData("0", 1)};
+    CHECK(op_deflate[0].operators() == ans);
+}
+
+
+TEST_CASE("Combine repeated indices does nothing for single element 3") {
+    FermionicOperator_t op = FermionicOperator(5, {{"1", {3}, 1}});
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    std::vector<OpData> ans = {OpData("1", 3)};
+    CHECK(op_deflate[0].operators() == ans);
+}
+
+
+TEST_CASE("Combine repeated indices for single pair of elements 1") {
+    FermionicOperator_t op = FermionicOperator(5, {{"--", {0, 0}, 1}});
+    FermionicOperator_t op_deflate = op.combine_repeat_indices();
+    CHECK(op_deflate.size() == 0);
+}

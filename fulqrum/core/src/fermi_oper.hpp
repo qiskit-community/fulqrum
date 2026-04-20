@@ -121,6 +121,10 @@ typedef struct FermionicOperator
      */
     FermionicTerm_t operator[](std::size_t index) const
     {
+        if(index >= this->size())
+        {
+            throw std::runtime_error("Index is larger than operator size");
+        }
         return terms[index];
     }
     /**
