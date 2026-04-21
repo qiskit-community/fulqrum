@@ -26,6 +26,7 @@ from ..exceptions import FulqrumError
 import orjson
 import lzma
 from pathlib import Path
+import warnings
 import numpy as np
 cimport numpy as np
 
@@ -256,7 +257,16 @@ cdef class FermionicOperator():
         Returns:
             int: Number of terms in operator
         """
-        return self.oper.terms.size()
+        warnings.warn("'num_terms' will be removed, use 'size()' instead")
+        return self.size()
+
+    def size(self):
+        """Return the number of terms in the operator
+
+        Returns:
+            int: Number of terms in operator
+        """
+        return self.oper.size()
 
     @property
     def width(self):
@@ -378,6 +388,16 @@ cdef class FermionicOperator():
 
     @cython.boundscheck(False)
     def deflate_repeated_indices(self):
+        """Collapse repeated indices into singles and remove zero terms
+
+        Returns:
+            FermionicOperator: Deflated operator
+        """
+        warnings.warn("'deflate_repeated_indices()' will be removed.  Use 'combine_repeat_indices()' instead")
+        return self.combine_repeat_indices()
+
+    @cython.boundscheck(False)
+    def combine_repeat_indices(self):
         """Collapse repeated indices into singles and remove zero terms
 
         Returns:
