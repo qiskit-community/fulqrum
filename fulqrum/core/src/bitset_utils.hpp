@@ -204,3 +204,28 @@ void bitset_to_bitvec(const boost::dynamic_bitset<size_t>& row, std::vector<uint
         }
     }
 }
+
+/**
+ * Finds all the set bits in a bit-string
+ *
+ * @param row Bitstring in boost::dynamic_bitset<> format
+ * 
+ * @return Unordered map with indices of zero bits in the bit-string 
+ */
+inline std::vector<unsigned int> set_bit_indices(const boost::dynamic_bitset<size_t>& row)
+{
+    std::vector<unsigned int> set_bits;
+
+    for(unsigned int block = 0; block < row.num_blocks(); block++)
+    {
+        auto bitset = row.m_bits[block];
+        while(bitset != 0)
+        {
+            uint64_t t = bitset & -bitset;
+            int r = __builtin_ctzll(bitset);
+            set_bits.push_back(block * BITS_PER_BLOCK + r);
+            bitset ^= t;
+        }
+    }
+    return set_bits;
+}
