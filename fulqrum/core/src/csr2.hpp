@@ -23,7 +23,6 @@
 #include "constants.hpp"
 #include "elements.hpp"
 #include "offdiag_grouping.hpp"
-#include "operators.hpp"
 #include <boost/dynamic_bitset.hpp>
 
 template <typename T, typename U>

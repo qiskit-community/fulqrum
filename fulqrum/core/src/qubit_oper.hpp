@@ -26,6 +26,12 @@
 #include <string>
 #include <vector>
 
+struct QubitOperator;
+
+// forward definitions
+void set_sorting_flags(QubitOperator& oper, std::string kind);
+inline void term_offdiag_sort(QubitOperator& oper);
+
 /**
  * Comparator for weight grouping
  *
@@ -210,34 +216,6 @@ inline std::size_t term_offdiag_structure(const OperatorTerm_t& term)
 inline int offdiag_comp(const OperatorTerm& term1, const OperatorTerm& term2)
 {
     return term_offdiag_structure(term1) < term_offdiag_structure(term2);
-}
-
-/**
- * Sort terms in operator by their off-diagonal structure value
- *
- * @param terms Vector of operator terms
- *
- */
-inline void term_offdiag_sort(std::vector<OperatorTerm_t>& terms)
-{
-    const std::size_t n = terms.size();
-
-    // Precompute structure key for each term once instead of recomputing
-    // it on every comparison during sort.
-    std::vector<std::size_t> keys(n);
-    for(std::size_t ii = 0; ii < n; ++ii)
-        keys[ii] = term_offdiag_structure(terms[ii]);
-
-    std::vector<std::size_t> order(n);
-    std::iota(order.begin(), order.end(), 0);
-    std::sort(order.begin(), order.end(), [&keys](std::size_t a, std::size_t b) {
-        return keys[a] < keys[b];
-    });
-
-    std::vector<OperatorTerm_t> tmp(n);
-    for(std::size_t ii = 0; ii < n; ++ii)
-        tmp[ii] = std::move(terms[order[ii]]);
-    terms = std::move(tmp);
 }
 
 /**
@@ -635,10 +613,11 @@ typedef struct QubitOperator
     std::vector<OperatorTerm_t> terms;
     int type{1};
     unsigned int ladder_width{DEFAULT_LADDER_WIDTH};
-    int sorted{0};
-    int weight_sorted{0};
-    int off_weight_sorted{0};
-    int ladder_sorted{0};
+    int sorted{0};              // Are the operator terms group sorted
+    int weight_sorted{0};       // Are the operator terms weight sorted 
+    int off_weight_sorted{0};   // Are the operator terms off-diagonal weight sorted
+    int ladder_sorted{0};       // Are the operator terms ladder int sorted within their groups?
+    int structure_sorted{0};    // Are the operator terms sorted by (non-unique) off-diagonal structure?
 
     QubitOperator() {}
     /**
@@ -1089,9 +1068,7 @@ typedef struct QubitOperator
     {
         // sort by weight
         std::sort(terms.begin(), terms.end(), weight_comp);
-        this->off_weight_sorted = 0;
-        this->weight_sorted = 1;
-        this->sorted = 0;
+        set_sorting_flags(*this, "weight");
         return *this;
     }
     /**
@@ -1102,9 +1079,7 @@ typedef struct QubitOperator
     {
         // sort by off-diagonal weight
         std::sort(terms.begin(), terms.end(), offweight_comp);
-        this->off_weight_sorted = 1;
-        this->weight_sorted = 0;
-        this->sorted = 0;
+        set_sorting_flags(*this, "off_weight");
         return *this;
     }
     /**
@@ -1128,9 +1103,9 @@ typedef struct QubitOperator
     std::vector<std::size_t> offdiag_structure_ptrs()
     {
         std::vector<std::size_t> ptrs;
-        if(!this->off_weight_sorted)
+        if(!this->structure_sorted)
         {
-            term_offdiag_sort(this->terms);
+            term_offdiag_sort(*this);
         }
         set_offdiag_structure_ptrs(terms, ptrs);
         return ptrs;
@@ -1143,15 +1118,15 @@ typedef struct QubitOperator
     {
         if(this->size()) // do stuff only if there are terms in the operator
         {
-            if(!this->off_weight_sorted)
+            if(!this->structure_sorted)
             {
-                term_offdiag_sort(this->terms);
+                term_offdiag_sort(*this);
             }
             std::vector<std::size_t> ptrs = this->offdiag_structure_ptrs();
             std::size_t max_group_size = max_offdiag_ptr_size(ptrs);
             term_group_sort(this->terms, &ptrs[0], ptrs.size(), max_group_size);
         }
-        this->sorted = 1;
+        set_sorting_flags(*this, "group");
         return *this;
     }
     /**
@@ -1359,3 +1334,89 @@ typedef struct QubitOperator
     }
 
 } QubitOperator_t;
+
+/**
+ * Set the QubitOperator flags when performing sorting of various kinds
+ * 
+ * @param[in, out] oper The operator whose flags to set
+ * @param[in] kind Sting indicating the type of sorting that was performed
+ * 
+ * @throws Error if sorting type is not a valid kind
+ */
+inline void set_sorting_flags(QubitOperator& oper, std::string kind)
+{
+    if(kind == "group")
+    {
+        oper.sorted = 1;
+        oper.weight_sorted = 0;
+        oper.off_weight_sorted = 0;
+        oper.ladder_sorted = 0; // since group sorting could modify the in-group ordering
+        oper.structure_sorted = 0;
+    }
+    else if(kind == "weight")
+    {
+        oper.sorted = 0;
+        oper.weight_sorted = 1;
+        oper.off_weight_sorted = 0;
+        oper.ladder_sorted = 0;
+        oper.structure_sorted = 0;
+    }
+    else if(kind == "off_weight")
+    {
+        oper.sorted = 0;
+        oper.weight_sorted = 0;
+        oper.off_weight_sorted = 1;
+        oper.ladder_sorted = 0;
+        oper.structure_sorted = 0;
+    }
+    else if(kind == "ladder")
+    {
+        oper.sorted = 1; // since ladder sorting requires group sorting
+        oper.weight_sorted = 0;
+        oper.off_weight_sorted = 0;
+        oper.ladder_sorted = 1;
+        oper.structure_sorted = 0;
+    }
+    else if(kind == "structure")
+    {
+        oper.sorted = 0;
+        oper.weight_sorted = 0;
+        oper.off_weight_sorted = 0;
+        oper.ladder_sorted = 0;
+        oper.structure_sorted = 1;
+    }
+    else
+    {
+        throw std::runtime_error("Invalid sorting type.");
+    }
+}
+
+/**
+ * Sort terms in operator by their off-diagonal structure value
+ *
+ * @param terms Vector of operator terms
+ *
+ */
+inline void term_offdiag_sort(QubitOperator& oper)
+{
+    std::vector<OperatorTerm_t>& terms = oper.terms;
+    const std::size_t n = terms.size();
+
+    // Precompute structure key for each term once instead of recomputing
+    // it on every comparison during sort.
+    std::vector<std::size_t> keys(n);
+    for(std::size_t ii = 0; ii < n; ++ii)
+        keys[ii] = term_offdiag_structure(terms[ii]);
+
+    std::vector<std::size_t> order(n);
+    std::iota(order.begin(), order.end(), 0);
+    std::sort(order.begin(), order.end(), [&keys](std::size_t a, std::size_t b) {
+        return keys[a] < keys[b];
+    });
+
+    std::vector<OperatorTerm_t> tmp(n);
+    for(std::size_t ii = 0; ii < n; ++ii)
+        tmp[ii] = std::move(terms[order[ii]]);
+    terms = std::move(tmp);
+    set_sorting_flags(oper, "structure");
+}
