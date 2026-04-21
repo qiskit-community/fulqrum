@@ -26,15 +26,11 @@
 #include <string>
 #include <vector>
 
-
 struct QubitOperator;
-
-
 
 // forward definitions
 void set_sorting_flags(QubitOperator& oper, std::string kind);
 inline void term_offdiag_sort(QubitOperator& oper);
-
 
 /**
  * Comparator for weight grouping
@@ -221,7 +217,6 @@ inline int offdiag_comp(const OperatorTerm& term1, const OperatorTerm& term2)
 {
     return term_offdiag_structure(term1) < term_offdiag_structure(term2);
 }
-
 
 /**
  * Set the pointers for the off-diagonal weights
@@ -1340,9 +1335,6 @@ typedef struct QubitOperator
 
 } QubitOperator_t;
 
-
-
-
 /**
  * Set the QubitOperator flags when performing sorting of various kinds
  * 
@@ -1361,7 +1353,7 @@ inline void set_sorting_flags(QubitOperator& oper, std::string kind)
         oper.ladder_sorted = 0; // since group sorting could modify the in-group ordering
         oper.structure_sorted = 0;
     }
-    else if (kind == "weight")
+    else if(kind == "weight")
     {
         oper.sorted = 0;
         oper.weight_sorted = 1;
@@ -1369,7 +1361,7 @@ inline void set_sorting_flags(QubitOperator& oper, std::string kind)
         oper.ladder_sorted = 0;
         oper.structure_sorted = 0;
     }
-    else if (kind == "off_weight")
+    else if(kind == "off_weight")
     {
         oper.sorted = 0;
         oper.weight_sorted = 0;
@@ -1377,7 +1369,7 @@ inline void set_sorting_flags(QubitOperator& oper, std::string kind)
         oper.ladder_sorted = 0;
         oper.structure_sorted = 0;
     }
-    else if (kind == "ladder")
+    else if(kind == "ladder")
     {
         oper.sorted = 1; // since ladder sorting requires group sorting
         oper.weight_sorted = 0;
@@ -1385,7 +1377,7 @@ inline void set_sorting_flags(QubitOperator& oper, std::string kind)
         oper.ladder_sorted = 1;
         oper.structure_sorted = 0;
     }
-    else if (kind == "structure")
+    else if(kind == "structure")
     {
         oper.sorted = 0;
         oper.weight_sorted = 0;
@@ -1398,7 +1390,6 @@ inline void set_sorting_flags(QubitOperator& oper, std::string kind)
         throw std::runtime_error("Invalid sorting type.");
     }
 }
-
 
 /**
  * Sort terms in operator by their off-diagonal structure value
