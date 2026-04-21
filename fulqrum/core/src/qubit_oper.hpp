@@ -713,10 +713,18 @@ typedef struct QubitOperator
     }
     /**
      * Grab a single term by index
+     * 
+     * @param[in] Index of term to grab
+     * 
+     * @return OperatorTerm at the given index
      */
-    OperatorTerm_t operator[](std::size_t kk) const
+    OperatorTerm_t operator[](std::size_t index) const
     {
-        return terms[kk];
+        if(index >= this->size())
+        {
+            throw std::runtime_error("Index is larger than operator size");
+        }
+        return terms[index];
     }
     /**
      * Inplace multiplication by a complex value
@@ -1234,6 +1242,10 @@ typedef struct QubitOperator
     QubitOperator combine_repeated_terms(double atol = 1e-12)
     {
         QubitOperator out = QubitOperator(this->width);
+        if(!this->size())
+        {
+            return out;
+        }
         if(!this->weight_sorted)
         {
             this->weight_sort();

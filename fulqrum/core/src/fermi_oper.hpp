@@ -14,6 +14,7 @@
 #pragma once
 #include "constants.hpp"
 #include "fermi_term.hpp"
+#include "qubit_oper.hpp"
 #include <algorithm>
 #include <cmath>
 #include <complex>
@@ -34,6 +35,7 @@
 typedef struct FermionicOperator
 {
     unsigned int width;
+    unsigned int combined = 0; // have the repeated operators indices been combined?
     std::vector<FermionicTerm_t> terms;
     FermionicOperator() {}
     /**
@@ -109,10 +111,203 @@ typedef struct FermionicOperator
         return os << ", width=" << self.width << "]>";
     }
     /**
+     * Grab a single term by index
+     * 
+     * @param[in] Index of term to grab
+     * 
+     * @return FermionicTerm at the given index
+     */
+    FermionicTerm_t operator[](std::size_t index) const
+    {
+        if(index >= this->size())
+        {
+            throw std::runtime_error("Index is larger than operator size");
+        }
+        return terms[index];
+    }
+    /**
+     * Inplace multiplication by a complex value
+     */
+    FermionicOperator& operator*=(std::complex<double> c)
+    {
+        for(std::size_t kk = 0; kk < this->size(); kk++)
+        {
+            terms[kk] *= c;
+        }
+        return *this;
+    }
+    /**
+     * multiplication by a complex value (need one for mult on each side)
+     */
+    friend FermionicOperator operator*(FermionicOperator& op, std::complex<double> c)
+    {
+        FermionicOperator out = op.copy();
+        for(std::size_t kk = 0; kk < out.size(); kk++)
+        {
+            out.terms[kk] *= c;
+        }
+        return out;
+    }
+    friend FermionicOperator operator*(std::complex<double> c, FermionicOperator& op)
+    {
+        FermionicOperator out = op.copy();
+        for(std::size_t kk = 0; kk < out.size(); kk++)
+        {
+            out.terms[kk] *= c;
+        }
+        return out;
+    }
+    /**
+     * Inplace addition by another FermionicOperator
+     * 
+     * @param[in] other Operator to add to this one
+     * @throw Error if operators do not share the same width
+     */
+    FermionicOperator& operator+=(FermionicOperator other)
+    {
+        if(other.width != this->width)
+        {
+            throw std::runtime_error("Operators must have the same width");
+        }
+        for(std::size_t kk = 0; kk < other.size(); kk++)
+        {
+            this->terms.push_back(other.terms[kk]);
+        }
+        this->combined = 0;
+        return *this;
+    }
+    /**
+     * Addition by another FermionicOperator
+     * 
+     * @param[in] other Operator to add to this one
+     * @return The new operator
+     * @throw Error if operators do not share the same width
+     */
+    FermionicOperator operator+(FermionicOperator other) const
+    {
+        if(other.width != this->width)
+        {
+            throw std::runtime_error("Operators must have the same width");
+        }
+        FermionicOperator out = this->copy();
+        for(std::size_t kk = 0; kk < other.size(); kk++)
+        {
+            out.terms.push_back(other.terms[kk]);
+        }
+        return out;
+    }
+    /**
+     * Inplace subtraction by another FermionicOperator
+     * 
+     * @param[in] other Operator to add to this one
+     * @throw Error if operators do not share the same width
+     */
+    FermionicOperator& operator-=(FermionicOperator other)
+    {
+        if(other.width != this->width)
+        {
+            throw std::runtime_error("Operators must have the same width");
+        }
+
+        FermionicTerm term;
+        for(std::size_t kk = 0; kk < other.size(); kk++)
+        {
+            term = other.terms[kk];
+            term.coeff *= -1;
+            this->terms.push_back(term);
+        }
+        this->combined = 0;
+        return *this;
+    }
+    /**
+     * Subtraction by another FermionicOperator
+     * 
+     * @param[in] other Operator to subject to this one
+     * @return New operator
+     * @throw Error if operators do not share the same width
+     */
+    FermionicOperator operator-(FermionicOperator other)
+    {
+        if(other.width != this->width)
+        {
+            throw std::runtime_error("Operators must have the same width");
+        }
+
+        FermionicTerm term;
+        FermionicOperator out = this->copy();
+        for(std::size_t kk = 0; kk < other.size(); kk++)
+        {
+            term = other.terms[kk];
+            term.coeff *= -1;
+            out.terms.push_back(term);
+        }
+        return out;
+    }
+    /**
      * Return the size of the operator
      */
     std::size_t size() const
     {
         return terms.size();
+    }
+    /**
+     * Make a copy of the operator
+     *
+     * @return A copy of the current operator
+     */
+    FermionicOperator copy() const
+    {
+        FermionicOperator out = FermionicOperator(this->width);
+        out.terms = this->terms;
+        out.combined = this->combined;
+        return out;
+    }
+    FermionicOperator combine_repeat_indices() const
+    {
+        FermionicOperator out = FermionicOperator(this->width);
+        const std::vector<int> collapsed_values = {
+            1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6, -1, 2, -1};
+        // This loop is not done in parallel because some of the terms zero out and the length
+        // of the input terms is not the same as the length of the out terms
+        // @note this loop should probably also be moved inside of the deflate terms routine
+        for(std::size_t kk = 0; kk < terms.size(); kk++)
+        {
+            deflate_term_indices(terms[kk], out.terms, collapsed_values);
+        }
+        out.combined = 1;
+        return out;
+    }
+
+    /**
+     * Extended Jordan-Wigner transformation
+     * 
+     * @note This routine requires combining repeated indices first,
+     * and will do so internally if the `combined` flag is not set
+     *
+     * @return QubitOperator after extended JW transformation
+     */
+    QubitOperator extended_jw_transformation()
+    {
+        FermionicOperator& fermi = *this;
+        // This requires combining repeated indices
+        if(!this->combined)
+        {
+            fermi = this->combine_repeat_indices();
+        }
+        QubitOperator_t out = QubitOperator(this->width);
+        std::size_t kk;
+        std::size_t num_terms = this->size();
+        out.terms.resize(num_terms);
+#pragma omp parallel for schedule(dynamic) if(num_terms > 128)
+        for(kk = 0; kk < num_terms; kk++)
+        {
+            jw_term(fermi.terms[kk], out.terms[kk]);
+            out.terms[kk].sort_term_data();
+            set_offdiag_weight_and_phase(out.terms[kk]);
+            set_extended_flag(out.terms[kk]);
+            out.terms[kk].set_proj_indices();
+        }
+        out.type = 2; // set type=2
+        return out.combine_repeated_terms();
     }
 } FermionicOperator_t;
