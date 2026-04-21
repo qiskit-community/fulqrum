@@ -31,7 +31,6 @@ import numpy as np
 cimport numpy as np
 
 include "includes/base_header.pxi"
-include "includes/operators_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
 include "includes/constants.pxi"

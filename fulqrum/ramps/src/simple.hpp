@@ -24,7 +24,6 @@
 #include "../../core/src/constants.hpp"
 #include "../../core/src/diag.hpp"
 #include "../../core/src/elements.hpp"
-#include "../../core/src/operators.hpp"
 
 double simple_restricted(const QubitOperator& oper,
                          const bitset_map_namespace::BitsetHashMapWrapper& restricted_subspace,

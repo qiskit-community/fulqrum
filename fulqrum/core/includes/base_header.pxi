@@ -45,6 +45,7 @@ cdef extern from "../src/base.hpp":
         int weight_sorted
         int off_weight_sorted
         int ladder_sorted
+        int structure_sorted
         QubitOperator_t()
         QubitOperator_t(unsigned int)
         size_t size()
@@ -100,3 +101,5 @@ cdef extern from "../src/base.hpp":
                                    unsigned int num_groups)
 
     OperatorTerm_t& set_proj_indices(OperatorTerm_t&)
+    void set_offdiag_weight_and_phase(OperatorTerm_t& term) nogil
+    void set_extended_flag(OperatorTerm_t& term) nogil

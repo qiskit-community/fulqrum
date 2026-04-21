@@ -25,7 +25,6 @@
 #include "csrlike.hpp"
 #include "elements.hpp"
 #include "offdiag_grouping.hpp"
-#include "operators.hpp"
 #include <boost/dynamic_bitset.hpp>
 
 // T is the data type, U is in the index type, e.g (complex, int)
