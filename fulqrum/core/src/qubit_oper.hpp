@@ -613,11 +613,11 @@ typedef struct QubitOperator
     std::vector<OperatorTerm_t> terms;
     int type{1};
     unsigned int ladder_width{DEFAULT_LADDER_WIDTH};
-    int sorted{0};
-    int weight_sorted{0};
-    int off_weight_sorted{0};
-    int ladder_sorted{0};
-    int structure_sorted{0};
+    int sorted{0};              // Are the operator terms group sorted
+    int weight_sorted{0};       // Are the operator terms weight sorted 
+    int off_weight_sorted{0};   // Are the operator terms off-diagonal weight sorted
+    int ladder_sorted{0};       // Are the operator terms ladder int sorted within their groups?
+    int structure_sorted{0};    // Are the operator terms sorted by (non-unique) off-diagonal structure?
 
     QubitOperator() {}
     /**
