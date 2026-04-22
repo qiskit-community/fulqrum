@@ -129,9 +129,8 @@ typedef struct FermionicTerm
      */
     void insertion_sort()
     {
-        std::size_t kk;
-        int ll;
-        std::size_t num_elems = indices.size();
+        int kk, ll;
+        int num_elems = static_cast<int>(indices.size());
         width_t temp_index;
         unsigned char temp_value;
         int prefactor = 1;
@@ -195,7 +194,7 @@ inline int jw_phase(const unsigned char op)
  */
 inline void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
 {
-    int num_elems = fermi_term.indices.size();
+    int num_elems = static_cast<int>(fermi_term.indices.size());
     int kk, mm;
     width_t jj;
     int phase = 1;
@@ -234,7 +233,7 @@ inline void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_ter
         // add Z operators down to zero
         else if(num_elems == 1 && do_z)
         {
-            for(mm = current_ind - 1; mm > -1; mm--)
+            for(mm = static_cast<int>(current_ind) - 1; mm > -1; mm--)
             {
                 qubit_term.indices.push_back(mm);
                 qubit_term.values.push_back(0);

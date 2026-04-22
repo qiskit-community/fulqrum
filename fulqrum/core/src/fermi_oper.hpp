@@ -50,7 +50,7 @@ typedef struct FermionicOperator
     FermionicOperator(width_t x, std::vector<TermData> data)
         : width(x)
     {
-        unsigned int num_terms = data.size();
+        std::size_t num_terms = data.size();
         std::size_t kk;
         TermData tdata;
         for(kk = 0; kk < num_terms; kk++)

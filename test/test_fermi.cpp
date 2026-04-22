@@ -70,13 +70,13 @@ TEST_CASE("Test in-place addition")
     FermionicOperator_t fop = FermionicOperator(N);
     for(width_t kk = 0; kk < N; kk++)
     {
-        fop += FermionicOperator(N, {{"-", {kk}, 1.0 / (N + kk)}});
+        fop += FermionicOperator(N, {{"-", {kk}, 1.0 / static_cast<double>(N + kk)}});
     }
     for(width_t kk = 0; kk < N; kk++)
     {
         ans = {OpData("-", kk)};
         CHECK(fop[kk].operators() == ans);
-        CHECK(fop[kk].coeff == 1.0 / (N + kk));
+        CHECK(fop[kk].coeff == 1.0 / static_cast<double>(N + kk));
     }
 }
 
@@ -87,13 +87,13 @@ TEST_CASE("Test addition")
     FermionicOperator_t fop = FermionicOperator(N);
     for(width_t kk = 0; kk < N; kk++)
     {
-        fop = fop + FermionicOperator(N, {{"+", {kk}, 1.0 / (N + kk)}});
+        fop = fop + FermionicOperator(N, {{"+", {kk}, 1.0 / static_cast<double>(N + kk)}});
     }
     for(width_t kk = 0; kk < N; kk++)
     {
         ans = {OpData("+", kk)};
         CHECK(fop[kk].operators() == ans);
-        CHECK(fop[kk].coeff == 1.0 / (N + kk));
+        CHECK(fop[kk].coeff == 1.0 / static_cast<double>(N + kk));
     }
 }
 

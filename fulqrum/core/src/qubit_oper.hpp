@@ -257,7 +257,7 @@ inline void set_offdiag_structure_ptrs(const std::vector<OperatorTerm>& __restri
     std::size_t kk;
     if(terms.size())
     {
-        unsigned int val = term_offdiag_structure(terms[0]);
+        width_t val = term_offdiag_structure(terms[0]);
         vec.push_back(0);
         for(kk = 1; kk < terms.size(); kk++)
         {
@@ -376,7 +376,7 @@ inline int offdiag_group_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
 inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
                             std::size_t* __restrict weight_ptrs,
                             std::size_t len_ptrs,
-                            unsigned int max_group_size)
+                            std::size_t max_group_size)
 {
     std::size_t ii;
 #pragma omp parallel if(terms.size() > 1024)
@@ -397,7 +397,7 @@ inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
         {
             std::size_t start = weight_ptrs[ii];
             std::size_t stop = weight_ptrs[ii + 1];
-            int group_idx = ii * (max_group_size);
+            int group_idx =  static_cast<int>(ii * max_group_size);
 
             if(terms[start].group == 0) // group is the diagonal group
             {
@@ -489,11 +489,11 @@ inline width_t term_ladder_int(const OperatorTerm& term, width_t ladder_width)
  */
 inline void sort_groups_by_ladder_int(std::vector<OperatorTerm>& terms,
                                       const std::size_t* group_ptrs,
-                                      unsigned int num_groups,
+                                      std::size_t num_groups,
                                       width_t ladder_width)
 {
 
-    unsigned int kk;
+    std::size_t kk;
 #pragma omp parallel for if(num_groups > 128)
     for(kk = 0; kk < num_groups; kk++)
     {
@@ -552,10 +552,10 @@ inline void compute_term_offdiag_inds(const OperatorTerm_t& term, width_t* offdi
 inline void set_group_offdiag_indices(const std::vector<OperatorTerm_t>& terms,
                                       std::vector<std::vector<width_t>>& group_indices,
                                       const std::size_t* group_ptrs,
-                                      unsigned int num_groups)
+                                      std::size_t num_groups)
 {
-    unsigned int kk;
-    unsigned int inds_len;
+    std::size_t kk;
+    width_t inds_len;
     group_indices.resize(num_groups);
     for(kk = 0; kk < num_groups; kk++)
     {
@@ -573,8 +573,8 @@ inline void ladder_int_starts(const std::vector<OperatorTerm>& terms,
                               const std::size_t* group_ptrs,
                               unsigned int* group_counts,
                               std::size_t* group_ranges,
-                              unsigned int num_groups,
-                              unsigned int num_ladder_bins,
+                              std::size_t num_groups,
+                              width_t num_ladder_bins,
                               width_t ladder_width)
 {
     std::size_t start, stop, kk, mm;
@@ -633,7 +633,7 @@ typedef struct QubitOperator
     QubitOperator(width_t x, std::vector<TermData> data)
         : width(x)
     {
-        unsigned int num_terms = data.size();
+        std::size_t num_terms = data.size();
         std::size_t kk;
         TermData tdata;
         OperatorTerm term;
@@ -1299,7 +1299,7 @@ typedef struct QubitOperator
             this->group_term_sort_by_ladder_int();
         }
         std::vector<std::size_t> ptrs = this->group_ptrs();
-        unsigned int num_groups = ptrs.size() - 1;
+        std::size_t num_groups = ptrs.size() - 1;
         out.resize(num_groups);
         for(std::size_t kk = 0; kk < num_groups; kk++)
         {
@@ -1319,8 +1319,8 @@ typedef struct QubitOperator
             this->group_term_sort_by_ladder_int();
         }
         std::vector<std::size_t> ptrs = this->group_ptrs();
-        unsigned int num_ladder_ints = std::pow(2, this->ladder_width);
-        unsigned int num_groups = ptrs.size() - 1;
+        width_t num_ladder_ints = static_cast<width_t>(std::pow(2, this->ladder_width));
+        std::size_t num_groups = ptrs.size() - 1;
         std::vector<unsigned int> group_counts(num_ladder_ints * num_groups);
         std::vector<std::size_t> group_ranges(num_ladder_ints * num_groups + 1);
         ladder_int_starts(terms,
