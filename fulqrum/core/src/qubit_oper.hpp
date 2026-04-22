@@ -456,15 +456,15 @@ inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
  * Compute the ladder integer value for a given qubit term
  *
  */
-inline unsigned int term_ladder_int(const OperatorTerm& term, unsigned int ladder_width)
+inline width_t term_ladder_int(const OperatorTerm& term, width_t ladder_width)
 {
-    unsigned int subset = 0;
-    unsigned int kk, counter = 0;
+    width_t subset = 0;
+    width_t kk, counter = 0;
     for(kk = 0; kk < term.indices.size(); kk++)
     {
         if(term.values[kk] > 4)
         {
-            subset = subset | ((unsigned int)term.values[kk] - 5U) << counter;
+            subset = subset | ((width_t)term.values[kk] - 5U) << counter;
             counter += 1;
         }
     }
@@ -474,7 +474,7 @@ inline unsigned int term_ladder_int(const OperatorTerm& term, unsigned int ladde
     }
     if(!counter)
     {
-        subset = MAX_UINT;
+        subset = MAX_WIDTH;
     }
     else
     {
@@ -490,7 +490,7 @@ inline unsigned int term_ladder_int(const OperatorTerm& term, unsigned int ladde
 inline void sort_groups_by_ladder_int(std::vector<OperatorTerm>& terms,
                                       const std::size_t* group_ptrs,
                                       unsigned int num_groups,
-                                      unsigned int ladder_width)
+                                      width_t ladder_width)
 {
 
     unsigned int kk;
@@ -507,7 +507,7 @@ inline void sort_groups_by_ladder_int(std::vector<OperatorTerm>& terms,
         std::sort(terms.begin() + start,
                   terms.begin() + stop,
                   [=](const OperatorTerm& a, const OperatorTerm& b) {
-                      unsigned int res_a, res_b;
+                      width_t res_a, res_b;
                       res_a = term_ladder_int(a, ladder_width);
                       res_b = term_ladder_int(b, ladder_width);
                       return res_a < res_b;
@@ -575,10 +575,10 @@ inline void ladder_int_starts(const std::vector<OperatorTerm>& terms,
                               std::size_t* group_ranges,
                               unsigned int num_groups,
                               unsigned int num_ladder_bins,
-                              unsigned int ladder_width)
+                              width_t ladder_width)
 {
     std::size_t start, stop, kk, mm;
-    unsigned int term_int;
+    width_t term_int;
     std::size_t total;
     total = 0;
     for(kk = 0; kk < num_groups; kk++)
@@ -1252,7 +1252,7 @@ typedef struct QubitOperator
     * In-place sort terms in groups by their ladder integer values
     * 
     */
-    QubitOperator& group_term_sort_by_ladder_int(unsigned int ladder_width = 4)
+    QubitOperator& group_term_sort_by_ladder_int(width_t ladder_width = 4)
     {
         if(!(this->type == 2))
         {
@@ -1274,9 +1274,9 @@ typedef struct QubitOperator
     * If no ladder ops present then default int is max(uint32)
     * 
     */
-    std::vector<unsigned int> ladder_integers()
+    std::vector<width_t> ladder_integers()
     {
-        std::vector<unsigned int> out;
+        std::vector<width_t> out;
         if(!this->ladder_sorted)
         {
             this->group_term_sort_by_ladder_int();
@@ -1291,9 +1291,9 @@ typedef struct QubitOperator
     * Vector of group ladder integer bit lengths
     * 
     */
-    std::vector<unsigned int> group_ladder_int_bit_lengths()
+    std::vector<width_t> group_ladder_int_bit_lengths()
     {
-        std::vector<unsigned int> out;
+        std::vector<width_t> out;
         if(!this->ladder_sorted)
         {
             this->group_term_sort_by_ladder_int();
