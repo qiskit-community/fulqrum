@@ -64,7 +64,7 @@ inline void set_weight_ptrs(std::vector<OperatorTerm>& __restrict terms,
     vec.resize(0);
     vec.push_back(0);
     std::size_t kk;
-    unsigned int val = terms[0].indices.size();
+    std::size_t val = terms[0].indices.size();
     for(kk = 1; kk < terms.size(); kk++)
     {
         if(terms[kk].indices.size() > val)
@@ -109,7 +109,7 @@ inline void set_group_ptrs(const std::vector<OperatorTerm>& __restrict terms,
  */
 inline void combine_qubit_terms(std::vector<OperatorTerm>& __restrict terms,
                                 std::vector<OperatorTerm>& __restrict out_terms,
-                                unsigned int* touched,
+                                width_t* touched,
                                 double atol)
 {
     std::size_t kk, qq, num_terms = terms.size();
@@ -230,7 +230,7 @@ inline void set_offdiag_weight_ptrs(const std::vector<OperatorTerm>& __restrict 
 {
     vec.resize(0);
     std::size_t kk;
-    unsigned int val = terms[0].offdiag_weight;
+    width_t val = terms[0].offdiag_weight;
     vec.push_back(0);
     for(kk = 1; kk < terms.size(); kk++)
     {
@@ -338,7 +338,7 @@ inline void set_offdiag_weight_and_phase(OperatorTerm_t& term)
         return;
     }
     std::size_t kk;
-    unsigned int weight = 0;
+    width_t weight = 0;
     unsigned int temp, num_y = 0;
     unsigned char* values = &term.values[0];
     for(kk = 0; kk < term.values.size(); kk++)
@@ -404,14 +404,14 @@ inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
                 continue;
             }
 
-            std::map<std::vector<unsigned int>, int> pattern_to_group;
+            std::map<std::vector<width_t>, int> pattern_to_group;
 
             for(std::size_t kk = start; kk < stop; kk++)
             {
                 OperatorTerm_t* term = &terms[kk];
 
                 // Build canonical key: sorted off-diagonal qubit indices
-                std::vector<unsigned int> key;
+                std::vector<width_t> key;
                 key.reserve(term->offdiag_weight);
                 for(std::size_t idx = 0; idx < term->values.size(); idx++)
                     if(term->values[idx] > 2)
@@ -524,9 +524,9 @@ inline void sort_groups_by_ladder_int(std::vector<OperatorTerm>& terms,
  * @param num_inds Number of elements to consider for appending
  *
  */
-inline void compute_term_offdiag_inds(const OperatorTerm_t& term, unsigned int* offdiag_inds)
+inline void compute_term_offdiag_inds(const OperatorTerm_t& term, width_t* offdiag_inds)
 {
-    unsigned int kk;
+    std::size_t kk;
     unsigned int counter = 0;
     for(kk = 0; kk < term.indices.size(); kk++)
     {
@@ -550,7 +550,7 @@ inline void compute_term_offdiag_inds(const OperatorTerm_t& term, unsigned int* 
  *
  */
 inline void set_group_offdiag_indices(const std::vector<OperatorTerm_t>& terms,
-                                      std::vector<std::vector<unsigned int>>& group_indices,
+                                      std::vector<std::vector<width_t>>& group_indices,
                                       const std::size_t* group_ptrs,
                                       unsigned int num_groups)
 {
@@ -609,10 +609,10 @@ inline void ladder_int_starts(const std::vector<OperatorTerm>& terms,
  */
 typedef struct QubitOperator
 {
-    unsigned int width;
+    width_t width;
     std::vector<OperatorTerm_t> terms;
     int type{1};
-    unsigned int ladder_width{DEFAULT_LADDER_WIDTH};
+    width_t ladder_width{DEFAULT_LADDER_WIDTH};
     int sorted{0};              // Are the operator terms group sorted
     int weight_sorted{0};       // Are the operator terms weight sorted 
     int off_weight_sorted{0};   // Are the operator terms off-diagonal weight sorted
@@ -625,12 +625,12 @@ typedef struct QubitOperator
      *
      * @param[in] width The width (number of qubits) of the operator
      */
-    QubitOperator(unsigned int x)
+    QubitOperator(width_t x)
     {
         width = x;
     }
 
-    QubitOperator(unsigned int x, std::vector<TermData> data)
+    QubitOperator(width_t x, std::vector<TermData> data)
         : width(x)
     {
         unsigned int num_terms = data.size();
@@ -669,7 +669,7 @@ typedef struct QubitOperator
      */
     static QubitOperator from_label(std::string label)
     {
-        unsigned int width = label.size();
+        width_t width = label.size();
         unsigned char val;
         std::size_t counter = 0;
         QubitOperator out = QubitOperator(width);
@@ -967,9 +967,9 @@ typedef struct QubitOperator
     * @return Vector of weights for terms
     * 
     */
-    std::vector<unsigned int> weights() const
+    std::vector<width_t> weights() const
     {
-        std::vector<unsigned int> out;
+        std::vector<width_t> out;
         for(std::size_t kk = 0; kk < this->size(); kk++)
         {
             out.push_back(this->terms[kk].weight());
@@ -1194,14 +1194,14 @@ typedef struct QubitOperator
     /**
     * Off-diagonal indices for each group of terms
     */
-    std::vector<std::vector<unsigned int>> group_offdiag_indices()
+    std::vector<std::vector<width_t>> group_offdiag_indices()
     {
         if(!this->sorted)
         {
             throw std::runtime_error("Operator must be group sorted first");
         }
 
-        std::vector<std::vector<unsigned int>> out;
+        std::vector<std::vector<width_t>> out;
         std::vector<std::size_t> ptrs = this->group_ptrs();
         set_group_offdiag_indices(this->terms, out, &ptrs[0], ptrs.size() - 1);
         return out;
@@ -1225,7 +1225,7 @@ typedef struct QubitOperator
         {
             this->weight_sort();
         }
-        std::vector<unsigned int> touched;
+        std::vector<width_t> touched;
         touched.resize(this->size());
         combine_qubit_terms(this->terms, out.terms, &touched[0], atol);
         out.type = this->type;
@@ -1237,9 +1237,9 @@ typedef struct QubitOperator
     * @return Vector of off-diagonal weights for terms
     * 
     */
-    std::vector<unsigned int> offdiag_weights() const
+    std::vector<width_t> offdiag_weights() const
     {
-        std::vector<unsigned int> out;
+        std::vector<width_t> out;
         out.resize(terms.size());
         std::size_t kk;
         for(kk = 0; kk < terms.size(); kk++)

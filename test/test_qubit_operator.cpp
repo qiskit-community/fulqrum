@@ -85,13 +85,13 @@ TEST_CASE("Test simple multi-term operator weight")
     op += QubitOperator(5, {{"ZY", {2, 3}, 1}});
     CHECK(op[0].weight() == 5);
     CHECK(op[1].weight() == 2);
-    std::vector<unsigned int> ans = {5, 2};
+    std::vector<width_t> ans = {5, 2};
     CHECK(op.weights() == ans);
 }
 
 TEST_CASE("Test inplace addition of operators")
 {
-    unsigned int N = 5;
+    width_t N = 5;
     QubitOperator_t op = QubitOperator(N);
     for(unsigned int kk = 0; kk < N; kk++)
     {
@@ -107,7 +107,7 @@ TEST_CASE("Test inplace addition of operators")
 
 TEST_CASE("Test addition of operators")
 {
-    unsigned int N = 5;
+    width_t N = 5;
     QubitOperator_t op = QubitOperator(N);
     for(unsigned int kk = 0; kk < N; kk++)
     {
@@ -123,7 +123,7 @@ TEST_CASE("Test addition of operators")
 
 TEST_CASE("Verify diagonal operator returns true")
 {
-    unsigned int N = 25;
+    width_t N = 25;
     QubitOperator_t op = QubitOperator(N);
     std::vector<std::string> diag_ops = {"Z", "O", "1"};
     unsigned int kk;
@@ -136,7 +136,7 @@ TEST_CASE("Verify diagonal operator returns true")
 
 TEST_CASE("Verify non-diagonal operator returns false")
 {
-    unsigned int N = 25;
+    width_t N = 25;
     QubitOperator_t op = QubitOperator(N);
     std::vector<std::string> diag_ops = {"Z", "O", "1"};
     unsigned int kk;
@@ -150,7 +150,7 @@ TEST_CASE("Verify non-diagonal operator returns false")
 
 TEST_CASE("Test simple operator sorting")
 {
-    unsigned int N = 5;
+    width_t N = 5;
     QubitOperator_t op = QubitOperator(N, {{"Z0+XY", {4, 0, 3, 1, 2}, 1.0}});
     std::vector<OpData> ans = {
         OpData("0", 0), OpData("X", 1), OpData("Y", 2), OpData("+", 3), OpData("Z", 4)};
@@ -159,7 +159,7 @@ TEST_CASE("Test simple operator sorting")
 
 TEST_CASE("Test operator subtraction")
 {
-    unsigned int N = 5;
+    width_t N = 5;
     QubitOperator_t op1 = QubitOperator(N, {{"Z0+XY", {4, 0, 3, 1, 2}, 1.0}});
     QubitOperator_t op2 = QubitOperator(N, {{"XYZZ", {0, 3, 1, 2}, 5.0}});
     QubitOperator out = op1 - op2;
@@ -168,37 +168,37 @@ TEST_CASE("Test operator subtraction")
 
 TEST_CASE("Test projector indices")
 {
-    unsigned int N = 5;
+    width_t N = 5;
     QubitOperator_t op = QubitOperator(N, {{"1Z0Z0", {0, 1, 2, 3, 4}, 1.0}});
-    std::vector<unsigned int> ans = {0, 2, 4};
+    std::vector<width_t> ans = {0, 2, 4};
     CHECK(op[0].proj_indices == ans);
 }
 
 TEST_CASE("Test projector indices are not set")
 {
-    unsigned int N = 5;
+    width_t N = 5;
     QubitOperator_t op = QubitOperator(N, {{"XZYZ+", {0, 1, 2, 3, 4}, 1.0}});
-    std::vector<unsigned int> ans = {};
+    std::vector<width_t> ans = {};
     CHECK(op[0].proj_indices == ans);
 }
 
 TEST_CASE("Test is_real() 1")
 {
-    unsigned int N = 5;
+    width_t N = 5;
     QubitOperator_t op = QubitOperator(N, {{"++", {2, 3}, complex(1, 1e-14)}});
     CHECK(op.is_real() == true);
 }
 
 TEST_CASE("Test is_real() 2")
 {
-    unsigned int N = 5;
+    width_t N = 5;
     QubitOperator_t op = QubitOperator(N, {{"++", {2, 3}, complex(1, 1e-11)}});
     CHECK(op.is_real() == false);
 }
 
 TEST_CASE("Test operator iteration")
 {
-    unsigned int N = 6;
+    width_t N = 6;
     QubitOperator_t op = QubitOperator(N, {{"XX", {2, 3}, 1}});
     op += QubitOperator(N, {{"YXXY", {0, 2, 3, 5}, 1}});
     op += QubitOperator(N, {{"ZZZZZZ", {0, 1, 2, 3, 4, 5}, 1}});
@@ -357,7 +357,7 @@ TEST_CASE("Test real phase 7")
 
 TEST_CASE("Test removal of diagonal terms")
 {
-    unsigned int N = 6;
+    width_t N = 6;
     QubitOperator op = QubitOperator(N);
     std::vector<std::string> diag_ops = {"I", "X", "Z", "0", "Y", "I"};
     unsigned int kk;

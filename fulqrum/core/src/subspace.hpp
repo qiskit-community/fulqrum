@@ -12,6 +12,7 @@
  * that they have been altered from the originals.
  */
 #pragma once
+#include "constants.hpp"
 #include "bitset_hashmap.hpp"
 #include <boost/dynamic_bitset.hpp>
 
@@ -25,6 +26,6 @@
 typedef struct Subspace
 {
     bitset_map_namespace::BitsetHashMapWrapper bitstrings;
-    unsigned int num_qubits;
+    width_t num_qubits;
     std::size_t size;
 } Subspace_t;

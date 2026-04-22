@@ -30,11 +30,11 @@ template <typename T>
 void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                 const bitset_map_namespace::BitsetHashMapWrapper& subspace,
                 const T* __restrict diag_vec,
-                const std::size_t width,
+                const width_t width,
                 const std::size_t subspace_dim,
                 const int has_nonzero_diag,
                 const std::size_t* __restrict group_ptrs,
-                const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
+                const std::vector<std::vector<width_t>>& group_offdiag_inds,
                 const std::size_t num_groups,
                 const T* __restrict in_vec,
                 T* __restrict out_vec)
@@ -74,7 +74,7 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                 std::size_t group_start, group_stop, group;
                 std::size_t* col_ptr;
                 std::size_t idx, col_idx;
-                const std::vector<unsigned int>* group_inds;
+                const std::vector<width_t>* group_inds;
 
                 std::vector<uint8_t> row_set_bits(row.size(), 0);
                 bitset_to_bitvec(row, row_set_bits);

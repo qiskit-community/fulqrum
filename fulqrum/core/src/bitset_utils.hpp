@@ -212,9 +212,9 @@ void bitset_to_bitvec(const boost::dynamic_bitset<size_t>& row, std::vector<uint
  * 
  * @return Unordered map with indices of zero bits in the bit-string 
  */
-inline std::vector<unsigned int> set_bit_indices(const boost::dynamic_bitset<size_t>& row)
+inline std::vector<width_t> set_bit_indices(const boost::dynamic_bitset<size_t>& row)
 {
-    std::vector<unsigned int> set_bits;
+    std::vector<width_t> set_bits;
 
     for(unsigned int block = 0; block < row.num_blocks(); block++)
     {

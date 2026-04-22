@@ -69,7 +69,7 @@ inline void single_bitstring_diagonal(const boost::dynamic_bitset<size_t>& row,
     val = 0;
     const std::size_t num_terms = diag_terms.size();
     const OperatorTerm_t* term;
-    unsigned int weight;
+    width_t weight;
     std::size_t ll;
     for(ll = 0; ll < num_terms; ll++)
     {
@@ -167,7 +167,7 @@ projector_ptrs_and_offset(const QubitOperator& oper)
     std::vector<std::pair<std::size_t, std::size_t>> ptrs(oper.width);
     std::size_t offset = 0;
     std::size_t kk;
-    unsigned int current_ind;
+    width_t current_ind;
 
     // compute the index (offset) at which terms begin to have projection operators
     for(kk = 0; kk < oper.size(); kk++)
@@ -219,12 +219,12 @@ single_bitstring_diagonal_fast(const boost::dynamic_bitset<size_t>& row,
     val = 0;
     //const std::size_t num_terms = diag_terms.size();
     const OperatorTerm_t* term;
-    unsigned int weight;
+    width_t weight;
     std::size_t kk;
     std::size_t ll;
     std::size_t start, stop;
 
-    std::vector<unsigned int> set_bits = set_bit_indices(row);
+    std::vector<width_t> set_bits = set_bit_indices(row);
 
     // take care of all terms with no projectors
     for(kk = 0; kk < offset; kk++)
