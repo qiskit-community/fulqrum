@@ -16,6 +16,7 @@ import numpy as np
 import fulqrum as fq
 from fulqrum.core.constants import np_width_t
 
+
 def test_bitset_int1():
     """Test bitset ladder int for different ladder widths"""
     bits = fq.Bitset("110101" * 20)
