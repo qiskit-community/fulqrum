@@ -31,7 +31,7 @@ __all__ = [
     "SubspaceHamiltonian",
     "FermionicOperator",
     "Bitset",
-    "constants"
+    "constants",
 ]
 
 
