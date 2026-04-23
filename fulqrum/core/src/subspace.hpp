@@ -12,8 +12,8 @@
  * that they have been altered from the originals.
  */
 #pragma once
-#include "constants.hpp"
 #include "bitset_hashmap.hpp"
+#include "constants.hpp"
 #include <boost/dynamic_bitset.hpp>
 
 /** @struct subspace

@@ -17,6 +17,7 @@ from pathlib import Path
 from qiskit.transpiler import CouplingMap
 import fulqrum as fq
 from fulqrum import QubitOperator, FermionicOperator
+from fulqrum.core.constants import np_width_t
 
 
 def test_grouping1():
@@ -240,7 +241,7 @@ def test_group_terms_ladder_int1():
     assert np.allclose(op.group_ptrs(), [0, 1, 2, 5, 7])
     assert np.allclose(
         op.ladder_ints(),
-        np.array([np.iinfo(np.uint32).max, 1, 1, 2, 3, 0, 6], dtype=np.uint32),
+        np.array([np.iinfo(np_width_t).max, 1, 1, 2, 3, 0, 6], dtype=np_width_t),
     )
 
 
@@ -252,7 +253,7 @@ def test_group_terms_ladder_int_width1():
     op.set_type(2)
     op.group_term_sort_by_ladder_int(3)
     assert np.allclose(
-        op.ladder_ints(), np.array([np.iinfo(np.uint32).max, 0, 7], dtype=np.uint32)
+        op.ladder_ints(), np.array([np.iinfo(np_width_t).max, 0, 7], dtype=np_width_t)
     )
 
 
@@ -264,7 +265,7 @@ def test_group_terms_ladder_int_width2():
     op.set_type(2)
     op.group_term_sort_by_ladder_int(2)
     assert np.allclose(
-        op.ladder_ints(), np.array([np.iinfo(np.uint32).max, 0, 3], dtype=np.uint32)
+        op.ladder_ints(), np.array([np.iinfo(np_width_t).max, 0, 3], dtype=np_width_t)
     )
 
 
@@ -276,7 +277,7 @@ def test_group_terms_ladder_int_width3():
     op.set_type(2)
     op.group_term_sort_by_ladder_int(1)
     assert np.allclose(
-        op.ladder_ints(), np.array([np.iinfo(np.uint32).max, 0, 1], dtype=np.uint32)
+        op.ladder_ints(), np.array([np.iinfo(np_width_t).max, 0, 1], dtype=np_width_t)
     )
 
 
@@ -288,7 +289,7 @@ def test_group_terms_ladder_int_width4():
     op.set_type(2)
     op.group_term_sort_by_ladder_int(3)
     assert np.allclose(
-        op.ladder_ints(), np.array([np.iinfo(np.uint32).max, 1, 3], dtype=np.uint32)
+        op.ladder_ints(), np.array([np.iinfo(np_width_t).max, 1, 3], dtype=np_width_t)
     )
 
 

@@ -14,12 +14,12 @@
 
 import numpy as np
 import fulqrum as fq
-
+from fulqrum.core.constants import np_width_t
 
 def test_bitset_int1():
     """Test bitset ladder int for different ladder widths"""
     bits = fq.Bitset("110101" * 20)
-    inds = np.array([0, 17, 110, 115], dtype=np.uint32)
+    inds = np.array([0, 17, 110, 115], dtype=np_width_t)
     for ladder_width in range(1, 5):
         assert bits.ladder_int(inds, ladder_width) == int(
             "".join([str(int(bits[kk])) for kk in inds[:ladder_width][::-1]]), 2
@@ -29,7 +29,7 @@ def test_bitset_int1():
 def test_bitset_int2():
     """Test bitset ladder int for different ladder widths, #2"""
     bits = fq.Bitset("110101" * 20)
-    inds = np.array([0, 1, 11, 119], dtype=np.uint32)
+    inds = np.array([0, 1, 11, 119], dtype=np_width_t)
     for ladder_width in range(1, 5):
         assert bits.ladder_int(inds, ladder_width) == int(
             "".join([str(int(bits[kk])) for kk in inds[:ladder_width][::-1]]), 2
@@ -40,7 +40,7 @@ def test_bitset_int3():
     """Test bitset ladder int for different indices at default width of 3"""
     bits = fq.Bitset("110101" * 20)
     for length in range(1, 5):
-        inds = np.arange(1, length + 1, dtype=np.uint32)
+        inds = np.arange(1, length + 1, dtype=np_width_t)
         assert bits.ladder_int(inds, 3) == int(
             "".join([str(int(bits[kk])) for kk in inds[:3][::-1]]), 2
         )
@@ -50,7 +50,7 @@ def test_bitset_int4():
     """Test bitset ladder int for different indices at default width of 3, #2"""
     bits = fq.Bitset("110101" * 20)
     for length in range(1, 5):
-        inds = np.arange(1, length + 1, dtype=np.uint32) + 18
+        inds = np.arange(1, length + 1, dtype=np_width_t) + 18
         assert bits.ladder_int(inds, 3) == int(
             "".join([str(int(bits[kk])) for kk in inds[:3][::-1]]), 2
         )
@@ -82,7 +82,7 @@ def test_operator_ladder_int2():
     )
     op.set_type(2)
     op.group_term_sort_by_ladder_int()
-    assert np.allclose(op.ladder_ints(), [np.iinfo(np.uint32).max, 5])
+    assert np.allclose(op.ladder_ints(), [np.iinfo(np_width_t).max, 5])
 
 
 def test_operator_ladder_int3():
@@ -92,4 +92,4 @@ def test_operator_ladder_int3():
     )
     op.set_type(2)
     op.group_term_sort_by_ladder_int()
-    assert np.allclose(op.ladder_ints(), [np.iinfo(np.uint32).max, 5])
+    assert np.allclose(op.ladder_ints(), [np.iinfo(np_width_t).max, 5])

@@ -397,7 +397,7 @@ inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
         {
             std::size_t start = weight_ptrs[ii];
             std::size_t stop = weight_ptrs[ii + 1];
-            int group_idx =  static_cast<int>(ii * max_group_size);
+            int group_idx = static_cast<int>(ii * max_group_size);
 
             if(terms[start].group == 0) // group is the diagonal group
             {
@@ -613,11 +613,12 @@ typedef struct QubitOperator
     std::vector<OperatorTerm_t> terms;
     int type{1};
     width_t ladder_width{DEFAULT_LADDER_WIDTH};
-    int sorted{0};              // Are the operator terms group sorted
-    int weight_sorted{0};       // Are the operator terms weight sorted 
-    int off_weight_sorted{0};   // Are the operator terms off-diagonal weight sorted
-    int ladder_sorted{0};       // Are the operator terms ladder int sorted within their groups?
-    int structure_sorted{0};    // Are the operator terms sorted by (non-unique) off-diagonal structure?
+    int sorted{0}; // Are the operator terms group sorted
+    int weight_sorted{0}; // Are the operator terms weight sorted
+    int off_weight_sorted{0}; // Are the operator terms off-diagonal weight sorted
+    int ladder_sorted{0}; // Are the operator terms ladder int sorted within their groups?
+    int structure_sorted{
+        0}; // Are the operator terms sorted by (non-unique) off-diagonal structure?
 
     QubitOperator() {}
     /**

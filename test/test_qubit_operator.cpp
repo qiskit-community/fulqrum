@@ -95,13 +95,13 @@ TEST_CASE("Test inplace addition of operators")
     QubitOperator_t op = QubitOperator(N);
     for(unsigned int kk = 0; kk < N; kk++)
     {
-        op += QubitOperator(N, {{"Y", {kk}, 1.0 / (N + kk)}});
+        op += QubitOperator(N, {{"Y", {kk}, 1.0 / static_cast<double>(N + kk)}});
     }
     for(unsigned int kk = 0; kk < N; kk++)
     {
         std::vector<OpData> ans = {OpData("Y", kk)};
         CHECK(op[kk].operators() == ans);
-        CHECK(op[kk].coeff == 1.0 / (N + kk));
+        CHECK(op[kk].coeff == 1.0 / static_cast<double>(N + kk));
     }
 }
 
@@ -111,13 +111,13 @@ TEST_CASE("Test addition of operators")
     QubitOperator_t op = QubitOperator(N);
     for(unsigned int kk = 0; kk < N; kk++)
     {
-        op = op + QubitOperator(N, {{"Y", {kk}, 1.0 / (N + kk)}});
+        op = op + QubitOperator(N, {{"Y", {kk}, 1.0 / static_cast<double>(N + kk)}});
     }
     for(unsigned int kk = 0; kk < N; kk++)
     {
         std::vector<OpData> ans = {OpData("Y", kk)};
         CHECK(op[kk].operators() == ans);
-        CHECK(op[kk].coeff == 1.0 / (N + kk));
+        CHECK(op[kk].coeff == 1.0 / static_cast<double>(N + kk));
     }
 }
 
@@ -129,7 +129,7 @@ TEST_CASE("Verify diagonal operator returns true")
     unsigned int kk;
     for(kk = 0; kk < N; kk++)
     {
-        op += QubitOperator(N, {{diag_ops[kk % 3], {kk}, 1.0 / (N + kk)}});
+        op += QubitOperator(N, {{diag_ops[kk % 3], {kk}, 1.0 / static_cast<double>(N + kk)}});
     }
     CHECK(op.is_diagonal());
 }
@@ -142,7 +142,7 @@ TEST_CASE("Verify non-diagonal operator returns false")
     unsigned int kk;
     for(kk = 0; kk < N; kk++)
     {
-        op += QubitOperator(N, {{diag_ops[kk % 3], {kk}, 1.0 / (N + kk)}});
+        op += QubitOperator(N, {{diag_ops[kk % 3], {kk}, 1.0 / static_cast<double>(N + kk)}});
     }
     op += QubitOperator(N, {{"X", {0}, 1}});
     CHECK(!op[kk].is_diagonal());
@@ -281,7 +281,7 @@ TEST_CASE("Test QubitOperator combining terms")
     op += QubitOperator::from_label("I0YXI");
     QubitOperator new_op = op.combine_repeated_terms();
     CHECK(new_op.size() == 3);
-    CHECK(new_op[1].coeff == complex(5, 0));
+    CHECK(new_op[1].coeff == complex(5, 0) );
 }
 
 TEST_CASE("Test diagonal QubitOperator properties")
@@ -363,7 +363,7 @@ TEST_CASE("Test removal of diagonal terms")
     unsigned int kk;
     for(kk = 0; kk < N; kk++)
     {
-        op += QubitOperator(N, {{diag_ops[kk], {kk}, 1.0 / (N + kk)}});
+        op += QubitOperator(N, {{diag_ops[kk], {kk}, 1.0 / static_cast<double>(N + kk)}});
     }
     CHECK(std::abs(op.constant_energy() - 0.25757575757575757) < 1e-14);
     QubitOperator out = op.remove_constant_terms();

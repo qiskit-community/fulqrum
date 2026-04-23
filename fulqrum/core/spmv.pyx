@@ -21,6 +21,8 @@ from libc.math cimport floor, sqrt
 from .qubit_operator cimport QubitOperator
 from .subspace cimport Subspace
 from .csrlike cimport CSRLike
+from .constants cimport width_t
+from .constants import np_width_t
 from ..exceptions import FulqrumError
 
 from cython.parallel cimport prange, parallel
@@ -72,7 +74,7 @@ cdef class FulqrumSpMV():
                 self.ladder_offset = 2**self.oper.ladder_width
             else:
                 # Need to set memoryview but not used
-                self.group_rowint_length = np.zeros(1, dtype=np.uint32)
+                self.group_rowint_length = np.zeros(1, dtype=np_width_t)
 
         if self.diag_oper.terms.size() > 0:
             self.has_nonzero_diag = 1

@@ -11,8 +11,10 @@
 # that they have been altered from the originals.
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 
-cdef double RTOL = 1e-8
-cdef double ATOL = 1e-14
 
-cdef extern from "../src/constants.hpp":
-    cdef size_t MAX_SIZE_T = MAX_SIZE_T
+cdef extern from "src/constants.hpp":
+    cdef const size_t MAX_SIZE_T
+    cdef const double ATOL
+    cdef const double RTOL
+    ctypedef unsigned int width_t # The actual type here does not matter as the compiler will just figure it out
+

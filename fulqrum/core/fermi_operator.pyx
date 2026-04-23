@@ -33,7 +33,7 @@ cimport numpy as np
 include "includes/base_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
-include "includes/constants.pxi"
+
 
 
 cdef const FermionicTerm_t EmptyFermionicTerm
