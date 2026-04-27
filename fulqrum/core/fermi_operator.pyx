@@ -472,7 +472,7 @@ cdef class FermionicOperator():
             filename (str): File to store to
             overwrite (bool): Overwrite file if it exits, default=False
         """
-        dict_to_json(self.to_dict(), filename, overwrite=overwrite)
+        self.oper.to_json(str(filename), overwrite)
 
 
     @classmethod

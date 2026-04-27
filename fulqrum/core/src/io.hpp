@@ -32,7 +32,13 @@ typedef std::pair<double, double> double_pair;
 typedef std::tuple<std::string, std::vector<width_t>, double_pair> JsonTerm;
 
 struct QubitOperator;
+struct OperatorTerm;
 struct FermionicOperator;
+
+inline void set_extended_flag(OperatorTerm& term);
+inline void set_offdiag_weight_and_phase(OperatorTerm& term);
+inline OperatorTerm& set_proj_indices(OperatorTerm& term);
+
 
 
 /**
@@ -146,7 +152,7 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
 
     json Doc{{"format-version", "1.0"},
             {"fulqrum-version", "0.1.0"},
-            {"operator-type", "fermi"},
+            {"operator-type", op_type},
             {"width", oper.width},
             {"terms", terms}
             };
@@ -234,12 +240,12 @@ inline void json_to_operator(const std::string& filename, U& oper)
     std::string uncompress_str;
     if(ending == "xz")
     {
-        uncompress_str = std::format("xz -d {} ", filename);
+        uncompress_str = std::format("xz -d -k {} ", filename);
         exec(uncompress_str.c_str());  // compress and delete original json 
     }
     else if(ending == "zst")
     {
-        uncompress_str = std::format("zstd -d -q -f {}", filename);
+        uncompress_str = std::format("zstd -d -q {}", filename);
         exec(uncompress_str.c_str());  // compress and delete original json  
     }
     else if(ending != "json")
@@ -270,6 +276,9 @@ inline void json_to_operator(const std::string& filename, U& oper)
         {
             auto [a,b] = get<2>(item);
             OperatorTerm term = OperatorTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
+            term.set_proj_indices();
+            set_offdiag_weight_and_phase(term);
+            set_extended_flag(term);
             oper.terms.push_back(term);
         }
     }
@@ -282,6 +291,7 @@ inline void json_to_operator(const std::string& filename, U& oper)
         {
             auto [a,b] = get<2>(item);
             FermionicTerm term = FermionicTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
+            term.insertion_sort();
             oper.terms.push_back(term);
         }
     }
