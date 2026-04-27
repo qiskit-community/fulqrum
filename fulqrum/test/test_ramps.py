@@ -19,7 +19,6 @@ import scipy.sparse.linalg as spla
 from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
 from fulqrum.ramps import ramps_restricted_simple
 
-
 _path = Path(__file__).parent / "data/lih.json"
 FOP = FermionicOperator.from_json(_path)
 NEW_OP = FOP.extended_jw_transformation()

@@ -19,7 +19,6 @@ from pathlib import Path
 from fulqrum import FermionicOperator
 from fulqrum.utils import qubitoperator_to_matrix
 
-
 # Tests compare JW transformations by looking at the resulting
 # matrix element values compared to that from the JW transformation
 # result using Qiskit Nature 0.7.2.  We do this because the operators

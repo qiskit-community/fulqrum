@@ -12,16 +12,16 @@
  * that they have been altered from the originals.
  */
 #pragma once
-#include <iostream>
 #include <complex>
-#include <vector>
-#include <fstream>
-#include <format>
 #include <cstdio>
+#include <format>
+#include <fstream>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <variant>
+#include <vector>
 
 #include "./external/json.hpp"
 #include "base.hpp"
@@ -39,8 +39,6 @@ inline void set_extended_flag(OperatorTerm& term);
 inline void set_offdiag_weight_and_phase(OperatorTerm& term);
 inline OperatorTerm& set_proj_indices(OperatorTerm& term);
 
-
-
 /**
  * Check if a file exists
  *
@@ -48,15 +46,18 @@ inline OperatorTerm& set_proj_indices(OperatorTerm& term);
  *
  * @return bool indicating if file exists
  */
-inline bool file_exists (const std::string& name) {
-    if (FILE *file = fopen(name.c_str(), "r")) {
+inline bool file_exists(const std::string& name)
+{
+    if(FILE* file = fopen(name.c_str(), "r"))
+    {
         fclose(file);
         return true;
-    } else {
+    }
+    else
+    {
         return false;
-    }   
+    }
 }
-
 
 /**
  * Execute a command
@@ -65,19 +66,21 @@ inline bool file_exists (const std::string& name) {
  *
  * @return Result from running the command
  */
-inline std::string exec(const char* cmd) {
+inline std::string exec(const char* cmd)
+{
     std::vector<char> buffer(128);
     std::string result;
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) {
+    if(!pipe)
+    {
         throw std::runtime_error("popen() failed!");
     }
-    while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr) {
+    while(fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr)
+    {
         result += buffer.data();
     }
     return result;
 }
-
 
 /**
  * Split a string by a given delimiter
@@ -87,11 +90,13 @@ inline std::string exec(const char* cmd) {
  *
  * @return Array of strings
  */
-std::vector<std::string> split_string(std::string s, const std::string& delimiter) {
+std::vector<std::string> split_string(std::string s, const std::string& delimiter)
+{
     std::vector<std::string> tokens;
     size_t pos = 0;
     std::string token;
-    while ((pos = s.find(delimiter)) != std::string::npos) {
+    while((pos = s.find(delimiter)) != std::string::npos)
+    {
         token = s.substr(0, pos);
         tokens.push_back(token);
         s.erase(0, pos + delimiter.length());
@@ -99,8 +104,6 @@ std::vector<std::string> split_string(std::string s, const std::string& delimite
     tokens.push_back(s);
     return tokens;
 }
-
-
 
 /**
  * Convert an operator to JSON format, optionally with XZ or ZST compression
@@ -112,7 +115,7 @@ std::vector<std::string> split_string(std::string s, const std::string& delimite
  * @note One should always use compression as it saves ~10x in file size 
  */
 template <typename T>
-inline void operator_to_json(const T& oper, const std::string& filename, bool overwrite=false)
+inline void operator_to_json(const T& oper, const std::string& filename, bool overwrite = false)
 {
     std::string op_type;
     std::string ending;
@@ -130,20 +133,22 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
     }
     // check if file already exists
     bool exists = file_exists(filename);
-    if(exists && (overwrite == false)){
+    if(exists && (overwrite == false))
+    {
         throw std::runtime_error(std::format("File '{}' exists and 'overwrite=false'", filename));
     }
-    
-    // split filename by '.' to get the extension 
+
+    // split filename by '.' to get the extension
     std::vector<std::string> split = split_string(filename, ".");
-    ending = split.at(split.size()-1);
+    ending = split.at(split.size() - 1);
 
     JsonTerm json_term;
     std::vector<JsonTerm> terms;
-    for(auto term: oper.terms)
+    for(auto term : oper.terms)
     {
         std::string s = "";
-        for(width_t kk=0; kk < term.values.size(); kk++){
+        for(width_t kk = 0; kk < term.values.size(); kk++)
+        {
             s += rev_oper_map[term.values[kk]];
         }
         json_term = {s, term.indices, {term.coeff.real(), term.coeff.imag()}};
@@ -151,20 +156,19 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
     }
 
     json Doc{{"format-version", "1.0"},
-            {"fulqrum-version", "0.1.0"},
-            {"operator-type", op_type},
-            {"width", oper.width},
-            {"terms", terms}
-            };
+             {"fulqrum-version", "0.1.0"},
+             {"operator-type", op_type},
+             {"width", oper.width},
+             {"terms", terms}};
 
-    
     std::string short_filename;
     if(ending != "json")
     {
-        for(std::size_t kk=0; kk < (split.size()-1); kk++)
+        for(std::size_t kk = 0; kk < (split.size() - 1); kk++)
         {
             short_filename.append(split[kk]);
-            if(kk != (split.size()-2)){
+            if(kk != (split.size() - 2))
+            {
                 short_filename.append(".");
             }
         }
@@ -179,26 +183,24 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
     File.open(short_filename, std::ios::out);
     File << Doc;
     File.close();
-    
+
     // compress file, if needed
     std::string compress_str;
     if(ending == "xz")
     {
         compress_str = std::format("xz -9 -f {} ", short_filename);
-        exec(compress_str.c_str());  // compress and delete original json 
+        exec(compress_str.c_str()); // compress and delete original json
     }
     else if(ending == "zst")
     {
         compress_str = std::format("zstd --ultra -20 --rm -q {}", short_filename);
-        exec(compress_str.c_str());  // compress and delete original json  
+        exec(compress_str.c_str()); // compress and delete original json
     }
     else if(ending != "json")
     {
         throw std::runtime_error("Unknown filename ending");
     }
 }
-
-
 
 /**
  * Convert a JSON file, optionally with XZ or ZST compression, to an operator
@@ -208,26 +210,28 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
  *
  * @note The oper is assumed to be empty  
  */
-template<typename U>
+template <typename U>
 inline void json_to_operator(const std::string& filename, U& oper)
 {
     // check if file already exists
     bool exists = file_exists(filename);
-    if(!exists){
+    if(!exists)
+    {
         throw std::runtime_error(std::format("File '{}' not found", filename));
     }
-    // split filename by '.' to get the extension 
+    // split filename by '.' to get the extension
     std::string ending;
     std::vector<std::string> split = split_string(filename, ".");
-    ending = split.at(split.size()-1);
+    ending = split.at(split.size() - 1);
 
     std::string short_filename;
     if(ending != "json")
     {
-        for(std::size_t kk=0; kk < (split.size()-1); kk++)
+        for(std::size_t kk = 0; kk < (split.size() - 1); kk++)
         {
             short_filename.append(split[kk]);
-            if(kk != (split.size()-2)){
+            if(kk != (split.size() - 2))
+            {
                 short_filename.append(".");
             }
         }
@@ -241,18 +245,18 @@ inline void json_to_operator(const std::string& filename, U& oper)
     if(ending == "xz")
     {
         uncompress_str = std::format("xz -d -k {} ", filename);
-        exec(uncompress_str.c_str());  // compress and delete original json 
+        exec(uncompress_str.c_str()); // compress and delete original json
     }
     else if(ending == "zst")
     {
         uncompress_str = std::format("zstd -d -q {}", filename);
-        exec(uncompress_str.c_str());  // compress and delete original json  
+        exec(uncompress_str.c_str()); // compress and delete original json
     }
     else if(ending != "json")
     {
         throw std::runtime_error("Unknown filename ending");
     }
-    
+
     std::fstream File;
     File.open(short_filename, std::ios::in);
     json Doc(json::parse(File));
@@ -261,20 +265,21 @@ inline void json_to_operator(const std::string& filename, U& oper)
     // remove temp json file if original is a compressed version
     if(ending == "xz" || ending == "zst")
     {
-       std::remove(short_filename.c_str());
+        std::remove(short_filename.c_str());
     }
 
     oper.width = Doc["width"];
     oper.terms.resize(0);
-    
+
     if constexpr(std::is_same_v<U, QubitOperator>)
     {
-        if(Doc["operator-type"] != "qubit"){
+        if(Doc["operator-type"] != "qubit")
+        {
             throw std::runtime_error("JSON operator type does not match input");
         }
-        for(JsonTerm item: Doc["terms"])
+        for(JsonTerm item : Doc["terms"])
         {
-            auto [a,b] = get<2>(item);
+            auto [a, b] = get<2>(item);
             OperatorTerm term = OperatorTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
             term.set_proj_indices();
             set_offdiag_weight_and_phase(term);
@@ -284,12 +289,13 @@ inline void json_to_operator(const std::string& filename, U& oper)
     }
     else if constexpr(std::is_same_v<U, FermionicOperator>)
     {
-       if(Doc["operator-type"] != "fermi"){
+        if(Doc["operator-type"] != "fermi")
+        {
             throw std::runtime_error("JSON operator type does not match input");
         }
-        for(JsonTerm item: Doc["terms"])
+        for(JsonTerm item : Doc["terms"])
         {
-            auto [a,b] = get<2>(item);
+            auto [a, b] = get<2>(item);
             FermionicTerm term = FermionicTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
             term.insertion_sort();
             oper.terms.push_back(term);

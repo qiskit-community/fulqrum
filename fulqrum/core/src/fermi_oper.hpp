@@ -24,8 +24,8 @@
 
 #include "constants.hpp"
 #include "fermi_term.hpp"
-#include "qubit_oper.hpp"
 #include "io.hpp"
+#include "qubit_oper.hpp"
 
 /** @struct FermionicOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
@@ -272,7 +272,7 @@ typedef struct FermionicOperator
      *
      * @note One should always use compression as it saves ~10x in file size 
      */
-    void to_json(const std::string& filename, bool overwrite=false) const
+    void to_json(const std::string& filename, bool overwrite = false) const
     {
         operator_to_json(*this, filename, overwrite);
     }
@@ -336,5 +336,5 @@ typedef struct FermionicOperator
         out.type = 2; // set type=2
         return out.combine_repeated_terms();
     }
-    
+
 } FermionicOperator_t;

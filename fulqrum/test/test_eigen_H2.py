@@ -20,7 +20,6 @@ import scipy.sparse.linalg as spla
 from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
 from fulqrum.utils import qubitoperator_to_matrix
 
-
 _path = Path(__file__).parent / "data/h2.json"
 FOP = FermionicOperator.from_json(_path)
 OP = FOP.extended_jw_transformation()

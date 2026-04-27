@@ -25,8 +25,8 @@
 #include <vector>
 
 #include "constants.hpp"
-#include "qubit_term.hpp"
 #include "io.hpp"
+#include "qubit_term.hpp"
 
 struct QubitOperator;
 
@@ -615,11 +615,12 @@ typedef struct QubitOperator
     std::vector<OperatorTerm_t> terms;
     int type{1};
     unsigned int ladder_width{DEFAULT_LADDER_WIDTH};
-    int sorted{0};              // Are the operator terms group sorted
-    int weight_sorted{0};       // Are the operator terms weight sorted 
-    int off_weight_sorted{0};   // Are the operator terms off-diagonal weight sorted
-    int ladder_sorted{0};       // Are the operator terms ladder int sorted within their groups?
-    int structure_sorted{0};    // Are the operator terms sorted by (non-unique) off-diagonal structure?
+    int sorted{0}; // Are the operator terms group sorted
+    int weight_sorted{0}; // Are the operator terms weight sorted
+    int off_weight_sorted{0}; // Are the operator terms off-diagonal weight sorted
+    int ladder_sorted{0}; // Are the operator terms ladder int sorted within their groups?
+    int structure_sorted{
+        0}; // Are the operator terms sorted by (non-unique) off-diagonal structure?
 
     QubitOperator() {}
     /**
@@ -1342,7 +1343,7 @@ typedef struct QubitOperator
      *
      * @note One should always use compression as it saves ~10x in file size 
      */
-    void to_json(const std::string& filename, bool overwrite=false) const
+    void to_json(const std::string& filename, bool overwrite = false) const
     {
         operator_to_json(*this, filename, overwrite);
     }
