@@ -119,10 +119,10 @@ INCLUDE_DIRS = [np.get_include()] + [
 LINK_FLAGS = []
 # If on Win and not in MSYS2 (i.e. Visual studio compile)
 if sys.platform == "win32" and os.environ.get("MSYSTEM", None) is None:
-    COMPILER_FLAGS = ["/O2", "/std:c++17"]
+    COMPILER_FLAGS = ["/O2", "/std:c++20"]
 # Everything else
 else:
-    COMPILER_FLAGS = ["-O3", "-std=c++17"]
+    COMPILER_FLAGS = ["-O3", "-std=c++20"]
 
 if os.getenv("FQ_DEBUG", "0") == "1":
     COMPILER_FLAGS.append("-D_GLIBCXX_ASSERTIONS")
