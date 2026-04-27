@@ -79,6 +79,14 @@ double simple_restricted(const QubitOperator& oper,
     unsigned int row_int;
     int do_col_search;
 
+    struct Candidate
+    {
+        boost::dynamic_bitset<std::size_t> col_vec;
+        std::size_t restricted_row;
+        double est_delta;
+        double next_prefactor;
+    };
+
     for(recur = 0; recur < max_recursion; recur++)
     {
         // Set current terms from previous recursion results
@@ -86,11 +94,27 @@ double simple_restricted(const QubitOperator& oper,
         current_prefactors = next_prefactors;
         next_rows.clear();
         next_prefactors.clear();
-        // Loop over all rows in the current set
+        std::vector<std::vector<Candidate>> pending_candidates(current_rows.size());
+// Loop over all rows in the current set
+#pragma omp parallel for private(col_vec,                                                          \
+                                 group_inds,                                                       \
+                                 col_ptr,                                                          \
+                                 out_col_ptr,                                                      \
+                                 idx,                                                              \
+                                 group,                                                            \
+                                 group_int_start,                                                  \
+                                 group_int_stop,                                                   \
+                                 val,                                                              \
+                                 row_int,                                                          \
+                                 do_col_search,                                                    \
+                                 col_energy,                                                       \
+                                 energy_amp,                                                       \
+                                 term) schedule(guided)
         for(kk = 0; kk < current_rows.size(); kk++)
         {
             const boost::dynamic_bitset<size_t>& row = input_bitsets[current_rows[kk]].first;
             std::vector<uint8_t> row_set_bits(row.size(), 0);
+            std::vector<Candidate> row_candidates;
             bitset_to_bitvec(row, row_set_bits);
 
             for(group = 0; group < num_groups; group++)
@@ -157,14 +181,30 @@ double simple_restricted(const QubitOperator& oper,
                         out_col_ptr = out_subspace.get_ptr2(col_vec);
                         if(out_col_ptr == nullptr)
                         {
-                            est_energy += target_energy * energy_amp;
-                            next_rows.push_back(*col_ptr);
-                            next_prefactors.push_back(energy_amp /
-                                                      (target_energy - col_energy + 1e-15));
-                            out_subspace.emplace(col_vec, num_inserted_bitsets);
-                            num_inserted_bitsets += 1;
+                            row_candidates.push_back(
+                                {col_vec,
+                                 *col_ptr,
+                                 target_energy * energy_amp,
+                                 energy_amp / (target_energy - col_energy + 1e-15)});
                         }
                     }
+                }
+            }
+            pending_candidates[kk] = std::move(row_candidates);
+        }
+
+        for(kk = 0; kk < pending_candidates.size(); kk++)
+        {
+            for(const Candidate& candidate : pending_candidates[kk])
+            {
+                out_col_ptr = out_subspace.get_ptr2(candidate.col_vec);
+                if(out_col_ptr == nullptr)
+                {
+                    est_energy += candidate.est_delta;
+                    next_rows.push_back(candidate.restricted_row);
+                    next_prefactors.push_back(candidate.next_prefactor);
+                    out_subspace.emplace(candidate.col_vec, num_inserted_bitsets);
+                    num_inserted_bitsets += 1;
                 }
             }
         }
