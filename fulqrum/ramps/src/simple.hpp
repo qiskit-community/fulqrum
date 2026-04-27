@@ -29,13 +29,13 @@ double simple_restricted(const QubitOperator& oper,
                          const bitset_map_namespace::BitsetHashMapWrapper& restricted_subspace,
                          bitset_map_namespace::BitsetHashMapWrapper& out_subspace,
                          QubitOperator& diag_oper,
-                         const unsigned int width,
+                         const width_t width,
                          const std::size_t subspace_dim,
                          const int has_nonzero_diag,
                          const std::size_t* __restrict group_ptrs,
                          const std::size_t* __restrict group_ladder_ptrs,
-                         const unsigned int* __restrict group_rowint_length,
-                         const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
+                         const width_t* __restrict group_rowint_length,
+                         const std::vector<std::vector<width_t>>& group_offdiag_inds,
                          const std::size_t num_groups,
                          const unsigned int ladder_offset,
                          const double target_energy,
@@ -68,7 +68,7 @@ double simple_restricted(const QubitOperator& oper,
 
     const OperatorTerm_t* term;
     boost::dynamic_bitset<std::size_t> col_vec;
-    const std::vector<unsigned int>* group_inds;
+    const std::vector<width_t>* group_inds;
     std::size_t* col_ptr;
     std::size_t* out_col_ptr;
     std::size_t idx;

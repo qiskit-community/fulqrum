@@ -13,23 +13,25 @@
  */
 #pragma once
 #include <complex>
+#include <cstdint>
 #include <cstdlib>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-typedef unsigned int width_t;
+typedef uint16_t width_t;
 
 const double ATOL = 1e-14;
 const std::size_t MAX_SIZE_T = (std::size_t)-1;
 const unsigned int MAX_UINT = (unsigned int)-1;
+const width_t MAX_WIDTH = (width_t)-1;
 const unsigned int BITS_PER_BLOCK = 8 * sizeof(std::size_t);
 const unsigned int DEFAULT_LADDER_WIDTH = 4;
 const unsigned int BLOCK_EXPONENT = __builtin_ctz(BITS_PER_BLOCK);
 const unsigned int BLOCK_SHIFT = BITS_PER_BLOCK - 1;
 
-typedef std::tuple<std::string, std::vector<unsigned int>, std::complex<double>> TermData;
-typedef std::tuple<std::string, std::vector<unsigned int>> OpData;
+typedef std::tuple<std::string, std::vector<width_t>, std::complex<double>> TermData;
+typedef std::tuple<std::string, std::vector<width_t>> OpData;
 
 // Map converting standard char values into continuous values
 inline std::unordered_map<unsigned char, unsigned char> oper_map = {
@@ -45,7 +47,7 @@ inline std::unordered_map<unsigned char, unsigned char> rev_oper_map = {
  * @param[in] indices Indices for the given term
  * @param[in] width The operator width
  */
-inline void _validate_indices(std::vector<unsigned int>& inds, unsigned int width)
+inline void _validate_indices(std::vector<width_t>& inds, width_t width)
 {
     std::size_t size = inds.size();
     for(std::size_t kk = 0; kk < size; kk++)

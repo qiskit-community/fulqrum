@@ -21,6 +21,8 @@ from collections.abc import Iterable
 from ..exceptions import FulqrumError
 
 from .qubit_operator cimport QubitOperator
+from .constants cimport width_t
+from .constants import np_width_t
 
 include "includes/bitset_utils_header.pxi"
 include "includes/bitset_hashmap_header.pxi"
@@ -105,11 +107,11 @@ cdef class Bitset:
         Parameters:
             bits (int or array_like): Indices to flip
         """
-        cdef unsigned int[::1] int_array
+        cdef width_t[::1] int_array
         if isinstance(bits, numbers.Integral):
-            int_array = np.asarray([bits], dtype=np.uint32)
+            int_array = np.asarray([bits], dtype=np_width_t)
         elif isinstance(bits, Iterable):
-            int_array = np.asarray(bits, dtype=np.uint32)
+            int_array = np.asarray(bits, dtype=np_width_t)
         else:
             raise FulqrumError('bits arg is not a valid type')
 
@@ -143,7 +145,7 @@ cdef class Bitset:
         return out
 
 
-    def ladder_int(self, unsigned int[::1] inds, unsigned int ladder_width=4):
+    def ladder_int(self, width_t[::1] inds, width_t ladder_width=4):
         """Compute the ladder integer of a bitset for the given indices
 
         Parameters:
@@ -154,7 +156,7 @@ cdef class Bitset:
             If the number of indices is less than the ladder_width then
             that is the new ladder_width
         """
-        ladder_width = min(inds.shape[0], ladder_width)
+        ladder_width = min(<width_t>inds.shape[0], ladder_width)
         cdef string tmp = self.to_string()
         row_set_bits = [int(bit) - 48 for bit in tmp][::-1] # ascii for "0" == 48
         cdef vector[uint8_t] c_vec_row_set_bits = <vector[uint8_t]>row_set_bits

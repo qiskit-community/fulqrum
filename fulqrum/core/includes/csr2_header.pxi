@@ -12,6 +12,7 @@
 from libcpp.vector cimport vector
 from ..core.bitset cimport bitset_t
 from ..core.bitset_hashmap cimport BitsetHashMapWrapper
+from .constants cimport width_t
 include "base_header.pxi"
 
 
@@ -20,13 +21,13 @@ cdef extern from "../src/csr2.hpp":
     void csr_matrix_builder2[T, U](const vector[OperatorTerm_t]& terms,
                               const BitsetHashMapWrapper& subspace,
                               const U * diag_vec,
-                              size_t width,
+                              width_t width,
                               size_t subspace_dim,
                               int has_nonzero_diag,
                               const size_t * group_ptrs,
                               const size_t * group_ladder_ptrs,
-                              unsigned int * group_rowint_length,
-                              const vector[vector[unsigned int]]& group_offdiag_inds,
+                              width_t * group_rowint_length,
+                              const vector[vector[width_t]]& group_offdiag_inds,
                               size_t num_groups,
                               unsigned int ladder_offset,
                               T * indptr,

@@ -32,11 +32,11 @@
 typedef struct OperatorTerm
 {
     std::vector<unsigned char> values;
-    std::vector<unsigned int> indices;
+    std::vector<width_t> indices;
     std::complex<double> coeff;
-    std::vector<unsigned int> proj_indices;
-    std::vector<unsigned int> proj_bits;
-    unsigned int offdiag_weight{0};
+    std::vector<width_t> proj_indices;
+    std::vector<width_t> proj_bits;
+    width_t offdiag_weight{0};
     int extended{0};
     int real_phase{1}; // 'phase' of real part (+/- 1), 0 means operator is complex-valued
     int group{-1}; // -1 means unset here
@@ -45,7 +45,7 @@ typedef struct OperatorTerm
     OperatorTerm(std::complex<double> c)
         : coeff(c)
     {} // Init empty term with given coefficient
-    OperatorTerm(std::string vals, std::vector<unsigned int> inds, std::complex<double> c)
+    OperatorTerm(std::string vals, std::vector<width_t> inds, std::complex<double> c)
         : coeff(c)
     {
         //check that length of values == length of indices
@@ -83,9 +83,9 @@ typedef struct OperatorTerm
     ~OperatorTerm()
     {
         std::vector<unsigned char>().swap(values);
-        std::vector<unsigned int>().swap(indices);
-        std::vector<unsigned int>().swap(proj_indices);
-        std::vector<unsigned int>().swap(proj_bits);
+        std::vector<width_t>().swap(indices);
+        std::vector<width_t>().swap(proj_indices);
+        std::vector<width_t>().swap(proj_bits);
     }
     /**
      * Inplace multiplication by a complex value
@@ -135,9 +135,9 @@ typedef struct OperatorTerm
      * 
      * @param[out] weight The weight of the term
      */
-    unsigned int weight() const
+    width_t weight() const
     {
-        return static_cast<unsigned int>(indices.size());
+        return static_cast<width_t>(indices.size());
     }
     /**
      * Sorting of indices and values for Operator term data
@@ -147,7 +147,7 @@ typedef struct OperatorTerm
         std::size_t n = indices.size();
         for(std::size_t i = 1; i < n; i++)
         {
-            unsigned int key = indices[i];
+            width_t key = indices[i];
             char val = values[i];
             std::size_t j =
                 std::lower_bound(indices.begin(), indices.begin() + i, key) - indices.begin();
@@ -168,7 +168,7 @@ typedef struct OperatorTerm
     OperatorTerm& set_proj_indices()
     {
         std::size_t kk;
-        unsigned int val;
+        width_t val;
         proj_indices.resize(0);
         proj_bits.resize(0);
         for(kk = 0; kk < values.size(); kk++)
@@ -217,7 +217,7 @@ typedef struct OperatorTerm
 inline OperatorTerm& set_proj_indices(OperatorTerm& term)
 {
     std::size_t kk;
-    unsigned int val;
+    width_t val;
     term.proj_indices.resize(0);
     term.proj_bits.resize(0);
     for(kk = 0; kk < term.values.size(); kk++)

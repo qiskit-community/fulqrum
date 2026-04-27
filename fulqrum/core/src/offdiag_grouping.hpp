@@ -73,7 +73,7 @@
  * @param num_groups The number of groups.
  */
 inline void get_group_max_inds(std::vector<uint16_t>& grp_max_inds,
-                               const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
+                               const std::vector<std::vector<width_t>>& group_offdiag_inds,
                                const std::size_t& num_groups)
 {
 #pragma omp parallel for schedule(dynamic) if(num_groups > 4096)

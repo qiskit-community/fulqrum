@@ -23,12 +23,15 @@ from .core import (
     Bitset,
 )
 
+import fulqrum.core.constants as constants
+
 __all__ = [
     "QubitOperator",
     "Subspace",
     "SubspaceHamiltonian",
     "FermionicOperator",
     "Bitset",
+    "constants",
 ]
 
 

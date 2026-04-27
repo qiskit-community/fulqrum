@@ -28,6 +28,8 @@ from .. import __version__ as VERSION
 from ..utils.io import dict_to_json, json_to_dict
 from ..exceptions import FulqrumError
 from .bitset cimport Bitset
+from .constants cimport width_t
+from .constants import np_width_t
 
 from collections.abc import Iterable
 from pathlib import Path
@@ -43,7 +45,7 @@ include "includes/bitset_utils_header.pxi"
 include "includes/offdiag_grouping_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
-include "includes/constants.pxi"
+
 
 cdef const OperatorTerm_t EmptyOperatorTerm
 
@@ -362,10 +364,10 @@ cdef class QubitOperator():
         if self.oper.terms.size() > 2:
             raise FulqrumError('Can only grab projector indices from operators with < 2 terms')
         cdef size_t kk
-        cdef unsigned int[::1] out
+        cdef width_t[::1] out
         if self.oper.terms.size() == 0:
-            return np.array([], dtype=np.uint32)
-        out = np.zeros(self.oper.terms[0].proj_indices.size(), dtype=np.uint32)
+            return np.array([], dtype=np_width_t)
+        out = np.zeros(self.oper.terms[0].proj_indices.size(), dtype=np_width_t)
         for kk in range(self.oper.terms[0].proj_indices.size()):
             out[kk] = self.oper.terms[0].proj_indices[kk]
         return np.asarray(out)
@@ -543,7 +545,7 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of operator weights
         """
-        cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
+        cdef width_t[::1] out = np.zeros(self.oper.terms.size(), dtype=np_width_t)
         cdef size_t kk
         for kk in range(self.oper.terms.size()):
             out[kk] = self.oper.terms[kk].values.size()
@@ -556,7 +558,7 @@ cdef class QubitOperator():
         Returns:
             ndarray: Array of operator off-diagonal weights
         """
-        cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
+        cdef width_t[::1] out = np.zeros(self.oper.terms.size(), dtype=np_width_t)
         cdef size_t kk
         for kk in range(self.oper.terms.size()):
             out[kk] = self.oper.terms[kk].offdiag_weight
@@ -759,10 +761,10 @@ cdef class QubitOperator():
         """
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
-        cdef vector[unsigned int] ladder_ints = self.oper.ladder_integers()
-        cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
+        cdef vector[width_t] ladder_ints = self.oper.ladder_integers()
+        cdef width_t[::1] out = np.zeros(self.oper.terms.size(), dtype=np_width_t)
         if self.oper.terms.size():
-            memcpy(&out[0], &ladder_ints[0], ladder_ints.size() * sizeof(unsigned int))
+            memcpy(&out[0], &ladder_ints[0], ladder_ints.size() * sizeof(width_t))
         return np.asarray(out)
 
     @cython.boundscheck(False)
@@ -774,13 +776,13 @@ cdef class QubitOperator():
         cdef size_t[::1] group_ptrs = self.group_ptrs()
         cdef size_t kk, jj
         cdef list out = []
-        cdef unsigned int num_groups = group_ptrs.shape[0] - 1
-        cdef vector[vector[unsigned int]] group_indices
-        cdef unsigned int[::1] temp_inds
+        cdef size_t num_groups = group_ptrs.shape[0] - 1
+        cdef vector[vector[width_t]] group_indices
+        cdef width_t[::1] temp_inds
         set_group_offdiag_indices(self.oper.terms, group_indices, &group_ptrs[0],
                                  num_groups)
         for kk in range(num_groups):
-            temp_inds = np.zeros(group_indices[kk].size(), dtype=np.uint32)
+            temp_inds = np.zeros(group_indices[kk].size(), dtype=np_width_t)
             for jj in range(group_indices[kk].size()):
                 temp_inds[jj] = group_indices[kk][jj]
             out.append(np.asarray(temp_inds))
@@ -793,10 +795,10 @@ cdef class QubitOperator():
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
        
-        cdef vector[unsigned int] group_bit_len = self.oper.group_ladder_int_bit_lengths()
-        cdef unsigned int[::1] out = np.empty(group_bit_len.size(), dtype=np.uint32)
+        cdef vector[width_t] group_bit_len = self.oper.group_ladder_int_bit_lengths()
+        cdef width_t[::1] out = np.empty(group_bit_len.size(), dtype=np_width_t)
         if group_bit_len.size():
-            memcpy(&out[0], &group_bit_len[0], group_bit_len.size()*sizeof(unsigned int))
+            memcpy(&out[0], &group_bit_len[0], group_bit_len.size()*sizeof(width_t))
         return np.asarray(out)
 
     def group_term_sort_by_ladder_int(self, unsigned int ladder_width=4):

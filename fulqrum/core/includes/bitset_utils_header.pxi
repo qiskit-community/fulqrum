@@ -13,22 +13,23 @@ from libcpp.vector cimport vector
 from libc.stdint cimport uint8_t
 from libcpp cimport bool
 from ..core.bitset cimport bitset_t
+from ..core.constants cimport width_t
 
 include "base_header.pxi"
 
 
 cdef extern from "../src/bitset_utils.hpp":
 
-    void flip_bits(bitset_t& b, const unsigned int * arr, const unsigned int size) nogil
+    void flip_bits(bitset_t& b, const width_t * arr, const width_t size) nogil
 
     void get_column_bitset(bitset_t& col,
-                           const vector[unsigned int]& pos,
+                           const vector[width_t]& pos,
                            const vector[unsigned char]& val,
-                           const unsigned int N) nogil
+                           const width_t N) nogil
 
-    unsigned int bitset_ladder_int(const uint8_t * row,
-                                   const unsigned int * inds,
-                                   const unsigned int ladder_width) nogil
+    width_t bitset_ladder_int(const uint8_t * row,
+                                   const width_t * inds,
+                                   const width_t ladder_width) nogil
 
     void compute_orbital_occupancies(const BitsetHashMapWrapper& subspace,
                     const size_t subspace_dim,
@@ -38,4 +39,4 @@ cdef extern from "../src/bitset_utils.hpp":
     bool passes_proj_validation(const OperatorTerm_t * term,
                                 const bitset_t& row) nogil
 
-    vector[unsigned int] set_bit_indices(bitset_t& row)
+    vector[width_t] set_bit_indices(bitset_t& row)
