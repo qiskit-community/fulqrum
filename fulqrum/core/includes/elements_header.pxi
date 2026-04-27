@@ -11,8 +11,9 @@
 # that they have been altered from the originals.
 from ..core.bitset cimport bitset_t
 from libcpp.vector cimport vector
-cdef extern from "../src/elements.hpp":
 
+
+cdef extern from "../src/elements.hpp":
 
     void accum_element(const bitset_t& row,
                        const bitset_t& col,

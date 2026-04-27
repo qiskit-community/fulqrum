@@ -35,14 +35,14 @@
 typedef struct FermionicTerm
 {
     std::vector<unsigned char> values;
-    std::vector<unsigned int> indices;
+    std::vector<width_t> indices;
     std::complex<double> coeff;
 
     FermionicTerm() {}
     FermionicTerm(std::complex<double> c)
         : coeff(c)
     {} // Init empty term with given coefficient
-    FermionicTerm(std::string vals, std::vector<unsigned int> inds, std::complex<double> c)
+    FermionicTerm(std::string vals, std::vector<width_t> inds, std::complex<double> c)
         : indices(inds)
         , coeff(c)
     {
@@ -69,7 +69,7 @@ typedef struct FermionicTerm
     ~FermionicTerm()
     {
         std::vector<unsigned char>().swap(values);
-        std::vector<unsigned int>().swap(indices);
+        std::vector<width_t>().swap(indices);
     }
     FermionicTerm copy() const
     {
@@ -129,10 +129,9 @@ typedef struct FermionicTerm
      */
     void insertion_sort()
     {
-        std::size_t kk;
-        int ll;
-        std::size_t num_elems = indices.size();
-        unsigned int temp_index;
+        int kk, ll;
+        int num_elems = static_cast<int>(indices.size());
+        width_t temp_index;
         unsigned char temp_value;
         int prefactor = 1;
         for(kk = 1; kk < num_elems; kk++)
@@ -195,11 +194,11 @@ inline int jw_phase(const unsigned char op)
  */
 inline void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
 {
-    int num_elems = fermi_term.indices.size();
+    int num_elems = static_cast<int>(fermi_term.indices.size());
     int kk, mm;
-    unsigned int jj;
+    width_t jj;
     int phase = 1;
-    unsigned int current_ind;
+    width_t current_ind;
     unsigned char current_val;
     qubit_term.coeff = fermi_term.coeff;
     qubit_term.extended = (num_elems > 0);
@@ -234,7 +233,7 @@ inline void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_ter
         // add Z operators down to zero
         else if(num_elems == 1 && do_z)
         {
-            for(mm = current_ind - 1; mm > -1; mm--)
+            for(mm = static_cast<int>(current_ind) - 1; mm > -1; mm--)
             {
                 qubit_term.indices.push_back(mm);
                 qubit_term.values.push_back(0);
@@ -270,10 +269,10 @@ inline void deflate_term_indices(const FermionicTerm& term,
                                  std::vector<FermionicTerm>& out_terms,
                                  const std::vector<int>& collapsed_values)
 {
-    unsigned int num_elems = term.indices.size();
+    std::size_t num_elems = term.indices.size();
     std::size_t kk, num_touched;
     FermionicTerm_t new_term = FermionicTerm();
-    unsigned int current_index;
+    width_t current_index;
     int temp_int;
     unsigned char current_value;
 

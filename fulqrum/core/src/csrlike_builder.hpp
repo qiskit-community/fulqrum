@@ -29,11 +29,11 @@ template <typename T, typename U>
 void csrlike_builder(const std::vector<OperatorTerm_t>& terms,
                      const bitset_map_namespace::BitsetHashMapWrapper& subspace,
                      const T* __restrict diag_vec,
-                     const unsigned int width,
+                     const width_t width,
                      const std::size_t subspace_dim,
                      const int has_nonzero_diag,
                      const std::size_t* __restrict group_ptrs,
-                     const std::vector<std::vector<unsigned int>>& group_offdiag_inds,
+                     const std::vector<std::vector<width_t>>& group_offdiag_inds,
                      const std::size_t num_groups,
                      std::vector<std::vector<U>>& cols,
                      std::vector<std::vector<T>>& data)
@@ -75,7 +75,7 @@ void csrlike_builder(const std::vector<OperatorTerm_t>& terms,
         const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
         boost::dynamic_bitset<std::size_t> col_vec;
         std::size_t* col_ptr;
-        const std::vector<unsigned int>* group_inds;
+        const std::vector<width_t>* group_inds;
         T val;
 
         std::vector<uint8_t> row_set_bits(row.size(), 0);

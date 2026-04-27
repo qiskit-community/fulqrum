@@ -30,11 +30,11 @@
  * @param size The size of the array
  */
 inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
-                      const unsigned int* __restrict arr,
-                      const unsigned int size)
+                      const width_t* __restrict arr,
+                      const width_t size)
 {
-    unsigned int kk;
-    unsigned int pos;
+    width_t kk;
+    width_t pos;
     for(kk = 0; kk < size; kk++)
     {
         pos = arr[kk];
@@ -51,13 +51,13 @@ inline void flip_bits(boost::dynamic_bitset<std::size_t>& bitset,
  * @param N Number of non-ID operators in the term
  */
 inline void get_column_bitset(boost::dynamic_bitset<std::size_t>& col,
-                              const std::vector<unsigned int>& __restrict pos,
+                              const std::vector<width_t>& __restrict pos,
                               const std::vector<unsigned char>& __restrict val,
-                              const unsigned int N)
+                              const width_t N)
 {
-    unsigned int block_num, block_idx;
-    unsigned int ind;
-    unsigned int kk;
+    width_t block_num, block_idx;
+    width_t ind;
+    width_t kk;
     for(kk = 0; kk < N; kk++)
     {
         ind = pos[kk];
@@ -74,7 +74,7 @@ inline void bitset_column_index(const std::size_t start,
                                 std::size_t& col_idx)
 {
     std::size_t kk;
-    col_idx = MAX_SIZE_T;
+    col_idx = MAX_WIDTH;
     for(kk = start; kk < stop; kk++)
     {
         if(col == subspace[kk])
@@ -92,12 +92,11 @@ inline void bitset_column_index(const std::size_t start,
  * @param inds Pointer to array of indices as unsigned ints
  * @param num_bits The number of bits to consider
  */
-inline unsigned int bitset_ladder_int(const uint8_t* row,
-                                      const unsigned int* __restrict inds,
-                                      const unsigned int num_bits)
+inline width_t
+bitset_ladder_int(const uint8_t* row, const width_t* __restrict inds, const width_t num_bits)
 {
-    unsigned int row_int, out_int = 0;
-    unsigned int kk, pos;
+    width_t row_int, out_int = 0;
+    width_t kk, pos;
 
     for(kk = 0; kk < num_bits; kk++)
     {
@@ -121,9 +120,9 @@ inline bool passes_proj_validation(const OperatorTerm_t* __restrict term,
                                    const boost::dynamic_bitset<std::size_t>& bitset)
 {
     std::size_t kk;
-    unsigned int block_num, block_idx;
-    unsigned int pos;
-    unsigned int bit;
+    width_t block_num, block_idx;
+    width_t pos;
+    width_t bit;
     bool out = 1;
     for(kk = 0; kk < term->proj_indices.size(); kk++)
     {
@@ -212,11 +211,11 @@ void bitset_to_bitvec(const boost::dynamic_bitset<size_t>& row, std::vector<uint
  * 
  * @return Unordered map with indices of zero bits in the bit-string 
  */
-inline std::vector<unsigned int> set_bit_indices(const boost::dynamic_bitset<size_t>& row)
+inline std::vector<width_t> set_bit_indices(const boost::dynamic_bitset<size_t>& row)
 {
-    std::vector<unsigned int> set_bits;
+    std::vector<width_t> set_bits;
 
-    for(unsigned int block = 0; block < row.num_blocks(); block++)
+    for(width_t block = 0; block < row.num_blocks(); block++)
     {
         auto bitset = row.m_bits[block];
         while(bitset != 0)

@@ -29,7 +29,8 @@ from .bitset_hashmap cimport BitsetHashMapWrapper
 include "includes/base_header.pxi"
 include "includes/bitset_utils_header.pxi"
 include "includes/types.pxi"
-include "includes/constants.pxi"
+
+from .constants cimport MAX_SIZE_T
 
 
 cdef class Subspace():

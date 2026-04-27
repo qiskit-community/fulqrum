@@ -36,7 +36,7 @@
  */
 typedef struct FermionicOperator
 {
-    unsigned int width;
+    width_t width;
     unsigned int combined = 0; // have the repeated operators indices been combined?
     std::vector<FermionicTerm_t> terms;
     FermionicOperator() {}
@@ -45,14 +45,14 @@ typedef struct FermionicOperator
      *
      * @param[in] width The width (number of qubits) of the operator
      */
-    FermionicOperator(unsigned int x)
+    FermionicOperator(width_t x)
     {
         width = x;
     }
-    FermionicOperator(unsigned int x, std::vector<TermData> data)
+    FermionicOperator(width_t x, std::vector<TermData> data)
         : width(x)
     {
-        unsigned int num_terms = data.size();
+        std::size_t num_terms = data.size();
         std::size_t kk;
         TermData tdata;
         for(kk = 0; kk < num_terms; kk++)

@@ -17,16 +17,16 @@ from libcpp.pair cimport pair
 from libcpp cimport bool
 from ..core.bitset cimport bitset_t
 from ..core.bitset_hashmap cimport BitsetHashMapWrapper
-
+from ..core.constants cimport width_t
 
 cdef extern from "../src/base.hpp":
     ctypedef struct OperatorTerm_t:
         double complex coeff
-        vector[unsigned int] indices
+        vector[width_t] indices
         vector[unsigned char] values
-        vector[unsigned int] proj_indices
-        vector[unsigned int] proj_bits
-        unsigned int offdiag_weight
+        vector[width_t] proj_indices
+        vector[width_t] proj_bits
+        width_t offdiag_weight
         int extended
         int real_phase
         int group
@@ -37,17 +37,17 @@ cdef extern from "../src/base.hpp":
 
 
     ctypedef struct QubitOperator_t:
-        unsigned int width
+        width_t width
         vector[OperatorTerm_t] terms
         int sorted
         int type
-        unsigned int ladder_width
+        width_t ladder_width
         int weight_sorted
         int off_weight_sorted
         int ladder_sorted
         int structure_sorted
         QubitOperator_t()
-        QubitOperator_t(unsigned int)
+        QubitOperator_t(width_t)
         size_t size()
         bool is_real()
         bool is_diagonal()
@@ -57,7 +57,7 @@ cdef extern from "../src/base.hpp":
         QubitOperator_t& group_sort()
         vector[int] groups()
         vector[size_t] group_ptrs()
-        QubitOperator_t& group_term_sort_by_ladder_int(unsigned int)
+        QubitOperator_t& group_term_sort_by_ladder_int(width_t)
         QubitOperator_t combine_repeated_terms(double)
         vector[size_t] offdiag_weight_ptrs()
         QubitOperator_t& from_label(string)
@@ -68,8 +68,8 @@ cdef extern from "../src/base.hpp":
         vector[int] real_phases()
         vector[complex] coefficients()
         vector[int] extended_terms()
-        vector[unsigned int] ladder_integers()
-        vector[unsigned int] group_ladder_int_bit_lengths()
+        vector[width_t] ladder_integers()
+        vector[width_t] group_ladder_int_bit_lengths()
         vector[size_t] group_ladder_int_ptrs()
         void to_json(string, bool)
         QubitOperator_t from_json(string)
@@ -83,13 +83,13 @@ cdef extern from "../src/base.hpp":
 
     ctypedef struct FermionicTerm_t:
         double complex coeff
-        vector[unsigned int] indices
+        vector[width_t] indices
         vector[unsigned char] values
         void insertion_sort()
 
 
     ctypedef struct FermionicOperator_t:
-        unsigned int width
+        width_t width
         vector[FermionicTerm_t] terms
         size_t size()
         void to_json(string, bool) nogil
@@ -100,9 +100,9 @@ cdef extern from "../src/base.hpp":
     size_t max_offdiag_ptr_size(vector[size_t]&)
 
     void set_group_offdiag_indices(vector[OperatorTerm_t]& terms,
-                                   vector[vector[unsigned int]]& group_indices,
+                                   vector[vector[width_t]]& group_indices,
                                    size_t* group_ptrs,
-                                   unsigned int num_groups)
+                                   size_t num_groups)
 
     OperatorTerm_t& set_proj_indices(OperatorTerm_t&)
     void set_offdiag_weight_and_phase(OperatorTerm_t& term) nogil

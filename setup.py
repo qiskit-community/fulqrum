@@ -51,6 +51,7 @@ CYTHON_EXTS = [
     "spmv",
     "csr",
     "csrlike",
+    "constants",
     "qiskit",
     "openfermion",
     "integrals",
@@ -68,6 +69,7 @@ CYTHON_MODULES = [
     f"{ROOT}.core",
     f"{ROOT}.core",
     f"{ROOT}.core",
+    f"{ROOT}.core",
     f"{ROOT}.convert",
     f"{ROOT}.convert",
     f"{ROOT}.convert",
@@ -76,6 +78,7 @@ CYTHON_MODULES = [
     f"{ROOT}.ramps",
 ]
 CYTHON_SOURCE_DIRS = [
+    f"{ROOT}/core",
     f"{ROOT}/core",
     f"{ROOT}/core",
     f"{ROOT}/core",

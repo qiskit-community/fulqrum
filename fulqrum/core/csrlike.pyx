@@ -20,7 +20,7 @@ import scipy.sparse as sp
 from ..exceptions import FulqrumError
 import psutil
 
-cdef size_t MAX_SIZE_T = -1
+from .constants cimport MAX_SIZE_T
 
 
 cdef class CSRLike():

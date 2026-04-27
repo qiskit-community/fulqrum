@@ -21,52 +21,52 @@ typedef std::complex<double> complex;
 TEST_CASE("Check off-diag weight for identity op is zero")
 {
     QubitOperator op = QubitOperator::from_label("IIIII");
-    std::vector<unsigned int> ans = {0};
+    std::vector<width_t> ans = {0};
     CHECK(op.offdiag_weights() == ans);
 }
 
 TEST_CASE("Check off-diag weight for diag op is zero")
 {
     QubitOperator op = QubitOperator::from_label("IIZII");
-    std::vector<unsigned int> ans = {0};
+    std::vector<width_t> ans = {0};
     CHECK(op.offdiag_weights() == ans);
 }
 
 TEST_CASE("Check off-diag weight for simple off-weight 1 op")
 {
     QubitOperator op = QubitOperator::from_label("IIYII");
-    std::vector<unsigned int> ans = {1};
+    std::vector<width_t> ans = {1};
     CHECK(op.offdiag_weights() == ans);
 }
 
 TEST_CASE("Check off-diag weight for simple off-weight op")
 {
     QubitOperator op = QubitOperator::from_label("+ZYZX");
-    std::vector<unsigned int> ans = {3};
+    std::vector<width_t> ans = {3};
     CHECK(op.offdiag_weights() == ans);
 }
 
 TEST_CASE("Check off-diag weight for simple multi-term")
 {
     QubitOperator op = QubitOperator::from_label("0IYI1") + QubitOperator::from_label("+ZYZX");
-    std::vector<unsigned int> ans = {1, 3};
+    std::vector<width_t> ans = {1, 3};
     CHECK(op.offdiag_weights() == ans);
 }
 
 TEST_CASE("Check off-diag weight for simple multi-term 2")
 {
-    unsigned int N = 5;
+    width_t N = 5;
     QubitOperator op = QubitOperator(N, {{"Y", {2}, 1}}) + QubitOperator(N, {{"-X", {0, 2}, 5}});
-    std::vector<unsigned int> ans = {1, 2};
+    std::vector<width_t> ans = {1, 2};
     CHECK(op.offdiag_weights() == ans);
 }
 
 TEST_CASE("Check off-diag weight for simple multi-term 3")
 {
-    unsigned int N = 5;
+    width_t N = 5;
     QubitOperator op =
         QubitOperator(N, {{"Y", {2}, 1}}) + QubitOperator(N, {{"-XY", {4, 0, 2}, complex(-1, 1)}});
-    std::vector<unsigned int> ans = {1, 3};
+    std::vector<width_t> ans = {1, 3};
     CHECK(op.offdiag_weights() == ans);
 }
 
@@ -77,7 +77,7 @@ TEST_CASE("Test off-diagonal weight sorting")
     op += QubitOperator::from_label("X1Y");
     op += QubitOperator::from_label("ZI0");
     op.offdiag_weight_sort();
-    std::vector<unsigned int> ans = {0, 1, 2, 3};
+    std::vector<width_t> ans = {0, 1, 2, 3};
     CHECK(op.offdiag_weights() == ans);
 }
 
