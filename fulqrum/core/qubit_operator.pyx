@@ -936,9 +936,9 @@ cdef class QubitOperator():
 
 
     def to_json(self, filename, overwrite=False):
-        """Save operator to a JSON or XZ file. File extension can be 'json'
-        or 'xz', the latter or which does LZMA compression which is
-        recommended for large operators.
+        """Save operator to a JSON, XZ, or ZST file. File extension can be 'json'
+        'xz', or 'zst', the latter two do compression which is
+        recommended for large operators.  'zst' is preferred for speed and size.
 
         Parameters:
             filename (str): File to store to
