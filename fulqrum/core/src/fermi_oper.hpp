@@ -12,9 +12,6 @@
  * that they have been altered from the originals.
  */
 #pragma once
-#include "constants.hpp"
-#include "fermi_term.hpp"
-#include "qubit_oper.hpp"
 #include <algorithm>
 #include <cmath>
 #include <complex>
@@ -24,6 +21,11 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "constants.hpp"
+#include "fermi_term.hpp"
+#include "io.hpp"
+#include "qubit_oper.hpp"
 
 /** @struct FermionicOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
@@ -106,7 +108,7 @@ typedef struct FermionicOperator
         }
         if(too_many_terms)
         {
-            os << " + " << (total_terms - 100) << "terms";
+            os << " + " << (total_terms - 100) << " terms";
         }
         return os << ", width=" << self.width << "]>";
     }
@@ -260,6 +262,30 @@ typedef struct FermionicOperator
         FermionicOperator out = FermionicOperator(this->width);
         out.terms = this->terms;
         out.combined = this->combined;
+        return out;
+    }
+    /**
+     * Convert operator to JSON format, optionally with XZ or ZST compression
+     *
+     * @param[in] filename The name of the output file, e.g. *.json, *.json.xz, or *.json.zst
+     * @param[in] overwrite Allow for overwriting files if they already exist
+     *
+     * @note One should always use compression as it saves ~10x in file size 
+     */
+    void to_json(const std::string& filename, bool overwrite = false) const
+    {
+        operator_to_json(*this, filename, overwrite);
+    }
+    /**
+     * Build operator from a JSON file, optionally with compression
+     *
+     * @param[in] filename The name of the output file, e.g. *.json, *.json.xz, or *.json.zst
+     */
+    static FermionicOperator from_json(const std::string& filename)
+    {
+
+        FermionicOperator out;
+        json_to_operator(filename, out);
         return out;
     }
     FermionicOperator combine_repeat_indices() const

@@ -464,15 +464,15 @@ cdef class FermionicOperator():
 
 
     def to_json(self, filename, overwrite=False):
-        """Save operator to a JSON or XZ file. File extension can be 'json'
-        or 'xz', the latter or which does LZMA compression which is
-        recommended for large operators.
+        """Save operator to a JSON, XZ, or ZST file. File extension can be 'json'
+        'xz', or 'zst', the latter two do compression which is
+        recommended for large operators.  'zst' is preferred for speed and size.
 
         Parameters:
             filename (str): File to store to
             overwrite (bool): Overwrite file if it exits, default=False
         """
-        dict_to_json(self.to_dict(), filename, overwrite=overwrite)
+        self.oper.to_json(str(filename), overwrite)
 
 
     @classmethod
@@ -485,6 +485,8 @@ cdef class FermionicOperator():
         Returns:
             FermionicOperator
         """
-        dic = json_to_dict(filename)
-        out = FermionicOperator.from_dict(dic)
+        if not Path(str(filename)).exists():
+            raise FulqrumError("File does not exist")
+        cdef FermionicOperator out = FermionicOperator(1) #dummy width
+        out.oper = out.oper.from_json(str(filename))
         return out

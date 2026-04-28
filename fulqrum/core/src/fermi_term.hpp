@@ -235,7 +235,7 @@ inline void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_ter
         {
             for(mm = static_cast<int>(current_ind) - 1; mm > -1; mm--)
             {
-                qubit_term.indices.push_back(mm);
+                qubit_term.indices.push_back(static_cast<width_t>(mm));
                 qubit_term.values.push_back(0);
             }
         }
