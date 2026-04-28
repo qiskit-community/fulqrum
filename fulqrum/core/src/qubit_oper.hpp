@@ -13,8 +13,6 @@
  */
 
 #pragma once
-#include "constants.hpp"
-#include "qubit_term.hpp"
 #include <algorithm>
 #include <cmath>
 #include <complex>
@@ -25,6 +23,11 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include "constants.hpp"
+#include "io.hpp"
+#include "qubit_term.hpp"
+
 
 struct QubitOperator;
 
@@ -1332,6 +1335,30 @@ typedef struct QubitOperator
                           num_ladder_ints,
                           ladder_width);
         return group_ranges;
+    }
+    /**
+     * Convert operator to JSON format, optionally with XZ or ZST compression
+     *
+     * @param[in] filename The name of the output file, e.g. *.json, *.json.xz, or *.json.zst
+     * @param[in] overwrite Allow for overwriting files if they already exist
+     *
+     * @note One should always use compression as it saves ~10x in file size 
+     */
+    void to_json(const std::string& filename, bool overwrite = false) const
+    {
+        operator_to_json(*this, filename, overwrite);
+    }
+    /**
+     * Build operator from a JSON file, optionally with compression
+     *
+     * @param[in] filename The name of the output file, e.g. *.json, *.json.xz, or *.json.zst
+     */
+    static QubitOperator from_json(const std::string& filename)
+    {
+
+        QubitOperator out;
+        json_to_operator(filename, out);
+        return out;
     }
 
 } QubitOperator_t;

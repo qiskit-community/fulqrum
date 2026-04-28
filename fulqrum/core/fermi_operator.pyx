@@ -472,7 +472,7 @@ cdef class FermionicOperator():
             filename (str): File to store to
             overwrite (bool): Overwrite file if it exits, default=False
         """
-        dict_to_json(self.to_dict(), filename, overwrite=overwrite)
+        self.oper.to_json(str(filename), overwrite)
 
 
     @classmethod
@@ -485,6 +485,6 @@ cdef class FermionicOperator():
         Returns:
             FermionicOperator
         """
-        dic = json_to_dict(filename)
-        out = FermionicOperator.from_dict(dic)
+        cdef FermionicOperator out = FermionicOperator(1) #dummy width
+        out.oper = out.oper.from_json(str(filename))
         return out
