@@ -27,7 +27,6 @@
 #include "io.hpp"
 #include "qubit_oper.hpp"
 
-
 /** @struct FermionicOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
  *

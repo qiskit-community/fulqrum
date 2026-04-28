@@ -269,7 +269,9 @@ inline void json_to_operator(const std::string& filename, U& oper)
     }
 
     oper.width = Doc["width"];
-    oper.terms.resize(0);
+    auto terms = Doc["terms"];
+    std::size_t num_terms = terms.size();
+    oper.terms.resize(num_terms);
 
     if constexpr(std::is_same_v<U, QubitOperator>)
     {
@@ -277,14 +279,16 @@ inline void json_to_operator(const std::string& filename, U& oper)
         {
             throw std::runtime_error("JSON operator type does not match input");
         }
-        for(JsonTerm item : Doc["terms"])
+#pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
+        for(std::size_t kk = 0; kk < num_terms; kk++)
         {
+            JsonTerm item = terms[kk];
             auto [a, b] = get<2>(item);
             OperatorTerm term = OperatorTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
             term.set_proj_indices();
             set_offdiag_weight_and_phase(term);
             set_extended_flag(term);
-            oper.terms.push_back(term);
+            oper.terms[kk] = term;
         }
     }
     else if constexpr(std::is_same_v<U, FermionicOperator>)
@@ -293,12 +297,14 @@ inline void json_to_operator(const std::string& filename, U& oper)
         {
             throw std::runtime_error("JSON operator type does not match input");
         }
-        for(JsonTerm item : Doc["terms"])
+#pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
+        for(std::size_t kk = 0; kk < num_terms; kk++)
         {
+            JsonTerm item = terms[kk];
             auto [a, b] = get<2>(item);
             FermionicTerm term = FermionicTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
             term.insertion_sort();
-            oper.terms.push_back(term);
+            oper.terms[kk] = term;
         }
     }
     else

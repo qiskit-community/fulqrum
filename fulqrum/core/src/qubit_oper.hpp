@@ -28,7 +28,6 @@
 #include "io.hpp"
 #include "qubit_term.hpp"
 
-
 struct QubitOperator;
 
 // forward definitions
@@ -260,7 +259,7 @@ inline void set_offdiag_structure_ptrs(const std::vector<OperatorTerm>& __restri
     std::size_t kk;
     if(terms.size())
     {
-        width_t val = term_offdiag_structure(terms[0]);
+        std::size_t val = term_offdiag_structure(terms[0]);
         vec.push_back(0);
         for(kk = 1; kk < terms.size(); kk++)
         {
