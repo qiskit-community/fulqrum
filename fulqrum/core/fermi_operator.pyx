@@ -485,6 +485,8 @@ cdef class FermionicOperator():
         Returns:
             FermionicOperator
         """
+        if not Path(str(filename)).exists():
+            raise FulqrumError("File does not exist")
         cdef FermionicOperator out = FermionicOperator(1) #dummy width
         out.oper = out.oper.from_json(str(filename))
         return out

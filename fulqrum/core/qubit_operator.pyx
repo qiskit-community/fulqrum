@@ -957,6 +957,8 @@ cdef class QubitOperator():
         Returns:
             QubitOperator
         """
+        if not Path(str(filename)).exists():
+            raise FulqrumError("File does not exist")
         cdef QubitOperator out = QubitOperator(1) #dummy width
         out.oper = out.oper.from_json(str(filename))
         return out

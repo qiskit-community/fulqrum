@@ -188,12 +188,12 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
     std::string compress_str;
     if(ending == "xz")
     {
-        compress_str = std::format("xz -9 -f {} ", short_filename);
+        compress_str = std::format("xz -9 -f -T0 {} ", short_filename);
         exec(compress_str.c_str()); // compress and delete original json
     }
     else if(ending == "zst")
     {
-        compress_str = std::format("zstd --ultra -20 --rm -q {}", short_filename);
+        compress_str = std::format("zstd -16 --rm -q -f -T0 {}", short_filename);
         exec(compress_str.c_str()); // compress and delete original json
     }
     else if(ending != "json")
@@ -244,12 +244,12 @@ inline void json_to_operator(const std::string& filename, U& oper)
     std::string uncompress_str;
     if(ending == "xz")
     {
-        uncompress_str = std::format("xz -d -k {} ", filename);
+        uncompress_str = std::format("xz -d -k -T0 {} ", filename);
         exec(uncompress_str.c_str()); // compress and delete original json
     }
     else if(ending == "zst")
     {
-        uncompress_str = std::format("zstd -d -q {}", filename);
+        uncompress_str = std::format("zstd -d -q -T0 {}", filename);
         exec(uncompress_str.c_str()); // compress and delete original json
     }
     else if(ending != "json")
