@@ -1,0 +1,924 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Using QubitOperators" href="qubit_operators.html" /><link rel="prev" title="Citing" href="citing.html" />
+
+    <!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+        <title>Getting started - Fulqrum 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/qiskit-sphinx-theme.css?v=8ff9dcb6" />
+    <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=14156800" />
+    <link rel="stylesheet" type="text/css" href="_static/gallery.css?v=6e7c130a" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet"></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 2H2C1.73478 2 1.48043 2.10536 1.29289 2.29289C1.10536 2.48043 1 2.73478 1 3V13C1 13.2652 1.10536 13.5196 1.29289 13.7071C1.48043 13.8946 1.73478 14 2 14H14C14.2652 14 14.5196 13.8946 14.7071 13.7071C14.8946 13.5196 15 13.2652 15 13V3C15 2.73478 14.8946 2.48043 14.7071 2.29289C14.5196 2.10536 14.2652 2 14 2V2ZM2 3H10V13H2V3ZM14 13H11V3H14V13Z" fill="currentColor"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 3H2V4H14V3Z" fill="currentColor"/>
+      <path d="M14 12H2V13H14V12Z" fill="currentColor"/>
+      <path d="M14 6H2V7H14V6Z" fill="currentColor"/>
+      <path d="M14 9H2V10H14V9Z" fill="currentColor"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11 8L6.00005 13L5.30005 12.3L9.60005 8L5.30005 3.7L6.00005 3L11 8Z" fill="currentColor"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M15 13H1V14H15V13Z" fill="currentColor"/>
+      <path d="M12.7 4.5C13.1 4.1 13.1 3.5 12.7 3.1L10.9 1.3C10.5 0.9 9.9 0.9 9.5 1.3L2 8.8V12H5.2L12.7 4.5ZM10.2 2L12 3.8L10.5 5.3L8.7 3.5L10.2 2ZM3 11V9.2L8 4.2L9.8 6L4.8 11H3Z" fill="currentColor"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11 13.0002C11.5523 13.0002 12 12.5525 12 12.0002C12 11.4479 11.5523 11.0002 11 11.0002C10.4477 11.0002 10 11.4479 10 12.0002C10 12.5525 10.4477 13.0002 11 13.0002Z" fill="currentColor"/>
+      <path d="M14.8884 11.7394C14.5795 10.9524 14.0464 10.2734 13.3552 9.78646C12.664 9.29954 11.8451 9.02615 11 9.00017C10.1549 9.02615 9.33604 9.29954 8.64484 9.78646C7.95365 10.2734 7.42052 10.9524 7.11155 11.7394L7 12.0002L7.11155 12.2609C7.42052 13.0479 7.95365 13.727 8.64484 14.2139C9.33604 14.7008 10.1549 14.9742 11 15.0002C11.8451 14.9742 12.664 14.7008 13.3552 14.2139C14.0464 13.727 14.5795 13.0479 14.8884 12.2609L15 12.0002L14.8884 11.7394ZM11 14.0002C10.6044 14.0002 10.2178 13.8829 9.88886 13.6631C9.55996 13.4433 9.30362 13.131 9.15224 12.7655C9.00087 12.4001 8.96126 11.998 9.03843 11.61C9.1156 11.222 9.30608 10.8657 9.58579 10.586C9.86549 10.3063 10.2219 10.1158 10.6098 10.0386C10.9978 9.96143 11.3999 10.001 11.7654 10.1524C12.1308 10.3038 12.4432 10.5601 12.6629 10.889C12.8827 11.2179 13 11.6046 13 12.0002C12.9994 12.5304 12.7885 13.0388 12.4136 13.4137C12.0386 13.7887 11.5303 13.9996 11 14.0002Z" fill="currentColor"/>
+      <path d="M6 14.0002H4V2.00017H8V5.00017C8.00077 5.26515 8.10637 5.51906 8.29374 5.70643C8.48111 5.8938 8.73502 5.99941 9 6.00017H12V8.00017H13V5.00017C13.0018 4.93446 12.9893 4.86913 12.9634 4.80871C12.9375 4.74828 12.8988 4.6942 12.85 4.65017L9.35 1.15017C9.30599 1.10134 9.2519 1.06263 9.19147 1.03674C9.13104 1.01084 9.06572 0.998364 9 1.00017H4C3.73502 1.00094 3.48111 1.10654 3.29374 1.29391C3.10637 1.48128 3.00077 1.73519 3 2.00017V14.0002C3.00077 14.2652 3.10637 14.5191 3.29374 14.7064C3.48111 14.8938 3.73502 14.9994 4 15.0002H6V14.0002ZM9 2.20017L11.8 5.00017H9V2.20017Z" fill="currentColor"/>
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">Fulqrum 0.1.0  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">Fulqrum 0.1.0  documentation</span>
+  
+</a>
+<form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Fulqrum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">Citing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qubit_operators.html">Using QubitOperators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fermi_operators.html">Using FermionicOperators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="subspaces.html">Defining Subspaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="operator_io.html">Operator IO</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/heisenberg_spin_model.html">Heisenberg spin model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/n2_full_sqd_loop.html">Sample-based quantum diagonalization with Fulqrum</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Docs</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="apidocs/core.html">Core</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Core</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.core.QubitOperator.html">fulqrum.core.QubitOperator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.core.FermionicOperator.html">fulqrum.core.FermionicOperator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.core.Subspace.html">fulqrum.core.Subspace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.core.Bitset.html">fulqrum.core.Bitset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.core.SubspaceHamiltonian.html">fulqrum.core.SubspaceHamiltonian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.core.CSRLinearOperator.html">fulqrum.core.CSRLinearOperator</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="apidocs/utils.html">Utilities</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Utilities</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.utils.dict_to_json.html">fulqrum.utils.dict_to_json</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.utils.json_to_dict.html">fulqrum.utils.json_to_dict</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="apidocs/ramps.html">RAMPS</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of RAMPS</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="stubs/fulqrum.ramps.ramps_restricted_simple.html">fulqrum.ramps.ramps_restricted_simple</a></li>
+</ul>
+</li>
+</ul>
+
+</div></div>
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="_sources/started.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="getting-started">
+<span id="started"></span><h1>Getting started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h1>
+<section id="simple-example">
+<h2>Simple example<a class="headerlink" href="#simple-example" title="Link to this heading">¶</a></h2>
+<p>Here we demonstrate the standard workflow using a simple example solving a Heisenberg problem on a 5x5 grid.</p>
+<p>To begin, we import the required libraries, and build our Hamiltonian as a <code class="docutils literal notranslate"><span class="pre">QubitOperator</span></code>:</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">scipy.sparse.linalg</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spla</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">qiskit.transpiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">CouplingMap</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">fulqrum</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">fq</span>
+
+<span class="c1"># Build 16-qubit coupling map</span>
+<span class="n">cmap</span> <span class="o">=</span> <span class="n">CouplingMap</span><span class="o">.</span><span class="n">from_grid</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">num_qubits</span> <span class="o">=</span> <span class="n">cmap</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+
+<span class="c1"># Generate Hamiltonian</span>
+<span class="n">H</span> <span class="o">=</span> <span class="n">fq</span><span class="o">.</span><span class="n">QubitOperator</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">,</span> <span class="p">[])</span>
+<span class="n">touched_edges</span> <span class="o">=</span> <span class="nb">set</span><span class="p">({})</span>
+<span class="n">coeffs</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">cmap</span><span class="o">.</span><span class="n">get_edges</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">edge</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">touched_edges</span><span class="p">:</span>
+        <span class="n">touched_edges</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span>
+        <span class="n">H</span> <span class="o">+=</span> <span class="n">fq</span><span class="o">.</span><span class="n">QubitOperator</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;XX&quot;</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                                           <span class="p">(</span><span class="s2">&quot;YY&quot;</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                           <span class="p">(</span><span class="s2">&quot;ZZ&quot;</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">2</span><span class="p">])])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p>The subspace in which our Hamiltonian will be defined is derived from the counts sampled from a quantum computer
+and stored as a <code class="docutils literal notranslate"><span class="pre">Subspace</span></code> object (note that we do not use the counts data itself):</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">counts</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">kk</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">num_qubits</span><span class="p">):</span>
+    <span class="n">counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">bin</span><span class="p">(</span><span class="n">kk</span><span class="p">)[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">))</span>
+
+<span class="n">S</span> <span class="o">=</span> <span class="n">fq</span><span class="o">.</span><span class="n">Subspace</span><span class="p">([</span><span class="n">counts</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p>Right now we have a Hamiltonian and a subspace, but they know nothing about each other.  We can combine
+them into a <code class="docutils literal notranslate"><span class="pre">SubspaceHamiltonian</span></code> object, which is where all the magic happens, and is what we pass on
+to the eigensolver:</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Hsub</span> <span class="o">=</span> <span class="n">fq</span><span class="o">.</span><span class="n">SubspaceHamiltonian</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span>
+<span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">eigsh</span><span class="p">(</span><span class="n">Hsub</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;SA&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p>In passing the <code class="docutils literal notranslate"><span class="pre">SubspaceHamiltonian</span></code> object directly we have solved the problem using a matrix-free method,
+but one can build a collection of different, more performant, matrix-representations from this object.
+The found eigenenergy is:</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Eigenvalue:&quot;</span><span class="p">,</span> <span class="n">evals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Eigenvalue: -24.000000000000096
+</pre></div>
+</div>
+</div>
+</div>
+<p>there is of course an associated eigenvector, but because of the way Fulqrum solves the problem, it is not
+immediately usable.  Instead, we can use <code class="docutils literal notranslate"><span class="pre">SubspaceHamiltonian.interpret_vector()</span></code> to cast the solution
+as a dictionary the statevector amplitudes as values:</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Hsub</span><span class="o">.</span><span class="n">interpret_vector</span><span class="p">(</span><span class="n">evecs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>{&#39;0000000000000000&#39;: 0.9916220849626646,
+ &#39;0000000000000001&#39;: 3.915245419128908e-14,
+ &#39;0000000000000011&#39;: -9.812223936910992e-14,
+ &#39;0000000000000100&#39;: 7.053708559768089e-14,
+ &#39;0000000000000110&#39;: -1.3758710953444657e-14,
+ &#39;0000000000000111&#39;: 8.292182822044661e-14,
+ &#39;0000000000001000&#39;: -3.6923440673716585e-14,
+ &#39;0000000000001001&#39;: -2.7580185555779363e-14,
+ &#39;0000000000001010&#39;: -5.1413087268989513e-14,
+ &#39;0000000000001011&#39;: 4.361804536220559e-14,
+ &#39;0000000000001100&#39;: -1.0338810538546874e-13,
+ &#39;0000000000001101&#39;: 5.6360372635454004e-14,
+ &#39;0000000000001110&#39;: 1.0190542759733773e-13,
+ &#39;0000000000010000&#39;: -3.8925896796583416e-14,
+ &#39;0000000000010001&#39;: 5.3350267705127565e-14,
+ &#39;0000000000010011&#39;: -3.895972418528148e-14,
+ &#39;0000000000010100&#39;: 1.3424309132007621e-14,
+ &#39;0000000000010110&#39;: 1.7291556709211527e-14,
+ &#39;0000000000011000&#39;: 1.02696283412236e-14,
+ &#39;0000000000011001&#39;: 2.2740070227017873e-14,
+ &#39;0000000000011111&#39;: 3.4102321487968404e-14,
+ &#39;0000000000100000&#39;: -4.2120464182557326e-14,
+ &#39;0000000000100001&#39;: -1.0350945227914075e-14,
+ &#39;0000000000100010&#39;: -2.3932422767313423e-14,
+ &#39;0000000000100011&#39;: 1.5393761476999507e-14,
+ &#39;0000000000100101&#39;: 1.2353067163980506e-14,
+ &#39;0000000000101111&#39;: 1.038283241436324e-14,
+ &#39;0000000000110000&#39;: 1.9598001398553598e-14,
+ &#39;0000000000110001&#39;: 2.8928845974084135e-14,
+ &#39;0000000000110010&#39;: 2.497333628564682e-14,
+ &#39;0000000000110100&#39;: 1.0467989943777008e-14,
+ &#39;0000000000110111&#39;: -1.2765528523891114e-14,
+ &#39;0000000001000001&#39;: -1.483651867596033e-14,
+ &#39;0000000001000010&#39;: -1.3900068122486527e-14,
+ &#39;0000000001000011&#39;: 2.3467312765142393e-14,
+ &#39;0000000001000101&#39;: 1.191357745367214e-14,
+ &#39;0000000001001001&#39;: 1.0342182652718896e-14,
+ &#39;0000000001001100&#39;: -4.879029886802447e-14,
+ &#39;0000000001010001&#39;: 1.1633150287546148e-14,
+ &#39;0000000001110111&#39;: -1.552069772299688e-14,
+ &#39;0000000001111111&#39;: -2.850282850090909e-14,
+ &#39;0000000010000000&#39;: 6.503753534955977e-14,
+ &#39;0000000010000001&#39;: -4.332706635626219e-14,
+ &#39;0000000010000010&#39;: -3.282543283488398e-14,
+ &#39;0000000010000011&#39;: 2.10440510774877e-14,
+ &#39;0000000010000101&#39;: 1.2084430771123085e-14,
+ &#39;0000000010000110&#39;: 1.5221770973253766e-14,
+ &#39;0000000010001000&#39;: 8.539899786007406e-14,
+ &#39;0000000010001100&#39;: -1.8634463488925715e-14,
+ &#39;0000000010001110&#39;: 1.2226972978788513e-14,
+ &#39;0000000010001111&#39;: -2.209468050941274e-14,
+ &#39;0000000010010001&#39;: 1.8192351033427456e-14,
+ &#39;0000000011000000&#39;: 2.7361042268325958e-14,
+ &#39;0000000011000100&#39;: -3.248889989911243e-14,
+ &#39;0000000011001000&#39;: -3.2034467901066846e-14,
+ &#39;0000000011001111&#39;: 1.715565066759784e-14,
+ &#39;0000000011011111&#39;: 1.3294528247310432e-14,
+ &#39;0000000011101111&#39;: 3.6350445141965156e-14,
+ &#39;0000000011110111&#39;: -1.5109384359203864e-14,
+ &#39;0000000011111110&#39;: 1.3490875548450794e-14,
+ &#39;0000000100000001&#39;: 5.969118801321574e-14,
+ &#39;0000000100000010&#39;: 2.7793957312432017e-14,
+ &#39;0000000100000011&#39;: -1.5981160382426534e-14,
+ &#39;0000000100000100&#39;: 3.7512068755406995e-14,
+ &#39;0000000100001000&#39;: 4.906887929967515e-14,
+ &#39;0000000100001111&#39;: 1.4703909484781835e-14,
+ &#39;0000000100010000&#39;: 6.215532389542676e-14,
+ &#39;0000000100010001&#39;: 2.8912870981350855e-14,
+ &#39;0000000100100000&#39;: 2.4228533503790594e-14,
+ &#39;0000000100100001&#39;: 1.0586161718067443e-14,
+ &#39;0000000100110000&#39;: 3.101346947101665e-14,
+ &#39;0000000101000000&#39;: 1.9795320391779437e-14,
+ &#39;0000000101010000&#39;: 1.0394136101169471e-14,
+ &#39;0000000110000000&#39;: 2.5592092954831462e-14,
+ &#39;0000001000000000&#39;: 7.126589167598665e-14,
+ &#39;0000001000000100&#39;: 1.1454406784780861e-14,
+ &#39;0000001000001000&#39;: 2.5350856709911268e-14,
+ &#39;0000001000010000&#39;: 1.0599931617516653e-14,
+ &#39;0000001000010001&#39;: 2.7601879521311058e-14,
+ &#39;0000001000110000&#39;: 1.6445884718188707e-14,
+ &#39;0000001010000000&#39;: 1.0563925782188301e-14,
+ &#39;0000001100000000&#39;: 1.6382673345964057e-14,
+ &#39;0000001100000001&#39;: 1.658478010755918e-14,
+ &#39;0000001100000010&#39;: 1.0438216688348168e-14,
+ &#39;0000001100010000&#39;: 3.1063418843522036e-14,
+ &#39;0000001100100000&#39;: 1.4633802937677723e-14,
+ &#39;0000001100110011&#39;: 2.3714784416707554e-14,
+ &#39;0000001111111111&#39;: 1.8430270471370255e-14,
+ &#39;0000010000000000&#39;: 4.0827210325929304e-14,
+ &#39;0000010000000001&#39;: -4.2779090310002294e-14,
+ &#39;0000010000000010&#39;: -2.288438702820706e-14,
+ &#39;0000010000000011&#39;: 1.2030034630546992e-14,
+ &#39;0000010000001000&#39;: 2.4463154986910618e-14,
+ &#39;0000010000001100&#39;: -2.1043362850639678e-14,
+ &#39;0000010000010000&#39;: -1.0615646109340562e-14,
+ &#39;0000010000010001&#39;: 1.030392945883928e-14,
+ &#39;0000010001000000&#39;: 1.2304534035259269e-14,
+ &#39;0000010010000000&#39;: 2.3064610505639322e-14,
+ &#39;0000010010001000&#39;: -1.472592323814218e-14,
+ &#39;0000100000000001&#39;: -1.1395370176079896e-13,
+ &#39;0000100000000010&#39;: -5.496757936130014e-14,
+ &#39;0000100000000011&#39;: 1.864839481301576e-14,
+ &#39;0000100000001000&#39;: 3.855832652046574e-14,
+ &#39;0000100000010000&#39;: -4.312402053978206e-14,
+ &#39;0000100000100000&#39;: -1.890048895260104e-14,
+ &#39;0000100001000000&#39;: 1.7068066689350776e-14,
+ &#39;0000100010000000&#39;: 7.282405269456562e-14,
+ &#39;0000100010000100&#39;: -1.3382127384293591e-14,
+ &#39;0000100010001000&#39;: -2.7967002437063995e-14,
+ &#39;0000100010001100&#39;: 1.4418566264420643e-14,
+ &#39;0000100011000000&#39;: -1.1499395358860741e-14,
+ &#39;0000100011001100&#39;: -1.763814198270618e-14,
+ &#39;0000100011001110&#39;: -1.4341257229128862e-14,
+ &#39;0000100111111111&#39;: 1.3588786867360149e-14,
+ &#39;0000110011001100&#39;: -4.884054972668438e-14,
+ &#39;0000111111111000&#39;: -1.0670240517443109e-14,
+ &#39;0001000000000001&#39;: 8.528165672829445e-14,
+ &#39;0001000000000010&#39;: 5.154309323702415e-14,
+ &#39;0001000000000011&#39;: -3.729363856050083e-14,
+ &#39;0001000000000100&#39;: 7.402408257890033e-14,
+ &#39;0001000000001000&#39;: 1.3674614242702798e-13,
+ &#39;0001000000010000&#39;: 5.495910052935129e-14,
+ &#39;0001000000010001&#39;: 3.4338107723176827e-14,
+ &#39;0001000000100000&#39;: 2.4982334309818138e-14,
+ &#39;0001000000100010&#39;: 1.0951517539064581e-14,
+ &#39;0001000000110000&#39;: 2.065650037500027e-14,
+ &#39;0001000001000000&#39;: 4.192584132991855e-14,
+ &#39;0001000010000000&#39;: 7.122829105349564e-14,
+ &#39;0001000010001000&#39;: 2.0219350584561788e-14,
+ &#39;0001000100000000&#39;: 8.287712427592446e-14,
+ &#39;0001000100000001&#39;: 3.7156260082635e-14,
+ &#39;0001000100000010&#39;: 2.748909947356737e-14,
+ &#39;0001000100000100&#39;: 1.4477997693114903e-14,
+ &#39;0001000100001000&#39;: 1.1132521181993405e-14,
+ &#39;0001000100010000&#39;: 1.3666865690649847e-14,
+ &#39;0001000100010011&#39;: 3.73415375633246e-14,
+ &#39;0001000100010101&#39;: 1.0944006931875903e-14,
+ &#39;0001000100100000&#39;: 2.302365366009291e-14,
+ &#39;0001000100110011&#39;: 1.7088638740553766e-14,
+ &#39;0001000101000000&#39;: 1.2637413441998647e-14,
+ &#39;0001000111111111&#39;: -3.653745185714446e-14,
+ &#39;0001001000010000&#39;: 1.0581395970793932e-14,
+ &#39;0001001100000000&#39;: 3.476765187166889e-14,
+ &#39;0001001100010001&#39;: -1.1219198178909005e-14,
+ &#39;0001001100110011&#39;: -1.0678174779012165e-14,
+ &#39;0001010000000000&#39;: 1.5726720748004897e-14,
+ &#39;0001100000000000&#39;: 2.404322846629185e-14,
+ &#39;0001100010001000&#39;: -1.3889682762434251e-14,
+ &#39;0001100100000000&#39;: -1.438127311603896e-14,
+ &#39;0001111111111111&#39;: 2.8526107207648385e-14,
+ &#39;0010000000000000&#39;: 4.4531666808087475e-14,
+ &#39;0010000000000100&#39;: 2.942346575661455e-14,
+ &#39;0010000000001000&#39;: 7.052820553672601e-14,
+ &#39;0010000000010001&#39;: 1.452811576827123e-14,
+ &#39;0010000000110000&#39;: 1.0368170269491147e-14,
+ &#39;0010000001000000&#39;: 1.5065695391349053e-14,
+ &#39;0010000010000000&#39;: 3.8688684275371e-14,
+ &#39;0010000100000001&#39;: 1.2836880859421787e-14,
+ &#39;0010000100000010&#39;: 1.0766886131796036e-14,
+ &#39;0010000100010000&#39;: 1.0143396573169688e-14,
+ &#39;0010001000000000&#39;: -2.0229178780413173e-14,
+ &#39;0010001000000001&#39;: 1.2207569345905252e-14,
+ &#39;0010001100000000&#39;: 1.1241490652974571e-14,
+ &#39;0010111111111111&#39;: -1.1714966201126331e-14,
+ &#39;0011000000000000&#39;: -9.921606754800391e-14,
+ &#39;0011000000000100&#39;: -1.6682858910135112e-14,
+ &#39;0011000000001000&#39;: -3.449538064260096e-14,
+ &#39;0011000000010000&#39;: -2.0313553986536042e-14,
+ &#39;0011000010000000&#39;: -1.6080125973085923e-14,
+ &#39;0011000100000000&#39;: -9.443763017420758e-14,
+ &#39;0011000100010001&#39;: -3.2351396403781064e-14,
+ &#39;0011000100110001&#39;: -1.0900001298997689e-14,
+ &#39;0011001000000000&#39;: -5.408895745582374e-14,
+ &#39;0011001100010001&#39;: -2.720082532183743e-14,
+ &#39;0011001100110111&#39;: -4.228730950889283e-14,
+ &#39;0011001100111011&#39;: -1.8564364088695e-14,
+ &#39;0011001101110011&#39;: -1.570381333545913e-14,
+ &#39;0011001101110111&#39;: 2.078787811034716e-14,
+ &#39;0011010000000000&#39;: -2.6286530145467037e-14,
+ &#39;0011011101110111&#39;: 1.481818966306162e-14,
+ &#39;0011011111111110&#39;: 1.4855102401081835e-14,
+ &#39;0011011111111111&#39;: 1.8418814361372474e-14,
+ &#39;0011101111111111&#39;: -3.516662279844506e-14,
+ &#39;0011111011111111&#39;: -1.631210928130741e-14,
+ &#39;0011111110111111&#39;: -2.0180680900169302e-14,
+ &#39;0011111111001110&#39;: -1.0395026288359322e-14,
+ &#39;0011111111110111&#39;: -1.4075261915308301e-14,
+ &#39;0011111111111011&#39;: -1.2498206236074273e-14,
+ &#39;0011111111111100&#39;: 1.4736368112666834e-14,
+ &#39;0011111111111110&#39;: 1.5011010619183092e-14,
+ &#39;0011111111111111&#39;: -1.7946484385700283e-13,
+ &#39;0100000000000001&#39;: -9.861063864164278e-14,
+ &#39;0100000000000010&#39;: -3.878608839029935e-14,
+ &#39;0100000000000100&#39;: 1.8148709716775252e-14,
+ &#39;0100000000001000&#39;: 5.848175810928151e-14,
+ &#39;0100000000010000&#39;: -3.4381672647090714e-14,
+ &#39;0100000000100000&#39;: -1.81758043729171e-14,
+ &#39;0100000001000000&#39;: 1.0812849787994351e-14,
+ &#39;0100000010000000&#39;: 4.0632258393383473e-14,
+ &#39;0100000100000000&#39;: -1.0573995594581718e-14,
+ &#39;0100001000000000&#39;: -1.2538129908447265e-14,
+ &#39;0100010000000000&#39;: -1.2636448645815966e-14,
+ &#39;0100110000000000&#39;: 1.8328750693546872e-14,
+ &#39;0100111111111111&#39;: -2.4407830527831328e-14,
+ &#39;0101000000010000&#39;: -1.3072232270252033e-14,
+ &#39;0101000100000000&#39;: -4.5719042690717245e-14,
+ &#39;0101001000000000&#39;: -2.2515031686995454e-14,
+ &#39;0101101001001011&#39;: 1.063920717140277e-14,
+ &#39;0101101001010110&#39;: -1.1446549246111901e-14,
+ &#39;0101110111111111&#39;: -1.8069057824542505e-14,
+ &#39;0101111011111111&#39;: -1.3608837994156563e-14,
+ &#39;0101111111111110&#39;: 1.285802061339759e-14,
+ &#39;0101111111111111&#39;: -1.0975001370374726e-13,
+ &#39;0110000100000000&#39;: -2.4538860351763852e-14,
+ &#39;0110001000000000&#39;: -1.2477386364766144e-14,
+ &#39;0110011111111111&#39;: 1.5079899860787964e-14,
+ &#39;0110101001011010&#39;: -1.2374252834519071e-14,
+ &#39;0110110111111111&#39;: -1.0878084638405424e-14,
+ &#39;0110111011111111&#39;: -1.1010506845587133e-14,
+ &#39;0110111101111111&#39;: 1.852122467803853e-14,
+ &#39;0110111111110111&#39;: 2.6776781003608218e-14,
+ &#39;0110111111111011&#39;: 1.375968771920205e-14,
+ &#39;0110111111111101&#39;: 1.5561598397370233e-14,
+ &#39;0110111111111110&#39;: 2.5972636370876032e-14,
+ &#39;0110111111111111&#39;: -8.904511414229828e-14,
+ &#39;0111000000000000&#39;: -7.995518630978236e-14,
+ &#39;0111001100110011&#39;: 4.0508940452831e-14,
+ &#39;0111001111111111&#39;: -5.0435873305218705e-14,
+ &#39;0111010111111111&#39;: -1.5056167657477504e-14,
+ &#39;0111011100110011&#39;: -2.3444081263817528e-14,
+ &#39;0111011101110011&#39;: -1.8574061084349862e-14,
+ &#39;0111011101111111&#39;: 3.071849948646033e-14,
+ &#39;0111011110111111&#39;: -1.9915516611600005e-14,
+ &#39;0111011111011111&#39;: -1.1579986607639965e-14,
+ &#39;0111011111110111&#39;: 1.629094203000449e-14,
+ &#39;0111011111111111&#39;: 1.768377516005403e-13,
+ &#39;0111100111111111&#39;: -1.2102196389456411e-14,
+ &#39;0111101110111111&#39;: -1.251537497189022e-14,
+ &#39;0111110111111111&#39;: -2.2659066577750045e-14,
+ &#39;0111111011101111&#39;: 1.7660420497870442e-14,
+ &#39;0111111011110111&#39;: 1.2829367475404381e-14,
+ &#39;0111111100000000&#39;: -1.243750001405599e-14,
+ &#39;0111111101110111&#39;: 1.983170265158694e-14,
+ &#39;0111111101111111&#39;: 2.4536677821845424e-14,
+ &#39;0111111110111111&#39;: 1.0912435556933757e-14,
+ &#39;0111111111011111&#39;: 1.0853633466414778e-14,
+ &#39;0111111111101110&#39;: -2.2609214310485688e-14,
+ &#39;0111111111101111&#39;: 3.561057923660467e-14,
+ &#39;0111111111110110&#39;: 1.0616422627521819e-14,
+ &#39;0111111111110111&#39;: 4.4116812740881734e-14,
+ &#39;0111111111111011&#39;: 5.0523275772925365e-14,
+ &#39;0111111111111100&#39;: -1.607311015184513e-14,
+ &#39;0111111111111101&#39;: 5.680853369434481e-14,
+ &#39;0111111111111110&#39;: 8.275438553270073e-14,
+ &#39;1000000000000001&#39;: -2.326295311904228e-13,
+ &#39;1000000000000010&#39;: -9.796649323470126e-14,
+ &#39;1000000000000011&#39;: 2.893336014965497e-14,
+ &#39;1000000000001000&#39;: 7.85146954136314e-14,
+ &#39;1000000000010000&#39;: -9.904625555946384e-14,
+ &#39;1000000000010001&#39;: -3.217024524577675e-14,
+ &#39;1000000000100000&#39;: -3.884827914347046e-14,
+ &#39;1000000001000000&#39;: 1.4051541396907788e-14,
+ &#39;1000000010000000&#39;: 8.279926689648077e-14,
+ &#39;1000000100000000&#39;: -3.842793013556062e-14,
+ &#39;1000000100000001&#39;: -1.5104130434683902e-14,
+ &#39;1000001000000000&#39;: -2.4911161598436595e-14,
+ &#39;1000010000000000&#39;: -1.5232421772715748e-14,
+ &#39;1000100000000000&#39;: 1.193802018793338e-13,
+ &#39;1000100000000001&#39;: -1.0624371086458073e-14,
+ &#39;1000100010000000&#39;: 1.2307571742970338e-14,
+ &#39;1000100010001010&#39;: 1.2810368344679314e-14,
+ &#39;1000100010001100&#39;: 4.425981707763481e-14,
+ &#39;1000100011001000&#39;: 1.464814110273397e-14,
+ &#39;1000100011001100&#39;: 1.689449967200374e-14,
+ &#39;1000100011111111&#39;: -1.8802930199039182e-14,
+ &#39;1000101000000000&#39;: 1.1619525391074322e-14,
+ &#39;1000110000000000&#39;: 3.4179668974192064e-14,
+ &#39;1000110010001100&#39;: 1.2979138849164043e-14,
+ &#39;1000110011001000&#39;: 1.2150777988439986e-14,
+ &#39;1000110011001100&#39;: 1.014925839419863e-14,
+ &#39;1000111011111111&#39;: -1.2381321004616358e-14,
+ &#39;1000111111110001&#39;: 1.0040387712745662e-14,
+ &#39;1000111111111111&#39;: 1.0398313895215668e-14,
+ &#39;1001000000000000&#39;: -1.795071769175443e-14,
+ &#39;1001000000010000&#39;: -1.5199754266860914e-14,
+ &#39;1001000100000000&#39;: -5.229419425988119e-14,
+ &#39;1001001000000000&#39;: -1.109971832788011e-14,
+ &#39;1001101111111111&#39;: -1.5368158241197777e-14,
+ &#39;1001110111111111&#39;: -1.9929915384868382e-14,
+ &#39;1001111111110111&#39;: 1.7242692456618588e-14,
+ &#39;1001111111111110&#39;: 1.3377713243014301e-14,
+ &#39;1001111111111111&#39;: -3.3419534357146456e-14,
+ &#39;1010000000000000&#39;: -4.4044810169850815e-14,
+ &#39;1010100010001000&#39;: -1.4330669932664868e-14,
+ &#39;1010101111111111&#39;: -1.596967855999063e-14,
+ &#39;1010110111111111&#39;: -1.693116580468118e-14,
+ &#39;1010111011111111&#39;: -1.4537197954815183e-14,
+ &#39;1010111111110111&#39;: 1.733420870543098e-14,
+ &#39;1011001100110011&#39;: 1.9811786567491408e-14,
+ &#39;1011001111111111&#39;: -4.421053914026712e-14,
+ &#39;1011010111111111&#39;: -1.0344536000411125e-14,
+ &#39;1011011110111111&#39;: -1.2734738240480215e-14,
+ &#39;1011100111111111&#39;: -1.5469721891192272e-14,
+ &#39;1011101101111111&#39;: -1.1074085954119845e-14,
+ &#39;1011101111111111&#39;: -3.801270133210627e-14,
+ &#39;1011110011111111&#39;: -1.2025927135144567e-14,
+ &#39;1011110111111111&#39;: -2.297593255383667e-14,
+ &#39;1011111011111111&#39;: 2.330153539663356e-14,
+ &#39;1011111101111111&#39;: -1.076202709838583e-14,
+ &#39;1011111110111111&#39;: -1.2774667401932854e-14,
+ &#39;1011111111101111&#39;: 2.514690484358421e-14,
+ &#39;1011111111110111&#39;: 1.9769369787152934e-14,
+ &#39;1011111111111011&#39;: 1.932010288646855e-14,
+ &#39;1011111111111101&#39;: 2.005020314585222e-14,
+ &#39;1011111111111110&#39;: 4.650900826554539e-14,
+ &#39;1100000000000000&#39;: -1.6002413164959144e-13,
+ &#39;1100000010000000&#39;: 1.5919049225770133e-14,
+ &#39;1100010000000000&#39;: 2.6270000211860948e-14,
+ &#39;1100011111111111&#39;: -2.6239105089042193e-14,
+ &#39;1100100000000000&#39;: 5.408490528483903e-14,
+ &#39;1100100010001000&#39;: -3.393385770168662e-14,
+ &#39;1100100010001100&#39;: 1.4889562660907152e-14,
+ &#39;1100100011001000&#39;: 1.756776677113066e-14,
+ &#39;1100101111111111&#39;: -2.581335963003169e-14,
+ &#39;1100110010001000&#39;: 2.383709144666953e-14,
+ &#39;1100110011000000&#39;: -3.32758681279753e-14,
+ &#39;1100110011001101&#39;: 1.0749537059073762e-14,
+ &#39;1100110011001110&#39;: 2.4849005371909804e-14,
+ &#39;1100110011011110&#39;: 1.0182159438378411e-14,
+ &#39;1100110011101100&#39;: 1.0260977737474341e-14,
+ &#39;1100110011101110&#39;: 3.0867782147118766e-14,
+ &#39;1100110111111111&#39;: -9.248082389299966e-14,
+ &#39;1100111011101110&#39;: -1.440869703255286e-14,
+ &#39;1100111011111111&#39;: -6.622545489158363e-14,
+ &#39;1100111101111111&#39;: -1.0480634804605153e-14,
+ &#39;1100111110111111&#39;: -1.3263111644563652e-14,
+ &#39;1100111111011111&#39;: -2.866125234134894e-14,
+ &#39;1100111111101111&#39;: -2.9723450939081474e-14,
+ &#39;1100111111111101&#39;: -2.224686917596794e-14,
+ &#39;1100111111111110&#39;: -3.3752839242097393e-14,
+ &#39;1100111111111111&#39;: -1.1555650669659705e-13,
+ &#39;1101001111111111&#39;: -1.0187062427488255e-14,
+ &#39;1101011111111111&#39;: -3.8276868075156506e-14,
+ &#39;1101100111111111&#39;: -1.3056658680574463e-14,
+ &#39;1101101111111111&#39;: -3.1255747160467983e-14,
+ &#39;1101110011001100&#39;: -1.1348402956753174e-14,
+ &#39;1101110011111111&#39;: -3.754272731327072e-14,
+ &#39;1101110111111111&#39;: -7.873640801960288e-14,
+ &#39;1101111000000000&#39;: -1.11385883347692e-14,
+ &#39;1101111101111111&#39;: -3.4873898606580336e-14,
+ &#39;1101111110111111&#39;: -2.4463850038559965e-14,
+ &#39;1101111111011111&#39;: -2.623519502653548e-14,
+ &#39;1101111111110111&#39;: -3.594706330672635e-14,
+ &#39;1101111111111011&#39;: -1.2980815253067421e-14,
+ &#39;1101111111111110&#39;: 2.6963518190680824e-14,
+ &#39;1110000000000000&#39;: -3.754305711686501e-14,
+ &#39;1110000000000100&#39;: -1.215379797384047e-14,
+ &#39;1110011101111111&#39;: 1.5132862631107518e-14,
+ &#39;1110011111110111&#39;: 1.270971451871872e-14,
+ &#39;1110011111111110&#39;: 1.9553984522745133e-14,
+ &#39;1110011111111111&#39;: -2.376310519501073e-14,
+ &#39;1110100000000000&#39;: 1.0843796330587454e-14,
+ &#39;1110100111111111&#39;: -1.1487868776994974e-14,
+ &#39;1110101111111111&#39;: 1.1886109448084655e-14,
+ &#39;1110110011001100&#39;: -2.1386849053137384e-14,
+ &#39;1110110011111111&#39;: -1.954179948292153e-14,
+ &#39;1110111000000000&#39;: -2.8189181678751874e-14,
+ &#39;1110111011001100&#39;: -3.385814927348735e-14,
+ &#39;1110111011101111&#39;: -2.2547883899312415e-14,
+ &#39;1110111011111111&#39;: 1.4421450774111435e-13,
+ &#39;1110111101110111&#39;: -1.1514881880587314e-14,
+ &#39;1110111101111111&#39;: -5.213627725935613e-14,
+ &#39;1110111110111111&#39;: -1.473611184965016e-14,
+ &#39;1110111111101111&#39;: 3.7615353909842985e-14,
+ &#39;1110111111110111&#39;: -1.1900106080573673e-13,
+ &#39;1110111111111011&#39;: -4.732154528365198e-14,
+ &#39;1110111111111100&#39;: -2.226724537965084e-14,
+ &#39;1110111111111110&#39;: 6.078434228051724e-14,
+ &#39;1110111111111111&#39;: -1.6791370547535795e-14,
+ &#39;1111000000000010&#39;: -1.1307489311118736e-14,
+ &#39;1111000111111111&#39;: -1.2786618173349907e-14,
+ &#39;1111001100000000&#39;: 3.311337919207473e-14,
+ &#39;1111001100110011&#39;: 1.158503943183331e-14,
+ &#39;1111001101111111&#39;: -1.507685316680573e-14,
+ &#39;1111001111111111&#39;: 5.219064183354221e-14,
+ &#39;1111010100000000&#39;: 1.0541515217057508e-14,
+ &#39;1111011011111111&#39;: 2.1003735282610753e-14,
+ &#39;1111011100000000&#39;: -2.525879818144826e-14,
+ &#39;1111011100111111&#39;: -1.479493571516407e-14,
+ &#39;1111011101110111&#39;: 1.1691115053491356e-14,
+ &#39;1111011101111111&#39;: 5.822671476250942e-14,
+ &#39;1111011110111111&#39;: 2.147096901075506e-14,
+ &#39;1111011111101110&#39;: -1.033243374735061e-14,
+ &#39;1111011111101111&#39;: 2.152142806922932e-14,
+ &#39;1111011111110000&#39;: -1.1895494623222866e-14,
+ &#39;1111011111110111&#39;: 9.829012375205984e-14,
+ &#39;1111011111111011&#39;: 5.131141280604492e-14,
+ &#39;1111011111111101&#39;: 3.278279344166743e-14,
+ &#39;1111011111111110&#39;: 2.9981001718043144e-14,
+ &#39;1111011111111111&#39;: -1.1648027637201508e-14,
+ &#39;1111101011111111&#39;: 2.8443928395922e-14,
+ &#39;1111101100111111&#39;: -1.0765520156788091e-14,
+ &#39;1111101101111111&#39;: 1.7544120327894002e-14,
+ &#39;1111101111101111&#39;: 1.5037533090453954e-14,
+ &#39;1111101111110111&#39;: 2.878282198353646e-14,
+ &#39;1111101111111011&#39;: 1.5733685258345672e-14,
+ &#39;1111101111111101&#39;: 1.3904164940681586e-14,
+ &#39;1111101111111110&#39;: 1.840680962731546e-14,
+ &#39;1111110000000000&#39;: -1.981467660973858e-14,
+ &#39;1111110011001110&#39;: -1.1359860287951723e-14,
+ &#39;1111110011111111&#39;: 5.554120188206202e-14,
+ &#39;1111110100000000&#39;: 1.553087464293706e-14,
+ &#39;1111110111101111&#39;: 2.0935137401942887e-14,
+ &#39;1111110111110111&#39;: -1.4082351668535643e-14,
+ &#39;1111110111111110&#39;: 2.6269664103097092e-14,
+ &#39;1111110111111111&#39;: 3.4468114617652715e-14,
+ &#39;1111111000000000&#39;: 1.9670301045704174e-14,
+ &#39;1111111001111111&#39;: -2.114211149877346e-14,
+ &#39;1111111011011111&#39;: 1.825791710327571e-14,
+ &#39;1111111011101111&#39;: 3.6120389648261975e-14,
+ &#39;1111111011110000&#39;: 1.1257647941910646e-14,
+ &#39;1111111011110111&#39;: -6.486416245679295e-14,
+ &#39;1111111011111011&#39;: -2.0657988889135306e-14,
+ &#39;1111111011111100&#39;: -1.657658311977164e-14,
+ &#39;1111111011111101&#39;: 1.2871420531601398e-14,
+ &#39;1111111011111110&#39;: 6.919635757840674e-14,
+ &#39;1111111100010001&#39;: -4.102727133621853e-14,
+ &#39;1111111100110001&#39;: 2.189713485569776e-14,
+ &#39;1111111100110111&#39;: -1.0899554187389824e-14,
+ &#39;1111111100111111&#39;: -2.3123995576285153e-14,
+ &#39;1111111101011111&#39;: -2.1033860724497888e-14,
+ &#39;1111111101100001&#39;: -1.1279459767810267e-14,
+ &#39;1111111101100111&#39;: -1.1647296018098789e-14,
+ &#39;1111111101101110&#39;: -1.1884474337768792e-14,
+ &#39;1111111101101111&#39;: -2.941627215322126e-14,
+ &#39;1111111101110000&#39;: -4.554362319996829e-14,
+ &#39;1111111101110011&#39;: -2.941911424713673e-14,
+ &#39;1111111101110101&#39;: -1.8046061096988222e-14,
+ &#39;1111111101110110&#39;: -2.5745056980780736e-14,
+ &#39;1111111101110111&#39;: 1.5302586953218767e-13,
+ &#39;1111111101111100&#39;: 1.6275639930480582e-14,
+ &#39;1111111101111101&#39;: -2.0348210725132812e-14,
+ &#39;1111111101111110&#39;: -3.9223195339287404e-14,
+ &#39;1111111110000000&#39;: -1.3053557286738445e-14,
+ &#39;1111111110011111&#39;: -1.6787252087087757e-14,
+ &#39;1111111110100000&#39;: 1.1379617537989499e-14,
+ &#39;1111111110101111&#39;: -1.5894179170200572e-14,
+ &#39;1111111110110000&#39;: -1.0331871546385275e-14,
+ &#39;1111111110110011&#39;: -1.787512522395718e-14,
+ &#39;1111111110111011&#39;: -1.7657563128997073e-14,
+ &#39;1111111110111101&#39;: -1.6766651916681796e-14,
+ &#39;1111111110111110&#39;: -3.3358983424253386e-14,
+ &#39;1111111110111111&#39;: -4.6931456328099763e-14,
+ &#39;1111111111000000&#39;: 2.308668508072978e-14,
+ &#39;1111111111001000&#39;: -2.1714637673942875e-14,
+ &#39;1111111111001101&#39;: 2.0898434071103778e-14,
+ &#39;1111111111010000&#39;: 1.529329239154738e-14,
+ &#39;1111111111010111&#39;: -3.538358929658241e-14,
+ &#39;1111111111011011&#39;: -2.8295523476075743e-14,
+ &#39;1111111111011100&#39;: 1.7551302071227445e-14,
+ &#39;1111111111100000&#39;: 4.218546824662401e-14,
+ &#39;1111111111100110&#39;: -2.4140957254329393e-14,
+ &#39;1111111111100111&#39;: -7.34856720797276e-14,
+ &#39;1111111111101010&#39;: -2.4448503669433303e-14,
+ &#39;1111111111101011&#39;: -4.300419537181085e-14,
+ &#39;1111111111101100&#39;: -4.030584801542853e-14,
+ &#39;1111111111101110&#39;: 1.3775609065520603e-13,
+ &#39;1111111111110001&#39;: -1.1317687106022178e-14,
+ &#39;1111111111110010&#39;: 2.7198395153511205e-14,
+ &#39;1111111111110011&#39;: -1.1129532092802513e-13,
+ &#39;1111111111110100&#39;: 3.186462832659575e-14,
+ &#39;1111111111110101&#39;: -5.5122332111255994e-14,
+ &#39;1111111111110110&#39;: -6.44721811291048e-14,
+ &#39;1111111111111000&#39;: -1.6042534814063047e-14,
+ &#39;1111111111111001&#39;: -7.029491540633245e-14,
+ &#39;1111111111111010&#39;: -8.657539443981278e-14,
+ &#39;1111111111111011&#39;: -3.766234499495711e-14,
+ &#39;1111111111111100&#39;: -1.3237056985843227e-13,
+ &#39;1111111111111101&#39;: 1.3138325923440385e-14,
+ &#39;1111111111111110&#39;: -1.0161276743098933e-14,
+ &#39;1111111111111111&#39;: -0.12917290975393525}
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="qubit_operators.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Using QubitOperators</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="citing.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Citing</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, IBM Quantum
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            <div class="last-updated">
+              Last updated on 2026/05/01</div>
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Getting started</a><ul>
+<li><a class="reference internal" href="#simple-example">Simple example</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
+</html>
