@@ -61,13 +61,16 @@ class SubspaceHamiltonian(LinearOperator):
         """
         return self.off_H.num_groups
 
-    def diagonal_vector(self):
+    def diagonal_vector(self, verbose=False, disable_fast_mode=False):
         """Return diagonal vector of Hamiltonian in subspace
 
+        Parameters:
+            verbose (bool): optional, verbose output, default=False
+            disable_fast_mode (bool): optional, disable fast computation for type=2 Hamiltonians, default=False
         Returns:
             ndarray: Complex vector for diagonal of Hamiltonian
         """
-        return self.spmv.diagonal_vector()
+        return self.spmv.diagonal_vector(verbose, disable_fast_mode)
 
     def minimum_diagonal_energy(self):
         """Return the minimum diagonal energy

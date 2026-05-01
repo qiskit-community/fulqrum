@@ -36,5 +36,6 @@ cdef class FulqrumSpMV:
     cdef public int is_real
     cdef unsigned int ladder_offset
     cdef vector[vector[width_t]] group_offdiag_inds
+    cdef bool _disable_fast_diag
 
     cpdef int compute_diag_vector(self)
