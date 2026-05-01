@@ -44,7 +44,7 @@ double simple_restricted(const QubitOperator& oper,
 {
 
     // do stuff if the diagonal can be evaluated quickly
-    bool do_fast_diag = fast_diag_compatible(oper);
+    bool do_fast_diag = fast_diag_compatible(diag_oper);
     std::pair<std::vector<std::pair<std::size_t, std::size_t>>, std::size_t> ptrs_and_offset;
     if(do_fast_diag)
     {
