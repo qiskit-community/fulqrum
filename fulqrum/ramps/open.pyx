@@ -1,0 +1,72 @@
+# This code is a part of Fulqrum.
+#
+# (C) Copyright IBM 2024.
+#
+# This code is licensed under the Apache License, Version 2.0. You may
+# obtain a copy of this license in the LICENSE.txt file in the root directory
+# of this source tree or at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# Any modifications or derivative works of this code must retain this
+# copyright notice, and modified files need to carry a notice indicating
+# that they have been altered from the originals.
+# cython: c_string_type=unicode, c_string_encoding=UTF-8
+
+from ..core.qubit_operator cimport QubitOperator
+from ..core.subspace cimport Subspace
+from ..core.bitset cimport Bitset
+from ..core.bitset cimport bitset_t
+from ..core.linear_operator import SubspaceHamiltonian
+from ..core.spmv cimport FulqrumSpMV
+
+include "includes/open_header.pxi"
+
+import numpy as np
+
+
+
+def ramps_open(QubitOperator H, Subspace target_subspace, double target_energy,
+               unsigned int max_recursion=3, double tol=1e-14):
+    """RAMPS restricted to an existing subspace when targeting a single bit-string
+    and associated energy.
+
+    Parameters:
+        H (QubitOperator): Hamiltonian
+        target_subspace (Subspace): Target subspace to expand around
+        target_energy (double): Target energy from target subspace
+        max_recursion (int): Optional, maximum number of recursions to perform, default=3
+        tol (double): Optional, tolerance value for truncation, default=1e-14
+
+    Returns:
+        Subspace: RAMPS refined subspace
+    """
+    cdef Subspace out = target_subspace.copy()
+    Hsub = SubspaceHamiltonian(H, target_subspace)
+    cdef FulqrumSpMV spmv = Hsub.spmv
+    cdef double energy = open_ramps(spmv.oper,
+                                    out.subspace.bitstrings,
+                                    spmv.diag_oper,
+                                    spmv.width,
+                                    spmv.has_nonzero_diag,
+                                    &spmv.group_ptrs[0],
+                                    &spmv.group_ladder_ptrs[0],
+                                    &spmv.group_rowint_length[0],
+                                    spmv.group_offdiag_inds,
+                                    spmv.num_groups,
+                                    spmv.ladder_offset,
+                                    target_energy,
+                                    max_recursion,
+                                    tol)
+
+
+    # This is a temp workaround for issues with iteratively expanded
+    # subspaces.  This should be removed once those are resolved
+    cdef list temp_out = []
+    cdef size_t n
+    cdef str bs
+    for n in range(<size_t>out.size()):
+        bs = out.get_n_th_bitstring(n)
+        temp_out.append(bs)
+
+    cdef Subspace final_out = Subspace([temp_out])
+
+    return final_out

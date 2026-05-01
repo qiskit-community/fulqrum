@@ -58,6 +58,7 @@ CYTHON_EXTS = [
     "matrix",
     "sqd",
     "simple",
+    "open",
 ]
 
 CYTHON_MODULES = [
@@ -76,6 +77,7 @@ CYTHON_MODULES = [
     f"{ROOT}.utils",
     f"{ROOT}.core",
     f"{ROOT}.ramps",
+    f"{ROOT}.ramps",
 ]
 CYTHON_SOURCE_DIRS = [
     f"{ROOT}/core",
@@ -92,6 +94,7 @@ CYTHON_SOURCE_DIRS = [
     f"{ROOT}/convert",
     f"{ROOT}/utils",
     f"{ROOT}/core",
+    f"{ROOT}/ramps",
     f"{ROOT}/ramps",
 ]
 

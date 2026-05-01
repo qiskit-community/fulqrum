@@ -20,10 +20,13 @@ Simple
 .. autosummary::
    :toctree: ../stubs/
 
+   ramps_open
    ramps_restricted_simple
 
 """
 
 from .simple import ramps_restricted_simple
+from .open import ramps_open
 
-__all__ = ["ramps_restricted_simple"]
+
+__all__ = ["ramps_open", "ramps_restricted_simple"]
