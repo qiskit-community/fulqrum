@@ -64,6 +64,7 @@ cdef class FulqrumSpMV():
         self.group_ptrs = group_ptrs
         self.group_ladder_ptrs = group_ladder_ptrs
         self.num_groups = group_ptrs.shape[0] - 1
+        self._disable_fast_diag = False
         if group_ptrs.shape[0] > 1:
             set_group_offdiag_indices(self.oper.terms, self.group_offdiag_inds,
                                       &self.group_ptrs[0], self.num_groups)
@@ -105,6 +106,8 @@ cdef class FulqrumSpMV():
         cdef pair[vector[pair[size_t, size_t]], size_t] ptrs_and_offset
         if self.diag_oper.type == 2:
             fast_diag = fast_diag_compatible(self.diag_oper)
+        if self._disable_fast_diag:
+            fast_diag = 0
         if fast_diag:
             diag_proj_index_sort(self.diag_oper)
             ptrs_and_offset =  projector_ptrs_and_offset(self.diag_oper)
@@ -139,8 +142,10 @@ cdef class FulqrumSpMV():
         self.init_diag = 1
         return 1
 
-
-    def diagonal_vector(self, int verbose=0):
+    def fast_diag_compatible(self):
+        return fast_diag_compatible(self.diag_oper)
+    
+    def diagonal_vector(self, int verbose=0, bool disable_fast_mode=False):
         """Diagonal vector of subspace Hamitlonian
 
         Returns:
@@ -153,7 +158,12 @@ cdef class FulqrumSpMV():
                 return np.zeros(self.subspace_dim, dtype=float)
             else:
                 return np.zeros(self.subspace_dim, dtype=complex)
+        cdef bool temp = self._disable_fast_diag
+        self._disable_fast_diag = disable_fast_mode
+        if verbose:
+            print("Diagonal fast mode enabled: ", (not self._disable_fast_diag))
         self.compute_diag_vector()
+        self._disable_fast_diag = temp
         if self.is_real:
             return np.asarray(self.real_diag_vec)
         if verbose:
