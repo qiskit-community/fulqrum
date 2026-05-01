@@ -47,7 +47,6 @@ double open_ramps(const QubitOperator& oper,
     {
         diag_proj_index_sort(diag_oper);
         ptrs_and_offset = projector_ptrs_and_offset(diag_oper);
-        std::cout << "Fast diagonal mode" << std::endl;
     }
 
     std::size_t recur, kk;
@@ -107,7 +106,7 @@ double open_ramps(const QubitOperator& oper,
                                  do_col_search,                                                    \
                                  col_energy,                                                       \
                                  energy_amp,                                                       \
-                                 term) schedule(guided)
+                                 term) schedule(dynamic)
         for(kk = 0; kk < current_rows.size(); kk++)
         {
             const boost::dynamic_bitset<size_t>& row = current_rows.at(kk);
