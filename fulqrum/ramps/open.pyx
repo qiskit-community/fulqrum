@@ -25,7 +25,7 @@ import numpy as np
 
 
 def ramps_open(QubitOperator H, Subspace target_subspace, double target_energy,
-               unsigned int max_recursion=3, double tol=1e-14):
+               unsigned int max_recursion=2, double tol=1e-12):
     """RAMPS restricted to an existing subspace when targeting a single bit-string
     and associated energy.
 
@@ -33,8 +33,8 @@ def ramps_open(QubitOperator H, Subspace target_subspace, double target_energy,
         H (QubitOperator): Hamiltonian
         target_subspace (Subspace): Target subspace to expand around
         target_energy (double): Target energy from target subspace
-        max_recursion (int): Optional, maximum number of recursions to perform, default=3
-        tol (double): Optional, tolerance value for truncation, default=1e-14
+        max_recursion (int): Optional, maximum number of recursions to perform, default=2
+        tol (double): Optional, tolerance value for truncation, default=1e-12
 
     Returns:
         Subspace: RAMPS refined subspace
