@@ -97,19 +97,19 @@ double simple_restricted(const QubitOperator& oper,
         std::vector<std::vector<Candidate>> pending_candidates(current_rows.size());
 // Loop over all rows in the current set
 #pragma omp parallel for private(col_vec,                                                          \
-                                 group_inds,                                                       \
-                                 col_ptr,                                                          \
-                                 out_col_ptr,                                                      \
-                                 idx,                                                              \
-                                 group,                                                            \
-                                 group_int_start,                                                  \
-                                 group_int_stop,                                                   \
-                                 val,                                                              \
-                                 row_int,                                                          \
-                                 do_col_search,                                                    \
-                                 col_energy,                                                       \
-                                 energy_amp,                                                       \
-                                 term) schedule(guided)
+                                     group_inds,                                                   \
+                                     col_ptr,                                                      \
+                                     out_col_ptr,                                                  \
+                                     idx,                                                          \
+                                     group,                                                        \
+                                     group_int_start,                                              \
+                                     group_int_stop,                                               \
+                                     val,                                                          \
+                                     row_int,                                                      \
+                                     do_col_search,                                                \
+                                     col_energy,                                                   \
+                                     energy_amp,                                                   \
+                                     term) schedule(guided)
         for(kk = 0; kk < current_rows.size(); kk++)
         {
             const boost::dynamic_bitset<size_t>& row = input_bitsets[current_rows[kk]].first;
