@@ -17,7 +17,7 @@ import numpy as np
 import scipy.sparse.linalg as spla
 
 from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
-from fulqrum.ramps import ramps_restricted_simple
+from fulqrum.ramps import ramps_restricted_simple, ramps_open
 
 
 _path = Path(__file__).parent / "data/lih.json"
@@ -47,13 +47,32 @@ def test_ramps_simple_refine_subspace_dim():
 
 
 def test_ramps_simple_refine_accuracy():
-    """Verify sRAMPS energy is close to exact answer for LiH"""
+    """Verify RAMPS energy is close to exact answer for LiH"""
     diag = HSUB.diagonal_vector()
     min_idx = np.where(diag == diag.min())[0][0]
 
     target_subspace = Subspace([[S[min_idx].to_string()]])
     target_energy = diag[min_idx]
     out = ramps_restricted_simple(NEW_OP, target_subspace, target_energy, S)
+
+    Hsub_small = SubspaceHamiltonian(NEW_OP, out)
+    approx_energy = spla.eigsh(
+        Hsub_small.to_csr_linearoperator_fast(), k=1, which="SA"
+    )[0][0]
+
+    assert abs((approx_energy - EXACT_ENERGY) / EXACT_ENERGY) < 1e-14
+
+
+def test_ramps_open_lih():
+    """Verify RAMPS open on full LiH subspace return correct answer"""
+    diag = HSUB.diagonal_vector()
+    min_idx = np.where(diag == diag.min())[0][0]
+
+    target_subspace = Subspace([[S[min_idx].to_string()]])
+    target_energy = diag[min_idx]
+    out = ramps_open(NEW_OP, target_subspace, target_energy)
+
+    assert out.size() == 69  # same as above
 
     Hsub_small = SubspaceHamiltonian(NEW_OP, out)
     approx_energy = spla.eigsh(

@@ -25,24 +25,21 @@
 #include "../../core/src/diag.hpp"
 #include "../../core/src/elements.hpp"
 
-double simple_restricted(const QubitOperator& oper,
-                         const bitset_map_namespace::BitsetHashMapWrapper& restricted_subspace,
-                         bitset_map_namespace::BitsetHashMapWrapper& out_subspace,
-                         QubitOperator& diag_oper,
-                         const width_t width,
-                         const std::size_t subspace_dim,
-                         const int has_nonzero_diag,
-                         const std::size_t* __restrict group_ptrs,
-                         const std::size_t* __restrict group_ladder_ptrs,
-                         const width_t* __restrict group_rowint_length,
-                         const std::vector<std::vector<width_t>>& group_offdiag_inds,
-                         const std::size_t num_groups,
-                         const unsigned int ladder_offset,
-                         const double target_energy,
-                         const unsigned int max_recursion,
-                         const double tol)
+double open_ramps(const QubitOperator& oper,
+                  bitset_map_namespace::BitsetHashMapWrapper& out_subspace,
+                  QubitOperator& diag_oper,
+                  const width_t width,
+                  const int has_nonzero_diag,
+                  const std::size_t* __restrict group_ptrs,
+                  const std::size_t* __restrict group_ladder_ptrs,
+                  const width_t* __restrict group_rowint_length,
+                  const std::vector<std::vector<width_t>>& group_offdiag_inds,
+                  const std::size_t num_groups,
+                  const unsigned int ladder_offset,
+                  const double target_energy,
+                  const unsigned int max_recursion,
+                  const double tol)
 {
-
     // do stuff if the diagonal can be evaluated quickly
     bool do_fast_diag = fast_diag_compatible(diag_oper);
     std::pair<std::vector<std::pair<std::size_t, std::size_t>>, std::size_t> ptrs_and_offset;
@@ -53,14 +50,17 @@ double simple_restricted(const QubitOperator& oper,
     }
 
     std::size_t recur, kk;
-    const auto* input_bitsets = restricted_subspace.get_bitsets();
     auto* output_bitsets = out_subspace.get_bitsets();
 
-    std::vector<std::size_t> current_rows;
-    std::vector<std::size_t> next_rows = {*restricted_subspace.get_ptr(output_bitsets[0].first)};
+    std::vector<boost::dynamic_bitset<std::size_t>> current_rows;
+    std::vector<boost::dynamic_bitset<std::size_t>> next_rows;
+    for(kk = 0; kk < out_subspace.size(); kk++)
+    {
+        next_rows.push_back(output_bitsets[kk].first);
+    }
 
     std::vector<double> current_prefactors;
-    std::vector<double> next_prefactors = {1.0 / target_energy};
+    std::vector<double> next_prefactors(next_rows.size(), 1.0 / target_energy);
 
     double est_energy = target_energy;
     double col_energy = 0;
@@ -69,7 +69,6 @@ double simple_restricted(const QubitOperator& oper,
     const OperatorTerm_t* term;
     boost::dynamic_bitset<std::size_t> col_vec;
     const std::vector<width_t>* group_inds;
-    std::size_t* col_ptr;
     std::size_t* out_col_ptr;
     std::size_t idx;
     std::size_t group;
@@ -82,7 +81,6 @@ double simple_restricted(const QubitOperator& oper,
     struct Candidate
     {
         boost::dynamic_bitset<std::size_t> col_vec;
-        std::size_t restricted_row;
         double est_delta;
         double next_prefactor;
     };
@@ -98,7 +96,6 @@ double simple_restricted(const QubitOperator& oper,
 // Loop over all rows in the current set
 #pragma omp parallel for private(col_vec,                                                          \
                                      group_inds,                                                   \
-                                     col_ptr,                                                      \
                                      out_col_ptr,                                                  \
                                      idx,                                                          \
                                      group,                                                        \
@@ -109,10 +106,10 @@ double simple_restricted(const QubitOperator& oper,
                                      do_col_search,                                                \
                                      col_energy,                                                   \
                                      energy_amp,                                                   \
-                                     term) schedule(guided)
+                                     term) schedule(dynamic)
         for(kk = 0; kk < current_rows.size(); kk++)
         {
-            const boost::dynamic_bitset<size_t>& row = input_bitsets[current_rows[kk]].first;
+            const boost::dynamic_bitset<size_t>& row = current_rows.at(kk);
             std::vector<uint8_t> row_set_bits(row.size(), 0);
             std::vector<Candidate> row_candidates;
             bitset_to_bitvec(row, row_set_bits);
@@ -133,11 +130,6 @@ double simple_restricted(const QubitOperator& oper,
                     {
                         col_vec = row;
                         flip_bits(col_vec, group_inds->data(), group_inds->size());
-                        col_ptr = restricted_subspace.get_ptr(col_vec);
-                        if(col_ptr == nullptr)
-                        {
-                            break; // column is NOT in the subspace so break group
-                        }
                         do_col_search = 0;
                     }
                     term = &oper.terms[idx];
@@ -154,54 +146,52 @@ double simple_restricted(const QubitOperator& oper,
                     }
                 } // end loop over terms in this group
 
-                if(!do_col_search)
+                // Wwe need to compute the columns diagonal energy
+                col_energy = 0;
+                if(do_fast_diag)
                 {
-                    // If this column is in the subspace we need to compute the columns diagonal energy
-                    if(do_fast_diag)
+                    single_bitstring_diagonal_fast(col_vec,
+                                                   diag_oper.terms,
+                                                   ptrs_and_offset.first,
+                                                   ptrs_and_offset.second,
+                                                   col_energy);
+                }
+                else
+                {
+                    single_bitstring_diagonal(col_vec, diag_oper.terms, col_energy);
+                }
+                energy_amp = current_prefactors.at(kk) * std::pow(std::abs(val), 2) /
+                             (target_energy - col_energy + 1e-15);
+
+                // If the amplitude is larger than tol then need to add column bit-string to output set
+                if(std::abs(energy_amp) > tol)
+                {
+                    //if col not in out_subspace then add the column to the output subspace
+                    // and add the col_ptr to the next rows array and add a new prefactor
+                    // to the next_prefactors
+                    out_col_ptr = out_subspace.get_ptr2(col_vec);
+                    if(out_col_ptr == nullptr)
                     {
-                        single_bitstring_diagonal_fast(input_bitsets[*col_ptr].first,
-                                                       diag_oper.terms,
-                                                       ptrs_and_offset.first,
-                                                       ptrs_and_offset.second,
-                                                       col_energy);
-                    }
-                    else
-                    {
-                        single_bitstring_diagonal(
-                            input_bitsets[*col_ptr].first, diag_oper.terms, col_energy);
-                    }
-                    energy_amp = current_prefactors[kk] * std::pow(std::abs(val), 2) /
-                                 (target_energy - col_energy + 1e-15);
-                    // If the amplitude is larger than tol
-                    if(std::abs(energy_amp) > tol)
-                    {
-                        //if col not in out_subspace then add the column to the output subspace
-                        // and add the col_ptr to the next rows array and add a new prefactor
-                        // to the next_prefactors
-                        out_col_ptr = out_subspace.get_ptr2(col_vec);
-                        if(out_col_ptr == nullptr)
-                        {
-                            row_candidates.push_back(
-                                {col_vec,
-                                 *col_ptr,
-                                 target_energy * energy_amp,
-                                 energy_amp / (target_energy - col_energy + 1e-15)});
-                        }
+                        row_candidates.push_back(
+                            {col_vec,
+                             target_energy * energy_amp,
+                             energy_amp / (target_energy - col_energy + 1e-15)});
                     }
                 }
             }
+            // add all the candidate row bit-strings for the given row to the pending candidates
             pending_candidates[kk] = std::move(row_candidates);
         }
 
         for(kk = 0; kk < pending_candidates.size(); kk++)
         {
-            for(const Candidate& candidate : pending_candidates[kk])
+            for(const Candidate& candidate : pending_candidates.at(kk))
             {
                 out_col_ptr = out_subspace.get_ptr2(candidate.col_vec);
                 if(out_col_ptr == nullptr)
                 {
                     est_energy += candidate.est_delta;
-                    next_rows.push_back(candidate.restricted_row);
+                    next_rows.push_back(candidate.col_vec);
                     next_prefactors.push_back(candidate.next_prefactor);
                     out_subspace.emplace(candidate.col_vec, num_inserted_bitsets);
                     num_inserted_bitsets += 1;
