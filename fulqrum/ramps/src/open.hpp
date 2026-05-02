@@ -182,10 +182,8 @@ double open_ramps(const QubitOperator& oper,
             pending_candidates[kk] = std::move(row_candidates);
         }
 
-        std::size_t total_candidates = 0;
         for(kk = 0; kk < pending_candidates.size(); kk++)
         {
-            total_candidates += pending_candidates.at(kk).size();
             for(const Candidate& candidate : pending_candidates.at(kk))
             {
                 out_col_ptr = out_subspace.get_ptr2(candidate.col_vec);
@@ -199,7 +197,6 @@ double open_ramps(const QubitOperator& oper,
                 }
             }
         }
-        std::cout << "recursion " << recur << " found " << total_candidates << " possible bit-strings " << std::endl;
     }
     out_subspace.set_bucket_occupancy();
     return est_energy;
