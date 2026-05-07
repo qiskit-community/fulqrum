@@ -68,7 +68,7 @@ typedef struct OperatorTerm
                 val = oper_map[*it];
                 values.push_back(val);
                 indices.push_back(inds[counter - 1]);
-                this->offdiag_weight += (val > 2);
+                offdiag_weight += static_cast<width_t>(val > 2);
             }
         }
         //check that length of values == length of indices
