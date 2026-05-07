@@ -17,7 +17,7 @@ from scipy.sparse.linalg import LinearOperator
 
 from .spmv import FulqrumSpMV
 from .csr import csr_matvec
-
+from..exceptions import FulqrumError
 
 class SubspaceHamiltonian(LinearOperator):
     """Encapsulates the details of a subspace Hamiltonian problem
@@ -32,6 +32,8 @@ class SubspaceHamiltonian(LinearOperator):
         """A SciPy `LinearOperator` that represents a Hamiltonian restricted to the given
         subspace.
         """
+        if hamiltonian.width != subspace.width:
+            raise FulqrumError("Operator and subspace widths do not match")
         self.diag_H, self.off_H = hamiltonian.split_diagonal()
         # if there are no off-diagonal terms then we pass a dummy empty array of len=1
         self.off_H.offdiag_term_grouping()

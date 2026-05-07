@@ -217,6 +217,10 @@ cdef class Subspace():
         """
         cdef size_t size = self.subspace.bitstrings.size()
         return size
+    
+    @property
+    def width(self):
+        return self.subspace.num_qubits
 
     def copy(self):
         """Return a copy of subspace
