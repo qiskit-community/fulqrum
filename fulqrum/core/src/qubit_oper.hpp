@@ -13,8 +13,6 @@
  */
 
 #pragma once
-#include "constants.hpp"
-#include "qubit_term.hpp"
 #include <algorithm>
 #include <cmath>
 #include <complex>
@@ -25,6 +23,10 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include "constants.hpp"
+#include "io.hpp"
+#include "qubit_term.hpp"
 
 struct QubitOperator;
 
@@ -257,7 +259,7 @@ inline void set_offdiag_structure_ptrs(const std::vector<OperatorTerm>& __restri
     std::size_t kk;
     if(terms.size())
     {
-        width_t val = term_offdiag_structure(terms[0]);
+        std::size_t val = term_offdiag_structure(terms[0]);
         vec.push_back(0);
         for(kk = 1; kk < terms.size(); kk++)
         {
@@ -464,7 +466,7 @@ inline width_t term_ladder_int(const OperatorTerm& term, width_t ladder_width)
     {
         if(term.values[kk] > 4)
         {
-            subset = subset | ((width_t)term.values[kk] - 5U) << counter;
+            subset = subset | ((width_t)term.values[kk] - (width_t)5) << counter;
             counter += 1;
         }
     }
@@ -478,7 +480,7 @@ inline width_t term_ladder_int(const OperatorTerm& term, width_t ladder_width)
     }
     else
     {
-        subset = subset & ((1U << ladder_width) - 1U);
+        subset = subset & (((width_t)1 << ladder_width) - (width_t)1);
     }
     return subset;
 }
@@ -670,7 +672,7 @@ typedef struct QubitOperator
      */
     static QubitOperator from_label(std::string label)
     {
-        width_t width = label.size();
+        width_t width = static_cast<width_t>(label.size());
         unsigned char val;
         std::size_t counter = 0;
         QubitOperator out = QubitOperator(width);
@@ -1332,6 +1334,30 @@ typedef struct QubitOperator
                           num_ladder_ints,
                           ladder_width);
         return group_ranges;
+    }
+    /**
+     * Convert operator to JSON format, optionally with XZ or ZST compression
+     *
+     * @param[in] filename The name of the output file, e.g. *.json, *.json.xz, or *.json.zst
+     * @param[in] overwrite Allow for overwriting files if they already exist
+     *
+     * @note One should always use compression as it saves ~10x in file size 
+     */
+    void to_json(const std::string& filename, bool overwrite = false) const
+    {
+        operator_to_json(*this, filename, overwrite);
+    }
+    /**
+     * Build operator from a JSON file, optionally with compression
+     *
+     * @param[in] filename The name of the output file, e.g. *.json, *.json.xz, or *.json.zst
+     */
+    static QubitOperator from_json(const std::string& filename)
+    {
+
+        QubitOperator out;
+        json_to_operator(filename, out);
+        return out;
     }
 
 } QubitOperator_t;
