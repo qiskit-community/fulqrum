@@ -16,7 +16,6 @@ import pytest
 import numpy as np
 from fulqrum import Subspace, Bitset
 
-
 dic = {
     "01010": 1,
     "10101": 1,

@@ -229,11 +229,15 @@ cdef class Subspace():
             Subspace
         """
         cdef Subspace out
+        cdef size_t kk
         if self.size() > 1:
-            out = Subspace([])
-            out.subspace.bitstrings = self.subspace.bitstrings
+            out = Subspace([], use_all_bitset_blocks=self.subspace.bitstrings.use_all_bitset_blocks())
+            out.subspace.bitstrings.reserve(self.subspace.bitstrings.size())
             out.subspace.num_qubits = self.subspace.num_qubits
             out.subspace.size = self.subspace.size
+            out.subspace.num_qubits = self.subspace.num_qubits
+            for kk in range(self.subspace.size):
+                out.subspace.bitstrings.insert_unique(self.subspace.bitstrings.get_n_th_bitset(kk), kk)
         # Copying the data of a size=1 subspace segfaults. This gets around that by creating a new
         # subspace.  This is not a big deal since there is a single element
         else:

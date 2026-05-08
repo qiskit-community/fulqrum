@@ -28,5 +28,4 @@ Simple
 from .simple import ramps_restricted_simple
 from .open import ramps_open
 
-
 __all__ = ["ramps_open", "ramps_restricted_simple"]

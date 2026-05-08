@@ -17,7 +17,8 @@ from scipy.sparse.linalg import LinearOperator
 
 from .spmv import FulqrumSpMV
 from .csr import csr_matvec
-from..exceptions import FulqrumError
+from ..exceptions import FulqrumError
+
 
 class SubspaceHamiltonian(LinearOperator):
     """Encapsulates the details of a subspace Hamiltonian problem
