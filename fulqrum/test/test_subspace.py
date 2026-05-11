@@ -188,6 +188,25 @@ def test_bitset_dict():
     ]
 
 
+def test_half_strs_mode_globally_ascending():
+    """Test that half-string mode produces globally ascending insertion order.
+
+    Regression test for https://github.com/qiskit-community/fulqrum/issues/19.
+    Uses alpha and beta lists of different lengths (3 vs 2) so that any
+    incorrect product/concat ordering shows up. Earlier tests with identical
+    halves accidentally masked the bug.
+    """
+    alpha_half_strs = ["001", "010", "100"]
+    beta_half_strs = ["01", "10"]
+    S = Subspace([alpha_half_strs, beta_half_strs])
+
+    # Full bitstring is `beta + alpha`; iteration order must be ascending.
+    expected = ["01001", "01010", "01100", "10001", "10010", "10100"]
+    actual = [S.get_n_th_bitstring(i) for i in range(len(S))]
+    assert actual == expected
+    assert actual == sorted(actual)
+
+
 def test_bitset_init():
     """Test subspace init using bitsets"""
     A = {Bitset("01010"): 0, Bitset("01111"): 1, Bitset("11100"): 2, Bitset("00000"): 3}
