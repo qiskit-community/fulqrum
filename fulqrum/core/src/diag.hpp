@@ -112,6 +112,53 @@ bool fast_diag_compatible(const QubitOperator& oper)
 }
 
 /**
+* Is diagonal fast_proj compatible
+* Here we assume any constant offset terms are removed before this
+* function is called
+*
+*/
+bool fast_diag_compatible2(const QubitOperator& oper)
+{
+    bool out = true;
+    if(oper.type != 2)
+    {
+        out = false;
+    }
+    else if(!oper.is_diagonal())
+    {
+        out = false;
+    }
+    // Number of non-constant terms in diag must be W * (W + 1) / 2
+    else if(oper.size() != oper.width*(oper.width+1)/2)
+    {
+        out = false;
+    }
+    else
+    {
+        std::size_t kk;
+        for(auto term : oper.terms)
+        {
+            // if condition is already false, or current term has no projectors, e.g. constant term, 
+            // 'Z' ops only 
+            if(~out || term.proj_indices.size() == 0)
+            {
+                break;
+            }
+            // All projectors must be '1' for this to work so break if '0' is found
+            for(kk = 0; kk < term.proj_indices.size(); kk++)
+            {
+                if(term.proj_bits[kk] == 0)
+                {
+                    out = false;
+                    break;
+                }
+            }
+        }
+    }
+    return out;
+}
+
+/**
  * Compare terms based on the index of their 1st projector index, if any
  * 
  * This is used for sorting terms in a diagonal Hamiltonian so that computing
@@ -140,6 +187,21 @@ inline int proj_index_term_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
     return term1_index < term2_index;
 }
 
+inline int proj_second_index_term_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
+{
+    int term1_index = -1;
+    int term2_index = -1;
+    if(term1.proj_indices.size() > 1)
+    {
+        term1_index = term1.proj_indices[1];
+    }
+    if(term2.proj_indices.size() > 1)
+    {
+        term2_index = term2.proj_indices[1];
+    }
+    return term1_index < term2_index;
+}
+
 /**
 * In-place sorting of terms by projector index
 */
@@ -149,15 +211,36 @@ QubitOperator& diag_proj_index_sort(QubitOperator& oper)
     {
         throw std::runtime_error("Operator must be type=2 for this to make sense");
     }
-    if(!oper.is_diagonal())
-    {
-        throw std::runtime_error("Operator must be diagonal");
-    }
     std::sort(oper.terms.begin(), oper.terms.end(), proj_index_term_comp);
     oper.off_weight_sorted = 0;
     oper.weight_sorted = 0;
     oper.sorted = 0;
     return oper;
+}
+
+inline void fast_diag_term_sort(QubitOperator& oper)
+{
+    if(!oper.is_diagonal())
+    {
+        throw std::runtime_error("Operator must be diagonal");
+    }
+    width_t width = oper.width;
+    diag_proj_index_sort(oper);
+    std::vector<std::size_t> ptrs ={0};
+    std::size_t current = 0;
+    for(width_t kk=0; kk < width; kk++)
+    {
+        current += (width-kk);
+        ptrs.push_back(current);
+    }
+    #pragma omp parallel for if(width > 31) schedule(dynamic)
+    for(std::size_t ll=0; ll < (ptrs.size()-1); ll++)
+    {
+        std::size_t start = ptrs[ll];
+        std::size_t stop = ptrs[ll+1];
+        // sort by group index within the start and stop indices
+        std::sort(oper.terms.begin() + start, oper.terms.begin() + stop, proj_second_index_term_comp);
+    }
 }
 
 std::pair<std::vector<std::pair<std::size_t, std::size_t>>, std::size_t>

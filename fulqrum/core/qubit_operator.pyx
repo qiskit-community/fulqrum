@@ -45,6 +45,7 @@ include "includes/bitset_utils_header.pxi"
 include "includes/offdiag_grouping_header.pxi"
 include "includes/converters.pxi"
 include "includes/io.pxi"
+include "includes/diag_header.pxi"
 
 
 cdef const OperatorTerm_t EmptyOperatorTerm
@@ -962,4 +963,10 @@ cdef class QubitOperator():
         cdef QubitOperator out = QubitOperator(1) #dummy width
         out.oper = out.oper.from_json(str(filename))
         return out
+
+    def fast_diag_compatible(self):
+        return fast_diag_compatible2(self.oper)
+    
+    def fast_diag_term_sort(self):
+        return fast_diag_term_sort(self.oper)
 

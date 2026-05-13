@@ -30,6 +30,10 @@ cdef extern from "../src/diag.hpp":
 
     bool fast_diag_compatible(QubitOperator_t&) except + nogil
 
+    bool fast_diag_compatible2(QubitOperator_t&) except + nogil
+
+    void fast_diag_term_sort(QubitOperator_t& oper) except + nogil
+
     void compute_diag_vector_fast[T](const BitsetHashMapWrapper& data,
                                      T * diag_vec,
                                      const QubitOperator_t& diag_oper,
