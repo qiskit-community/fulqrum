@@ -417,7 +417,7 @@ void compute_diag_vector_fast2(const bitset_map_namespace::BitsetHashMapWrapper&
 
     // set row_pointers
     std::vector<std::size_t> row_ptrs;
-    row_ptrs.reserve(width*(width+1)/2);
+    row_ptrs.reserve(width+1);
     row_ptrs.push_back(0);
     std::size_t current = 0;
     for(width_t kk = 0; kk < width; kk++)
