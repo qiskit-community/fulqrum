@@ -68,15 +68,19 @@ cdef class FulqrumSpMV():
         self.group_ptrs = group_ptrs
         self.group_ladder_ptrs = group_ladder_ptrs
         self.num_groups = group_ptrs.shape[0] - 1
+        self.fast_diag = False
         self._disable_fast_diag = False
         if group_ptrs.shape[0] > 1:
             set_group_offdiag_indices(self.oper.terms, self.group_offdiag_inds,
                                       &self.group_ptrs[0], self.num_groups)
 
         if self.oper.type == 2:
+            self.fast_diag = fast_diag_compatible2(self.diag_oper)
             if self.oper.terms.size():
                 self.group_rowint_length = hamiltonian.group_rowint_length()
                 self.ladder_offset = 2**self.oper.ladder_width
+                if self.fast_diag:
+                    fast_diag_term_sort(self.diag_oper)
             else:
                 # Need to set memoryview but not used
                 self.group_rowint_length = np.zeros(1, dtype=np_width_t)
@@ -106,23 +110,15 @@ cdef class FulqrumSpMV():
     cpdef int compute_diag_vector(self):
         if self.init_diag:
             return 0
-        cdef bool fast_diag = 0
-        cdef pair[vector[pair[size_t, size_t]], size_t] ptrs_and_offset
-        if self.diag_oper.type == 2:
-            fast_diag = fast_diag_compatible(self.diag_oper)
+        cdef bool fast_diag = self.fast_diag
         if self._disable_fast_diag:
             fast_diag = 0
-        if fast_diag:
-            diag_proj_index_sort(self.diag_oper)
-            ptrs_and_offset =  projector_ptrs_and_offset(self.diag_oper)
         if self.is_real:
             self.real_diag_vec = np.full(self.subspace_dim, self.const_energy, dtype=float)
             if fast_diag:
-                compute_diag_vector_fast(self.subspace.subspace.bitstrings,
+                compute_diag_vector_fast2(self.subspace.subspace.bitstrings,
                                 &self.real_diag_vec[0],
                                 self.diag_oper,
-                                ptrs_and_offset.first,
-                                ptrs_and_offset.second,
                                 self.subspace_dim)
             else:
                 compute_diag_vector(self.subspace.subspace.bitstrings,
@@ -132,11 +128,9 @@ cdef class FulqrumSpMV():
         else:
             self.complex_diag_vec = np.full(self.subspace_dim, self.const_energy, dtype=complex)
             if fast_diag:
-                compute_diag_vector_fast(self.subspace.subspace.bitstrings,
+                compute_diag_vector_fast2(self.subspace.subspace.bitstrings,
                                 &self.complex_diag_vec[0],
                                 self.diag_oper,
-                                ptrs_and_offset.first,
-                                ptrs_and_offset.second,
                                 self.subspace_dim)
             else:
                 compute_diag_vector(self.subspace.subspace.bitstrings,
@@ -147,7 +141,7 @@ cdef class FulqrumSpMV():
         return 1
 
     def fast_diag_compatible(self):
-        return fast_diag_compatible(self.diag_oper)
+        return fast_diag_compatible2(self.diag_oper)
     
     def diagonal_vector(self, int verbose=0, bool disable_fast_mode=False):
         """Diagonal vector of subspace Hamitlonian

@@ -44,5 +44,4 @@ cdef extern from "../src/diag.hpp":
     void compute_diag_vector_fast2[T](const BitsetHashMapWrapper& data,
                                      T * diag_vec,
                                      const QubitOperator_t& diag_oper,
-                                     const double const_energy,
                                      const size_t subspace_dim) nogil
