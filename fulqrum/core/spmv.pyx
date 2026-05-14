@@ -47,13 +47,17 @@ include "includes/csrlike_builder2_header.pxi"
 
 cdef class FulqrumSpMV():
     def __cinit__(self, QubitOperator diag_hamiltonian,
-                  QubitOperator hamiltonian, Subspace subspace,
-                  size_t[::1]& group_ptrs, size_t[::1]& group_ladder_ptrs):
+                  double const_energy,
+                  QubitOperator hamiltonian,
+                  Subspace subspace,
+                  size_t[::1]& group_ptrs,
+                  size_t[::1]& group_ladder_ptrs):
 
         #if subspace.size() < 2:
         #    raise FulqrumError("Subspace dimension must be > 1 for solving")
         cdef size_t kk
         self.diag_oper = diag_hamiltonian.oper
+        self.const_energy = const_energy
         self.oper = hamiltonian.oper
         self.is_real = diag_hamiltonian.is_real() * hamiltonian.is_real()
         self.subspace = subspace
@@ -77,7 +81,7 @@ cdef class FulqrumSpMV():
                 # Need to set memoryview but not used
                 self.group_rowint_length = np.zeros(1, dtype=np_width_t)
 
-        if self.diag_oper.terms.size() > 0:
+        if self.diag_oper.terms.size() > 0 or self.const_energy:
             self.has_nonzero_diag = 1
              # Init diagonal memoryview to None because
              # we only build it when needed
@@ -112,7 +116,7 @@ cdef class FulqrumSpMV():
             diag_proj_index_sort(self.diag_oper)
             ptrs_and_offset =  projector_ptrs_and_offset(self.diag_oper)
         if self.is_real:
-            self.real_diag_vec = np.empty(self.subspace_dim, dtype=float)
+            self.real_diag_vec = np.full(self.subspace_dim, self.const_energy, dtype=float)
             if fast_diag:
                 compute_diag_vector_fast(self.subspace.subspace.bitstrings,
                                 &self.real_diag_vec[0],
@@ -126,7 +130,7 @@ cdef class FulqrumSpMV():
                                 self.diag_oper,
                                 self.subspace_dim)
         else:
-            self.complex_diag_vec = np.empty(self.subspace_dim, dtype=complex)
+            self.complex_diag_vec = np.full(self.subspace_dim, self.const_energy, dtype=complex)
             if fast_diag:
                 compute_diag_vector_fast(self.subspace.subspace.bitstrings,
                                 &self.complex_diag_vec[0],
@@ -155,9 +159,9 @@ cdef class FulqrumSpMV():
             st = time.perf_counter()
         if not self.has_nonzero_diag:
             if self.is_real:
-                return np.zeros(self.subspace_dim, dtype=float)
+                return np.full(self.subspace_dim, self.const_energy, dtype=float)
             else:
-                return np.zeros(self.subspace_dim, dtype=complex)
+                return np.full(self.subspace_dim, self.const_energy, dtype=complex)
         cdef bool temp = self._disable_fast_diag
         self._disable_fast_diag = disable_fast_mode
         if verbose:

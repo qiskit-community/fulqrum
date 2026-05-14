@@ -20,6 +20,7 @@ include "includes/types.pxi"
 cdef class FulqrumSpMV:
     cdef QubitOperator_t oper
     cdef QubitOperator_t diag_oper
+    cdef public double const_energy
     cdef public Subspace subspace
     cdef public size_t subspace_dim
     cdef public width_t width
