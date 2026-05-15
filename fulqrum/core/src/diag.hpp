@@ -83,33 +83,6 @@ inline void single_bitstring_diagonal(const boost::dynamic_bitset<size_t>& row,
     }
 }
 
-/**
-* Is diagonal fast_proj compatible 
-*/
-bool fast_diag_compatible(const QubitOperator& oper)
-{
-    bool out = true;
-    if(oper.type != 2)
-    {
-        out = false;
-    }
-    else
-    {
-        std::size_t kk;
-        for(auto term : oper.terms)
-        {
-            for(kk = 0; kk < term.proj_indices.size(); kk++)
-            {
-                if(term.proj_bits[kk] == 0)
-                {
-                    out = false;
-                    break;
-                }
-            }
-        }
-    }
-    return out;
-}
 
 /**
 * Is diagonal fast_proj compatible
@@ -117,7 +90,7 @@ bool fast_diag_compatible(const QubitOperator& oper)
 * function is called
 *
 */
-bool fast_diag_compatible2(const QubitOperator& oper)
+bool fast_diag_compatible(const QubitOperator& oper)
 {
     bool out = true;
     if(oper.type != 2)
@@ -248,45 +221,6 @@ inline void fast_diag_term_sort(QubitOperator& oper)
     }
 }
 
-std::pair<std::vector<std::pair<std::size_t, std::size_t>>, std::size_t>
-projector_ptrs_and_offset(const QubitOperator& oper)
-{
-    std::pair<std::vector<std::pair<std::size_t, std::size_t>>, std::size_t> out;
-    std::vector<std::pair<std::size_t, std::size_t>> ptrs(oper.width);
-    std::size_t offset = 0;
-    std::size_t kk;
-    width_t current_ind;
-
-    // compute the index (offset) at which terms begin to have projection operators
-    for(kk = 0; kk < oper.size(); kk++)
-    {
-        if(oper.terms[kk].proj_indices.size())
-        {
-            break;
-        }
-        offset += 1;
-    }
-    out.second = offset; // set output second
-    if(offset != oper.size()) // if there are terms with projectors do stuff
-    {
-        // set the current index to be the first projector index at terms[offset]
-        current_ind = oper.terms[offset].proj_indices[0];
-        // set the start pointer for this current index to be offset
-        ptrs[current_ind].first = offset;
-        for(kk = offset; kk < oper.size(); kk++)
-        {
-            if(oper.terms[kk].proj_indices[0] > current_ind)
-            {
-                ptrs[current_ind].second = kk;
-                current_ind = oper.terms[kk].proj_indices[0];
-                ptrs[current_ind].first = kk;
-            }
-        }
-        ptrs[current_ind].second = oper.size();
-    }
-    out.first = ptrs; // set output first
-    return out;
-}
 
 /**
  * Compute the diagonal matrix-element for a single bit-string
@@ -297,82 +231,7 @@ projector_ptrs_and_offset(const QubitOperator& oper)
  * @param val Variable storing the element value
  */
 template <typename T>
-inline void
-single_bitstring_diagonal_fast(const boost::dynamic_bitset<size_t>& row,
-                               const std::vector<OperatorTerm_t>& diag_terms,
-                               const std::vector<std::pair<std::size_t, std::size_t>>& ptrs,
-                               const std::size_t offset,
-                               T& val)
-{
-    val = 0;
-    //const std::size_t num_terms = diag_terms.size();
-    const OperatorTerm_t* term;
-    width_t weight;
-    std::size_t kk;
-    std::size_t ll;
-    std::size_t start, stop;
-
-    std::vector<width_t> set_bits = set_bit_indices(row);
-
-    // take care of all terms with no projectors
-    for(kk = 0; kk < offset; kk++)
-    {
-        term = &diag_terms[kk];
-        weight = term->indices.size();
-        accum_element(
-            row, row, term->indices, term->values, term->coeff, term->real_phase, weight, val);
-    }
-
-    for(auto bit : set_bits)
-    {
-        start = ptrs[bit].first;
-        stop = ptrs[bit].second;
-        for(ll = start; ll < stop; ll++)
-        {
-            term = &diag_terms[ll];
-            weight = term->indices.size();
-
-            accum_element(
-                row, row, term->indices, term->values, term->coeff, term->real_phase, weight, val);
-        }
-    }
-}
-
-/**
- * Compute the diagonal matrix-element for a single bit-string using fast projector mode
- *
- */
-template <typename T>
-void compute_diag_vector_fast(const bitset_map_namespace::BitsetHashMapWrapper& data,
-                              T* __restrict diag_vec,
-                              const QubitOperator_t& diag_oper,
-                              const std::vector<std::pair<std::size_t, std::size_t>>& ptrs,
-                              const std::size_t offset,
-                              const std::size_t subspace_dim)
-{
-    std::size_t kk;
-    const auto* bitsets = data.get_bitsets();
-
-#pragma omp parallel for if(subspace_dim > 4096) schedule(dynamic)
-    for(kk = 0; kk < subspace_dim; kk++)
-    {
-        T val = 0;
-        const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
-        single_bitstring_diagonal_fast(row, diag_oper.terms, ptrs, offset, val);
-        diag_vec[kk] += val; // += here since const_energy (if any) is already included in diag
-    }
-}
-
-/**
- * Compute the diagonal matrix-element for a single bit-string
- *
- *
- * @param row The row bit-string
- * @param diag_terms The diagonal operator
- * @param val Variable storing the element value
- */
-template <typename T>
-inline void single_bitstring_diagonal_fast2(const boost::dynamic_bitset<size_t>& row,
+inline void single_bitstring_diagonal_fast(const boost::dynamic_bitset<size_t>& row,
                                             const std::vector<OperatorTerm_t>& diag_terms,
                                             const std::vector<std::size_t>& row_ptrs,
                                             T& val)
@@ -406,7 +265,7 @@ inline void single_bitstring_diagonal_fast2(const boost::dynamic_bitset<size_t>&
  *
  */
 template <typename T>
-void compute_diag_vector_fast2(const bitset_map_namespace::BitsetHashMapWrapper& data,
+void compute_diag_vector_fast(const bitset_map_namespace::BitsetHashMapWrapper& data,
                                T* __restrict diag_vec,
                                const QubitOperator_t& diag_oper,
                                const std::size_t subspace_dim)
@@ -431,7 +290,7 @@ void compute_diag_vector_fast2(const bitset_map_namespace::BitsetHashMapWrapper&
     {
         T val = 0;
         const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
-        single_bitstring_diagonal_fast2(row, diag_oper.terms, row_ptrs, val);
+        single_bitstring_diagonal_fast(row, diag_oper.terms, row_ptrs, val);
         diag_vec[kk] += val; // += here since const_energy (if any) is already included in diag
     }
 }

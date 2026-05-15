@@ -965,7 +965,7 @@ cdef class QubitOperator():
         return out
 
     def fast_diag_compatible(self):
-        return fast_diag_compatible2(self.oper)
+        return fast_diag_compatible(self.oper)
     
     def fast_diag_term_sort(self):
         return fast_diag_term_sort(self.oper)

@@ -42,17 +42,21 @@ double simple_restricted(const QubitOperator& oper,
                          const unsigned int max_recursion,
                          const double tol)
 {
-
+    std::size_t recur, kk, current;
     // do stuff if the diagonal can be evaluated quickly
-    bool do_fast_diag = fast_diag_compatible(oper);
-    std::pair<std::vector<std::pair<std::size_t, std::size_t>>, std::size_t> ptrs_and_offset;
+    bool do_fast_diag = fast_diag_compatible(diag_oper);
+    std::vector<std::size_t> row_ptrs;
     if(do_fast_diag)
     {
-        diag_proj_index_sort(diag_oper);
-        ptrs_and_offset = projector_ptrs_and_offset(diag_oper);
+        row_ptrs.reserve(diag_oper.width+1);
+        row_ptrs.push_back(0);
+        current = 0;
+        for(kk=0; kk < diag_oper.width; kk++)
+        {
+            current += (diag_oper.width - kk);
+            row_ptrs.push_back(current);
+        }
     }
-
-    std::size_t recur, kk;
     const auto* input_bitsets = restricted_subspace.get_bitsets();
     auto* output_bitsets = out_subspace.get_bitsets();
 
@@ -161,8 +165,7 @@ double simple_restricted(const QubitOperator& oper,
                     {
                         single_bitstring_diagonal_fast(input_bitsets[*col_ptr].first,
                                                        diag_oper.terms,
-                                                       ptrs_and_offset.first,
-                                                       ptrs_and_offset.second,
+                                                       row_ptrs,
                                                        col_energy);
                     }
                     else

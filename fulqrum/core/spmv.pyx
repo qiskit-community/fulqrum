@@ -75,7 +75,7 @@ cdef class FulqrumSpMV():
                                       &self.group_ptrs[0], self.num_groups)
 
         if self.oper.type == 2:
-            self.fast_diag = fast_diag_compatible2(self.diag_oper)
+            self.fast_diag = fast_diag_compatible(self.diag_oper)
             if self.oper.terms.size():
                 self.group_rowint_length = hamiltonian.group_rowint_length()
                 self.ladder_offset = 2**self.oper.ladder_width
@@ -116,7 +116,7 @@ cdef class FulqrumSpMV():
         if self.is_real:
             self.real_diag_vec = np.full(self.subspace_dim, self.const_energy, dtype=float)
             if fast_diag:
-                compute_diag_vector_fast2(self.subspace.subspace.bitstrings,
+                compute_diag_vector_fast(self.subspace.subspace.bitstrings,
                                 &self.real_diag_vec[0],
                                 self.diag_oper,
                                 self.subspace_dim)
@@ -128,7 +128,7 @@ cdef class FulqrumSpMV():
         else:
             self.complex_diag_vec = np.full(self.subspace_dim, self.const_energy, dtype=complex)
             if fast_diag:
-                compute_diag_vector_fast2(self.subspace.subspace.bitstrings,
+                compute_diag_vector_fast(self.subspace.subspace.bitstrings,
                                 &self.complex_diag_vec[0],
                                 self.diag_oper,
                                 self.subspace_dim)
@@ -141,7 +141,7 @@ cdef class FulqrumSpMV():
         return 1
 
     def fast_diag_compatible(self):
-        return fast_diag_compatible2(self.diag_oper)
+        return fast_diag_compatible(self.diag_oper)
     
     def diagonal_vector(self, int verbose=0, bool disable_fast_mode=False):
         """Diagonal vector of subspace Hamitlonian
