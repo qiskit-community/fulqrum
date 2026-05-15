@@ -83,7 +83,6 @@ inline void single_bitstring_diagonal(const boost::dynamic_bitset<size_t>& row,
     }
 }
 
-
 /**
 * Is diagonal fast_proj compatible
 * Here we assume any constant offset terms are removed before this
@@ -221,7 +220,6 @@ inline void fast_diag_term_sort(QubitOperator& oper)
     }
 }
 
-
 /**
  * Compute the diagonal matrix-element for a single bit-string
  *
@@ -232,9 +230,9 @@ inline void fast_diag_term_sort(QubitOperator& oper)
  */
 template <typename T>
 inline void single_bitstring_diagonal_fast(const boost::dynamic_bitset<size_t>& row,
-                                            const std::vector<OperatorTerm_t>& diag_terms,
-                                            const std::vector<std::size_t>& row_ptrs,
-                                            T& val)
+                                           const std::vector<OperatorTerm_t>& diag_terms,
+                                           const std::vector<std::size_t>& row_ptrs,
+                                           T& val)
 {
     val = 0;
     //const std::size_t num_terms = diag_terms.size();
@@ -255,7 +253,8 @@ inline void single_bitstring_diagonal_fast(const boost::dynamic_bitset<size_t>& 
             offset = set_bits[mm] - current_bit;
             term = &diag_terms[start + offset];
             weight = term->indices.size();
-            accum_element(row, row, term->indices, term->values, term->coeff, term->real_phase, weight, val);
+            accum_element(
+                row, row, term->indices, term->values, term->coeff, term->real_phase, weight, val);
         }
     }
 }
@@ -266,9 +265,9 @@ inline void single_bitstring_diagonal_fast(const boost::dynamic_bitset<size_t>& 
  */
 template <typename T>
 void compute_diag_vector_fast(const bitset_map_namespace::BitsetHashMapWrapper& data,
-                               T* __restrict diag_vec,
-                               const QubitOperator_t& diag_oper,
-                               const std::size_t subspace_dim)
+                              T* __restrict diag_vec,
+                              const QubitOperator_t& diag_oper,
+                              const std::size_t subspace_dim)
 {
     std::size_t kk;
     width_t width = diag_oper.width;
@@ -276,7 +275,7 @@ void compute_diag_vector_fast(const bitset_map_namespace::BitsetHashMapWrapper& 
 
     // set row_pointers
     std::vector<std::size_t> row_ptrs;
-    row_ptrs.reserve(width+1);
+    row_ptrs.reserve(width + 1);
     row_ptrs.push_back(0);
     std::size_t current = 0;
     for(width_t kk = 0; kk < width; kk++)
@@ -285,7 +284,7 @@ void compute_diag_vector_fast(const bitset_map_namespace::BitsetHashMapWrapper& 
         row_ptrs.push_back(current);
     }
 
-    #pragma omp parallel for if(subspace_dim > 4096)
+#pragma omp parallel for if(subspace_dim > 4096)
     for(kk = 0; kk < subspace_dim; kk++)
     {
         T val = 0;

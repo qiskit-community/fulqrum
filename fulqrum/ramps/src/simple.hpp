@@ -48,10 +48,10 @@ double simple_restricted(const QubitOperator& oper,
     std::vector<std::size_t> row_ptrs;
     if(do_fast_diag)
     {
-        row_ptrs.reserve(diag_oper.width+1);
+        row_ptrs.reserve(diag_oper.width + 1);
         row_ptrs.push_back(0);
         current = 0;
-        for(kk=0; kk < diag_oper.width; kk++)
+        for(kk = 0; kk < diag_oper.width; kk++)
         {
             current += (diag_oper.width - kk);
             row_ptrs.push_back(current);
@@ -101,19 +101,19 @@ double simple_restricted(const QubitOperator& oper,
         std::vector<std::vector<Candidate>> pending_candidates(current_rows.size());
 // Loop over all rows in the current set
 #pragma omp parallel for private(col_vec,                                                          \
-                                 group_inds,                                                       \
-                                 col_ptr,                                                          \
-                                 out_col_ptr,                                                      \
-                                 idx,                                                              \
-                                 group,                                                            \
-                                 group_int_start,                                                  \
-                                 group_int_stop,                                                   \
-                                 val,                                                              \
-                                 row_int,                                                          \
-                                 do_col_search,                                                    \
-                                 col_energy,                                                       \
-                                 energy_amp,                                                       \
-                                 term) schedule(guided)
+                                     group_inds,                                                   \
+                                     col_ptr,                                                      \
+                                     out_col_ptr,                                                  \
+                                     idx,                                                          \
+                                     group,                                                        \
+                                     group_int_start,                                              \
+                                     group_int_stop,                                               \
+                                     val,                                                          \
+                                     row_int,                                                      \
+                                     do_col_search,                                                \
+                                     col_energy,                                                   \
+                                     energy_amp,                                                   \
+                                     term) schedule(guided)
         for(kk = 0; kk < current_rows.size(); kk++)
         {
             const boost::dynamic_bitset<size_t>& row = input_bitsets[current_rows[kk]].first;
@@ -163,10 +163,8 @@ double simple_restricted(const QubitOperator& oper,
                     // If this column is in the subspace we need to compute the columns diagonal energy
                     if(do_fast_diag)
                     {
-                        single_bitstring_diagonal_fast(input_bitsets[*col_ptr].first,
-                                                       diag_oper.terms,
-                                                       row_ptrs,
-                                                       col_energy);
+                        single_bitstring_diagonal_fast(
+                            input_bitsets[*col_ptr].first, diag_oper.terms, row_ptrs, col_energy);
                     }
                     else
                     {
