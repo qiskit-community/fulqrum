@@ -29,7 +29,7 @@
 //
 // Each row is owned by a single OpenMP iteration, so out_vec[kk]
 // needs no locking.
-// Group handling mirrors csrlike_builder2: groups are bucketed 
+// Group handling mirrors csrlike_builder2: groups are bucketed
 // (aa / aaaa / bb / bbbb / aabb / other) and aabb groups whose
 // terms share a single coeff + real_phase use the direct
 // asign*bsign formula instead of the per-term accum_element loop.
@@ -196,6 +196,36 @@ void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
                 std::vector<uint8_t> row_set_bits(row.size(), 0);
                 bitset_to_bitvec(row, row_set_bits);
 
+                auto range_parity = [&](width_t lo, width_t hi) -> std::size_t {
+                    if(lo >= hi)
+                    {
+                        return 0;
+                    }
+                    const width_t last = hi - 1; // inclusive last bit
+                    const std::size_t lo_blk = lo >> BLOCK_EXPONENT;
+                    const std::size_t hi_blk = static_cast<std::size_t>(last) >> BLOCK_EXPONENT;
+                    const std::size_t lo_mask = ~std::size_t(0) << (lo & BLOCK_SHIFT);
+                    const std::size_t hi_mask =
+                        ~std::size_t(0) >> (BLOCK_SHIFT - (last & BLOCK_SHIFT));
+
+                    std::size_t acc;
+                    if(lo_blk == hi_blk)
+                    {
+                        acc = row.m_bits[lo_blk] & lo_mask & hi_mask;
+                    }
+                    else
+                    {
+                        acc = row.m_bits[lo_blk] & lo_mask;
+                        for(std::size_t b = lo_blk + 1; b < hi_blk; b++)
+                        {
+                            acc ^= row.m_bits[b];
+                        }
+                        acc ^= row.m_bits[hi_blk] & hi_mask;
+                    }
+                    return static_cast<std::size_t>(
+                        __builtin_parityll(static_cast<unsigned long long>(acc)));
+                };
+
                 // out_vec[kk] is owned by this iteration only -> no mutex.
                 auto emit = [&](std::size_t cidx, const T& v) {
                     out_vec[kk] += (v * in_vec[cidx]);
@@ -320,17 +350,9 @@ void omp_matvec2(const std::vector<OperatorTerm_t>& terms,
                     }
                     col_idx = *col_ptr;
 
-                    std::size_t a_parity = 0;
-                    for(width_t i = ap0 + 1; i < ap1; i++)
-                    {
-                        a_parity += row_set_bits[i];
-                    }
-                    std::size_t b_parity = 0;
-                    for(width_t i = bp0 + 1; i < bp1; i++)
-                    {
-                        b_parity += row_set_bits[i];
-                    }
-                    double sign = ((a_parity + b_parity) & 1) ? -1.0 : 1.0;
+                    const std::size_t aabb_parity =
+                        range_parity(ap0 + 1, ap1) ^ range_parity(bp0 + 1, bp1);
+                    double sign = aabb_parity ? -1.0 : 1.0;
 
                     val = aabb_direct[group] * static_cast<T>(sign);
 
