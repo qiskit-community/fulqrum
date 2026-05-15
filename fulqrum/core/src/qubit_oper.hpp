@@ -594,7 +594,7 @@ inline void ladder_int_starts(const std::vector<OperatorTerm>& terms,
             group_counts[kk * num_ladder_bins + term_int] += 1;
         }
         group_ranges[kk * num_ladder_bins] = total;
-        for(mm = 1; mm < num_ladder_bins + 1; mm++)
+        for(mm = 1; mm < static_cast<std::size_t>(num_ladder_bins + 1); mm++)
         {
             total += group_counts[kk * num_ladder_bins + mm - 1];
             group_ranges[kk * num_ladder_bins + mm] = total;

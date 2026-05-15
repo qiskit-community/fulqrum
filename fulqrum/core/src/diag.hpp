@@ -23,6 +23,8 @@
 #include "elements.hpp"
 #include <boost/dynamic_bitset.hpp>
 
+
+
 /**
  * Populate the diagonal vector for a given diagonal operator
  *
@@ -35,9 +37,9 @@
  * @param subspace_dim The dimension of the subspace
  */
 template <typename T>
-void compute_diag_vector(const bitset_map_namespace::BitsetHashMapWrapper& data,
+inline void compute_diag_vector(const bitset_map_namespace::BitsetHashMapWrapper& data,
                          T* __restrict diag_vec,
-                         const QubitOperator_t& diag_oper,
+                         const QubitOperator& diag_oper,
                          const std::size_t subspace_dim)
 {
     std::size_t kk;
@@ -63,7 +65,7 @@ void compute_diag_vector(const bitset_map_namespace::BitsetHashMapWrapper& data,
  */
 template <typename T>
 inline void single_bitstring_diagonal(const boost::dynamic_bitset<size_t>& row,
-                                      const std::vector<OperatorTerm_t>& diag_terms,
+                                      const std::vector<OperatorTerm>& diag_terms,
                                       T& val)
 {
     val = 0;
@@ -89,7 +91,7 @@ inline void single_bitstring_diagonal(const boost::dynamic_bitset<size_t>& row,
 * function is called
 *
 */
-bool fast_diag_compatible(const QubitOperator& oper)
+inline bool fast_diag_compatible(const QubitOperator& oper)
 {
     bool out = true;
     if(oper.type != 2)
@@ -101,7 +103,7 @@ bool fast_diag_compatible(const QubitOperator& oper)
         out = false;
     }
     // Number of non-constant terms in diag must be W * (W + 1) / 2
-    else if(oper.size() != oper.width * (oper.width + 1) / 2)
+    else if(oper.size() != static_cast<std::size_t>(oper.width * (oper.width + 1) / 2))
     {
         out = false;
     }
@@ -149,7 +151,7 @@ bool fast_diag_compatible(const QubitOperator& oper)
  *
  * @return comparator value
  */
-inline int proj_index_term_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
+inline int proj_index_term_comp(OperatorTerm& term1, OperatorTerm& term2)
 {
     int term1_index = -1;
     int term2_index = -1;
@@ -164,7 +166,7 @@ inline int proj_index_term_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
     return term1_index < term2_index;
 }
 
-inline int proj_second_index_term_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
+inline int proj_second_index_term_comp(OperatorTerm& term1, OperatorTerm& term2)
 {
     int term1_index = -1;
     int term2_index = -1;
@@ -182,7 +184,7 @@ inline int proj_second_index_term_comp(OperatorTerm_t& term1, OperatorTerm_t& te
 /**
 * In-place sorting of terms by projector index
 */
-QubitOperator& diag_proj_index_sort(QubitOperator& oper)
+inline QubitOperator& diag_proj_index_sort(QubitOperator& oper)
 {
     if(oper.type != 2)
     {
@@ -235,13 +237,13 @@ inline void fast_diag_term_sort(QubitOperator& oper)
  */
 template <typename T>
 inline void single_bitstring_diagonal_fast(const boost::dynamic_bitset<size_t>& row,
-                                           const std::vector<OperatorTerm_t>& diag_terms,
+                                           const std::vector<OperatorTerm>& diag_terms,
                                            const std::vector<std::size_t>& row_ptrs,
                                            T& val)
 {
     val = 0;
     //const std::size_t num_terms = diag_terms.size();
-    const OperatorTerm_t* term;
+    const OperatorTerm* term;
     width_t weight;
     std::size_t kk;
     std::size_t ll;
@@ -269,9 +271,9 @@ inline void single_bitstring_diagonal_fast(const boost::dynamic_bitset<size_t>& 
  *
  */
 template <typename T>
-void compute_diag_vector_fast(const bitset_map_namespace::BitsetHashMapWrapper& data,
+inline void compute_diag_vector_fast(const bitset_map_namespace::BitsetHashMapWrapper& data,
                               T* __restrict diag_vec,
-                              const QubitOperator_t& diag_oper,
+                              const QubitOperator& diag_oper,
                               const std::size_t subspace_dim)
 {
     std::size_t kk;

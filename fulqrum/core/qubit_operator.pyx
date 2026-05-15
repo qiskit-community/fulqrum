@@ -965,8 +965,15 @@ cdef class QubitOperator():
         return out
 
     def fast_diag_compatible(self):
+        """Is operator compatible with fast diagonal computation
+
+        Returns:
+            bool
+        """
         return fast_diag_compatible(self.oper)
     
     def fast_diag_term_sort(self):
+        """Sort a fast diagonal compatible operator into correct term ordering
+        """
         return fast_diag_term_sort(self.oper)
 

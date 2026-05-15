@@ -93,11 +93,11 @@ TEST_CASE("Test inplace addition of operators")
 {
     width_t N = 5;
     QubitOperator_t op = QubitOperator(N);
-    for(unsigned int kk = 0; kk < N; kk++)
+    for(width_t kk = 0; kk < N; kk++)
     {
         op += QubitOperator(N, {{"Y", {kk}, 1.0 / static_cast<double>(N + kk)}});
     }
-    for(unsigned int kk = 0; kk < N; kk++)
+    for(width_t kk = 0; kk < N; kk++)
     {
         std::vector<OpData> ans = {OpData("Y", kk)};
         CHECK(op[kk].operators() == ans);
@@ -109,11 +109,11 @@ TEST_CASE("Test addition of operators")
 {
     width_t N = 5;
     QubitOperator_t op = QubitOperator(N);
-    for(unsigned int kk = 0; kk < N; kk++)
+    for(width_t kk = 0; kk < N; kk++)
     {
         op = op + QubitOperator(N, {{"Y", {kk}, 1.0 / static_cast<double>(N + kk)}});
     }
-    for(unsigned int kk = 0; kk < N; kk++)
+    for(width_t kk = 0; kk < N; kk++)
     {
         std::vector<OpData> ans = {OpData("Y", kk)};
         CHECK(op[kk].operators() == ans);
@@ -126,7 +126,7 @@ TEST_CASE("Verify diagonal operator returns true")
     width_t N = 25;
     QubitOperator_t op = QubitOperator(N);
     std::vector<std::string> diag_ops = {"Z", "O", "1"};
-    unsigned int kk;
+    width_t kk;
     for(kk = 0; kk < N; kk++)
     {
         op += QubitOperator(N, {{diag_ops[kk % 3], {kk}, 1.0 / static_cast<double>(N + kk)}});
@@ -139,7 +139,7 @@ TEST_CASE("Verify non-diagonal operator returns false")
     width_t N = 25;
     QubitOperator_t op = QubitOperator(N);
     std::vector<std::string> diag_ops = {"Z", "O", "1"};
-    unsigned int kk;
+    width_t kk;
     for(kk = 0; kk < N; kk++)
     {
         op += QubitOperator(N, {{diag_ops[kk % 3], {kk}, 1.0 / static_cast<double>(N + kk)}});
@@ -360,7 +360,7 @@ TEST_CASE("Test removal of diagonal terms")
     width_t N = 6;
     QubitOperator op = QubitOperator(N);
     std::vector<std::string> diag_ops = {"I", "X", "Z", "0", "Y", "I"};
-    unsigned int kk;
+    width_t kk;
     for(kk = 0; kk < N; kk++)
     {
         op += QubitOperator(N, {{diag_ops[kk], {kk}, 1.0 / static_cast<double>(N + kk)}});
