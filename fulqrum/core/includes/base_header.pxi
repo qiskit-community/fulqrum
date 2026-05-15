@@ -72,7 +72,7 @@ cdef extern from "../src/base.hpp":
         vector[width_t] group_ladder_int_bit_lengths()
         vector[size_t] group_ladder_int_ptrs()
         void to_json(string, bool) nogil
-        QubitOperator_t& from_json(string) nogil
+        QubitOperator_t& from_json(string)
 
 
     ctypedef struct Subspace_t:

@@ -112,8 +112,13 @@ bool fast_diag_compatible(const QubitOperator& oper)
         {
             // if condition is already false, or current term has no projectors, e.g. constant term,
             // 'Z' ops only
-            if(~out || term.proj_indices.size() == 0)
+            if(!out)
             {
+                break;
+            }
+            else if(term.proj_indices.size() == 0)
+            {
+                out = false;
                 break;
             }
             // All projectors must be '1' for this to work so break if '0' is found
