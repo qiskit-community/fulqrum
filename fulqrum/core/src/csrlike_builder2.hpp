@@ -65,7 +65,7 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
         
         if(ind_size == 2)
         {
-            // Check if both indices are in lower half (aa) or upper half (bb)
+            // Check if both indices are in alpha half (aa) or beta half (bb)
             if(inds[1] < half_width)
             {
                 aa_groups.push_back(g);
@@ -82,7 +82,7 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
         }
         else if(ind_size == 4)
         {
-            // Check if all 4 indices are in lower half (aaaa), upper half (bbbb), or split (aabb)
+            // Check if all 4 indices are in alpha half (aaaa), beta half (bbbb), or split (aabb)
             if(inds[3] < half_width)
             {
                 aaaa_groups.push_back(g);
@@ -94,8 +94,6 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
             else if(inds[1] < half_width && inds[2] >= half_width)
             {
                 aabb_groups.push_back(g);
-                // Also add to other_groups for standard processing until efficient method is debugged
-                other_groups.push_back(g);
             }
             else
             {
@@ -110,53 +108,57 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
         }
     }
 
-    // Validate hypothesis for aabb groups and compute grp4_direct coefficients
-    std::vector<T> grp4_direct(num_groups, 0);
-    
+    // Partition aabb_groups into a fast path (single coeff + real_phase shared
+    // by all terms in the group -> matrix element evaluates as
+    // aabb_direct[g] * asign * bsign) and a slow fallback path that goes
+    // through accum_element per term.  aabb_direct is only meaningful for
+    // groups in aabb_fast_groups; aabb_slow_groups read it as zero.
+    std::vector<T> aabb_direct(num_groups, 0);
+    std::vector<std::size_t> aabb_fast_groups;
+    std::vector<std::size_t> aabb_slow_groups;
+    aabb_fast_groups.reserve(aabb_groups.size());
+
     for(const auto& g : aabb_groups)
     {
         std::size_t group_start = group_ptrs[g];
         std::size_t group_stop = group_ptrs[g + 1];
-        
+
         if(group_start >= group_stop)
         {
-            continue; // Empty group
+            continue; // Empty group, nothing to emit on either path
         }
-        
-        // Get first term in group to extract coefficient and real_phase
+
         const OperatorTerm_t& first_term = terms[group_start];
         std::complex<double> group_coeff = first_term.coeff;
         int group_real_phase = first_term.real_phase;
-        
-        // Validate hypothesis: all terms in group have same coeff and real_phase = +1
+
+        bool fast_eligible = true;
         for(std::size_t idx = group_start; idx < group_stop; idx++)
         {
             const OperatorTerm_t& term = terms[idx];
-            
-            if(term.real_phase != 1)
+            if(term.real_phase != group_real_phase ||
+               std::abs(term.coeff - group_coeff) > 1e-14)
             {
-                throw std::runtime_error(
-                    "Hypothesis failed: aabb group " + std::to_string(g) +
-                    " has term with real_phase = " + std::to_string(term.real_phase) +
-                    " (expected +1)");
-            }
-            
-            if(std::abs(term.coeff - group_coeff) > 1e-14)
-            {
-                throw std::runtime_error(
-                    "Hypothesis failed: aabb group " + std::to_string(g) +
-                    " has terms with different coefficients");
+                fast_eligible = false;
+                break;
             }
         }
-        
-        // Compute grp4_direct[group] = coeff × real_phase
-        if constexpr(std::is_same_v<T, double>)
+
+        if(fast_eligible)
         {
-            grp4_direct[g] = group_real_phase * group_coeff.real();
+            if constexpr(std::is_same_v<T, double>)
+            {
+                aabb_direct[g] = group_real_phase * group_coeff.real();
+            }
+            else
+            {
+                aabb_direct[g] = static_cast<T>(group_real_phase) * group_coeff;
+            }
+            aabb_fast_groups.push_back(g);
         }
         else
         {
-            grp4_direct[g] = group_coeff;
+            aabb_slow_groups.push_back(g);
         }
     }
 
@@ -182,7 +184,6 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
 
         // define variables locally for omp for loop
         std::size_t idx;
-        std::size_t group;
         std::size_t group_int_start, group_int_stop;
         const OperatorTerm_t* term;
         boost::dynamic_bitset<std::size_t> col_vec;
@@ -195,71 +196,43 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
         std::vector<uint8_t> row_set_bits(row.size(), 0);
         bitset_to_bitvec(row, row_set_bits);
 
-        // Variables to collect valid aa and bb groups
-        std::vector<std::size_t> valid_aa;
-        std::vector<std::size_t> valid_bb;
-
-        // Process aa groups
-        for(const auto& group : aa_groups)
+        // Standard per-group path: ladder lookup -> col flip -> subspace lookup
+        // -> term loop -> emit.  Shared by aa, aaaa, bb, bbbb, aabb_slow (and
+        // the other_groups).
+        auto process_standard_group = [&](std::size_t g)
         {
-            group_inds = &group_offdiag_inds[group];
-            row_int = bitset_ladder_int(
-                row_set_bits.data(), group_inds->data(), group_rowint_length[group]);
-            group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
-            group_int_stop = group_ladder_ptrs[group * ladder_offset + row_int + 1];
+            group_inds = &group_offdiag_inds[g];
 
-            if(group_int_start >= group_int_stop)
+            // Hamming weight check.
+            // Flip pos must have equal number of 1s and 0s.
+            const width_t _p = (*group_inds)[0];
+            const width_t _q = (*group_inds)[1];
+            
+            if (group_inds->size() == 2)
             {
-                continue;
-            }
-
-            col_vec = row;
-            flip_bits(col_vec, group_inds->data(), group_inds->size());
-
-            col_ptr = subspace.get_ptr(col_vec);
-            if(col_ptr == nullptr)
-            {
-                continue;
-            }
-            col_idx = *col_ptr;
-            valid_aa.push_back(group);
-
-            val = 0;
-            for(idx = group_int_start; idx < group_int_stop; idx++)
-            {
-                term = &terms[idx];
-                if(passes_proj_validation(term, row))
+                if (row_set_bits[_p] == row_set_bits[_q])
                 {
-                    accum_element(row,
-                                  col_vec,
-                                  term->indices,
-                                  term->values,
-                                  term->coeff,
-                                  term->real_phase,
-                                  term->indices.size(),
-                                  val);
+                    return;
+                }
+            }
+            else if (group_inds->size() == 4)
+            {
+                const width_t _r = (*group_inds)[2];
+                const width_t _s = (*group_inds)[3];
+                if (row_set_bits[_p] + row_set_bits[_q] + row_set_bits[_r] + row_set_bits[_s] != 2)
+                {
+                    return;
                 }
             }
 
-            if(std::abs(val) > ATOL)
-            {
-                cols[kk].push_back(col_idx);
-                data[kk].push_back(val);
-            }
-        }
-
-        // Process aaaa groups
-        for(const auto& group : aaaa_groups)
-        {
-            group_inds = &group_offdiag_inds[group];
             row_int = bitset_ladder_int(
-                row_set_bits.data(), group_inds->data(), group_rowint_length[group]);
-            group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
-            group_int_stop = group_ladder_ptrs[group * ladder_offset + row_int + 1];
+                row_set_bits.data(), group_inds->data(), group_rowint_length[g]);
+            group_int_start = group_ladder_ptrs[g * ladder_offset + row_int];
+            group_int_stop = group_ladder_ptrs[g * ladder_offset + row_int + 1];
 
             if(group_int_start >= group_int_stop)
             {
-                continue;
+                return;
             }
 
             col_vec = row;
@@ -268,7 +241,7 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
             col_ptr = subspace.get_ptr(col_vec);
             if(col_ptr == nullptr)
             {
-                continue;
+                return;
             }
             col_idx = *col_ptr;
 
@@ -294,64 +267,30 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
                 cols[kk].push_back(col_idx);
                 data[kk].push_back(val);
             }
-        }
+        };
 
-        // Process bb groups
-        for(const auto& group : bb_groups)
+        for(const auto& g : aa_groups)   process_standard_group(g);
+        for(const auto& g : aaaa_groups) process_standard_group(g);
+        for(const auto& g : bb_groups)   process_standard_group(g);
+
+        // Process aabb fast groups (size==4, 2 alpha + 2 beta indices, every term
+        // in the group shares a single coeff and real_phase).  Matrix element
+        // = coeff * asign * bsign; skip the term loop.
+        // asign / bsign are the Jordan-Wigner parities for the alpha and beta
+        // excitations.
+        for(const auto& group : aabb_fast_groups)
         {
             group_inds = &group_offdiag_inds[group];
-            row_int = bitset_ladder_int(
-                row_set_bits.data(), group_inds->data(), group_rowint_length[group]);
-            group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
-            group_int_stop = group_ladder_ptrs[group * ladder_offset + row_int + 1];
-
-            if(group_int_start >= group_int_stop)
+            const width_t ap0 = (*group_inds)[0];
+            const width_t ap1 = (*group_inds)[1];
+            const width_t bp0 = (*group_inds)[2];
+            const width_t bp1 = (*group_inds)[3];
+            
+            if ((row_set_bits[ap0] == row_set_bits[ap1]) || (row_set_bits[bp0] == row_set_bits[bp1]))
             {
                 continue;
             }
-
-            col_vec = row;
-            flip_bits(col_vec, group_inds->data(), group_inds->size());
-
-            col_ptr = subspace.get_ptr(col_vec);
-            if(col_ptr == nullptr)
-            {
-                continue;
-            }
-            col_idx = *col_ptr;
-            valid_bb.push_back(group);
-
-            val = 0;
-            for(idx = group_int_start; idx < group_int_stop; idx++)
-            {
-                term = &terms[idx];
-                if(passes_proj_validation(term, row))
-                {
-                    accum_element(row,
-                                  col_vec,
-                                  term->indices,
-                                  term->values,
-                                  term->coeff,
-                                  term->real_phase,
-                                  term->indices.size(),
-                                  val);
-                }
-            }
-
-            if(std::abs(val) > ATOL)
-            {
-                cols[kk].push_back(col_idx);
-                data[kk].push_back(val);
-            }
-        }
-
-        // TODO: Implement efficient aabb processing
-        // For now, aabb groups are processed via other_groups using standard accum_element
-
-        // Process bbbb groups
-        for(const auto& group : bbbb_groups)
-        {
-            group_inds = &group_offdiag_inds[group];
+            
             row_int = bitset_ladder_int(
                 row_set_bits.data(), group_inds->data(), group_rowint_length[group]);
             group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
@@ -372,22 +311,20 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
             }
             col_idx = *col_ptr;
 
-            val = 0;
-            for(idx = group_int_start; idx < group_int_stop; idx++)
+            
+            std::size_t a_parity = 0;
+            for(width_t i = ap0 + 1; i < ap1; i++)
             {
-                term = &terms[idx];
-                if(passes_proj_validation(term, row))
-                {
-                    accum_element(row,
-                                  col_vec,
-                                  term->indices,
-                                  term->values,
-                                  term->coeff,
-                                  term->real_phase,
-                                  term->indices.size(),
-                                  val);
-                }
+                a_parity += row_set_bits[i];
             }
+            std::size_t b_parity = 0;
+            for(width_t i = bp0 + 1; i < bp1; i++)
+            {
+                b_parity += row_set_bits[i];
+            }
+            double sign = ((a_parity + b_parity) & 1) ? -1.0 : 1.0;
+
+            val = aabb_direct[group] * static_cast<T>(sign);
 
             if(std::abs(val) > ATOL)
             {
@@ -396,53 +333,14 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
             }
         }
 
-        // Process other groups (those that don't fit the 5 specific categories)
-        for(const auto& group : other_groups)
-        {
-            group_inds = &group_offdiag_inds[group];
-            row_int = bitset_ladder_int(
-                row_set_bits.data(), group_inds->data(), group_rowint_length[group]);
-            group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
-            group_int_stop = group_ladder_ptrs[group * ladder_offset + row_int + 1];
+        // aabb slow path: terms within a group have differing coeff or
+        // real_phase, so the direct asign*bsign formula doesn't apply.
+        for(const auto& g : aabb_slow_groups) process_standard_group(g);
 
-            if(group_int_start >= group_int_stop)
-            {
-                continue;
-            }
+        for(const auto& g : bbbb_groups) process_standard_group(g);
 
-            col_vec = row;
-            flip_bits(col_vec, group_inds->data(), group_inds->size());
-
-            col_ptr = subspace.get_ptr(col_vec);
-            if(col_ptr == nullptr)
-            {
-                continue;
-            }
-            col_idx = *col_ptr;
-
-            val = 0;
-            for(idx = group_int_start; idx < group_int_stop; idx++)
-            {
-                term = &terms[idx];
-                if(passes_proj_validation(term, row))
-                {
-                    accum_element(row,
-                                  col_vec,
-                                  term->indices,
-                                  term->values,
-                                  term->coeff,
-                                  term->real_phase,
-                                  term->indices.size(),
-                                  val);
-                }
-            }
-
-            if(std::abs(val) > ATOL)
-            {
-                cols[kk].push_back(col_idx);
-                data[kk].push_back(val);
-            }
-        }
+        // other_groups is supposed to be empty. Kept here for safety.
+        for(const auto& g : other_groups) process_standard_group(g);
     }
 
     sort_paired(cols, data);
