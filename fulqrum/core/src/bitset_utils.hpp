@@ -149,9 +149,9 @@ inline bool passes_proj_validation(const OperatorTerm_t* __restrict term,
  * @param out Orbital occupancies of spin orbitals.
  */
 inline void compute_orbital_occupancies(const bitset_map_namespace::BitsetHashMapWrapper& subspace,
-                                 const std::size_t subspace_dim,
-                                 const double* __restrict probabilities,
-                                 double* out)
+                                        const std::size_t subspace_dim,
+                                        const double* __restrict probabilities,
+                                        double* out)
 {
     const auto* bitsets = subspace.get_bitsets();
     std::size_t kk;
@@ -189,7 +189,8 @@ inline void compute_orbital_occupancies(const bitset_map_namespace::BitsetHashMa
  * into a vector of only 1s and 0s.
  * @param row_set_bits Vector to hold bits of ``row`` bitset.
  */
-inline void bitset_to_bitvec(const boost::dynamic_bitset<size_t>& row, std::vector<uint8_t>& row_set_bits)
+inline void bitset_to_bitvec(const boost::dynamic_bitset<size_t>& row,
+                             std::vector<uint8_t>& row_set_bits)
 {
     for(size_t block = 0; block < row.num_blocks(); block++)
     {

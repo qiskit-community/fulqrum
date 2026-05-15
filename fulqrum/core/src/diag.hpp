@@ -23,8 +23,6 @@
 #include "elements.hpp"
 #include <boost/dynamic_bitset.hpp>
 
-
-
 /**
  * Populate the diagonal vector for a given diagonal operator
  *
@@ -38,9 +36,9 @@
  */
 template <typename T>
 inline void compute_diag_vector(const bitset_map_namespace::BitsetHashMapWrapper& data,
-                         T* __restrict diag_vec,
-                         const QubitOperator& diag_oper,
-                         const std::size_t subspace_dim)
+                                T* __restrict diag_vec,
+                                const QubitOperator& diag_oper,
+                                const std::size_t subspace_dim)
 {
     std::size_t kk;
     const auto* bitsets = data.get_bitsets();
@@ -272,9 +270,9 @@ inline void single_bitstring_diagonal_fast(const boost::dynamic_bitset<size_t>& 
  */
 template <typename T>
 inline void compute_diag_vector_fast(const bitset_map_namespace::BitsetHashMapWrapper& data,
-                              T* __restrict diag_vec,
-                              const QubitOperator& diag_oper,
-                              const std::size_t subspace_dim)
+                                     T* __restrict diag_vec,
+                                     const QubitOperator& diag_oper,
+                                     const std::size_t subspace_dim)
 {
     std::size_t kk;
     width_t width = diag_oper.width;

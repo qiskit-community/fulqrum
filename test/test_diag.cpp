@@ -18,7 +18,6 @@
 
 typedef std::complex<double> complex;
 
-
 TEST_CASE("Test diag fast mode compatibility check")
 {
     FermionicOperator_t fop = FermionicOperator::from_json("test/data/lih.json");
@@ -30,7 +29,6 @@ TEST_CASE("Test diag fast mode compatibility check")
     CHECK(fast_diag_compatible(diag));
 }
 
-
 TEST_CASE("Test diag fast mode term sorting")
 {
     FermionicOperator_t fop = FermionicOperator::from_json("test/data/lih.json");
@@ -39,9 +37,9 @@ TEST_CASE("Test diag fast mode term sorting")
     diag = diag.remove_constant_terms();
     fast_diag_term_sort(diag);
     std::size_t counter = 0;
-    for(width_t kk=0; kk < diag.width; kk++)
+    for(width_t kk = 0; kk < diag.width; kk++)
     {
-        for(width_t ll=kk; ll < diag.width; ll++)
+        for(width_t ll = kk; ll < diag.width; ll++)
         {
             if(kk == ll)
             {
