@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_compile_options(-Wall -Wextra -Wconversion -O3 -fopenmp -D_GLIBCXX_ASSERTIONS)
+add_compile_options(-Wall -Wextra -O3 -fopenmp -D_GLIBCXX_ASSERTIONS)
 add_link_options(-fopenmp)
 
 include_directories(fulqrum/include)
@@ -26,6 +26,7 @@ add_executable(fulqrum_tests
     test/test_ladder.cpp
     test/test_fermi.cpp
     test/test_jw.cpp
+    test/test_diag.cpp
 )
 target_include_directories(fulqrum_tests PRIVATE third-party/doctest/doctest)
 target_link_libraries(fulqrum_tests

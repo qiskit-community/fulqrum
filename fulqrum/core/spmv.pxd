@@ -20,6 +20,7 @@ include "includes/types.pxi"
 cdef class FulqrumSpMV:
     cdef QubitOperator_t oper
     cdef QubitOperator_t diag_oper
+    cdef public double const_energy
     cdef public Subspace subspace
     cdef public size_t subspace_dim
     cdef public width_t width
@@ -36,6 +37,7 @@ cdef class FulqrumSpMV:
     cdef public int is_real
     cdef unsigned int ladder_offset
     cdef vector[vector[width_t]] group_offdiag_inds
+    cdef public bool fast_diag
     cdef bool _disable_fast_diag
 
     cpdef int compute_diag_vector(self)
