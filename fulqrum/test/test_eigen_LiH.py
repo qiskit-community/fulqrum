@@ -18,7 +18,6 @@ import scipy.sparse.linalg as spla
 
 import fulqrum as fq
 
-
 _path = Path(__file__).parent / "data/lih.json"
 FOP = fq.FermionicOperator.from_json(_path)
 OP = FOP.extended_jw_transformation()

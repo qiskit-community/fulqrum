@@ -188,13 +188,13 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
     std::string compress_str;
     if(ending == "xz")
     {
-        compress_str = std::format("xz -9 -f -T0 {} ", short_filename);
-        exec(compress_str.c_str()); // compress and delete original json
+        compress_str = std::format("xz -9 -f -k -T0 -q {} ", short_filename);
+        exec(compress_str.c_str()); // compress original json
     }
     else if(ending == "zst")
     {
-        compress_str = std::format("zstd -16 --rm -q -f -T0 {}", short_filename);
-        exec(compress_str.c_str()); // compress and delete original json
+        compress_str = std::format("zstd -16 --rm -k -q -f -T0 {}", short_filename);
+        exec(compress_str.c_str()); // compress original json
     }
     else if(ending != "json")
     {
@@ -241,16 +241,22 @@ inline void json_to_operator(const std::string& filename, U& oper)
         short_filename = filename;
     }
 
+    // check if short file name exists before decompression
+    // this will be used to determine if we should delete
+    // the file *.json file.  Ideally we would not overwrite in
+    // the first place, but that is a later issue.
+    bool short_filename_exists = file_exists(short_filename);
+    
     std::string uncompress_str;
     if(ending == "xz")
     {
-        uncompress_str = std::format("xz -d -k -T0 {} ", filename);
-        exec(uncompress_str.c_str()); // compress and delete original json
+        uncompress_str = std::format("xz -d -f -k -q -T0 {} ", filename);
+        exec(uncompress_str.c_str());
     }
     else if(ending == "zst")
     {
-        uncompress_str = std::format("zstd -d -q -T0 {}", filename);
-        exec(uncompress_str.c_str()); // compress and delete original json
+        uncompress_str = std::format("zstd -d -f -q -k -T0 {}", filename);
+        exec(uncompress_str.c_str());
     }
     else if(ending != "json")
     {
@@ -265,7 +271,7 @@ inline void json_to_operator(const std::string& filename, U& oper)
     // remove temp json file if original is a compressed version
     if(ending == "xz" || ending == "zst")
     {
-        std::remove(short_filename.c_str());
+        if(!short_filename_exists){std::remove(short_filename.c_str());}
     }
 
     oper.width = Doc["width"];

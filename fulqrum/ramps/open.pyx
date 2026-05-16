@@ -18,14 +18,14 @@ from ..core.bitset cimport bitset_t
 from ..core.linear_operator import SubspaceHamiltonian
 from ..core.spmv cimport FulqrumSpMV
 
-include "includes/simple_header.pxi"
+include "includes/open_header.pxi"
 
 import numpy as np
 
 
 
-def ramps_restricted_simple(QubitOperator H, Subspace target_subspace, double target_energy,
-                            Subspace restricted_subspace, unsigned int max_recursion=2, double tol=1e-12):
+def ramps_open(QubitOperator H, Subspace target_subspace, double target_energy,
+               unsigned int max_recursion=2, double tol=1e-12):
     """RAMPS restricted to an existing subspace when targeting a single bit-string
     and associated energy.
 
@@ -33,7 +33,6 @@ def ramps_restricted_simple(QubitOperator H, Subspace target_subspace, double ta
         H (QubitOperator): Hamiltonian
         target_subspace (Subspace): Target subspace to expand around
         target_energy (double): Target energy from target subspace
-        restricted_subspace (Subspace): Subspace to restrict search in
         max_recursion (int): Optional, maximum number of recursions to perform, default=2
         tol (double): Optional, tolerance value for truncation, default=1e-12
 
@@ -43,22 +42,20 @@ def ramps_restricted_simple(QubitOperator H, Subspace target_subspace, double ta
     cdef Subspace out = target_subspace.copy()
     Hsub = SubspaceHamiltonian(H, target_subspace)
     cdef FulqrumSpMV spmv = Hsub.spmv
-    cdef double energy = simple_restricted(spmv.oper,
-                                           restricted_subspace.subspace.bitstrings,
-                                           out.subspace.bitstrings,
-                                           spmv.diag_oper,
-                                           spmv.width,
-                                           restricted_subspace.size(),
-                                           spmv.has_nonzero_diag,
-                                           &spmv.group_ptrs[0],
-                                           &spmv.group_ladder_ptrs[0],
-                                           &spmv.group_rowint_length[0],
-                                           spmv.group_offdiag_inds,
-                                           spmv.num_groups,
-                                           spmv.ladder_offset,
-                                           target_energy,
-                                           max_recursion,
-                                           tol)
+    cdef double energy = open_ramps(spmv.oper,
+                                    out.subspace.bitstrings,
+                                    spmv.diag_oper,
+                                    spmv.width,
+                                    spmv.has_nonzero_diag,
+                                    &spmv.group_ptrs[0],
+                                    &spmv.group_ladder_ptrs[0],
+                                    &spmv.group_rowint_length[0],
+                                    spmv.group_offdiag_inds,
+                                    spmv.num_groups,
+                                    spmv.ladder_offset,
+                                    target_energy,
+                                    max_recursion,
+                                    tol)
 
 
     # This is a temp workaround for issues with iteratively expanded
