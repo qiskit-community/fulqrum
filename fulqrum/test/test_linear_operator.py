@@ -17,7 +17,6 @@ import pytest
 
 from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
 
-
 _path = Path(__file__).parent / "data/h2o.json"
 FOP = FermionicOperator.from_json(_path)
 NEW_OP = FOP.extended_jw_transformation()
