@@ -12,9 +12,14 @@
  * that they have been altered from the originals.
  */
 #pragma once
+#include <array>
 #include <complex>
+#include <cstdint>
 #include <cstdlib>
+#include <unordered_map>
 #include <vector>
+
+#include "external/hash_set8.hpp"
 
 #include "base.hpp"
 #include "bitset_hashmap.hpp"
@@ -161,6 +166,111 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
         }
     }
 
+    // ---- aabb fast-path prefilter setup -------------------------------------
+    // The aabb hot loop is O(subspace_dim * num_aabb_groups) with mostly misses
+    // (most columns are not in the subspace).
+    //
+    // An aabb group flips two alpha bits and two beta bits, so the flipped column's
+    // alpha half must equal some subspace element's alpha half AND its beta
+    // half must equal some subspace element's beta half.
+    //
+    // We hash each half and, per row, evaluate the condition once
+    // per unique alpha pair (alpha group inds, aa) and beta pair (beta group inds, bb)
+    // instead of once per group. aabb groups are then visited grouped by alpha pair,
+    // so a failing alpha pair skips all its groups without touching the subspace hash map.
+    auto region_hash = [&](const boost::dynamic_bitset<std::size_t>& bs,
+                           width_t lo,
+                           width_t hi,
+                           width_t fa,
+                           width_t fb) -> std::uint64_t {
+
+        const std::size_t lo_blk = lo >> BLOCK_EXPONENT;
+        const std::size_t hi_blk = static_cast<std::size_t>(hi - 1) >> BLOCK_EXPONENT;
+        const std::size_t n_blk = hi_blk - lo_blk + 1;
+        static thread_local std::vector<std::size_t> buf;
+        if(buf.size() < n_blk)
+            buf.resize(n_blk);
+        for(std::size_t b = lo_blk; b <= hi_blk; ++b)
+        {
+            std::size_t w = bs.m_bits[b];
+            if(fa != MAX_WIDTH && (fa >> BLOCK_EXPONENT) == b)
+                w ^= (std::size_t(1) << (fa & BLOCK_SHIFT));
+            if(fb != MAX_WIDTH && (fb >> BLOCK_EXPONENT) == b)
+                w ^= (std::size_t(1) << (fb & BLOCK_SHIFT));
+            if(b == lo_blk)
+                w &= (~std::size_t(0) << (lo & BLOCK_SHIFT));
+            if(b == hi_blk)
+            {
+                const std::size_t off = static_cast<std::size_t>(hi - 1) & BLOCK_SHIFT;
+                w &= (off == BLOCK_SHIFT) ? ~std::size_t(0)
+                                          : (~std::size_t(0) >> (BLOCK_SHIFT - off));
+            }
+            buf[b - lo_blk] = w;
+        }
+        return rapidhashMicro(buf.data(), n_blk * sizeof(std::size_t));
+    };
+
+    emhash8::HashSet<std::uint64_t> alpha_half_hashes;
+    emhash8::HashSet<std::uint64_t> beta_half_hashes;
+    std::vector<std::array<width_t, 2>> a_pairs;
+    std::vector<std::array<width_t, 2>> b_pairs;
+    struct AabbEntry
+    {
+        std::uint32_t b_id;
+        std::size_t g;
+    };
+    std::vector<std::vector<AabbEntry>> aabb_by_alpha;
+
+    if(!aabb_fast_groups.empty())
+    {
+        for(std::size_t s = 0; s < subspace_dim; ++s)
+        {
+            const auto& bs = bitsets[s].first;
+            alpha_half_hashes.insert(region_hash(bs, 0, half_width, MAX_WIDTH, MAX_WIDTH));
+            beta_half_hashes.insert(region_hash(bs, half_width, width, MAX_WIDTH, MAX_WIDTH));
+        }
+
+        std::unordered_map<std::uint32_t, std::uint32_t> a_pair_id;
+        std::unordered_map<std::uint32_t, std::uint32_t> b_pair_id;
+        for(const auto& g : aabb_fast_groups)
+        {
+            const auto& inds = group_offdiag_inds[g];
+            const width_t ap0 = inds[0], ap1 = inds[1], bp0 = inds[2], bp1 = inds[3];
+            const std::uint32_t ak = (std::uint32_t(ap0) << 16) | ap1;
+            const std::uint32_t bk = (std::uint32_t(bp0) << 16) | bp1;
+
+            std::uint32_t a_id;
+            auto ai = a_pair_id.find(ak);
+            if(ai == a_pair_id.end())
+            {
+                a_id = static_cast<std::uint32_t>(a_pairs.size());
+                a_pair_id.emplace(ak, a_id);
+                a_pairs.push_back({ap0, ap1});
+                aabb_by_alpha.emplace_back();
+            }
+            else
+            {
+                a_id = ai->second;
+            }
+
+            std::uint32_t b_id;
+            auto bi = b_pair_id.find(bk);
+            if(bi == b_pair_id.end())
+            {
+                b_id = static_cast<std::uint32_t>(b_pairs.size());
+                b_pair_id.emplace(bk, b_id);
+                b_pairs.push_back({bp0, bp1});
+            }
+            else
+            {
+                b_id = bi->second;
+            }
+            aabb_by_alpha[a_id].push_back({b_id, g});
+        }
+    }
+    const std::size_t num_a_pairs = a_pairs.size();
+    const std::size_t num_b_pairs = b_pairs.size();
+
     // Populate diagonal elements first separately
     if(has_nonzero_diag)
     {
@@ -194,6 +304,10 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
 
         std::vector<uint8_t> row_set_bits(row.size(), 0);
         bitset_to_bitvec(row, row_set_bits);
+
+        // Per-row aabb prefilter (distinct alpha/beta pair validity).
+        std::vector<char> alpha_ok(num_a_pairs);
+        std::vector<char> beta_ok(num_b_pairs);
 
         auto range_parity = [&](width_t lo, width_t hi) -> std::size_t {
             if(lo >= hi)
@@ -303,53 +417,87 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
         for(const auto& g : bb_groups)
             process_standard_group(g);
 
-        // Process aabb fast groups (size==4, 2 alpha + 2 beta indices, every term
-        // in the group shares a single coeff and real_phase).  Matrix element
-        // = coeff * asign * bsign; skip the term loop.
-        // asign / bsign are the Jordan-Wigner parities for the alpha and beta
-        // excitations.
-        for(const auto& group : aabb_fast_groups)
+        // Process aabb fast groups (size==4, 2 alpha + 2 beta indices, every
+        // term in the group shares a single coeff and real_phase).  Matrix
+        // element = coeff * asign * bsign; skip the term loop.
+        //
+        // Necessary-condition prefilter: evaluate "alpha-half flip matches
+        // some subspace alpha-half" once per distinct alpha pair (same for beta)
+        // then visit groups grouped by alpha pair.
+        // A failing alpha pair skips all its groups with no bitset
+        // copy and no subspace probe. The exact subspace.get_ptr below still
+        // confirms membership.
+        for(std::size_t i = 0; i < num_a_pairs; ++i)
         {
-            group_inds = &group_offdiag_inds[group];
-            const width_t ap0 = (*group_inds)[0];
-            const width_t ap1 = (*group_inds)[1];
-            const width_t bp0 = (*group_inds)[2];
-            const width_t bp1 = (*group_inds)[3];
+            const width_t p0 = a_pairs[i][0];
+            const width_t p1 = a_pairs[i][1];
+            if(row_set_bits[p0] == row_set_bits[p1])
+            {
+                alpha_ok[i] = 0;
+                continue;
+            }
+            alpha_ok[i] = alpha_half_hashes.contains(region_hash(row, 0, half_width, p0, p1));
+        }
+        for(std::size_t j = 0; j < num_b_pairs; ++j)
+        {
+            const width_t p0 = b_pairs[j][0];
+            const width_t p1 = b_pairs[j][1];
+            if(row_set_bits[p0] == row_set_bits[p1])
+            {
+                beta_ok[j] = 0;
+                continue;
+            }
+            beta_ok[j] = beta_half_hashes.contains(region_hash(row, half_width, width, p0, p1));
+        }
 
-            if((row_set_bits[ap0] == row_set_bits[ap1]) || (row_set_bits[bp0] == row_set_bits[bp1]))
+        for(std::size_t i = 0; i < num_a_pairs; ++i)
+        {
+            if(!alpha_ok[i])
             {
                 continue;
             }
-
-            row_int = bitset_ladder_int(
-                row_set_bits.data(), group_inds->data(), group_rowint_length[group]);
-            group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
-            group_int_stop = group_ladder_ptrs[group * ladder_offset + row_int + 1];
-
-            if(group_int_start >= group_int_stop)
+            const width_t ap0 = a_pairs[i][0];
+            const width_t ap1 = a_pairs[i][1];
+            for(const auto& e : aabb_by_alpha[i])
             {
-                continue;
-            }
+                if(!beta_ok[e.b_id])
+                {
+                    continue;
+                }
+                group_inds = &group_offdiag_inds[e.g];
+                const width_t bp0 = (*group_inds)[2];
+                const width_t bp1 = (*group_inds)[3];
 
-            col_vec = row;
-            flip_bits(col_vec, group_inds->data(), group_inds->size());
+                // only runs for prefiltered candidates.
+                row_int = bitset_ladder_int(
+                    row_set_bits.data(), group_inds->data(), group_rowint_length[e.g]);
+                group_int_start = group_ladder_ptrs[e.g * ladder_offset + row_int];
+                group_int_stop = group_ladder_ptrs[e.g * ladder_offset + row_int + 1];
+                if(group_int_start >= group_int_stop)
+                {
+                    continue;
+                }
 
-            col_ptr = subspace.get_ptr(col_vec);
-            if(col_ptr == nullptr)
-            {
-                continue;
-            }
-            col_idx = *col_ptr;
+                col_vec = row;
+                flip_bits(col_vec, group_inds->data(), group_inds->size());
+                col_ptr = subspace.get_ptr(col_vec);
+                if(col_ptr == nullptr)
+                {
+                    continue;
+                }
+                col_idx = *col_ptr;
 
-            const std::size_t aabb_parity = range_parity(ap0 + 1, ap1) ^ range_parity(bp0 + 1, bp1);
-            double sign = aabb_parity ? -1.0 : 1.0;
+                const std::size_t aabb_parity =
+                    range_parity(ap0 + 1, ap1) ^ range_parity(bp0 + 1, bp1);
+                double sign = aabb_parity ? -1.0 : 1.0;
 
-            val = aabb_direct[group] * static_cast<T>(sign);
+                val = aabb_direct[e.g] * static_cast<T>(sign);
 
-            if(std::abs(val) > ATOL)
-            {
-                cols[kk].push_back(col_idx);
-                data[kk].push_back(val);
+                if(std::abs(val) > ATOL)
+                {
+                    cols[kk].push_back(col_idx);
+                    data[kk].push_back(val);
+                }
             }
         }
 
