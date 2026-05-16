@@ -23,7 +23,7 @@ def test_diag_fast_mode():
     """Verify fast mode and default give same diagonal"""
     op_path = Path(__file__).parent / "data/ch4_dimer_jw.json.xz"
     op = fq.QubitOperator.from_json(op_path)
-
+    op.set_type(2)  # can be removed once the type is saved in the json
     dist_path = Path(__file__).parent / "data/dimer_subspace.json.xz"
     dist = json_to_dict(dist_path)
     S = fq.Subspace([list(dist.keys())])
@@ -31,3 +31,41 @@ def test_diag_fast_mode():
     diag1 = Hsub.diagonal_vector()  # This is fast mode
     diag2 = Hsub.diagonal_vector(disable_fast_mode=True)  # This is regular mode
     np.allclose(diag1, diag2, 1e-14)
+
+
+def test_diag_fast_mode_compatibility_check():
+    """Verify that diag fast mode compatibility check works"""
+    op_path = Path(__file__).parent / "data/lih.json"
+    fop = fq.FermionicOperator.from_json(op_path)
+    op = fop.extended_jw_transformation()
+
+    # because full operator is not diagonal
+    assert not op.fast_diag_compatible()
+
+    diag, off = op.split_diagonal()
+    # because diag still has a constant term in it
+    assert not diag.fast_diag_compatible()
+
+    new_diag, _ = diag.remove_constant_terms()
+    assert new_diag.fast_diag_compatible()
+
+
+def test_diag_fast_mode_sorting():
+    """Verify that fast diag sorting gives the correct projector indices per term"""
+    op_path = Path(__file__).parent / "data/lih.json"
+    fop = fq.FermionicOperator.from_json(op_path)
+    op = fop.extended_jw_transformation()
+    diag, off = op.split_diagonal()
+    new_diag, _ = diag.remove_constant_terms()
+    new_diag.fast_diag_term_sort()
+
+    counter = 0
+    for kk in range(new_diag.width):
+        for ll in range(kk, new_diag.width):
+            if kk == ll:
+                assert new_diag[counter].proj_indices.shape[0] == 1
+                assert new_diag[counter].proj_indices[0] == kk
+            else:
+                assert new_diag[counter].proj_indices[0] == kk
+                assert new_diag[counter].proj_indices[1] == ll
+            counter += 1

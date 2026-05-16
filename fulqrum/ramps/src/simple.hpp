@@ -42,17 +42,21 @@ double simple_restricted(const QubitOperator& oper,
                          const unsigned int max_recursion,
                          const double tol)
 {
-
+    std::size_t recur, kk, current;
     // do stuff if the diagonal can be evaluated quickly
-    bool do_fast_diag = fast_diag_compatible(oper);
-    std::pair<std::vector<std::pair<std::size_t, std::size_t>>, std::size_t> ptrs_and_offset;
+    bool do_fast_diag = fast_diag_compatible(diag_oper);
+    std::vector<std::size_t> row_ptrs;
     if(do_fast_diag)
     {
-        diag_proj_index_sort(diag_oper);
-        ptrs_and_offset = projector_ptrs_and_offset(diag_oper);
+        row_ptrs.reserve(diag_oper.width + 1);
+        row_ptrs.push_back(0);
+        current = 0;
+        for(kk = 0; kk < diag_oper.width; kk++)
+        {
+            current += (diag_oper.width - kk);
+            row_ptrs.push_back(current);
+        }
     }
-
-    std::size_t recur, kk;
     const auto* input_bitsets = restricted_subspace.get_bitsets();
     auto* output_bitsets = out_subspace.get_bitsets();
 
@@ -97,19 +101,19 @@ double simple_restricted(const QubitOperator& oper,
         std::vector<std::vector<Candidate>> pending_candidates(current_rows.size());
 // Loop over all rows in the current set
 #pragma omp parallel for private(col_vec,                                                          \
-                                 group_inds,                                                       \
-                                 col_ptr,                                                          \
-                                 out_col_ptr,                                                      \
-                                 idx,                                                              \
-                                 group,                                                            \
-                                 group_int_start,                                                  \
-                                 group_int_stop,                                                   \
-                                 val,                                                              \
-                                 row_int,                                                          \
-                                 do_col_search,                                                    \
-                                 col_energy,                                                       \
-                                 energy_amp,                                                       \
-                                 term) schedule(guided)
+                                     group_inds,                                                   \
+                                     col_ptr,                                                      \
+                                     out_col_ptr,                                                  \
+                                     idx,                                                          \
+                                     group,                                                        \
+                                     group_int_start,                                              \
+                                     group_int_stop,                                               \
+                                     val,                                                          \
+                                     row_int,                                                      \
+                                     do_col_search,                                                \
+                                     col_energy,                                                   \
+                                     energy_amp,                                                   \
+                                     term) schedule(guided)
         for(kk = 0; kk < current_rows.size(); kk++)
         {
             const boost::dynamic_bitset<size_t>& row = input_bitsets[current_rows[kk]].first;
@@ -159,11 +163,8 @@ double simple_restricted(const QubitOperator& oper,
                     // If this column is in the subspace we need to compute the columns diagonal energy
                     if(do_fast_diag)
                     {
-                        single_bitstring_diagonal_fast(input_bitsets[*col_ptr].first,
-                                                       diag_oper.terms,
-                                                       ptrs_and_offset.first,
-                                                       ptrs_and_offset.second,
-                                                       col_energy);
+                        single_bitstring_diagonal_fast(
+                            input_bitsets[*col_ptr].first, diag_oper.terms, row_ptrs, col_energy);
                     }
                     else
                     {
