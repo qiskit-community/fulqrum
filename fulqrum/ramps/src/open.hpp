@@ -156,10 +156,7 @@ double open_ramps(const QubitOperator& oper,
                 col_energy = 0;
                 if(do_fast_diag)
                 {
-                    single_bitstring_diagonal_fast(col_vec,
-                                                   diag_oper.terms,
-                                                   row_ptrs,
-                                                   col_energy);
+                    single_bitstring_diagonal_fast(col_vec, diag_oper.terms, row_ptrs, col_energy);
                 }
                 else
                 {
