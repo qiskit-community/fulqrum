@@ -243,8 +243,6 @@ inline void single_bitstring_diagonal_fast(const boost::dynamic_bitset<size_t>& 
     //const std::size_t num_terms = diag_terms.size();
     const OperatorTerm* term;
     width_t weight;
-    std::size_t kk;
-    std::size_t ll;
     std::size_t start, offset;
 
     std::vector<width_t> set_bits = set_bit_indices(row);
