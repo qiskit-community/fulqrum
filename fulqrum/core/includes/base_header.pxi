@@ -71,8 +71,8 @@ cdef extern from "../src/base.hpp":
         vector[width_t] ladder_integers()
         vector[width_t] group_ladder_int_bit_lengths()
         vector[size_t] group_ladder_int_ptrs()
-        void to_json(string, bool) nogil
-        QubitOperator_t& from_json(string)
+        void to_json(string, bool) except +
+        QubitOperator_t from_json(string) except +
 
 
     ctypedef struct Subspace_t:
@@ -92,8 +92,8 @@ cdef extern from "../src/base.hpp":
         width_t width
         vector[FermionicTerm_t] terms
         size_t size()
-        void to_json(string, bool) nogil
-        FermionicOperator_t& from_json(string) nogil
+        void to_json(string, bool) except +
+        FermionicOperator_t from_json(string) except +
         FermionicOperator_t combine_repeat_indices() nogil
         QubitOperator_t extended_jw_transformation() nogil
 
