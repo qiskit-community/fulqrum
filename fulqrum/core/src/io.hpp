@@ -285,7 +285,7 @@ inline void json_to_operator(const std::string& filename, U& oper)
         {
             throw std::runtime_error("JSON operator type does not match input");
         }
-#pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
+
         for(std::size_t kk = 0; kk < num_terms; kk++)
         {
             JsonTerm item = terms[kk];
@@ -303,7 +303,7 @@ inline void json_to_operator(const std::string& filename, U& oper)
         {
             throw std::runtime_error("JSON operator type does not match input");
         }
-#pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
+
         for(std::size_t kk = 0; kk < num_terms; kk++)
         {
             JsonTerm item = terms[kk];
