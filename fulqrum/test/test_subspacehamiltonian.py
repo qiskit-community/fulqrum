@@ -27,7 +27,7 @@ def test_subspacehamiltonian_different_widths():
     """Hamiltonian and subspace with different widths raises"""
     S = fq.Subspace()
     Hsub = fq.SubspaceHamiltonian(OP, S)
-    with pytest.raises(FulqrumError) as err:
+    with pytest.raises(FulqrumError) as _:
         Hsub.diagonal_vector()
 
 
