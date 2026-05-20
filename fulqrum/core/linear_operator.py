@@ -73,7 +73,7 @@ class SubspaceHamiltonian(LinearOperator):
             int : Number of groups in operator
         """
         return self.off_H.num_groups
-    
+
     def update_subspace(self, subspace):
         self.spmv.update_subspace(subspace)
 
