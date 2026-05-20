@@ -90,7 +90,7 @@ cdef class Subspace():
 
     """
     @cython.boundscheck(False)
-    def __cinit__(self, object subspace_strs, int reserve_multiplier=2, bool use_all_bitset_blocks=True):
+    def __cinit__(self, object subspace_strs=None, int reserve_multiplier=2, bool use_all_bitset_blocks=True):
         """
         args:
             subspace_strs: Input bitstrings as either length-1 or length-2 tuple
@@ -130,6 +130,8 @@ cdef class Subspace():
                 full hashing usually leads to fewer collisions during Hash table look-up.
                 Default: `True`.
         """
+        if not subspace_strs:
+            return
         cdef int input_bitsets = 0
         if len(subspace_strs) == 0:
             return

@@ -41,3 +41,4 @@ cdef class FulqrumSpMV:
     cdef bool _disable_fast_diag
 
     cpdef int compute_diag_vector(self)
+    cpdef void update_subspace(self, Subspace)
