@@ -17,6 +17,7 @@ from scipy.sparse.linalg import LinearOperator
 
 from .spmv import FulqrumSpMV
 from .csr import csr_matvec
+from .subspace import Subspace
 from ..exceptions import FulqrumError
 
 
@@ -29,12 +30,15 @@ class SubspaceHamiltonian(LinearOperator):
     # The subclass will complain if this is not here
     _matvec = None
 
-    def __init__(self, hamiltonian, subspace):
+    def __init__(self, hamiltonian, subspace=None):
         """A SciPy `LinearOperator` that represents a Hamiltonian restricted to the given
         subspace.
         """
-        if hamiltonian.width != subspace.width:
-            raise FulqrumError("Operator and subspace widths do not match")
+        if subspace:
+            if hamiltonian.width != subspace.width:
+                raise FulqrumError("Operator and subspace widths do not match")
+        else:
+            subspace = Subspace()
         self.diag_H, self.off_H = hamiltonian.split_diagonal()
         self.diag_H, self.const_energy = self.diag_H.remove_constant_terms()
         # if there are no off-diagonal terms then we pass a dummy empty array of len=1
@@ -69,6 +73,9 @@ class SubspaceHamiltonian(LinearOperator):
             int : Number of groups in operator
         """
         return self.off_H.num_groups
+
+    def update_subspace(self, subspace):
+        self.spmv.update_subspace(subspace)
 
     def diagonal_vector(self, verbose=False, disable_fast_mode=False):
         """Return diagonal vector of Hamiltonian in subspace

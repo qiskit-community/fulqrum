@@ -16,3 +16,4 @@ include "includes/base_header.pxi"
 
 cdef class Subspace():
     cdef Subspace_t subspace
+

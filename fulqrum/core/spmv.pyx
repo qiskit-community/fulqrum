@@ -45,6 +45,13 @@ include "includes/csrlike_builder_header.pxi"
 include "includes/csrlike_builder2_header.pxi"
 
 
+cdef width_check(width_t ham_width, width_t sub_width):
+    """Validate that Hamiltonian width is the same as the subspace width
+    """
+    if ham_width != sub_width:
+        raise FulqrumError(f"Hamiltonian width ({ham_width}) does not match subspace width ({sub_width})")
+
+
 cdef class FulqrumSpMV():
     def __cinit__(self, QubitOperator diag_hamiltonian,
                   double const_energy,
@@ -103,11 +110,20 @@ cdef class FulqrumSpMV():
         out += f"is_real={self.is_real}>"
         return out
 
+    cpdef void update_subspace(self, Subspace subspace):
+        """Update the subspace attached to the object
+        """
+        self.subspace = subspace
+        self.subspace_dim = self.subspace.size()
+        self.init_diag = 0
+        self.real_diag_vec = np.empty(shape=(1,), dtype=float)
+        self.complex_diag_vec = np.empty(shape=(1,), dtype=complex)
 
     @cython.boundscheck(False)
     cpdef int compute_diag_vector(self):
         if self.init_diag:
             return 0
+        width_check(self.width, self.subspace.width)    
         cdef bool fast_diag = self.fast_diag
         if self._disable_fast_diag:
             fast_diag = 0
@@ -147,6 +163,7 @@ cdef class FulqrumSpMV():
         Returns:
             ndarray: Array of complex numbers representing diagonal
         """
+        width_check(self.width, self.subspace.width)
         if verbose:
             st = time.perf_counter()
         if not self.has_nonzero_diag:
