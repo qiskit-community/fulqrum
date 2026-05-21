@@ -76,6 +76,7 @@ class SubspaceHamiltonian(LinearOperator):
 
     def update_subspace(self, subspace):
         self.spmv.update_subspace(subspace)
+        self.shape = (len(subspace),) * 2
 
     def diagonal_vector(self, verbose=False, disable_fast_mode=False):
         """Return diagonal vector of Hamiltonian in subspace
