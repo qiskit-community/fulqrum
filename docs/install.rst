@@ -18,10 +18,10 @@ Required
    :widths: 15, 10, 30
 
    "cython", 3.0.5, "The glue between C++ and Python"
-   "numpy", 1.25, "Used as array interface between Python and C++"
+   "numpy", 2.0, "Used as array interface between Python and C++"
    "orjson", "any", "IO for saving operators"
    "psutil", "any", "Get system information such as available memory"
-   "scipy", "1.11.1", "Needed for `scipy.sparse.linalg.LinearOperator` class"
+   "scipy", "1.14.0", "Needed for `scipy.sparse.linalg.LinearOperator` class"
 
 
 Optional
@@ -38,7 +38,7 @@ Optional
 C++
 ~~~~
 
-Fulqrum is based on C++17 and requires having OpenMP 3.0+.
+Fulqrum is based on C++20 and requires having OpenMP 3.0+.
 Getting OpenMP is straightforward on Linux but does require installing LLVM via Homebrew on OSX.
 
 Note that the runtime of Fulqrum is compiler dependent.  In practice the ``clang`` compiler 
