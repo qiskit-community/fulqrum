@@ -42,6 +42,7 @@ As shown below, a typical eigenvalue problem is broken up into three pieces: 1) 
     Using FermionicOperators  <fermi_operators.ipynb>
     Defining Subspaces <subspaces.ipynb>
     Operator IO <operator_io.ipynb>
+    Subspace Hamiltonians <subspace_hamiltonians.ipynb>
 
 .. toctree::
     :maxdepth: 2
