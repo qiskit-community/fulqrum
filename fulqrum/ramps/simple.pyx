@@ -17,6 +17,7 @@ from ..core.bitset cimport Bitset
 from ..core.bitset cimport bitset_t
 from ..core.linear_operator import SubspaceHamiltonian
 from ..core.spmv cimport FulqrumSpMV
+from ..exceptions import FulqrumError
 
 include "includes/simple_header.pxi"
 
@@ -24,13 +25,13 @@ import numpy as np
 
 
 
-def ramps_restricted_simple(QubitOperator H, Subspace target_subspace, double target_energy,
+def ramps_restricted_simple(object Hsub, Subspace target_subspace, double target_energy,
                             Subspace restricted_subspace, unsigned int max_recursion=2, double tol=1e-12):
     """RAMPS restricted to an existing subspace when targeting a single bit-string
     and associated energy.
 
     Parameters:
-        H (QubitOperator): Hamiltonian
+        Hsub (SubspaceHamiltonian): Hamiltonian
         target_subspace (Subspace): Target subspace to expand around
         target_energy (double): Target energy from target subspace
         restricted_subspace (Subspace): Subspace to restrict search in
@@ -40,8 +41,9 @@ def ramps_restricted_simple(QubitOperator H, Subspace target_subspace, double ta
     Returns:
         Subspace: RAMPS refined subspace
     """
+    if not isinstance(Hsub, SubspaceHamiltonian):
+        raise FulqrumError("Input Hamiltonian must be a SubspaceHamiltonian object")
     cdef Subspace out = target_subspace.copy()
-    Hsub = SubspaceHamiltonian(H, target_subspace)
     cdef FulqrumSpMV spmv = Hsub.spmv
     cdef double energy = simple_restricted(spmv.oper,
                                            restricted_subspace.subspace.bitstrings,

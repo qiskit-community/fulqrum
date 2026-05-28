@@ -41,7 +41,7 @@ def test_ramps_simple_refine_subspace_dim():
 
     target_subspace = Subspace([[S[min_idx].to_string()]])
     target_energy = diag[min_idx]
-    out = ramps_restricted_simple(NEW_OP, target_subspace, target_energy, S)
+    out = ramps_restricted_simple(HSUB, target_subspace, target_energy, S)
     assert out.size() == 69
 
 
@@ -52,7 +52,7 @@ def test_ramps_simple_refine_accuracy():
 
     target_subspace = Subspace([[S[min_idx].to_string()]])
     target_energy = diag[min_idx]
-    out = ramps_restricted_simple(NEW_OP, target_subspace, target_energy, S)
+    out = ramps_restricted_simple(HSUB, target_subspace, target_energy, S)
 
     Hsub_small = SubspaceHamiltonian(NEW_OP, out)
     approx_energy = spla.eigsh(
@@ -69,7 +69,7 @@ def test_ramps_open_lih():
 
     target_subspace = Subspace([[S[min_idx].to_string()]])
     target_energy = diag[min_idx]
-    out = ramps_open(NEW_OP, target_subspace, target_energy)
+    out = ramps_open(HSUB, target_subspace, target_energy)
 
     assert out.size() == 69  # same as above
 
