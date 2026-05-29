@@ -43,6 +43,10 @@ def test_fermionic_xz():
         os.remove("lih.json.xz")
     except FileNotFoundError:
         pass
+    try:
+        os.remove("lih.json")
+    except FileNotFoundError:
+        pass
 
 
 def test_qubit_json():
@@ -65,5 +69,9 @@ def test_qubit_xz():
     assert OP.num_terms == new_op.num_terms
     try:
         os.remove("lih_op.json.xz")
+    except FileNotFoundError:
+        pass
+    try:
+        os.remove("lih_op.json")
     except FileNotFoundError:
         pass
