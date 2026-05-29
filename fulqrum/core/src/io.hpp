@@ -14,7 +14,6 @@
 #pragma once
 #include <complex>
 #include <cstdio>
-#include <format>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -135,7 +134,7 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
     bool exists = file_exists(filename);
     if(exists && (overwrite == false))
     {
-        throw std::runtime_error(std::format("File '{}' exists and 'overwrite=false'", filename));
+        throw std::runtime_error("File '" + filename + "' exists and 'overwrite=false'");
     }
 
     // split filename by '.' to get the extension
@@ -188,12 +187,12 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
     std::string compress_str;
     if(ending == "xz")
     {
-        compress_str = std::format("xz -9 -f -k -T0 -q {} ", short_filename);
+        compress_str = "xz -9 -f -k -T0 -q " + short_filename + " ";
         exec(compress_str.c_str()); // compress original json
     }
     else if(ending == "zst")
     {
-        compress_str = std::format("zstd -16 --rm -k -q -f -T0 {}", short_filename);
+        compress_str = "zstd -16 --rm -k -q -f -T0 " + short_filename;
         exec(compress_str.c_str()); // compress original json
     }
     else if(ending != "json")
@@ -217,7 +216,7 @@ inline void json_to_operator(const std::string& filename, U& oper)
     bool exists = file_exists(filename);
     if(!exists)
     {
-        throw std::runtime_error(std::format("File '{}' not found", filename));
+        throw std::runtime_error("File '" + filename + "' not found");
     }
     // split filename by '.' to get the extension
     std::string ending;
@@ -250,12 +249,12 @@ inline void json_to_operator(const std::string& filename, U& oper)
     std::string uncompress_str;
     if(ending == "xz")
     {
-        uncompress_str = std::format("xz -d -f -k -q -T0 {} ", filename);
+        uncompress_str = "xz -d -f -k -q -T0 " + filename + " ";
         exec(uncompress_str.c_str());
     }
     else if(ending == "zst")
     {
-        uncompress_str = std::format("zstd -d -f -q -k -T0 {}", filename);
+        uncompress_str = "zstd -d -f -q -k -T0 " + filename;
         exec(uncompress_str.c_str());
     }
     else if(ending != "json")
@@ -289,7 +288,7 @@ inline void json_to_operator(const std::string& filename, U& oper)
         for(std::size_t kk = 0; kk < num_terms; kk++)
         {
             JsonTerm item = terms[kk];
-            auto [a, b] = get<2>(item);
+            auto [a, b] = std::get<2>(item);
             OperatorTerm term = OperatorTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
             term.set_proj_indices();
             set_offdiag_weight_and_phase(term);
@@ -307,7 +306,7 @@ inline void json_to_operator(const std::string& filename, U& oper)
         for(std::size_t kk = 0; kk < num_terms; kk++)
         {
             JsonTerm item = terms[kk];
-            auto [a, b] = get<2>(item);
+            auto [a, b] = std::get<2>(item);
             FermionicTerm term = FermionicTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
             term.insertion_sort();
             oper.terms[kk] = term;

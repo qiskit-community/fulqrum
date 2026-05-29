@@ -38,7 +38,7 @@ Optional
 C++
 ~~~~
 
-Fulqrum is based on C++20 and requires having OpenMP 3.0+.
+Fulqrum is based on C++17 and requires having OpenMP 3.0+.
 Getting OpenMP is straightforward on Linux but does require installing LLVM via Homebrew on OSX.
 
 Note that the runtime of Fulqrum is compiler dependent.  In practice the ``clang`` compiler 
