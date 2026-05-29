@@ -60,8 +60,6 @@ def test_qubit_json():
     except FileNotFoundError:
         pass
 
-    
-
 
 def test_qubit_xz():
     """Test round-trip of qubitoperator to xz"""
