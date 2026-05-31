@@ -118,9 +118,12 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
 {
     std::string op_type;
     std::string ending;
+    // set the oper.type to json
+    int method_type = 2;
     if constexpr(std::is_same_v<T, QubitOperator>)
     {
         op_type = "qubit";
+        method_type = oper.type;
     }
     else if constexpr(std::is_same_v<T, FermionicOperator>)
     {
@@ -154,9 +157,10 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
         terms.push_back(json_term);
     }
 
-    json Doc{{"format-version", "1.0"},
-             {"fulqrum-version", "0.1.0"},
+    json Doc{{"format-version", "1.1"},
+             {"fulqrum-version", "0.2.0"},
              {"operator-type", op_type},
+             {"method-type", method_type},
              {"width", oper.width},
              {"terms", terms}};
 
@@ -278,6 +282,7 @@ inline void json_to_operator(const std::string& filename, U& oper)
     std::size_t num_terms = terms.size();
     oper.terms.resize(num_terms);
 
+
     if constexpr(std::is_same_v<U, QubitOperator>)
     {
         if(Doc["operator-type"] != "qubit")
@@ -294,6 +299,14 @@ inline void json_to_operator(const std::string& filename, U& oper)
             set_offdiag_weight_and_phase(term);
             set_extended_flag(term);
             oper.terms[kk] = term;
+        }
+         // look to see if method-type exists, should in V1.1
+        if(Doc.contains("method-type"))
+        {
+            if(Doc["operator-type"] != "qubit")
+            {
+                oper.type = Doc["method-type"];
+            }
         }
     }
     else if constexpr(std::is_same_v<U, FermionicOperator>)
