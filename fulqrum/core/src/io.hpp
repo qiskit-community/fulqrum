@@ -24,6 +24,7 @@
 
 #include "./external/json.hpp"
 #include "base.hpp"
+#include "version.hpp"
 
 using json = nlohmann::json;
 typedef std::complex<double> complex;
@@ -157,8 +158,8 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
         terms.push_back(json_term);
     }
 
-    json Doc{{"format-version", "1.1"},
-             {"fulqrum-version", "0.2.0"},
+    json Doc{{"format-version", JSON_VERSION},
+             {"fulqrum-version", FULQRUM_VERSION},
              {"operator-type", op_type},
              {"method-type", method_type},
              {"width", oper.width},
@@ -303,10 +304,7 @@ inline void json_to_operator(const std::string& filename, U& oper)
          // look to see if method-type exists, should in V1.1
         if(Doc.contains("method-type"))
         {
-            if(Doc["operator-type"] != "qubit")
-            {
-                oper.type = Doc["method-type"];
-            }
+            oper.type = Doc["method-type"];
         }
     }
     else if constexpr(std::is_same_v<U, FermionicOperator>)

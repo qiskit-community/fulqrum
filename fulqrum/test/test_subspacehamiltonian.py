@@ -17,7 +17,6 @@ import numpy as np
 import fulqrum as fq
 from fulqrum.exceptions import FulqrumError
 
-
 _path = Path(__file__).parent / "data/lih.json"
 FOP = fq.FermionicOperator.from_json(_path)
 OP = FOP.extended_jw_transformation()

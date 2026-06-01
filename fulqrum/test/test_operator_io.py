@@ -75,3 +75,15 @@ def test_qubit_xz():
         os.remove("lih_op.json")
     except FileNotFoundError:
         pass
+
+
+def test_fermionic_to_qubit_method_in_json():
+    """Test round-trip of fermionic to json"""
+    OP.to_json("lih_jw.json", overwrite=True)
+    assert OP.type == 2
+    new_op = fq.QubitOperator.from_json("lih_jw.json")
+    assert new_op.type == 2
+    try:
+        os.remove("lih_jw.json")
+    except FileNotFoundError:
+        pass
