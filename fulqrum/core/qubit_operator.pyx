@@ -34,8 +34,6 @@ from .constants import np_width_t
 from collections.abc import Iterable
 from pathlib import Path
 import numbers
-import orjson
-import lzma
 import numpy as np
 cimport numpy as np
 

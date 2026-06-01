@@ -23,8 +23,7 @@ from .qubit_operator cimport QubitOperator
 from ..utils.io import dict_to_json, json_to_dict
 from ..exceptions import FulqrumError
 
-import orjson
-import lzma
+
 from pathlib import Path
 import warnings
 import numpy as np
