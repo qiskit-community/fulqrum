@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -282,6 +283,9 @@ inline void json_to_operator(const std::string& filename, U& oper)
     auto terms = Doc["terms"];
     std::size_t num_terms = terms.size();
     oper.terms.resize(num_terms);
+    std::vector<std::string> version_split = split_string(Doc["format-version"], ".");
+    int major_version = std::stoi(version_split[0]);
+    int minor_version = std::stoi(version_split[1]);
 
 
     if constexpr(std::is_same_v<U, QubitOperator>)
@@ -302,9 +306,15 @@ inline void json_to_operator(const std::string& filename, U& oper)
             oper.terms[kk] = term;
         }
          // look to see if method-type exists, should in V1.1
-        if(Doc.contains("method-type"))
+        if(major_version >=1 && minor_version >= 1)
         {
-            oper.type = Doc["method-type"];
+            if(Doc.contains("method-type"))
+            {
+                oper.type = Doc["method-type"];
+            }
+            else{
+                throw std::runtime_error("JSON format 1.1+ should have a 'method-type' key");
+            }
         }
     }
     else if constexpr(std::is_same_v<U, FermionicOperator>)
