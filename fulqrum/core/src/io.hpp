@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -24,6 +25,7 @@
 
 #include "./external/json.hpp"
 #include "base.hpp"
+#include "version.hpp"
 
 using json = nlohmann::json;
 typedef std::complex<double> complex;
@@ -118,9 +120,12 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
 {
     std::string op_type;
     std::string ending;
+    // set the oper.type to json
+    int method_type = 2;
     if constexpr(std::is_same_v<T, QubitOperator>)
     {
         op_type = "qubit";
+        method_type = oper.type;
     }
     else if constexpr(std::is_same_v<T, FermionicOperator>)
     {
@@ -154,9 +159,10 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
         terms.push_back(json_term);
     }
 
-    json Doc{{"format-version", "1.0"},
-             {"fulqrum-version", "0.1.0"},
+    json Doc{{"format-version", JSON_VERSION},
+             {"fulqrum-version", FULQRUM_VERSION},
              {"operator-type", op_type},
+             {"method-type", method_type},
              {"width", oper.width},
              {"terms", terms}};
 
@@ -277,6 +283,10 @@ inline void json_to_operator(const std::string& filename, U& oper)
     auto terms = Doc["terms"];
     std::size_t num_terms = terms.size();
     oper.terms.resize(num_terms);
+    std::vector<std::string> version_split = split_string(Doc["format-version"], ".");
+    int major_version = std::stoi(version_split[0]);
+    int minor_version = std::stoi(version_split[1]);
+
 
     if constexpr(std::is_same_v<U, QubitOperator>)
     {
@@ -294,6 +304,17 @@ inline void json_to_operator(const std::string& filename, U& oper)
             set_offdiag_weight_and_phase(term);
             set_extended_flag(term);
             oper.terms[kk] = term;
+        }
+         // look to see if method-type exists, should in V1.1
+        if(major_version >=1 && minor_version >= 1)
+        {
+            if(Doc.contains("method-type"))
+            {
+                oper.type = Doc["method-type"];
+            }
+            else{
+                throw std::runtime_error("JSON format 1.1+ should have a 'method-type' key");
+            }
         }
     }
     else if constexpr(std::is_same_v<U, FermionicOperator>)
