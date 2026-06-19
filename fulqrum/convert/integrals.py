@@ -45,7 +45,7 @@ def integrals_to_fq_fermionic_op(
     Returns:
         FermionicOperator: Converted operator.
     """
-    two_body_integrals = np.asarray(two_body_integrals.transpose(0, 2, 3, 1), order='C')
+    two_body_integrals = np.asarray(two_body_integrals.transpose(0, 2, 3, 1), order="C")
     # Go to flat arrays in prep for doing calculation in C++
     flat_one_body_integrals = one_body_integrals.ravel()
     flat_two_body_integrals = two_body_integrals.ravel()
