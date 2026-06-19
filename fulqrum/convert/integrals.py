@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 
 """PySCF conversion utilities"""
+
 from pathlib import Path
 import numpy as np
 from ..core.fermi_operator import FermionicOperator
@@ -19,16 +20,18 @@ from ..core.fermi_operator import FermionicOperator
 def _flat_index2d(i, j, dim):
     if i >= dim or j >= dim:
         raise Exception(f"Indices should be < {dim}")
-    return i*dim + j
+    return i * dim + j
 
 
 def _flat_index4d(i, j, k, l, dim):
     if i >= dim or j >= dim or k >= dim or l >= dim:
         raise Exception(f"Indices should be < {dim}")
-    return i + j*dim + k*dim*dim + l*dim*dim*dim
+    return i + j * dim + k * dim * dim + l * dim * dim * dim
 
 
-def integrals_to_fq_fermionic_op(one_body_integrals, two_body_integrals, constant=0, EQ_TOLERANCE=1e-12) -> FermionicOperator:
+def integrals_to_fq_fermionic_op(
+    one_body_integrals, two_body_integrals, constant=0, EQ_TOLERANCE=1e-12
+) -> FermionicOperator:
     """Convert one- and two-body integrals as numpy arrays into Fulqrum
         fermionic operator.
 
@@ -42,7 +45,7 @@ def integrals_to_fq_fermionic_op(one_body_integrals, two_body_integrals, constan
     Returns:
         FermionicOperator: Converted operator.
     """
-    # Go to flat arrays in prep for doing calculation in C++  
+    # Go to flat arrays in prep for doing calculation in C++
     flat_one_body_integrals = one_body_integrals.ravel()
     flat_two_body_integrals = two_body_integrals.ravel()
 
@@ -54,7 +57,9 @@ def integrals_to_fq_fermionic_op(one_body_integrals, two_body_integrals, constan
 
     qubit_mapping = np.zeros(num_qubits, dtype=np.uint32)
     for kk in range(num_qubits):
-            qubit_mapping[kk] = (not kk % 2) * kk // 2 + (kk % 2) * (kk // 2 + half_num_qubits)
+        qubit_mapping[kk] = (not kk % 2) * kk // 2 + (kk % 2) * (
+            kk // 2 + half_num_qubits
+        )
 
     fop = FermionicOperator(num_qubits)
     if np.abs(constant) > EQ_TOLERANCE:
@@ -62,35 +67,118 @@ def integrals_to_fq_fermionic_op(one_body_integrals, two_body_integrals, constan
 
     for p in range(half_num_qubits):
         for q in range(half_num_qubits):
-            #temp_one_body = one_body_integrals[p, q]
-            temp_one_body = flat_one_body_integrals[_flat_index2d(p, q, half_num_qubits)]
+            # temp_one_body = one_body_integrals[p, q]
+            temp_one_body = flat_one_body_integrals[
+                _flat_index2d(p, q, half_num_qubits)
+            ]
             if np.abs(temp_one_body) > EQ_TOLERANCE:
                 # Populate 1-body coefficients. Require p and q have same spin.
-                ii = 2 * p; jj = 2 * q
-                fop += FermionicOperator(num_qubits, [(ob_str, [qubit_mapping[ii], qubit_mapping[jj]], temp_one_body)])
-                
-                ii = 2 * p + 1; jj = 2 * q + 1
-                fop += FermionicOperator(num_qubits, [(ob_str, [qubit_mapping[ii], qubit_mapping[jj]], temp_one_body)])
+                ii = 2 * p
+                jj = 2 * q
+                fop += FermionicOperator(
+                    num_qubits,
+                    [(ob_str, [qubit_mapping[ii], qubit_mapping[jj]], temp_one_body)],
+                )
+
+                ii = 2 * p + 1
+                jj = 2 * q + 1
+                fop += FermionicOperator(
+                    num_qubits,
+                    [(ob_str, [qubit_mapping[ii], qubit_mapping[jj]], temp_one_body)],
+                )
             # Continue looping to prepare 2-body coefficients.
             for r in range(half_num_qubits):
                 for s in range(half_num_qubits):
-                    #temp_two_body = two_body_integrals[p, q, r, s] / 2.0
-                    temp_two_body = flat_two_body_integrals[_flat_index4d(p, q, r, s, half_num_qubits)] / 2.0
+                    # temp_two_body = two_body_integrals[p, q, r, s] / 2.0
+                    temp_two_body = (
+                        flat_two_body_integrals[
+                            _flat_index4d(p, q, r, s, half_num_qubits)
+                        ]
+                        / 2.0
+                    )
                     if np.abs(temp_two_body) > EQ_TOLERANCE:
                         # Mixed spin
-                        ii = 2 * p; jj = 2 * q + 1; kk = 2 * r + 1; ll = 2 * s
-                        fop += FermionicOperator(num_qubits, [(tb_str, [qubit_mapping[ii], qubit_mapping[jj], qubit_mapping[kk], qubit_mapping[ll]], temp_two_body)])
-                        
-                        ii = 2 * p + 1; jj = 2 * q; kk = 2 * r; ll = 2 * s + 1
-                        fop += FermionicOperator(num_qubits, [(tb_str, [qubit_mapping[ii], qubit_mapping[jj], qubit_mapping[kk], qubit_mapping[ll]], temp_two_body)])
-                        
+                        ii = 2 * p
+                        jj = 2 * q + 1
+                        kk = 2 * r + 1
+                        ll = 2 * s
+                        fop += FermionicOperator(
+                            num_qubits,
+                            [
+                                (
+                                    tb_str,
+                                    [
+                                        qubit_mapping[ii],
+                                        qubit_mapping[jj],
+                                        qubit_mapping[kk],
+                                        qubit_mapping[ll],
+                                    ],
+                                    temp_two_body,
+                                )
+                            ],
+                        )
+
+                        ii = 2 * p + 1
+                        jj = 2 * q
+                        kk = 2 * r
+                        ll = 2 * s + 1
+                        fop += FermionicOperator(
+                            num_qubits,
+                            [
+                                (
+                                    tb_str,
+                                    [
+                                        qubit_mapping[ii],
+                                        qubit_mapping[jj],
+                                        qubit_mapping[kk],
+                                        qubit_mapping[ll],
+                                    ],
+                                    temp_two_body,
+                                )
+                            ],
+                        )
+
                         # Same spin
-                        ii = 2 * p; jj = 2 * q; kk = 2 * r; ll = 2 * s
-                        fop += FermionicOperator(num_qubits, [(tb_str, [qubit_mapping[ii], qubit_mapping[jj], qubit_mapping[kk], qubit_mapping[ll]], temp_two_body)])
-                        
-                        ii = 2 * p + 1; jj = 2 * q + 1; kk = 2 * r + 1; ll = 2 * s + 1
-                        fop += FermionicOperator(num_qubits, [(tb_str, [qubit_mapping[ii], qubit_mapping[jj], qubit_mapping[kk], qubit_mapping[ll]], temp_two_body)])
-    
+                        ii = 2 * p
+                        jj = 2 * q
+                        kk = 2 * r
+                        ll = 2 * s
+                        fop += FermionicOperator(
+                            num_qubits,
+                            [
+                                (
+                                    tb_str,
+                                    [
+                                        qubit_mapping[ii],
+                                        qubit_mapping[jj],
+                                        qubit_mapping[kk],
+                                        qubit_mapping[ll],
+                                    ],
+                                    temp_two_body,
+                                )
+                            ],
+                        )
+
+                        ii = 2 * p + 1
+                        jj = 2 * q + 1
+                        kk = 2 * r + 1
+                        ll = 2 * s + 1
+                        fop += FermionicOperator(
+                            num_qubits,
+                            [
+                                (
+                                    tb_str,
+                                    [
+                                        qubit_mapping[ii],
+                                        qubit_mapping[jj],
+                                        qubit_mapping[kk],
+                                        qubit_mapping[ll],
+                                    ],
+                                    temp_two_body,
+                                )
+                            ],
+                        )
+
     return fop
 
 
@@ -115,5 +203,5 @@ def fcidump_to_fq_fermionic_op(fcidump_path: str | Path) -> FermionicOperator:
     return integrals_to_fq_fermionic_op(
         one_body_integrals=hcore,
         two_body_integrals=eri,
-        constant=nuclear_repulsion_energy
+        constant=nuclear_repulsion_energy,
     )
