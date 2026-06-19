@@ -284,9 +284,9 @@ cdef class FermionicOperator():
         """
         cdef size_t kk, jj
         cdef list out = []
-        if self.num_terms > 2:
+        if self.size() > 2:
             raise FulqrumError('Can only grab coeff from operators with < 2 terms')
-        elif self.num_terms == 0:
+        elif self.size() == 0:
             return 0+0j
         return self.oper.terms[0].coeff
 
@@ -350,9 +350,9 @@ cdef class FermionicOperator():
         cdef size_t kk, jj
         cdef FermionicTerm_t * term
         cdef list out = []
-        if self.num_terms > 1:
+        if self.size() > 1:
             raise FulqrumError('Can only grab operators from operators with < 2 terms')
-        elif self.num_terms == 0:
+        elif self.size() == 0:
             return None
         else:
             for kk in range(self.oper.terms.size()):
