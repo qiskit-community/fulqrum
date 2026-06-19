@@ -63,7 +63,7 @@ def integrals_to_fq_fermionic_op(
         )
 
     fop = FermionicOperator(num_qubits)
-    if np.abs(constant) > EQ_TOLERANCE:
+    if abs(constant) > EQ_TOLERANCE:
         fop += FermionicOperator(num_qubits, [("", [], constant)])
 
     for p in range(half_num_qubits):
@@ -72,7 +72,7 @@ def integrals_to_fq_fermionic_op(
             temp_one_body = flat_one_body_integrals[
                 _flat_index2d(p, q, half_num_qubits)
             ]
-            if np.abs(temp_one_body) > EQ_TOLERANCE:
+            if abs(temp_one_body) > EQ_TOLERANCE:
                 # Populate 1-body coefficients. Require p and q have same spin.
                 ii = 2 * p
                 jj = 2 * q
@@ -96,7 +96,7 @@ def integrals_to_fq_fermionic_op(
                         ]
                         / 2.0
                     )
-                    if np.abs(temp_two_body) > EQ_TOLERANCE:
+                    if abs(temp_two_body) > EQ_TOLERANCE:
                         # Mixed spin
                         ii = 2 * p
                         jj = 2 * q + 1

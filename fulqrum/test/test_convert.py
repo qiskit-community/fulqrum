@@ -12,9 +12,11 @@
 # pylint: disable=no-name-in-module
 import pytest
 
+import numpy as np
 from fulqrum.convert import (
     openfermion_fermi_op_to_fulqrum,
     openfermion_qubit_op_to_fulqrum,
+    integrals_to_fq_fermionic_op,
 )
 
 
@@ -104,19 +106,80 @@ def test_openfermion_fermi_op_to_fulqrum_value_error():
     )
 
 
-@pytest.mark.skip(reason="Not implemented as it uses already tested functions")
 def test_integrals_to_fq_fermionic_op():
-    """The function uses openfermion methods which are tested as a part of
-    openfermion itself. Finally, it uses ``openfermion_fermi_op_to_fulqrum``,
-    which is also tested above separately. Therefore, we are skipping explicitly
-    testing this function for now.
+    """Direct conversion from PySCF integrals to fermi ops matches OpenFermion"""
+    openfermion = pytest.importorskip("openfermion")
+    pyscf = pytest.importorskip("pyscf")
+    import pyscf.mcscf
 
-    Test Idea: Consider generating hcore and eri for a small molecule such as
-        H2O, solve it for full subspace, and compare expected accuracy with
-        computed accuracy. If integral conversion is correct, then accuracies
-        must match.
-    """
-    pass
+    def old_integrals_to_fq_fermionic_op(
+        one_body_integrals, two_body_integrals, constant=0, EQ_TOLERANCE=1e-12
+    ):
+        """This is the old pathway"""
+        two_body_integrals = np.asarray(
+            two_body_integrals.transpose(0, 2, 3, 1), order="C"
+        )
+        of_interaction_op = openfermion.hamiltonians.generate_hamiltonian(
+            one_body_integrals=one_body_integrals,
+            two_body_integrals=two_body_integrals,
+            constant=constant,
+            EQ_TOLERANCE=EQ_TOLERANCE,
+        )
+        of_fermion_op = openfermion.transforms.get_fermion_operator(of_interaction_op)
+        return openfermion_fermi_op_to_fulqrum(of_fermion_op)
+
+    atoms = [
+        [["N", (0, 0, 0)], ["N", (1.0, 0, 0)]],
+        [["Li", (0, 0, 0)], ["H", (1.0, 0, 0)]],
+        [["H", (0, 0, 0)], ["H", (1.0, 0, 0)]],
+    ]
+    bases = ["sto3g", "sto6g"]
+
+    for atom in atoms:
+        for basis in bases:
+            mol = pyscf.gto.Mole()
+            mol.build(atom=atom, basis=basis)
+            n_frozen = 0
+            active_space = range(n_frozen, mol.nao_nr())
+            # Get molecular integrals
+            scf = pyscf.scf.RHF(mol).run()
+            num_orbitals = len(active_space)
+            n_electrons = int(sum(scf.mo_occ[active_space]))
+            num_elec_a = (n_electrons + mol.spin) // 2
+            num_elec_b = (n_electrons - mol.spin) // 2
+            cas = pyscf.mcscf.CASCI(scf, num_orbitals, (num_elec_a, num_elec_b))
+            mo = cas.sort_mo(active_space, base=0)
+            hcore, nuclear_repulsion_energy = cas.get_h1cas(
+                mo
+            )  # hcore: one-body integrals
+            eri = pyscf.ao2mo.restore(
+                1, cas.get_h2cas(mo), num_orbitals
+            )  # eri: two-body integrals
+            # Build operators
+            # The way truncation works in the old path is not exactly the same as the new path
+            # The old path seems to have some addtional truncation somewhere.  As such we set the
+            # tolerance value so that these extra small get cut and we do not throw an error
+            fop = integrals_to_fq_fermionic_op(
+                one_body_integrals=hcore, two_body_integrals=eri, EQ_TOLERANCE=1e-10
+            )
+            fop2 = old_integrals_to_fq_fermionic_op(
+                one_body_integrals=hcore, two_body_integrals=eri
+            )
+            # A brute force way to check for operator equality
+            assert fop.size() == fop2.size()
+            num_touched = 0
+            for op in fop:
+                found = False
+                for op2 in fop2:
+                    if (
+                        abs(op.coeff - op2.coeff) < 1e-12
+                        and op.operators == op2.operators
+                    ):
+                        found = True
+                        num_touched += 1
+                        break
+                assert found
+            assert num_touched == fop.size()
 
 
 @pytest.mark.skip(reason="Not implemented as it uses already tested functions")
