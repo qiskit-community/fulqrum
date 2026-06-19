@@ -90,7 +90,6 @@ def integrals_to_fq_fermionic_op(
             # Continue looping to prepare 2-body coefficients.
             for r in range(half_num_qubits):
                 for s in range(half_num_qubits):
-                    # temp_two_body = two_body_integrals[p, q, r, s] / 2.0
                     temp_two_body = (
                         flat_two_body_integrals[
                             _flat_index4d(p, q, r, s, half_num_qubits)
