@@ -110,7 +110,7 @@ def test_integrals_to_fq_fermionic_op():
     """Direct conversion from PySCF integrals to fermi ops matches OpenFermion"""
     openfermion = pytest.importorskip("openfermion")
     pyscf = pytest.importorskip("pyscf")
-    import pyscf.mcscf
+    import pyscf.mcscf as mc
 
     def old_integrals_to_fq_fermionic_op(
         one_body_integrals, two_body_integrals, constant=0, EQ_TOLERANCE=1e-12
@@ -147,7 +147,7 @@ def test_integrals_to_fq_fermionic_op():
             n_electrons = int(sum(scf.mo_occ[active_space]))
             num_elec_a = (n_electrons + mol.spin) // 2
             num_elec_b = (n_electrons - mol.spin) // 2
-            cas = pyscf.mcscf.CASCI(scf, num_orbitals, (num_elec_a, num_elec_b))
+            cas = mc.CASCI(scf, num_orbitals, (num_elec_a, num_elec_b))
             mo = cas.sort_mo(active_space, base=0)
             hcore, nuclear_repulsion_energy = cas.get_h1cas(
                 mo
