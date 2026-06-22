@@ -16,10 +16,11 @@ from pathlib import Path
 import numpy as np
 from ..core.fermi_operator cimport FermionicOperator
 
+include "../core/includes/types.pxi"
 
 
-
-def integrals_to_fq_fermionic_op(one_body_integrals, two_body_integrals, constant=0, EQ_TOLERANCE=1e-12) -> FermionicOperator:
+def integrals_to_fq_fermionic_op(double_or_complex[:,::1] one_body_integrals, double_or_complex[:,:,:,::1] two_body_integrals, 
+                                 complex constant=0, double EQ_TOLERANCE=1e-12) -> FermionicOperator:
     """Convert one- and two-body integrals as numpy arrays into Fulqrum
         fermionic operator.
 
@@ -33,14 +34,20 @@ def integrals_to_fq_fermionic_op(one_body_integrals, two_body_integrals, constan
     Returns:
         FermionicOperator: Converted operator.
     """
-    two_body_integrals = np.asarray(two_body_integrals.transpose(0, 2, 3, 1), order="C")
+    two_body_integrals = np.ascontiguousarray(np.asarray(two_body_integrals).transpose(0, 2, 3, 1))
     # Go to flat arrays in prep for doing calculation in C++
-    cdef double[::1] flat_one_body_integrals = one_body_integrals.ravel()
-    cdef double[::1] flat_two_body_integrals = two_body_integrals.ravel()
+    cdef double_or_complex[::1] flat_one_body_integrals = np.asarray(one_body_integrals).ravel()
+    cdef double_or_complex[::1] flat_two_body_integrals = np.asarray(two_body_integrals).ravel()
 
     num_qubits = int(2 * np.sqrt(flat_one_body_integrals.shape[0]))
     cdef FermionicOperator fop = FermionicOperator(num_qubits)
-    fop.oper = pyscf_integrals_to_fermionic(&flat_one_body_integrals[0], &flat_two_body_integrals[0],
+    
+    if double_or_complex is double:
+        fop.oper = pyscf_integrals_to_fermionic[double](&flat_one_body_integrals[0], &flat_two_body_integrals[0],
+                                            flat_one_body_integrals.shape[0], flat_two_body_integrals.shape[0], 
+                                            constant, EQ_TOLERANCE)
+    else:
+        fop.oper = pyscf_integrals_to_fermionic[complex](&flat_one_body_integrals[0], &flat_two_body_integrals[0],
                                             flat_one_body_integrals.shape[0], flat_two_body_integrals.shape[0], 
                                             constant, EQ_TOLERANCE)
 

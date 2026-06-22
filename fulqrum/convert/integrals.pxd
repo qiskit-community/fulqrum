@@ -15,7 +15,7 @@ include "../core/includes/base_header.pxi"
 
 cdef extern from "./src/integrals.hpp":
     
-    inline FermionicOperator_t pyscf_integrals_to_fermionic(double * one_body_integrals,
-                                                            double * two_body_integrals,
-                                                            unsigned int ob_arr_len, unsigned int tb_arr_len,
-                                                            double constant, double EQ_TOLERANCE)
+    FermionicOperator_t pyscf_integrals_to_fermionic[T](T * one_body_integrals,
+                                                     T * two_body_integrals,
+                                                     unsigned int ob_arr_len, unsigned int tb_arr_len,
+                                                     complex constant, double EQ_TOLERANCE)

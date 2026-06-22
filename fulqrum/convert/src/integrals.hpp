@@ -15,6 +15,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <complex>
 
 #include "../../core/src/fermi_oper.hpp"
 
@@ -30,11 +31,11 @@ inline std::size_t _flat_index4d(width_t i, width_t j, width_t k, width_t l, wid
     return i + j * dim + k * dim * dim + l * dim * dim * dim;
 }
 
-
-inline FermionicOperator pyscf_integrals_to_fermionic(double * __restrict flat_one_body_integrals,
-                                                      double * __restrict flat_two_body_integrals,
+template <typename T>
+inline FermionicOperator pyscf_integrals_to_fermionic(T * __restrict flat_one_body_integrals,
+                                                      T * __restrict flat_two_body_integrals,
                                                       unsigned int ob_arr_len, unsigned int tb_arr_len,
-                                                      double constant=0, double EQ_TOLERANCE=1e-12)
+                                                      std::complex<double> constant=0, double EQ_TOLERANCE=1e-12)
 {
     width_t half_num_qubits = std::sqrt(ob_arr_len);
     width_t num_qubits = 2 * half_num_qubits;
@@ -44,7 +45,7 @@ inline FermionicOperator pyscf_integrals_to_fermionic(double * __restrict flat_o
 
     std::vector<width_t> qubit_mapping(num_qubits);
     width_t p, q, r, s, ii, jj, kk, ll;
-    double temp_one_body, temp_two_body;
+    T temp_one_body, temp_two_body;
 
     for(kk=0; kk < num_qubits; kk++)
     {
