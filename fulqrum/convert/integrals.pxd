@@ -18,4 +18,4 @@ cdef extern from "./src/integrals.hpp":
     FermionicOperator_t pyscf_integrals_to_fermionic[T](T * one_body_integrals,
                                                      T * two_body_integrals,
                                                      unsigned int ob_arr_len, unsigned int tb_arr_len,
-                                                     complex constant, double EQ_TOLERANCE)
+                                                     complex constant, double EQ_TOLERANCE) except + nogil

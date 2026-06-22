@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <complex>
+#include <stdexcept>
 
 #include "../../core/src/fermi_oper.hpp"
 
@@ -39,6 +40,11 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T * __restrict flat_one_bo
 {
     width_t half_num_qubits = std::sqrt(ob_arr_len);
     width_t num_qubits = 2 * half_num_qubits;
+
+    if(tb_arr_len != half_num_qubits * half_num_qubits * half_num_qubits * half_num_qubits)
+    {
+        throw std::runtime_error("Input flat_two_body_integral array does not match expected length");
+    }
 
     std::string ob_str = "+-";   // One-body operator string (normal ordered)
     std::string tb_str = "++--"; // Two-body operator string (normal ordered)
