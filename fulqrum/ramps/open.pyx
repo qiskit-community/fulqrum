@@ -26,19 +26,21 @@ import numpy as np
 
 
 def ramps_open(object Hsub, Subspace target_subspace, double target_energy,
-               unsigned int max_recursion=2, double tol=1e-12):
-    """RAMPS restricted to an existing subspace when targeting a single bit-string
-    and associated energy.
+               unsigned int max_recursion=1, double tol=1e-12):
+    """Unrestricted RAMPS around the input target subspace.
+
+    The resultant subspace will be the target subspace with addtional bit-strings
+    added that perturbatively affect the energy more than the tolereance value
 
     Parameters:
         Hsub (SubspaceHamiltonian): Hamiltonian
         target_subspace (Subspace): Target subspace to expand around
         target_energy (double): Target energy from target subspace
-        max_recursion (int): Optional, maximum number of recursions to perform, default=2
+        max_recursion (int): Optional, maximum number of recursions to perform, default=1
         tol (double): Optional, tolerance value for truncation, default=1e-12
 
     Returns:
-        Subspace: RAMPS refined subspace
+        Subspace: RAMPS constructed subspace
     """
     if not isinstance(Hsub, SubspaceHamiltonian):
         raise FulqrumError("Input Hamiltonian must be a SubspaceHamiltonian object")
