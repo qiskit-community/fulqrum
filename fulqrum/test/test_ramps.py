@@ -69,7 +69,7 @@ def test_ramps_open_lih():
 
     target_subspace = Subspace([[S[min_idx].to_string()]])
     target_energy = diag[min_idx]
-    out = ramps_open(HSUB, target_subspace, target_energy)
+    out = ramps_open(HSUB, target_subspace, target_energy, max_recursion=2)
 
     assert out.size() == 69  # same as above
 
