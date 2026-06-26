@@ -30,7 +30,7 @@ def ramps_open(object Hsub, Subspace target_subspace, double target_energy,
     """Unrestricted RAMPS around the input target subspace.
 
     The resultant subspace will be the target subspace with addtional bit-strings
-    added that perturbatively affect the energy more than the tolereance value
+    added that perturbatively affect the energy more than the tolerance value
 
     Parameters:
         Hsub (SubspaceHamiltonian): Hamiltonian
