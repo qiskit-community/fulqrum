@@ -43,6 +43,8 @@ double open_ramps(const QubitOperator& oper,
     std::size_t recur, kk, current;
     // do stuff if the diagonal can be evaluated quickly
     bool do_fast_diag = fast_diag_compatible(diag_oper);
+    // alpha (spin-up) sector is the lower half of the bitset, beta the upper half
+    const width_t half_width = width / 2;
     std::vector<std::size_t> row_ptrs;
     if(do_fast_diag)
     {
@@ -82,7 +84,6 @@ double open_ramps(const QubitOperator& oper,
     std::size_t num_inserted_bitsets = 1;
     std::complex<double> val = 0;
     unsigned int row_int;
-    int do_col_search;
 
     struct Candidate
     {
@@ -101,18 +102,17 @@ double open_ramps(const QubitOperator& oper,
         std::vector<std::vector<Candidate>> pending_candidates(current_rows.size());
 // Loop over all rows in the current set
 #pragma omp parallel for private(col_vec,                                                          \
-                                     group_inds,                                                   \
-                                     out_col_ptr,                                                  \
-                                     idx,                                                          \
-                                     group,                                                        \
-                                     group_int_start,                                              \
-                                     group_int_stop,                                               \
-                                     val,                                                          \
-                                     row_int,                                                      \
-                                     do_col_search,                                                \
-                                     col_energy,                                                   \
-                                     energy_amp,                                                   \
-                                     term) schedule(dynamic)
+                                 group_inds,                                                       \
+                                 out_col_ptr,                                                      \
+                                 idx,                                                              \
+                                 group,                                                            \
+                                 group_int_start,                                                  \
+                                 group_int_stop,                                                   \
+                                 val,                                                              \
+                                 row_int,                                                          \
+                                 col_energy,                                                       \
+                                 energy_amp,                                                       \
+                                 term) schedule(dynamic)
         for(kk = 0; kk < current_rows.size(); kk++)
         {
             const boost::dynamic_bitset<size_t>& row = current_rows.at(kk);
@@ -120,24 +120,78 @@ double open_ramps(const QubitOperator& oper,
             std::vector<Candidate> row_candidates;
             bitset_to_bitvec(row, row_set_bits);
 
+            // Row diagonal energy + occupied-orbital list, computed once per row.
+            // Each connected col's diagonal energy is then obtained incrementally across
+            // the 2-/4-bit flip in O(nflip * nelec) instead of the full O(nelec^2)
+            // single_bitstring_diagonal_fast sweep.
+            double e_row = 0;
+            std::vector<width_t> row_occ;
+            if(do_fast_diag)
+            {
+                single_bitstring_diagonal_fast(row, diag_oper.terms, row_ptrs, e_row);
+                row_occ = set_bit_indices(row);
+            }
+
             for(group = 0; group < num_groups; group++)
             {
                 group_inds = &group_offdiag_inds[group];
+
+                // Hamming-weight necessary condition (ported from the type-2
+                // element evaluators, e.g. csrlike_builder2.hpp): For a single
+                // excitation (2 inds) the two positions must differ; for a double
+                // excitation (4 inds) exactly two of the four must be occupied.
+                // Cheap reject before the ladder lookup, the col flip and
+                // the per-group diagonal energy evaluation below.
+                {
+                    const width_t _p = (*group_inds)[0];
+                    const width_t _q = (*group_inds)[1];
+                    if(group_inds->size() == 2)
+                    {
+                        if(row_set_bits[_p] == row_set_bits[_q])
+                        {
+                            continue;
+                        }
+                    }
+                    else if(group_inds->size() == 4)
+                    {
+                        const width_t _r = (*group_inds)[2];
+                        const width_t _s = (*group_inds)[3];
+                        if(_q < half_width && _r >= half_width)
+                        {
+                            // aabb: exactly one occupied in
+                            // the alpha pair and exactly one in the beta pair.
+                            if(row_set_bits[_p] + row_set_bits[_q] != 1 ||
+                               row_set_bits[_r] + row_set_bits[_s] != 1)
+                            {
+                                continue;
+                            }
+                        }
+                        // aaaa / bbbb: exactly two of four occupied
+                        else if(row_set_bits[_p] + row_set_bits[_q] + row_set_bits[_r] +
+                                    row_set_bits[_s] !=
+                                2)
+                        {
+                            continue;
+                        }
+                    }
+                }
+
                 row_int = bitset_ladder_int(
                     row_set_bits.data(), group_inds->data(), group_rowint_length[group]);
                 group_int_start = group_ladder_ptrs[group * ladder_offset + row_int];
                 group_int_stop = group_ladder_ptrs[group * ladder_offset + row_int + 1];
-                do_col_search = 1;
+
+                if(group_int_start >= group_int_stop)
+                {
+                    continue;
+                }
+
+                col_vec = row;
+                flip_bits(col_vec, group_inds->data(), group_inds->size());
                 val = 0;
                 // begin loop over terms in this group
                 for(idx = group_int_start; idx < group_int_stop; idx++)
                 {
-                    if(do_col_search)
-                    {
-                        col_vec = row;
-                        flip_bits(col_vec, group_inds->data(), group_inds->size());
-                        do_col_search = 0;
-                    }
                     term = &oper.terms[idx];
                     if(passes_proj_validation(term, row))
                     {
@@ -152,11 +206,20 @@ double open_ramps(const QubitOperator& oper,
                     }
                 } // end loop over terms in this group
 
-                // Wwe need to compute the columns diagonal energy
+                // We need to compute the column's diagonal energy. In the delta-fast mode
+                // this is an incremental update from the row's diagonal energy across
+                // the group's bit-flip; otherwise fall back to the full evaluation.
                 col_energy = 0;
                 if(do_fast_diag)
                 {
-                    single_bitstring_diagonal_fast(col_vec, diag_oper.terms, row_ptrs, col_energy);
+                    col_energy = single_bitstring_diagonal_delta_fast(row,
+                                                                      col_vec,
+                                                                      row_occ,
+                                                                      diag_oper.terms,
+                                                                      row_ptrs,
+                                                                      group_inds->data(),
+                                                                      group_inds->size(),
+                                                                      e_row);
                 }
                 else
                 {

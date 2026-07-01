@@ -159,6 +159,8 @@ class SubspaceHamiltonian(LinearOperator):
             x = x.view().reshape(
                 x.shape[0],
             )
+        # The Cython SpMV requires a C-contiguous buffer; no-op if x already is.
+        x = np.ascontiguousarray(x)
         out = self.spmv.matvec(x)
         if col_vec:
             out = out.view().reshape(x.shape[0], 1)
@@ -207,6 +209,9 @@ class CSRLinearOperator(LinearOperator):
         self.matrix = matrix
         self.is_real = is_real
         super().__init__(shape=matrix.shape, dtype=float if self.is_real else complex)
+        # scipy >= 1.18 can throw error without it.
+        # See: https://github.com/qiskit-community/fulqrum/issues/67
+        self._matvec = self.matvec
 
     @property
     def nnz(self):
@@ -241,6 +246,8 @@ class CSRLinearOperator(LinearOperator):
             x = x.view().reshape(
                 x.shape[0],
             )
+        # The Cython SpMV requires a C-contiguous buffer; no-op if x already is.
+        x = np.ascontiguousarray(x)
         out = np.zeros_like(x, dtype=float if self.is_real else complex)
         csr_matvec(
             self.matrix.indptr,
@@ -267,6 +274,7 @@ class CSRLikeLinearOperator(LinearOperator):
         self.csrlike = csrlike
         self.is_real = csrlike.is_real
         super().__init__(shape=csrlike.shape, dtype=float if self.is_real else complex)
+        self._matvec = self.matvec
 
     def to_csr_array(self, verbose=False):
         return self.csrlike.to_csr_array(verbose)
@@ -312,6 +320,8 @@ class CSRLikeLinearOperator(LinearOperator):
             x = x.view().reshape(
                 x.shape[0],
             )
+        # The Cython SpMV requires a C-contiguous buffer; no-op if x already is.
+        x = np.ascontiguousarray(x)
         out = self.csrlike.matvec(x)
         if col_vec:
             out = out.view().reshape(x.shape[0], 1)
