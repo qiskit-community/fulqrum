@@ -12,6 +12,7 @@
  * that they have been altered from the originals.
  */
 #pragma once
+#include <cassert>
 #include <complex>
 #include <cstddef>
 #include <cstdlib>
@@ -260,6 +261,152 @@ inline void single_bitstring_diagonal_fast(const boost::dynamic_bitset<size_t>& 
                 row, row, term->indices, term->values, term->coeff, term->real_phase, weight, val);
         }
     }
+}
+
+/**
+ * Incremental fast-diagonal energy col bitset. E(row) must be known.
+ *
+ * row and col bitsets only differs on offdiag_grp_inds positions (flip_inds here).
+ * When we know the diagonal energy for a row bitset, E(row), we can incrementally
+ * correct the E(row) to compute the E(col).
+ * 
+ * single_bitstring_diagonal_fast uses two nested loops over set bits indices (= num
+ * of electrons) of a bitset, which takes nelecs * (nelecs + 1) / 2 iterations. 
+ * Consider a row bitset with set bits at [0, 2, 3, 5] (nelecs = 4). E(row) iterates
+ * over or has contribution from following 10 (set_bits[ll], set_bits[mm]) pairs:
+ * (0, 0), (0, 2), (0, 3), (0, 5), (2, 2), (2, 3), (2, 5), (3, 3), (3, 5), and (5, 5).
+ * 
+ * Now, consider a group with flip_inds [2, 4]. The corresponding col for this group
+ * and row will have set bits at [0, 3, 4, 5] ("1" bit at row pos 2 flips to "0", and
+ * "0" bit at row pos 4 flips to "1"). E(col) needs contribution from following 10
+ * pairs:
+ * (0, 0), (0, 3), (0, 4), (0, 5), (3, 3), (3, 4), (3, 5), (4, 4), (4, 5), and (5, 5).
+ * 
+ * If we inspect pairs from E(row) and E(col), we can find three buckets of pairs:
+ * A. Common in both row and col: (0, 0), (0, 3), (0, 5), (3, 3), (3, 5), and (5, 5).
+ * B. In col, but not in row: (0, 4), (3, 4), (4, 4), (4, 5)
+ * C. Not in col, but in row: (0, 2), (2, 2), (2, 3), (2, 5)
+ * 
+ * To compute E(col) by editing E(row), we need to subtract contributions from pairs
+ * that are not in col but in row (Bucket # C), and add from pairs that are in col but not in row (Bucket # B).
+ * 
+ * E(col) = E(row) + delta
+ *        = E(row) + Bucket B - Bucket C
+ * 
+ * When we already know E(row), we just need to compute delta to find E(col).
+ * Incremental delta needs 4 pairs in Bucket B + 4 pairs in Bucket C = 8 pairs
+ * instead of full 10 pairs from scratch to get E(col).
+ * 
+ * In general, incremental delta needs nflips * nelecs steps instead of
+ * (nelecs * (nelecs + 1)) / 2 steps, which can pay more dividends when
+ * nelecs is large.
+ * For example, Fe4S4 has 54 electrons requiring (54 * 55) / 2 = 1485 steps per det.
+ * With incremental logic that drops to 2 * 54 = 108 for single excitation groups
+ * and 4 * 54 + 2 = 218 for double excitation groups.
+ *
+ * `row_occ` must be set_bit_indices(row) (passed in so it can be reused across all
+ * connected cols of a row).`flip_inds` need not be
+ * sorted; nflip must be <=4 (2 or 4).
+ */
+template <typename T>
+inline T single_bitstring_diagonal_delta_fast(const boost::dynamic_bitset<size_t>& row,
+                                              const boost::dynamic_bitset<size_t>& col,
+                                              const std::vector<width_t>& row_occ,
+                                              const std::vector<OperatorTerm>& diag_terms,
+                                              const std::vector<std::size_t>& row_ptrs,
+                                              const width_t* flip_inds,
+                                              const unsigned int nflip,
+                                              const T e_row)
+{
+    auto g = [&](width_t a, width_t b, const boost::dynamic_bitset<size_t>& det) -> T {
+        const width_t lo = a < b ? a : b;
+        const width_t hi = a < b ? b : a;
+        const OperatorTerm* term = &diag_terms[row_ptrs[lo] + (hi - lo)];
+        T v = 0;
+        accum_element(det,
+                      det,
+                      term->indices,
+                      term->values,
+                      term->coeff,
+                      term->real_phase,
+                      term->indices.size(),
+                      v);
+        return v;
+    };
+
+    // Split flips into positions added (0->1) and removed (1->0) going row -> col.
+    // Type-2 off-diagonal groups are single (nflip==2) or double (nflip==4)
+    // excitations, so na + nr == nflip <= 4 and each buffer holds at most 4.
+    assert(nflip <= 4);
+    width_t added[4];
+    width_t removed[4];
+    unsigned int na = 0, nr = 0;
+    for(unsigned int f = 0; f < nflip; f++)
+    {
+        const width_t p = flip_inds[f];
+        if(row[p])
+        {
+            removed[nr++] = p;
+        }
+        else
+        {
+            added[na++] = p;
+        }
+    }
+
+    auto is_removed = [&](width_t y) {
+        for(unsigned int i = 0; i < nr; i++)
+        {
+            if(removed[i] == y)
+            {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    T delta = 0;
+    for(unsigned int i = 0; i < na; i++)
+    {
+        const width_t a = added[i];
+        for(std::size_t t = 0; t < row_occ.size(); t++)
+        {
+            const width_t y = row_occ[t];
+            if(!is_removed(y))
+            {
+                delta += g(a, y, col);
+            }
+        }
+        for(unsigned int j = 0; j < na; j++) // added-added (incl self g(a,a))
+        {
+            delta += g(a, added[j], col);
+        }
+    }
+    for(unsigned int i = 0; i < na; i++) // undo double-counted added-added pairs
+    {
+        for(unsigned int j = i + 1; j < na; j++)
+        {
+            delta -= g(added[i], added[j], col);
+        }
+    }
+
+    for(unsigned int i = 0; i < nr; i++)
+    {
+        const width_t r = removed[i];
+        for(std::size_t t = 0; t < row_occ.size(); t++)
+        {
+            delta -= g(r, row_occ[t], row);
+        }
+    }
+    for(unsigned int i = 0; i < nr; i++) // undo double-counted removed-removed pairs
+    {
+        for(unsigned int j = i + 1; j < nr; j++)
+        {
+            delta += g(removed[i], removed[j], row);
+        }
+    }
+
+    return e_row + delta;
 }
 
 /**
