@@ -98,6 +98,22 @@ FQ_BUILD_PARALLEL=8 pip install .
 FQ_BUILD_PARALLEL=8 python setup.py build_ext --inplace
 ```
 
+### Runtime performance tuning
+
+The type-2 build/matvec scripts (`csrlike_builder2`, `csr2`,
+`matvec2`) allows two optional **runtime** environment variables for tuning. Both have defaults and are read at run time (no rebuild needed), so they are safe to leave unset.
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `FQ_BLK` | `128` | The number of rows in a block of rows. FQ_BLK number of rows reuses a chunk of group_ladder_ptrs. Larger blocks give more reuse but risk overflowing the per-core cache; smaller blocks reduce reuse. `128` is a good middle ground. Values `<= 0` are ignored. |
+| `FQ_LADDER_WIDTH` | `2` | Number of ladder bits used to bucket each group's terms, giving `2^FQ_LADDER_WIDTH` bins per group (so `2` → 4 bins, `4` → 16 bins). |
+
+Example: run a workload with a larger row block and finer ladder bucketing:
+
+```bash
+FQ_BLK=256 FQ_LADDER_WIDTH=4 python your_workload.py
+```
+
 ## Running benchmarks
 
 See the README.md in the `benchmarks` directory.
