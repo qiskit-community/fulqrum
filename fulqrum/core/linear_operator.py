@@ -14,7 +14,6 @@
 
 import numpy as np
 from scipy.sparse.linalg import LinearOperator
-from scipy._lib._array_api import np_compat
 
 from .spmv import FulqrumSpMV
 from .csr import csr_matvec
