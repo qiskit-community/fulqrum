@@ -13,9 +13,60 @@
  */
 #pragma once
 #include "base.hpp"
+#include "constants.hpp"
 #include <algorithm>
+#include <cstddef>
 #include <cstdlib>
 #include <vector>
+
+// A lightweight, read-only window onto one group's offdiag indices.
+//
+// A GroupIndsView is just a pointer + a length. It owns nothing and copies
+// nothing and behaves like a tiny read-only array: use size() for how many indices
+// the group has, and view[i] to read the i-th one. Underlying storage is contiguous.
+struct GroupIndsView
+{
+    const width_t* __restrict p; // start of this group's indices in the flat array
+    std::size_t n; // how many indices this group has (e.g. 2 or 4)
+    std::size_t size() const
+    {
+        return n;
+    }
+    width_t operator[](std::size_t i) const
+    {
+        return p[i];
+    } // read the i-th index
+    const width_t* data() const
+    {
+        return p;
+    } // raw pointer to the slice
+};
+
+// Flatten group_offdiag_inds (which is a std::vector<std::vector<width_t>>
+// each inner vector is scattered across the heap, making access inefficient) into
+// a CSR-like structure: one contiguous values array plus CSR offsets.
+// The flattened structure's "offsets" resemble CSR's "indptr" and "flat_inds"
+// resembles CSR's "data". It is CSR-like because full CSR also has a column-"indices",
+// which we do not need.
+// Group g occupies flat_inds[offsets[g], offsets[g+1]).
+// Iterating groups then touches contiguous memory instead of chasing pointers
+// in the previous 2D vector structure.
+inline void flatten_offdiag_inds(const std::vector<std::vector<width_t>>& group_offdiag_inds,
+                                 std::vector<width_t>& flat_inds,
+                                 std::vector<std::size_t>& offsets)
+{
+    const std::size_t num_groups = group_offdiag_inds.size();
+    offsets.resize(num_groups + 1);
+    offsets[0] = 0;
+    for(std::size_t g = 0; g < num_groups; ++g)
+        offsets[g + 1] = offsets[g] + group_offdiag_inds[g].size();
+    flat_inds.resize(offsets[num_groups]);
+    for(std::size_t g = 0; g < num_groups; ++g)
+    {
+        const auto& v = group_offdiag_inds[g];
+        std::copy(v.begin(), v.end(), flat_inds.begin() + offsets[g]);
+    }
+}
 
 /**
  * Constructs a vector of max offdiagonal group indices.
