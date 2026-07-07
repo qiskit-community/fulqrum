@@ -14,6 +14,7 @@
 
 import numpy as np
 from scipy.sparse.linalg import LinearOperator
+from scipy._lib._array_api import np_compat
 
 from .spmv import FulqrumSpMV
 from .csr import csr_matvec
@@ -62,8 +63,7 @@ class SubspaceHamiltonian(LinearOperator):
             self.group_ladder_ptrs,
         )
         self._matvec = self.matvec
-        self.shape = (len(subspace),) * 2
-        self.dtype = np.dtype(float) if self.spmv.is_real else np.dtype(complex)
+        super().__init__(shape=(len(subspace),) * 2, dtype=np.dtype(float) if self.spmv.is_real else np.dtype(complex))
 
     @property
     def num_groups(self):
