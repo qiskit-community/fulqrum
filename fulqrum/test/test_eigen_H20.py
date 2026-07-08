@@ -15,6 +15,7 @@
 from pathlib import Path
 import numpy as np
 import scipy.sparse.linalg as spla
+import primme
 
 from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
 
@@ -43,6 +44,11 @@ def test_full_dist_h20_eigenenergy_matrix_free():
     evals, _ = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
+    evals2, _ = primme.eigsh(
+        Hsub, k=1, which="SA", v0=np.ones((len(S), 1), dtype=float)
+    )
+    assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
+
 
 def test_full_dist_h20_eigenenergy_csr():
     """Test full space solution against exact for CSR matrix"""
@@ -66,6 +72,9 @@ def test_full_dist_h20_eigenenergy_csr():
 
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+    evals2, _ = primme.eigsh(M, k=1, which="SA", v0=np.ones((len(S), 1), dtype=float))
+    assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
 
 
 def test_full_dist_h20_eigenenergy_csr_linearoperator():
@@ -91,6 +100,9 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator():
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
+    evals2, _ = primme.eigsh(M, k=1, which="SA", v0=np.ones((len(S), 1), dtype=float))
+    assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
+
 
 def test_full_dist_h20_eigenenergy_csr_linearoperator_fast():
     """Test full space solution against exact for CSR linearoperator fast"""
@@ -114,6 +126,9 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator_fast():
     assert M.matrix.dtype == float
     evals, _ = spla.eigsh(M, k=1, which="SA", v0=np.ones(len(S), dtype=float))
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+    evals2, _ = primme.eigsh(M, k=1, which="SA", v0=np.ones((len(S), 1), dtype=float))
+    assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
 
 
 def test_proj_indices_set():

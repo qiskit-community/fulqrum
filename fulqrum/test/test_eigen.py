@@ -17,6 +17,7 @@ from fulqrum import QubitOperator, Subspace, SubspaceHamiltonian
 from fulqrum.utils import kron_str
 
 import scipy.sparse.linalg as spla
+import primme
 
 
 def grab_subspace(A, rows):
@@ -48,14 +49,24 @@ def test_eigen1():
     subspace_dict = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
 
     ans_evals, _ = spla.eigsh(B, k=2, which="SA", v0=np.ones(B.shape[0]))
+    # eigenenergies are not guarenteed to be sorted low->high here
+    ans_evals = np.sort(ans_evals)
 
     S = Subspace([list(subspace_dict.keys())])
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=2, which="SA", v0=np.ones(len(S)))
-    assert np.allclose(ans_evals, evals)
+    assert np.allclose(ans_evals, np.sort(evals))
     for kk in range(2):
         assert (
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
+
+    evals2, evecs2 = primme.eigsh(Hsub, k=2, which="SA", v0=np.ones((len(S), 1)))
+    assert np.allclose(ans_evals, evals2)
+    for kk in range(2):
+        assert (
+            np.linalg.norm(B.dot(evecs2[:, kk]) - evals2[kk] * evecs2[:, kk], np.inf)
             < 1e-13
         )
 
@@ -63,7 +74,7 @@ def test_eigen1():
     S = Subspace([list(subspace_dict.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=2, which="SA", v0=np.ones(len(S)))
-    assert np.allclose(ans_evals, evals)
+    assert np.allclose(ans_evals, np.sort(evals))
     for kk in range(2):
         assert (
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
@@ -102,6 +113,13 @@ def test_eigen2():
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
             < 1e-13
         )
+    evals2, evecs2 = primme.eigsh(Hsub, k=2, which="SA", v0=np.ones((len(S), 1)))
+    assert np.allclose(ans_evals, evals2)
+    for kk in range(2):
+        assert (
+            np.linalg.norm(B.dot(evecs2[:, kk]) - evals2[kk] * evecs2[:, kk], np.inf)
+            < 1e-13
+        )
 
     # hashing only the first (`bitset.m_bits[0]`) bitset block
     S = Subspace([list(subspace_dict.keys())], use_all_bitset_blocks=False)
@@ -111,6 +129,13 @@ def test_eigen2():
     for kk in range(2):
         assert (
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
+    evals2, evecs2 = primme.eigsh(Hsub, k=2, which="SA", v0=np.ones((len(S), 1)))
+    assert np.allclose(ans_evals, evals2)
+    for kk in range(2):
+        assert (
+            np.linalg.norm(B.dot(evecs2[:, kk]) - evals2[kk] * evecs2[:, kk], np.inf)
             < 1e-13
         )
 
@@ -134,16 +159,25 @@ def test_eigen3():
     B = grab_subspace(A, rows)
 
     subspace_dict = {bin(rr)[2:].zfill(H.width): 1 for rr in rows}
-
-    ans_evals, _ = spla.eigsh(B, k=3, which="SA")
-
     S = Subspace([list(subspace_dict.keys())])
+
+    ans_evals, _ = spla.eigsh(B, k=3, which="SA", v0=np.ones(len(S)))
+    # eigenenergies are not guarenteed to be sorted low->high here
+    # ans_evals = np.sort(ans_evals)
+
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=3, which="SA")
     assert np.allclose(ans_evals, evals)
     for kk in range(3):
         assert (
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
+    evals2, evecs2 = primme.eigsh(Hsub, k=3, which="SA", v0=np.ones((len(S), 1)))
+    assert np.allclose(ans_evals, evals2)
+    for kk in range(3):
+        assert (
+            np.linalg.norm(B.dot(evecs2[:, kk]) - evals2[kk] * evecs2[:, kk], np.inf)
             < 1e-13
         )
 
@@ -155,6 +189,14 @@ def test_eigen3():
     for kk in range(3):
         assert (
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
+            < 1e-13
+        )
+
+    evals2, evecs2 = primme.eigsh(Hsub, k=3, which="SA", v0=np.ones((len(S), 1)))
+    assert np.allclose(ans_evals, evals2)
+    for kk in range(3):
+        assert (
+            np.linalg.norm(B.dot(evecs2[:, kk]) - evals2[kk] * evecs2[:, kk], np.inf)
             < 1e-13
         )
 
@@ -192,6 +234,14 @@ def test_eigen4():
             < 1e-13
         )
 
+    evals2, evecs2 = primme.eigsh(Hsub, k=3, which="SA", v0=np.ones((len(S), 1)))
+    assert np.allclose(ans_evals, evals2)
+    for kk in range(3):
+        assert (
+            np.linalg.norm(B.dot(evecs2[:, kk]) - evals2[kk] * evecs2[:, kk], np.inf)
+            < 1e-11  # Error a bit larger in this case
+        )
+
     # hashing only the first (`bitset.m_bits[0]`) bitset block
     S = Subspace([list(subspace_dict.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
@@ -201,6 +251,14 @@ def test_eigen4():
         assert (
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
             < 1e-13
+        )
+
+    evals2, evecs2 = primme.eigsh(Hsub, k=3, which="SA", v0=np.ones((len(S), 1)))
+    assert np.allclose(ans_evals, evals2)
+    for kk in range(3):
+        assert (
+            np.linalg.norm(B.dot(evecs2[:, kk]) - evals2[kk] * evecs2[:, kk], np.inf)
+            < 1e-11  # Error a bit larger in this case
         )
 
 
@@ -221,6 +279,7 @@ def test_eigen5():
     v0 = np.ones(len(rows), dtype=float)
     B = grab_subspace(A, rows)
     ans_evals, ans_evecs = spla.eigsh(B, k=num_evals, which="SA", v0=v0)
+    ans_evals = np.sort(ans_evals)  # scipy not sorting low -> high
 
     width = len(obs[0])
     H = QubitOperator(width)
@@ -232,7 +291,7 @@ def test_eigen5():
     S = Subspace([list(subspace_dict.keys())])
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
-    assert np.allclose(ans_evals, evals)
+    assert np.allclose(ans_evals, np.sort(evals))
     for kk in range(num_evals):
         assert (
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)
@@ -243,7 +302,7 @@ def test_eigen5():
     S = Subspace([list(subspace_dict.keys())], use_all_bitset_blocks=False)
     Hsub = SubspaceHamiltonian(H, S)
     evals, evecs = spla.eigsh(Hsub, k=num_evals, which="SA", v0=v0)
-    assert np.allclose(ans_evals, evals)
+    assert np.allclose(ans_evals, np.sort(evals))
     for kk in range(num_evals):
         assert (
             np.linalg.norm(B.dot(evecs[:, kk]) - evals[kk] * evecs[:, kk], np.inf)

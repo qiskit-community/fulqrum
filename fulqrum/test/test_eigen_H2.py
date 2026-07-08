@@ -16,6 +16,7 @@ from pathlib import Path
 import numpy as np
 import scipy.linalg as la
 import scipy.sparse.linalg as spla
+import primme
 
 from fulqrum import FermionicOperator, Subspace, SubspaceHamiltonian
 from fulqrum.utils import qubitoperator_to_matrix
@@ -60,6 +61,11 @@ def test_full_dist_h2_eigen():
     assert np.allclose(evals, GROUND_ENERGY)
     assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
 
+    x0p = np.ones((len(S), 1), dtype=float if OP.is_real() else complex)
+    evals2, evecs2 = primme.eigsh(Hsub, k=1, which="SA", v0=x0p)
+    assert evecs2.dtype == float
+    assert np.allclose(evals2, GROUND_ENERGY)
+
 
 def test_partial_dist_h2_eigen1():
     """Test subspace that overlaps with ground state still works"""
@@ -91,6 +97,11 @@ def test_partial_dist_h2_eigen1():
     assert abs(ans_dict["1010"] - GROUND_DIST["1010"]) < 1e-14
     assert abs(ans_dict["0101"] - GROUND_DIST["0101"]) < 1e-14
 
+    x0p = np.ones((len(S), 1), dtype=float if OP.is_real() else complex)
+    evals2, evecs2 = primme.eigsh(Hsub, k=1, which="SA", v0=x0p)
+    assert evecs2.dtype == float
+    assert np.allclose(evals2, GROUND_ENERGY)
+
 
 def test_partial_dist_h2_eigen2():
     """Test subspace that overlaps with ground state still works"""
@@ -119,6 +130,11 @@ def test_partial_dist_h2_eigen2():
     ans_dict = Hsub.interpret_vector(evecs)
     assert abs(ans_dict["1010"] - GROUND_DIST["1010"]) < 1e-14
     assert abs(ans_dict["0101"] - GROUND_DIST["0101"]) < 1e-14
+
+    x0p = np.ones((len(S), 1), dtype=float if OP.is_real() else complex)
+    evals2, evecs2 = primme.eigsh(Hsub, k=1, which="SA", v0=x0p)
+    assert evecs2.dtype == float
+    assert np.allclose(evals2, GROUND_ENERGY)
 
 
 def test_full_dist_h2_eigen_csr_linearoperator():
@@ -152,6 +168,11 @@ def test_full_dist_h2_eigen_csr_linearoperator():
     assert np.allclose(evals, GROUND_ENERGY)
     assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
 
+    x0p = np.ones((len(S), 1), dtype=float if OP.is_real() else complex)
+    evals2, evecs2 = primme.eigsh(M, k=1, which="SA", v0=x0p)
+    assert evecs2.dtype == float
+    assert np.allclose(evals2, GROUND_ENERGY)
+
 
 def test_full_dist_h2_eigen_csr_linearoperator_fast():
     """Test full space solution against exact for CSR linearoperator fast"""
@@ -183,6 +204,11 @@ def test_full_dist_h2_eigen_csr_linearoperator_fast():
     assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY)
     assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+    x0p = np.ones((len(S), 1), dtype=float if OP.is_real() else complex)
+    evals2, evecs2 = primme.eigsh(M, k=1, which="SA", v0=x0p)
+    assert evecs2.dtype == float
+    assert np.allclose(evals2, GROUND_ENERGY)
 
 
 def test_proj_indices_set():
