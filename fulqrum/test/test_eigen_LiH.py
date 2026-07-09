@@ -15,6 +15,7 @@
 from pathlib import Path
 import numpy as np
 import scipy.sparse.linalg as spla
+import primme
 
 import fulqrum as fq
 
@@ -121,6 +122,11 @@ def test_full_dist_lih_eigen():
     assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
+    x0p = np.ones((len(S), 1), dtype=float if OP.is_real() else complex)
+    evals2, evecs2 = primme.eigsh(Hsub, k=1, which="SA", v0=x0p)
+    assert evecs2.dtype == float
+    assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
+
 
 def test_full_dist_lih_eigen_csr():
     """Test full space CSR solution against exact"""
@@ -150,6 +156,11 @@ def test_full_dist_lih_eigen_csr():
     evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
     assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+    x0p = np.ones((len(S), 1), dtype=float if OP.is_real() else complex)
+    evals2, evecs2 = primme.eigsh(M, k=1, which="SA", v0=x0p)
+    assert evecs2.dtype == float
+    assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
 
 
 def test_full_dist_lih_eigen_csr_fast():
@@ -181,6 +192,11 @@ def test_full_dist_lih_eigen_csr_fast():
     assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
+    x0p = np.ones((len(S), 1), dtype=float if OP.is_real() else complex)
+    evals2, evecs2 = primme.eigsh(M, k=1, which="SA", v0=x0p)
+    assert evecs2.dtype == float
+    assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
+
 
 def test_grnd_dist_lih_eigen():
     """Test grnd state space solution against exact"""
@@ -202,6 +218,11 @@ def test_grnd_dist_lih_eigen():
     evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
     assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+    x0p = np.ones((len(S), 1), dtype=float if OP.is_real() else complex)
+    evals2, evecs2 = primme.eigsh(Hsub, k=1, which="SA", v0=x0p)
+    assert evecs2.dtype == float
+    assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
 
 
 def test_grnd_dist_lih_eigen_csr():
@@ -229,6 +250,11 @@ def test_grnd_dist_lih_eigen_csr():
     assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
 
+    x0p = np.ones((len(S), 1), dtype=float if OP.is_real() else complex)
+    evals2, evecs2 = primme.eigsh(M, k=1, which="SA", v0=x0p)
+    assert evecs2.dtype == float
+    assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
+
 
 def test_grnd_dist_lih_eigen_csr_fast():
     """Test grnd space CSR fast solution against exact"""
@@ -254,6 +280,11 @@ def test_grnd_dist_lih_eigen_csr_fast():
     evals, evecs = spla.eigsh(M, k=1, which="SA", v0=x0)
     assert evecs.dtype == float
     assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+    x0p = np.ones((len(S), 1), dtype=float if OP.is_real() else complex)
+    evals2, evecs2 = primme.eigsh(M, k=1, which="SA", v0=x0p)
+    assert evecs2.dtype == float
+    assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
 
 
 def test_proj_indices_set():
