@@ -495,6 +495,28 @@ cdef class QubitOperator():
             out.oper.terms[kk].coeff *= other
         return out
 
+    def multiply(self, QubitOperator other):
+        """Operator product of two QubitOperators.
+
+        Note:
+            Not implemented yet. To build a product of operators, construct
+            it at the `fulqrum.core.fermi_operator.FermionicOperator` level
+            (which supports ``multiply`` / ``@``) and then apply
+            ``extended_jw_transformation``.
+
+        Raises:
+            NotImplementedError: Always.
+        """
+        raise NotImplementedError(
+            "QubitOperator operator-operator multiplication is not implemented. "
+            "Build the product as a FermionicOperator (which supports `@`) and "
+            "then call `extended_jw_transformation()`."
+        )
+
+    def __matmul__(self, QubitOperator other):
+        """Operator product ``self @ other`` (see :meth:`multiply`)."""
+        return self.multiply(other)
+
     @cython.boundscheck(False)
     def __repr__(self):
         cdef size_t idx

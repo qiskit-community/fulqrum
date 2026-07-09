@@ -65,21 +65,21 @@ cdef class FermionicOperator():
         if operators is not None:
             for item in operators:
                 term = EmptyFermionicTerm
-                if any(item):
-                    if len(item) == 1:
-                        term.coeff = item[0]
-                    else:
-                        op_str = (<string>item[0]).c_str()
-                        inds = item[1] if isinstance(item[1], Iterable) else [item[1]]
-                        coeff = item[2] if len(item) == 3 else 1.0
-                        for kk in range(<size_t>len(item[0])):
-                            if inds[kk] > (self.oper.width - 1):
-                                raise FulqrumError(f'Index {item[1]} is out of range for width={self.oper.width}')
-                            if op_str[kk] != 73:
-                                term.indices.push_back(inds[kk])
-                                ind = STR_TO_IND[op_str[kk]]
-                                term.values.push_back(ind)
-                        term.coeff = coeff
+
+                if len(item) == 1:
+                    term.coeff = item[0]
+                elif len(item) >= 2:
+                    op_str = (<string>item[0]).c_str()
+                    inds = item[1] if isinstance(item[1], Iterable) else [item[1]]
+                    coeff = item[2] if len(item) == 3 else 1.0
+                    for kk in range(<size_t>len(item[0])):
+                        if inds[kk] > (self.oper.width - 1):
+                            raise FulqrumError(f'Index {item[1]} is out of range for width={self.oper.width}')
+                        if op_str[kk] != 73:
+                            term.indices.push_back(inds[kk])
+                            ind = STR_TO_IND[op_str[kk]]
+                            term.values.push_back(ind)
+                    term.coeff = coeff
                 else:
                     term.coeff = 1
                 term.insertion_sort()
@@ -188,6 +188,31 @@ cdef class FermionicOperator():
         for kk in range(out.oper.terms.size()):
             out.oper.terms[kk].coeff *= other
         return out
+
+    def multiply(self, FermionicOperator other):
+        """Operator product of two FermionicOperators.
+
+        Computes ``self * other`` as a fermionic operator. The resulting
+        operator may have repeated indices or terms. A subsequent
+        JW transform or explicit ``combine_repeat_indices`` /
+        ``combine_repeated_terms`` call can combine them.
+
+        Parameters:
+            other (FermionicOperator): The right-hand operator. Must have the
+                same width as ``self``.
+
+        Returns:
+            FermionicOperator: The product ``self * other``.
+        """
+        if self.oper.width != other.oper.width:
+            raise FulqrumError("Operators must have the same width")
+        cdef FermionicOperator out = FermionicOperator(self.oper.width)
+        out.oper = self.oper.multiply(other.oper)
+        return out
+
+    def __matmul__(self, FermionicOperator other):
+        """Operator product ``self @ other`` (see :meth:`multiply`)."""
+        return self.multiply(other)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)

@@ -246,6 +246,45 @@ typedef struct FermionicOperator
         return out;
     }
     /**
+     * Operator product with another FermionicOperator.
+     *
+     * @param[in] other The right-hand operator.
+     * @return The product operator (this * other).
+     * @throw Error if operators do not share the same width.
+     */
+    FermionicOperator operator*(FermionicOperator other) const
+    {
+        return this->multiply(other);
+    }
+    /**
+     * Operator product with another FermionicOperator (named form).
+     *
+     * Equivalent to ``operator*`` but exposed under a name so it can be called
+     * from Cython.
+     *
+     * @param[in] other The right-hand operator.
+     * @return The product operator (this * other).
+     * @throw Error if operators do not share the same width.
+     */
+    FermionicOperator multiply(FermionicOperator other) const
+    {
+        if(other.width != this->width)
+        {
+            throw std::runtime_error("Operators must have the same width");
+        }
+        FermionicOperator out = FermionicOperator(this->width);
+        out.terms.reserve(this->size() * other.size());
+        for(std::size_t ii = 0; ii < this->size(); ii++)
+        {
+            for(std::size_t jj = 0; jj < other.size(); jj++)
+            {
+                out.terms.push_back(this->terms[ii].multiply(other.terms[jj]));
+            }
+        }
+        out.combined = 0;
+        return out;
+    }
+    /**
      * Return the size of the operator
      */
     std::size_t size() const
