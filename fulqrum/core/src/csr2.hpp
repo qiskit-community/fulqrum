@@ -27,6 +27,7 @@
 #include "bitset_utils.hpp"
 #include "constants.hpp"
 #include "elements.hpp"
+#include "matvec2.hpp"
 #include "offdiag_grouping.hpp"
 #include <boost/dynamic_bitset.hpp>
 
@@ -562,6 +563,68 @@ void csr_matrix_builder2(const std::vector<OperatorTerm_t>& terms,
     {
         _sum = 0;
         for(kk = 0; kk < (subspace_dim); kk++)
+        {
+            temp = _sum + row_nnz_s[kk];
+            indptr[kk] = _sum;
+            _sum = temp;
+        }
+        indptr[subspace_dim] = _sum;
+    }
+}
+
+template <typename T, typename U>
+void csr_matrix_builder2_halfstr(const HalfStrContext<U>& context,
+                                 const std::vector<OperatorTerm_t>& terms,
+                                 const bitset_map_namespace::BitsetHashMapWrapper& subspace,
+                                 const U* __restrict diag_vec,
+                                 const std::size_t subspace_dim,
+                                 const int has_nonzero_diag,
+                                 const width_t* __restrict group_rowint_length,
+                                 const unsigned int ladder_offset,
+                                 T* __restrict indptr,
+                                 T* __restrict indices,
+                                 U* __restrict data,
+                                 const int compute_values)
+{
+    std::vector<T> row_nnz_s(subspace_dim, 0);
+    if(has_nonzero_diag)
+    {
+#pragma omp parallel for schedule(dynamic) if(subspace_dim > 4096)
+        for(std::size_t kk = 0; kk < subspace_dim; kk++)
+        {
+            T& row_nnz = row_nnz_s[kk];
+            if(diag_vec[kk] != 0.0)
+            {
+                if(compute_values)
+                {
+                    const T elem_start = indptr[kk];
+                    indices[elem_start + row_nnz] = static_cast<T>(kk);
+                    data[elem_start + row_nnz] = diag_vec[kk];
+                }
+                row_nnz += 1;
+            }
+        }
+    }
+    halfstr_walk<U>(context,
+                    terms,
+                    subspace,
+                    subspace_dim,
+                    group_rowint_length,
+                    ladder_offset,
+                    [&](std::size_t out_row, std::size_t col_idx, U val) {
+                        T& row_nnz = row_nnz_s[out_row];
+                        if(compute_values)
+                        {
+                            const T elem_start = indptr[out_row];
+                            indices[elem_start + row_nnz] = static_cast<T>(col_idx);
+                            data[elem_start + row_nnz] = val;
+                        }
+                        row_nnz += 1;
+                    });
+    if(!compute_values)
+    {
+        T _sum = 0, temp;
+        for(std::size_t kk = 0; kk < subspace_dim; kk++)
         {
             temp = _sum + row_nnz_s[kk];
             indptr[kk] = _sum;

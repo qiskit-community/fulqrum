@@ -39,6 +39,11 @@ cdef class FulqrumSpMV:
     cdef vector[vector[width_t]] group_offdiag_inds
     cdef public bool fast_diag
     cdef bool _disable_fast_diag
+    cdef void* _hs_context
+    cdef bint _hs_built
+    cdef bint _hs_usable
 
     cpdef int compute_diag_vector(self)
     cpdef void update_subspace(self, Subspace)
+    cdef void _free_hs_context(self)
+    cdef bint _ensure_hs_context(self)

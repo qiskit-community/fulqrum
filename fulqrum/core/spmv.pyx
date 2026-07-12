@@ -17,6 +17,7 @@ from libcpp.vector cimport vector
 from libcpp.pair cimport pair
 from libc.string cimport memcpy
 from libc.math cimport floor, sqrt
+from libc.stdlib cimport getenv
 
 from .qubit_operator cimport QubitOperator
 from .subspace cimport Subspace
@@ -102,6 +103,42 @@ cdef class FulqrumSpMV():
         # grabbing a pointer to the data is going to complain
         self.real_diag_vec = np.empty(shape=(1,), dtype=float)
         self.complex_diag_vec = np.empty(shape=(1,), dtype=complex)
+        self._hs_context = NULL
+        self._hs_built = False
+        self._hs_usable = False
+
+    cdef void _free_hs_context(self):
+        cdef HalfStrContext[double]* pd
+        if self._hs_context != NULL:
+            pd = <HalfStrContext[double]*> self._hs_context
+            del pd
+            self._hs_context = NULL
+        self._hs_built = False
+        self._hs_usable = False
+
+    cdef bint _ensure_hs_context(self):
+        if not self.is_real or self.oper.type != 2:
+            return False
+        if getenv("FQ_NO_HALFSTR") != NULL:
+            return False
+        if not self._hs_built:
+            self._hs_context = <void*> new HalfStrContext[double]()
+            build_halfstr_context[double](self.oper.terms,
+                    self.subspace.subspace.bitstrings,
+                    self.width,
+                    self.subspace_dim,
+                    &self.group_ptrs[0],
+                    &self.group_ladder_ptrs[0],
+                    self.group_offdiag_inds,
+                    self.num_groups,
+                    self.ladder_offset,
+                    (<HalfStrContext[double]*>self._hs_context)[0])
+            self._hs_built = True
+            self._hs_usable = (<HalfStrContext[double]*>self._hs_context).usable
+        return self._hs_usable
+
+    def __dealloc__(self):
+        self._free_hs_context()
 
     def __repr__(self):
         out = f"<FulqrumSpMV(width={self.width}, "
@@ -118,6 +155,7 @@ cdef class FulqrumSpMV():
         self.init_diag = 0
         self.real_diag_vec = np.empty(shape=(1,), dtype=float)
         self.complex_diag_vec = np.empty(shape=(1,), dtype=complex)
+        self._free_hs_context()
 
     @cython.boundscheck(False)
     cpdef int compute_diag_vector(self):
@@ -216,20 +254,33 @@ cdef class FulqrumSpMV():
         if self.oper.type == 2:
             if self.is_real:
                 if double_or_complex is double:
-                    omp_matvec2[double](self.oper.terms,
-                            self.subspace.subspace.bitstrings,
-                            &self.real_diag_vec[0],
-                            self.width,
-                            self.subspace_dim,
-                            self.has_nonzero_diag,
-                            &self.group_ptrs[0],
-                            &self.group_ladder_ptrs[0],
-                            &self.group_rowint_length[0],
-                            self.group_offdiag_inds,
-                            self.num_groups,
-                            self.ladder_offset,
-                            &x[0],
-                            &out[0])
+                    if self._ensure_hs_context():
+                        omp_matvec2_halfstr[double](
+                                (<HalfStrContext[double]*>self._hs_context)[0],
+                                self.oper.terms,
+                                self.subspace.subspace.bitstrings,
+                                &self.real_diag_vec[0],
+                                self.subspace_dim,
+                                self.has_nonzero_diag,
+                                &self.group_rowint_length[0],
+                                self.ladder_offset,
+                                &x[0],
+                                &out[0])
+                    else:
+                        omp_matvec2[double](self.oper.terms,
+                                self.subspace.subspace.bitstrings,
+                                &self.real_diag_vec[0],
+                                self.width,
+                                self.subspace_dim,
+                                self.has_nonzero_diag,
+                                &self.group_ptrs[0],
+                                &self.group_ladder_ptrs[0],
+                                &self.group_rowint_length[0],
+                                self.group_offdiag_inds,
+                                self.num_groups,
+                                self.ladder_offset,
+                                &x[0],
+                                &out[0])
             else:
                 if double_or_complex is complex:
                     omp_matvec2[complex](self.oper.terms,
@@ -356,7 +407,21 @@ cdef class FulqrumSpMV():
                         complex_data = np.zeros(nnz, dtype=complex)
             if int_64:
                 if self.oper.type == 2:
-                    if self.is_real:
+                    if self.is_real and self._ensure_hs_context():
+                        csr_matrix_builder2_halfstr(
+                                            (<HalfStrContext[double]*>self._hs_context)[0],
+                                            self.oper.terms,
+                                            self.subspace.subspace.bitstrings,
+                                            &self.real_diag_vec[0],
+                                            self.subspace_dim,
+                                            self.has_nonzero_diag,
+                                            &self.group_rowint_length[0],
+                                            self.ladder_offset,
+                                            &indptr64[0],
+                                            &indices64[0],
+                                            &real_data[0],
+                                            compute_values)
+                    elif self.is_real:
                         csr_matrix_builder2(self.oper.terms,
                                             self.subspace.subspace.bitstrings,
                                             &self.real_diag_vec[0],
@@ -537,6 +602,18 @@ cdef class FulqrumSpMV():
                             csrlike.data_d32.cols,
                             csrlike.data_d32.data)
 
+            elif self._ensure_hs_context():
+                csrlike_builder2_halfstr(
+                            (<HalfStrContext[double]*>self._hs_context)[0],
+                            self.oper.terms,
+                            self.subspace.subspace.bitstrings,
+                            &self.real_diag_vec[0],
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_rowint_length[0],
+                            self.ladder_offset,
+                            csrlike.data_d32.cols,
+                            csrlike.data_d32.data)
             else:
                 csrlike_builder2(self.oper.terms,
                             self.subspace.subspace.bitstrings,
@@ -566,6 +643,18 @@ cdef class FulqrumSpMV():
                             csrlike.data_d64.cols,
                             csrlike.data_d64.data)
 
+            elif self._ensure_hs_context():
+                csrlike_builder2_halfstr(
+                            (<HalfStrContext[double]*>self._hs_context)[0],
+                            self.oper.terms,
+                            self.subspace.subspace.bitstrings,
+                            &self.real_diag_vec[0],
+                            self.subspace_dim,
+                            self.has_nonzero_diag,
+                            &self.group_rowint_length[0],
+                            self.ladder_offset,
+                            csrlike.data_d64.cols,
+                            csrlike.data_d64.data)
             else:
                 csrlike_builder2(self.oper.terms,
                             self.subspace.subspace.bitstrings,

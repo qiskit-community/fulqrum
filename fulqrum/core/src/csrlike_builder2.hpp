@@ -29,6 +29,7 @@
 #include "csr_utils.hpp"
 #include "csrlike.hpp"
 #include "elements.hpp"
+#include "matvec2.hpp"
 #include "offdiag_grouping.hpp"
 #include <boost/dynamic_bitset.hpp>
 
@@ -573,3 +574,38 @@ void csrlike_builder2(const std::vector<OperatorTerm_t>& terms,
 
     sort_paired(cols, data);
 } // end function
+
+template <typename T, typename U>
+void csrlike_builder2_halfstr(const HalfStrContext<T>& context,
+                              const std::vector<OperatorTerm_t>& terms,
+                              const bitset_map_namespace::BitsetHashMapWrapper& subspace,
+                              const T* __restrict diag_vec,
+                              const std::size_t subspace_dim,
+                              const int has_nonzero_diag,
+                              const width_t* __restrict group_rowint_length,
+                              const unsigned int ladder_offset,
+                              std::vector<std::vector<U>>& cols,
+                              std::vector<std::vector<T>>& data)
+{
+    if(has_nonzero_diag)
+    {
+#pragma omp parallel for schedule(dynamic) if(subspace_dim > 4096)
+        for(std::size_t kk = 0; kk < subspace_dim; kk++)
+            if(diag_vec[kk] != T(0))
+            {
+                cols[kk].push_back(static_cast<U>(kk));
+                data[kk].push_back(diag_vec[kk]);
+            }
+    }
+    halfstr_walk<T>(context,
+                    terms,
+                    subspace,
+                    subspace_dim,
+                    group_rowint_length,
+                    ladder_offset,
+                    [&](std::size_t out_row, std::size_t col_idx, T val) {
+                        cols[out_row].push_back(static_cast<U>(col_idx));
+                        data[out_row].push_back(val);
+                    });
+    sort_paired(cols, data);
+}

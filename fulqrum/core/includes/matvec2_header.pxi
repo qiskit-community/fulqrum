@@ -30,3 +30,29 @@ cdef extern from "../src/matvec2.hpp":
                 unsigned int ladder_offset,
                 const T * in_vec,
                 T * out_vec) nogil
+
+    cdef cppclass HalfStrContext[T]:
+        HalfStrContext() except +
+        bint usable
+
+    void build_halfstr_context[T](vector[OperatorTerm_t]& terms,
+                const BitsetHashMapWrapper& subspace,
+                width_t width,
+                size_t subspace_dim,
+                size_t * group_ptrs,
+                size_t * group_ladder_ptrs,
+                const vector[vector[width_t]]& group_offdiag_inds,
+                unsigned int num_groups,
+                unsigned int ladder_offset,
+                HalfStrContext[T]& context) nogil
+
+    void omp_matvec2_halfstr[T](const HalfStrContext[T]& context,
+                vector[OperatorTerm_t]& terms,
+                const BitsetHashMapWrapper& subspace,
+                T * diag_vec,
+                size_t subspace_dim,
+                int has_nonzero_diag,
+                width_t * group_rowint_length,
+                unsigned int ladder_offset,
+                const T * in_vec,
+                T * out_vec) nogil
