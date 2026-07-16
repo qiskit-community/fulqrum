@@ -101,12 +101,12 @@ CYTHON_SOURCE_DIRS = [
 # Add openmp flags
 OPTIONAL_FLAGS = []
 OPTIONAL_ARGS = []
+# Extra link args
+LINK_FLAGS = []
 
-if sys.platform == "win32":
-    OPTIONAL_FLAGS = ["/openmp:llvm"]
-else:
-    OPTIONAL_FLAGS = ["-fopenmp"]
-    OPTIONAL_ARGS.append("-fopenmp")
+
+OPTIONAL_FLAGS = ["-fopenmp"]
+OPTIONAL_ARGS.append("-fopenmp")
 
 if os.getenv("FQ_ARCH", False) and sys.platform != "win32":
     if sys.platform == "darwin":
@@ -117,12 +117,14 @@ if os.getenv("FQ_ARCH", False) and sys.platform != "win32":
         OPTIONAL_FLAGS.append("-march=" + os.getenv("FQ_ARCH"))
         OPTIONAL_FLAGS.append("-mtune=" + os.getenv("FQ_ARCH"))
 
+if os.getenv("FQ_TBB", False):
+    LINK_FLAGS.append('-ltbb')
+
 INCLUDE_DIRS = [np.get_include()] + [
     "fulqrum/include",
     "qiskit-addon-sqd-hpc/include",
 ]
-# Extra link args
-LINK_FLAGS = []
+
 # If on Win and not in MSYS2 (i.e. Visual studio compile)
 if sys.platform == "win32" and os.environ.get("MSYSTEM", None) is None:
     COMPILER_FLAGS = ["/O2", "/std:c++17"]

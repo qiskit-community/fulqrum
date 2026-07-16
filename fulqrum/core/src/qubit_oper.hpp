@@ -23,6 +23,10 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#ifdef TBB_VERSION_MAJOR
+#include <execution>
+#endif
+
 
 #include "constants.hpp"
 #include "io.hpp"
@@ -34,18 +38,6 @@ struct QubitOperator;
 void set_sorting_flags(QubitOperator& oper, std::string kind);
 inline void term_offdiag_sort(QubitOperator& oper);
 
-/**
- * Comparator for weight grouping
- *
- * @param term1 The first term
- * @param term2 The second term
- *
- * @return comparator value
- */
-inline int weight_comp(OperatorTerm& term1, OperatorTerm& term2)
-{
-    return term1.indices.size() < term2.indices.size();
-}
 
 /**
  * Comparator for off-diagonal weight grouping
@@ -1070,7 +1062,12 @@ typedef struct QubitOperator
     QubitOperator& weight_sort()
     {
         // sort by weight
-        std::sort(terms.begin(), terms.end(), weight_comp);
+        std::sort(
+            #ifdef TBB_VERSION_MAJOR
+            std::execution::par_unseq,
+            #endif
+            terms.begin(), terms.end(), [&](OperatorTerm term1, OperatorTerm term2)
+                                            {return term1.indices.size() < term2.indices.size();});
         set_sorting_flags(*this, "weight");
         return *this;
     }
