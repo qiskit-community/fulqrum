@@ -23,8 +23,8 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#ifdef TBB_VERSION_MAJOR
-#include <execution>
+#ifdef FQ_TBB
+#include <oneapi/tbb/parallel_sort.h>
 #endif
 
 
@@ -1062,12 +1062,13 @@ typedef struct QubitOperator
     QubitOperator& weight_sort()
     {
         // sort by weight
-        std::sort(
-            #ifdef TBB_VERSION_MAJOR
-            std::execution::par_unseq,
-            #endif
-            terms.begin(), terms.end(), [&](OperatorTerm term1, OperatorTerm term2)
-                                            {return term1.indices.size() < term2.indices.size();});
+        #ifdef FQ_TBB
+        tbb::parallel_sort(terms.begin(), terms.end(), [&](OperatorTerm term1, OperatorTerm term2)
+                                                  {return term1.indices.size() < term2.indices.size();});
+        #else
+        std::sort(terms.begin(), terms.end(), [&](OperatorTerm term1, OperatorTerm term2)
+                                                  {return term1.indices.size() < term2.indices.size();});
+        #endif
         set_sorting_flags(*this, "weight");
         return *this;
     }

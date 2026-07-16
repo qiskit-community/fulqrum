@@ -21,6 +21,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#ifdef FQ_TBB
+#include <oneapi/tbb/parallel_sort.h>
+#endif
 
 #include "constants.hpp"
 #include "fermi_term.hpp"
@@ -38,6 +41,7 @@ typedef struct FermionicOperator
 {
     width_t width;
     unsigned int combined = 0; // have the repeated operators indices been combined?
+    int weight_sorted{0}; // Are the operator terms weight sorted
     std::vector<FermionicTerm_t> terms;
     FermionicOperator() {}
     /**
@@ -263,6 +267,26 @@ typedef struct FermionicOperator
         out.terms = this->terms;
         out.combined = this->combined;
         return out;
+    }
+       /**
+    * In-place sorting of terms by weight
+    * 
+    */
+    FermionicOperator& weight_sort()
+    {
+        if(!(this->weight_sorted))
+        {
+            // sort by weight
+            #ifdef FQ_TBB
+            tbb::parallel_sort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2)
+                                                  {return term1.indices.size() < term2.indices.size();});
+            #else
+            std::sort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2)
+                                                  {return term1.indices.size() < term2.indices.size();});
+            #endif
+            this->weight_sorted = 1;
+        }
+        return *this;
     }
     /**
      * Convert operator to JSON format, optionally with XZ or ZST compression

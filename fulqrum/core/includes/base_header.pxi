@@ -92,9 +92,11 @@ cdef extern from "../src/base.hpp":
         width_t width
         vector[FermionicTerm_t] terms
         size_t size()
+        int weight_sorted
         void to_json(string, bool) except +
         FermionicOperator_t from_json(string) except +
         FermionicOperator_t combine_repeat_indices() nogil
+        FermionicOperator_t& weight_sort() nogil
         QubitOperator_t extended_jw_transformation() nogil
 
     size_t max_offdiag_ptr_size(vector[size_t]&)

@@ -103,6 +103,7 @@ OPTIONAL_FLAGS = []
 OPTIONAL_ARGS = []
 # Extra link args
 LINK_FLAGS = []
+COMPILER_FLAGS = ["-O3", "-std=c++17"]
 
 
 OPTIONAL_FLAGS = ["-fopenmp"]
@@ -119,18 +120,12 @@ if os.getenv("FQ_ARCH", False) and sys.platform != "win32":
 
 if os.getenv("FQ_TBB", False):
     LINK_FLAGS.append('-ltbb')
+    COMPILER_FLAGS.append("-DFQ_TBB")
 
 INCLUDE_DIRS = [np.get_include()] + [
     "fulqrum/include",
     "qiskit-addon-sqd-hpc/include",
 ]
-
-# If on Win and not in MSYS2 (i.e. Visual studio compile)
-if sys.platform == "win32" and os.environ.get("MSYSTEM", None) is None:
-    COMPILER_FLAGS = ["/O2", "/std:c++17"]
-# Everything else
-else:
-    COMPILER_FLAGS = ["-O3", "-std=c++17"]
 
 if os.getenv("FQ_DEBUG", "0") == "1":
     COMPILER_FLAGS.append("-D_GLIBCXX_ASSERTIONS")

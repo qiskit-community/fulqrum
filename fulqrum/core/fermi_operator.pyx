@@ -361,6 +361,11 @@ cdef class FermionicOperator():
                     out.append((IND_TO_STR[term.values[jj]], term.indices[jj]))
             return out
 
+    def weight_sort(self):
+        """In-place sort terms by their standard weight
+        """
+        self.oper.weight_sort()
+    
     @cython.boundscheck(False)
     def weights(self):
         """Weight of each term in the operator
