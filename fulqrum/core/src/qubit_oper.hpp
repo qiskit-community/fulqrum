@@ -31,6 +31,7 @@
 #include "constants.hpp"
 #include "io.hpp"
 #include "qubit_term.hpp"
+#include "oper_utils.hpp"
 
 struct QubitOperator;
 
@@ -52,23 +53,7 @@ inline int offweight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
     return term1.offdiag_weight < term2.offdiag_weight;
 }
 
-inline void set_weight_ptrs(std::vector<OperatorTerm>& __restrict terms,
-                            std::vector<std::size_t>& vec)
-{
-    vec.resize(0);
-    vec.push_back(0);
-    std::size_t kk;
-    std::size_t val = terms[0].indices.size();
-    for(kk = 1; kk < terms.size(); kk++)
-    {
-        if(terms[kk].indices.size() > val)
-        {
-            vec.push_back(kk);
-            val = terms[kk].indices.size();
-        }
-    }
-    vec.push_back(terms.size());
-}
+
 
 inline void set_group_ptrs(const std::vector<OperatorTerm>& __restrict terms,
                            std::vector<std::size_t>& vec)
@@ -88,97 +73,6 @@ inline void set_group_ptrs(const std::vector<OperatorTerm>& __restrict terms,
     vec.push_back(terms.size());
 }
 
-/**
- * Combine repeated terms that represent same
- * operators, dropping terms smaller than requested tolerance.
- *
- * Input terms must be sorted by weight before calling this routine
- *
- * @param[in] terms Terms for input operator
- * @param[in] out_terms Terms for output operator (to push_back to)
- * @param[in] touched pointer array indicating if term has been touched
- * @param[in] num_terms Number of terms in input operator
- * @param[in] atol Absolute tolerance for term truncation
- *
- */
-inline void combine_qubit_terms(std::vector<OperatorTerm>& __restrict terms,
-                                std::vector<OperatorTerm>& __restrict out_terms,
-                                width_t* touched,
-                                double atol)
-{
-    std::size_t kk, qq, num_terms = terms.size();
-    std::vector<std::size_t> weight_ptrs;
-    set_weight_ptrs(terms, weight_ptrs);
-    std::vector<std::vector<OperatorTerm_t>> temp_terms;
-    temp_terms.resize(weight_ptrs.size() - 1);
-    // do sort over each collection of terms with same weight
-#pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
-    for(kk = 0; kk < weight_ptrs.size() - 1; kk++)
-    {
-        std::size_t jj, mm, pp;
-        std::size_t start, stop;
-        OperatorTerm_t target_term;
-        OperatorTerm_t* current_term;
-        int do_combine;
-        // set start and stop for terms of the same weight
-        start = weight_ptrs[kk];
-        stop = weight_ptrs[kk + 1];
-        for(jj = start; jj < stop; jj++)
-        {
-            if(touched[jj]) // If touched, move onto next term
-            {
-                continue;
-            }
-            touched[jj] = 1;
-            target_term = terms[jj];
-            for(mm = jj + 1; mm < stop; mm++)
-            {
-                if(touched[mm])
-                {
-                    continue;
-                }
-                current_term = &terms[mm];
-                // filter if offdiag weights differ
-                if(target_term.offdiag_weight != current_term->offdiag_weight)
-                {
-                    continue;
-                }
-
-                do_combine = 1;
-                // look to see if indices and values match
-                for(pp = 0; pp < target_term.indices.size(); pp++)
-                {
-                    if((target_term.indices[pp] != current_term->indices[pp]) ||
-                       (target_term.values[pp] != current_term->values[pp]))
-                    {
-                        do_combine = 0;
-                        break;
-                    }
-                }
-                if(do_combine)
-                {
-                    touched[mm] = 1;
-                    target_term.coeff += current_term->coeff;
-                }
-            } // end mm for-loop
-            // Add term to output if either real or imag parts are greater than atol
-            if(std::abs(target_term.coeff) > atol)
-            {
-                temp_terms[kk].push_back(target_term);
-            }
-        } // end main jj loop
-    } //end kk-loop
-
-    // at end of all, add to output terms
-    for(kk = 0; kk < weight_ptrs.size() - 1; kk++)
-    {
-        for(qq = 0; qq < temp_terms[kk].size(); qq++)
-        {
-            out_terms.push_back(temp_terms[kk][qq]);
-        }
-    }
-
-} // end combine_qubit_terms
 
 /**
  * Compute an integer value from the off-diagonal structure of a term
@@ -1228,7 +1122,7 @@ typedef struct QubitOperator
         }
         std::vector<width_t> touched;
         touched.resize(this->size());
-        combine_qubit_terms(this->terms, out.terms, &touched[0], atol);
+        combine_terms(this->terms, out.terms, &touched[0], atol);
         out.type = this->type;
         return out;
     }
