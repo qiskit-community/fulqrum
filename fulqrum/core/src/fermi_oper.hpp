@@ -48,6 +48,7 @@ typedef struct FermionicOperator
 {
     width_t width;
     unsigned int combined = 0; // have the repeated operators indices been combined?
+    unsigned int unique_terms = 0; // are the terms unique? i.e. duplicates removed
     int weight_sorted{0}; // Are the operator terms weight sorted
     int structure_sorted{0}; // Are the operator terms sorted by (non-unique) off-diagonal structure?
     std::vector<FermionicTerm_t> terms;
@@ -274,6 +275,8 @@ typedef struct FermionicOperator
         FermionicOperator out = FermionicOperator(this->width);
         out.terms = this->terms;
         out.combined = this->combined;
+        out.weight_sorted = this->weight_sorted;
+        out.structure_sorted = this->structure_sorted;
         return out;
     }
     /**
@@ -340,6 +343,7 @@ typedef struct FermionicOperator
         std::vector<width_t> touched;
         touched.resize(this->size());
         combine_terms(this->terms, out.terms, ptrs, &touched[0], atol);
+        this->unique_terms = 1;
         return out;
     }
     /**
@@ -396,11 +400,11 @@ typedef struct FermionicOperator
         // This requires combining repeated indices
         if(!this->combined)
         {
-            fermi = this->combine_repeat_indices();
+            fermi = fermi.combine_repeat_indices();
         }
-        QubitOperator_t out = QubitOperator(this->width);
+        QubitOperator_t out = QubitOperator(fermi.width);
         std::size_t kk;
-        std::size_t num_terms = this->size();
+        std::size_t num_terms = fermi.size();
         out.terms.resize(num_terms);
 #pragma omp parallel for schedule(dynamic) if(num_terms > 128)
         for(kk = 0; kk < num_terms; kk++)
@@ -412,7 +416,7 @@ typedef struct FermionicOperator
             out.terms[kk].set_proj_indices();
         }
         out.type = 2; // set type=2
-        return out.combine_repeated_terms();
+        return out;
     }
 } FermionicOperator_t;
 

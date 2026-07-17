@@ -728,6 +728,12 @@ typedef struct QubitOperator
         QubitOperator out = QubitOperator(this->width);
         out.terms = this->terms;
         out.type = this->type;
+        out.ladder_width = this->ladder_width;
+        out.sorted = this->sorted;
+        out.weight_sorted = this->weight_sorted;
+        out.off_weight_sorted = this->off_weight_sorted;
+        out.ladder_sorted = this->ladder_sorted;
+        out.structure_sorted = this->structure_sorted;
         return out;
     }
     /**

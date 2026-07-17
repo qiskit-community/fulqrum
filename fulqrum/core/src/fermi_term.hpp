@@ -89,6 +89,8 @@ typedef struct FermionicTerm
         FermionicTerm out = FermionicTerm(this->coeff);
         out.values = this->values;
         out.indices = this->indices;
+        out.offdiag_weight = this->offdiag_weight;
+        out.offdiag_structure = this->offdiag_structure;
         return out;
     }
     /**

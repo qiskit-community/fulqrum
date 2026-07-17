@@ -109,6 +109,7 @@ typedef struct OperatorTerm
         out.proj_indices = this->proj_indices;
         out.proj_bits = this->proj_bits;
         out.offdiag_weight = this->offdiag_weight;
+        out.offdiag_structure = this->offdiag_structure;
         return out;
     }
     /**
