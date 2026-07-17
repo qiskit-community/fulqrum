@@ -75,38 +75,6 @@ inline void set_group_ptrs(const std::vector<OperatorTerm>& __restrict terms,
 
 
 /**
- * Compute an integer value from the off-diagonal structure of a term
- *
- * @param term The term
- *
- * @return Structure value
- */
-inline std::size_t term_offdiag_structure(const OperatorTerm_t& term)
-{
-    std::size_t kk;
-    std::size_t out = 0;
-#pragma omp simd reduction(+ : out)
-    for(kk = 0; kk < term.values.size(); ++kk)
-    {
-        out += (term.indices[kk] + 1) * (term.values[kk] > 2);
-    }
-    return out;
-}
-
-/**
- * Comparator for off-diagonal grouping
- *
- * @param term1 The first term
- * @param term2 The second term
- *
- * @return comparator value
- */
-inline int offdiag_comp(const OperatorTerm& term1, const OperatorTerm& term2)
-{
-    return term_offdiag_structure(term1) < term_offdiag_structure(term2);
-}
-
-/**
  * Set the pointers for the off-diagonal weights
  *
  * @param terms Operator terms
@@ -131,33 +99,7 @@ inline void set_offdiag_weight_ptrs(const std::vector<OperatorTerm>& __restrict 
     vec.push_back(terms.size());
 }
 
-/**
- * Set the pointers for the off-diagonal structure
- *
- * @param terms Operator terms
- * @param vec Vector to add pointers to
- *
- */
-inline void set_offdiag_structure_ptrs(const std::vector<OperatorTerm>& __restrict terms,
-                                       std::vector<std::size_t>& vec)
-{
-    vec.resize(0);
-    std::size_t kk;
-    if(terms.size())
-    {
-        std::size_t val = term_offdiag_structure(terms[0]);
-        vec.push_back(0);
-        for(kk = 1; kk < terms.size(); kk++)
-        {
-            if(term_offdiag_structure(terms[kk]) > val)
-            {
-                vec.push_back(kk);
-                val = term_offdiag_structure(terms[kk]);
-            }
-        }
-        vec.push_back(terms.size());
-    }
-}
+
 
 /**
  * Find max. number of elements with same off-diag weight
@@ -1120,9 +1062,11 @@ typedef struct QubitOperator
         {
             this->weight_sort();
         }
+        std::vector<std::size_t> weight_ptrs;
+        set_weight_ptrs(terms, weight_ptrs);
         std::vector<width_t> touched;
         touched.resize(this->size());
-        combine_terms(this->terms, out.terms, &touched[0], atol);
+        combine_terms(this->terms, out.terms, weight_ptrs, &touched[0], atol);
         out.type = this->type;
         return out;
     }
@@ -1329,9 +1273,15 @@ inline void term_offdiag_sort(QubitOperator& oper)
 
     std::vector<std::size_t> order(n);
     std::iota(order.begin(), order.end(), 0);
+    #ifdef FQ_TBB
+    tbb::parallel_sort(order.begin(), order.end(), [&keys](std::size_t a, std::size_t b) {
+        return keys[a] < keys[b];
+    });
+    #else
     std::sort(order.begin(), order.end(), [&keys](std::size_t a, std::size_t b) {
         return keys[a] < keys[b];
     });
+    #endif
 
     std::vector<OperatorTerm_t> tmp(n);
     for(std::size_t ii = 0; ii < n; ++ii)

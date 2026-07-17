@@ -29,6 +29,8 @@
 #include "fermi_term.hpp"
 #include "io.hpp"
 #include "qubit_oper.hpp"
+#include "oper_utils.hpp"
+
 
 /** @struct FermionicOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
@@ -287,6 +289,32 @@ typedef struct FermionicOperator
             this->weight_sorted = 1;
         }
         return *this;
+    }
+    /**
+    * Combine repeated terms in operator
+    * 
+    * @param[in] atol Tolerance for determining if a combined coefficient is zero
+    * 
+    * @return Output QubitOperator with terms combined
+    * 
+    */
+    FermionicOperator combine_repeated_terms(double atol = 1e-12)
+    {
+        FermionicOperator out = FermionicOperator(this->width);
+        if(!this->size())
+        {
+            return out;
+        }
+        if(!this->weight_sorted)
+        {
+            this->weight_sort();
+        }
+        std::vector<std::size_t> weight_ptrs;
+        set_weight_ptrs(terms, weight_ptrs);
+        std::vector<width_t> touched;
+        touched.resize(this->size());
+        combine_terms(this->terms, out.terms, weight_ptrs, &touched[0], atol);
+        return out;
     }
     /**
      * Convert operator to JSON format, optionally with XZ or ZST compression

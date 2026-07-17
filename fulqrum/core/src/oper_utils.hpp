@@ -14,6 +14,31 @@
 #pragma once
 #include <vector>
 
+#include "qubit_oper.hpp"
+#include "fermi_oper.hpp"
+
+/**
+ * Compute an integer value from the off-diagonal structure of a term
+ *
+ * @param term The term
+ *
+ * @return Structure value
+ */
+template <typename T>
+inline std::size_t term_offdiag_structure(const T& term)
+{
+    std::size_t kk;
+    std::size_t out = 0;
+#pragma omp simd reduction(+ : out)
+    for(kk = 0; kk < term.values.size(); ++kk)
+    {
+        out += (term.indices[kk] + 1) * (term.values[kk] > 2);
+    }
+    return out;
+}
+
+
+
 template <typename T>
 inline void set_weight_ptrs(std::vector<T>& __restrict terms,
                             std::vector<std::size_t>& vec)
@@ -35,6 +60,36 @@ inline void set_weight_ptrs(std::vector<T>& __restrict terms,
 
 
 /**
+ * Set the pointers for the off-diagonal structure
+ *
+ * @param terms Operator terms
+ * @param vec Vector to add pointers to
+ *
+ */
+template <typename T>
+inline void set_offdiag_structure_ptrs(const std::vector<T>& __restrict terms,
+                                       std::vector<std::size_t>& vec)
+{
+    vec.resize(0);
+    std::size_t kk;
+    if(terms.size())
+    {
+        std::size_t val = term_offdiag_structure(terms[0]);
+        vec.push_back(0);
+        for(kk = 1; kk < terms.size(); kk++)
+        {
+            if(term_offdiag_structure(terms[kk]) > val)
+            {
+                vec.push_back(kk);
+                val = term_offdiag_structure(terms[kk]);
+            }
+        }
+        vec.push_back(terms.size());
+    }
+}
+
+
+/**
  * Combine repeated terms that represent same
  * operators, dropping terms smaller than requested tolerance.
  *
@@ -50,26 +105,25 @@ inline void set_weight_ptrs(std::vector<T>& __restrict terms,
 template <typename T>
 inline void combine_terms(std::vector<T>& __restrict terms,
                           std::vector<T>& __restrict out_terms,
-                                width_t* touched,
-                                double atol)
+                          std::vector<std::size_t>& __restrict sort_ptrs,
+                          width_t* touched,
+                         double atol)
 {
     std::size_t kk, qq, num_terms = terms.size();
-    std::vector<std::size_t> weight_ptrs;
-    set_weight_ptrs(terms, weight_ptrs);
     std::vector<std::vector<T>> temp_terms;
-    temp_terms.resize(weight_ptrs.size() - 1);
+    temp_terms.resize(sort_ptrs.size() - 1);
     // do sort over each collection of terms with same weight
 #pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
-    for(kk = 0; kk < weight_ptrs.size() - 1; kk++)
+    for(kk = 0; kk < sort_ptrs.size() - 1; kk++)
     {
         std::size_t jj, mm, pp;
         std::size_t start, stop;
         T target_term;
         T* current_term;
         int do_combine;
-        // set start and stop for terms of the same weight
-        start = weight_ptrs[kk];
-        stop = weight_ptrs[kk + 1];
+        // set start and stop for terms based on ptrs
+        start = sort_ptrs[kk];
+        stop = sort_ptrs[kk + 1];
         for(jj = start; jj < stop; jj++)
         {
             if(touched[jj]) // If touched, move onto next term
@@ -117,7 +171,7 @@ inline void combine_terms(std::vector<T>& __restrict terms,
     } //end kk-loop
 
     // at end of all, add to output terms
-    for(kk = 0; kk < weight_ptrs.size() - 1; kk++)
+    for(kk = 0; kk < sort_ptrs.size() - 1; kk++)
     {
         for(qq = 0; qq < temp_terms[kk].size(); qq++)
         {

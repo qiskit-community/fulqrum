@@ -411,6 +411,13 @@ cdef class FermionicOperator():
         out.oper = self.oper.combine_repeat_indices()
         return out
 
+    def combine_repeated_terms(self, double atol=1e-12):
+        """In-place sort terms by their standard weight
+        """
+        cdef FermionicOperator out = FermionicOperator(self.width)
+        out.oper = self.oper.combine_repeated_terms(atol)
+        return out
+
     def extended_jw_transformation(self):
         """Jordan-Wigner transformation over extended alphabet
         from Fermionic -> Qubit operator

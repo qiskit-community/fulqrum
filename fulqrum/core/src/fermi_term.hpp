@@ -37,6 +37,7 @@ typedef struct FermionicTerm
     std::vector<unsigned char> values;
     std::vector<width_t> indices;
     std::complex<double> coeff;
+    width_t offdiag_weight{0};
 
     FermionicTerm() {}
     FermionicTerm(std::complex<double> c)
@@ -46,6 +47,7 @@ typedef struct FermionicTerm
         : indices(inds)
         , coeff(c)
     {
+        unsigned char val;
         // Iterate over string of values, mapping to new values and adding to term
         for(std::string::iterator it = vals.begin(); it != vals.end(); ++it)
         {
@@ -55,7 +57,9 @@ typedef struct FermionicTerm
             }
             else
             {
-                values.push_back(oper_map[*it]);
+                val = oper_map[*it];
+                values.push_back(val);
+                offdiag_weight += static_cast<width_t>(val > 2);
             }
         }
         //check that length of values == length of indices

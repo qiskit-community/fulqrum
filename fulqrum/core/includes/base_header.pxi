@@ -96,7 +96,8 @@ cdef extern from "../src/base.hpp":
         void to_json(string, bool) except +
         FermionicOperator_t from_json(string) except +
         FermionicOperator_t combine_repeat_indices() nogil
-        FermionicOperator_t& weight_sort() nogil
+        FermionicOperator_t weight_sort() nogil
+        FermionicOperator_t combine_repeated_terms(double)
         QubitOperator_t extended_jw_transformation() nogil
 
     size_t max_offdiag_ptr_size(vector[size_t]&)
