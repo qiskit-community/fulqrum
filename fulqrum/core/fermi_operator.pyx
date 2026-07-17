@@ -79,6 +79,7 @@ cdef class FermionicOperator():
                                 term.indices.push_back(inds[kk])
                                 ind = STR_TO_IND[op_str[kk]]
                                 term.values.push_back(ind)
+                                term.offdiag_structure += (inds[kk] + 1) * (ind > 2)
                         term.coeff = coeff
                 else:
                     term.coeff = 1
@@ -274,6 +275,25 @@ cdef class FermionicOperator():
             int
         """
         return self.oper.width
+
+    @cython.boundscheck(False)
+    def offdiag_structure_sort(self):
+        """Off-diagonal structures of each term in operator
+        """
+        self.oper.offdiag_structure_sort()
+        return self
+    
+    @cython.boundscheck(False)
+    def offdiag_structures(self):
+        """Off-diagonal structures of each term in operator
+        """
+        cdef size_t kk
+        if self.oper.terms.size() == 0:
+            raise FulqrumError('FermionicOperator has zero terms')
+        cdef unsigned int[::1] out = np.empty(self.oper.terms.size(), dtype=np.uint32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].offdiag_structure
+        return np.asarray(out)
 
     @property
     def coeff(self):

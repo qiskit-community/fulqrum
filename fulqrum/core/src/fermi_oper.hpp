@@ -32,6 +32,11 @@
 #include "oper_utils.hpp"
 
 
+// forward definitions
+void set_fermi_sorting_flags(FermionicOperator& oper, std::string kind);
+
+
+
 /** @struct FermionicOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
  *
@@ -44,6 +49,7 @@ typedef struct FermionicOperator
     width_t width;
     unsigned int combined = 0; // have the repeated operators indices been combined?
     int weight_sorted{0}; // Are the operator terms weight sorted
+    int structure_sorted{0}; // Are the operator terms sorted by (non-unique) off-diagonal structure?
     std::vector<FermionicTerm_t> terms;
     FermionicOperator() {}
     /**
@@ -270,7 +276,7 @@ typedef struct FermionicOperator
         out.combined = this->combined;
         return out;
     }
-       /**
+    /**
     * In-place sorting of terms by weight
     * 
     */
@@ -286,7 +292,27 @@ typedef struct FermionicOperator
             std::sort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2)
                                                   {return term1.indices.size() < term2.indices.size();});
             #endif
-            this->weight_sorted = 1;
+            set_fermi_sorting_flags(*this, "weight");
+        }
+        return *this;
+    }
+    /**
+    * In-place sorting of terms by weight
+    * 
+    */
+    FermionicOperator& offdiag_structure_sort()
+    {
+        if(!(this->structure_sorted))
+        {
+            // sort by weight
+            #ifdef FQ_TBB
+            tbb::parallel_sort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2)
+                                                  {return term1.offdiag_structure < term2.offdiag_structure;});
+            #else
+            std::sort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2)
+                                                  {return term1.offdiag_structure < term2.offdiag_structure;});
+            #endif
+            set_fermi_sorting_flags(*this, "structure");
         }
         return *this;
     }
@@ -305,15 +331,15 @@ typedef struct FermionicOperator
         {
             return out;
         }
-        if(!this->weight_sorted)
+        if(!this->structure_sorted)
         {
-            this->weight_sort();
+            this->offdiag_structure_sort();
         }
-        std::vector<std::size_t> weight_ptrs;
-        set_weight_ptrs(terms, weight_ptrs);
+        std::vector<std::size_t> ptrs;
+        set_offdiag_structure_ptrs(terms, ptrs);
         std::vector<width_t> touched;
         touched.resize(this->size());
-        combine_terms(this->terms, out.terms, weight_ptrs, &touched[0], atol);
+        combine_terms(this->terms, out.terms, ptrs, &touched[0], atol);
         return out;
     }
     /**
@@ -389,3 +415,31 @@ typedef struct FermionicOperator
         return out.combine_repeated_terms();
     }
 } FermionicOperator_t;
+
+
+
+/**
+ * Set the FermionicOperator flags when performing sorting of various kinds
+ * 
+ * @param[in, out] oper The operator whose flags to set
+ * @param[in] kind Sting indicating the type of sorting that was performed
+ * 
+ * @throws Error if sorting type is not a valid kind
+ */
+inline void set_fermi_sorting_flags(FermionicOperator& oper, std::string kind)
+{
+    if(kind == "weight")
+    {
+        oper.weight_sorted = 1;
+        oper.structure_sorted = 0;
+    }
+    else if(kind == "structure")
+    {
+        oper.weight_sorted = 0;
+        oper.structure_sorted = 1;
+    }
+    else
+    {
+        throw std::runtime_error("Invalid sorting type.");
+    }
+}

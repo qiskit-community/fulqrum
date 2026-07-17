@@ -12,7 +12,6 @@
  * that they have been altered from the originals.
  */
 #pragma once
-#include "constants.hpp"
 #include <algorithm>
 #include <cmath>
 #include <complex>
@@ -21,6 +20,9 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include "constants.hpp"
+#include "oper_utils.hpp"
 
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
  *
@@ -37,6 +39,7 @@ typedef struct OperatorTerm
     std::vector<width_t> proj_indices;
     std::vector<width_t> proj_bits;
     width_t offdiag_weight{0};
+    unsigned int offdiag_structure{0};
     int extended{0};
     int real_phase{1}; // 'phase' of real part (+/- 1), 0 means operator is complex-valued
     int group{-1}; // -1 means unset here
@@ -54,6 +57,7 @@ typedef struct OperatorTerm
             throw std::runtime_error("Size of input string does not equal that of indices");
         }
         unsigned char val;
+        width_t ind;
         unsigned int counter = 0;
         // Iterate over string of values, mapping to new values and adding to term
         for(std::string::iterator it = vals.begin(); it != vals.end(); ++it)
@@ -66,9 +70,11 @@ typedef struct OperatorTerm
             else
             {
                 val = oper_map[*it];
+                ind = inds[counter - 1];
                 values.push_back(val);
-                indices.push_back(inds[counter - 1]);
+                indices.push_back(ind);
                 offdiag_weight += static_cast<width_t>(val > 2);
+                offdiag_structure += (ind+1) * (val > 2);
             }
         }
         //check that length of values == length of indices

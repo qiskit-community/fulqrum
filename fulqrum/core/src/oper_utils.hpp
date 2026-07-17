@@ -14,9 +14,6 @@
 #pragma once
 #include <vector>
 
-#include "qubit_oper.hpp"
-#include "fermi_oper.hpp"
-
 /**
  * Compute an integer value from the off-diagonal structure of a term
  *

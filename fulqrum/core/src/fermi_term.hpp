@@ -12,8 +12,6 @@
  * that they have been altered from the originals.
  */
 #pragma once
-#include "constants.hpp"
-#include "qubit_term.hpp"
 #include <algorithm>
 #include <cmath>
 #include <complex>
@@ -23,6 +21,11 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "constants.hpp"
+#include "qubit_term.hpp"
+#include "oper_utils.hpp"
+
 
 // Fermionic components ---------------------------------------------------------------------------
 
@@ -38,6 +41,7 @@ typedef struct FermionicTerm
     std::vector<width_t> indices;
     std::complex<double> coeff;
     width_t offdiag_weight{0};
+    unsigned int offdiag_structure{0};
 
     FermionicTerm() {}
     FermionicTerm(std::complex<double> c)
@@ -48,18 +52,23 @@ typedef struct FermionicTerm
         , coeff(c)
     {
         unsigned char val;
+        width_t ind;
+        unsigned int counter = 0;
         // Iterate over string of values, mapping to new values and adding to term
         for(std::string::iterator it = vals.begin(); it != vals.end(); ++it)
         {
-            if(*it == 73)
+            counter += 1;
+            if(*it != 73)
             {
-                throw std::runtime_error("Cannot use identity operators in sparse format.");
+                val = oper_map[*it];
+                ind = inds[counter - 1];
+                values.push_back(val);
+                offdiag_weight += static_cast<width_t>(val > 2);
+                offdiag_structure += (ind + 1) * (val > 2);
             }
             else
             {
-                val = oper_map[*it];
-                values.push_back(val);
-                offdiag_weight += static_cast<width_t>(val > 2);
+                throw std::runtime_error("Cannot use identity operators in sparse format.");
             }
         }
         //check that length of values == length of indices
@@ -311,6 +320,8 @@ inline void deflate_term_indices(const FermionicTerm& term,
         }
         new_term.indices.push_back(current_index);
         new_term.values.push_back(current_value);
+        new_term.offdiag_weight += static_cast<width_t>(current_value > 2);
+        new_term.offdiag_structure += (current_index + 1) * (current_value > 2);
     }
     new_term.coeff = term.coeff;
     out_terms.push_back(new_term);
