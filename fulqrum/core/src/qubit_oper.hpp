@@ -24,21 +24,19 @@
 #include <string>
 #include <vector>
 #ifdef FQ_TBB
-#include <oneapi/tbb/parallel_sort.h>
+#    include <oneapi/tbb/parallel_sort.h>
 #endif
-
 
 #include "constants.hpp"
 #include "io.hpp"
-#include "qubit_term.hpp"
 #include "oper_utils.hpp"
+#include "qubit_term.hpp"
 
 struct QubitOperator;
 
 // forward definitions
 void set_sorting_flags(QubitOperator& oper, std::string kind);
 inline void term_offdiag_sort(QubitOperator& oper);
-
 
 /**
  * Comparator for off-diagonal weight grouping
@@ -52,8 +50,6 @@ inline int offweight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
 {
     return term1.offdiag_weight < term2.offdiag_weight;
 }
-
-
 
 inline void set_group_ptrs(const std::vector<OperatorTerm>& __restrict terms,
                            std::vector<std::size_t>& vec)
@@ -72,7 +68,6 @@ inline void set_group_ptrs(const std::vector<OperatorTerm>& __restrict terms,
     }
     vec.push_back(terms.size());
 }
-
 
 /**
  * Set the pointers for the off-diagonal weights
@@ -98,8 +93,6 @@ inline void set_offdiag_weight_ptrs(const std::vector<OperatorTerm>& __restrict 
     }
     vec.push_back(terms.size());
 }
-
-
 
 /**
  * Find max. number of elements with same off-diag weight
@@ -903,14 +896,16 @@ typedef struct QubitOperator
     */
     QubitOperator& weight_sort()
     {
-        // sort by weight
-        #ifdef FQ_TBB
-        tbb::parallel_sort(terms.begin(), terms.end(), [&](OperatorTerm term1, OperatorTerm term2)
-                                                  {return term1.indices.size() < term2.indices.size();});
-        #else
-        std::sort(terms.begin(), terms.end(), [&](OperatorTerm term1, OperatorTerm term2)
-                                                  {return term1.indices.size() < term2.indices.size();});
-        #endif
+// sort by weight
+#ifdef FQ_TBB
+        tbb::parallel_sort(terms.begin(), terms.end(), [&](OperatorTerm term1, OperatorTerm term2) {
+            return term1.indices.size() < term2.indices.size();
+        });
+#else
+        std::sort(terms.begin(), terms.end(), [&](OperatorTerm term1, OperatorTerm term2) {
+            return term1.indices.size() < term2.indices.size();
+        });
+#endif
         set_sorting_flags(*this, "weight");
         return *this;
     }
@@ -1279,15 +1274,15 @@ inline void term_offdiag_sort(QubitOperator& oper)
 
     std::vector<std::size_t> order(n);
     std::iota(order.begin(), order.end(), 0);
-    #ifdef FQ_TBB
+#ifdef FQ_TBB
     tbb::parallel_sort(order.begin(), order.end(), [&keys](std::size_t a, std::size_t b) {
         return keys[a] < keys[b];
     });
-    #else
+#else
     std::sort(order.begin(), order.end(), [&keys](std::size_t a, std::size_t b) {
         return keys[a] < keys[b];
     });
-    #endif
+#endif
 
     std::vector<OperatorTerm_t> tmp(n);
     for(std::size_t ii = 0; ii < n; ++ii)

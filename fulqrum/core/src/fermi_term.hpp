@@ -23,9 +23,8 @@
 #include <vector>
 
 #include "constants.hpp"
-#include "qubit_term.hpp"
 #include "oper_utils.hpp"
-
+#include "qubit_term.hpp"
 
 // Fermionic components ---------------------------------------------------------------------------
 

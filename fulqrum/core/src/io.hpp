@@ -16,8 +16,8 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <variant>
@@ -251,7 +251,7 @@ inline void json_to_operator(const std::string& filename, U& oper)
     // the file *.json file.  Ideally we would not overwrite in
     // the first place, but that is a later issue.
     bool short_filename_exists = file_exists(short_filename);
-    
+
     std::string uncompress_str;
     if(ending == "xz")
     {
@@ -276,7 +276,10 @@ inline void json_to_operator(const std::string& filename, U& oper)
     // remove temp json file if original is a compressed version
     if(ending == "xz" || ending == "zst")
     {
-        if(!short_filename_exists){std::remove(short_filename.c_str());}
+        if(!short_filename_exists)
+        {
+            std::remove(short_filename.c_str());
+        }
     }
 
     oper.width = Doc["width"];
@@ -286,7 +289,6 @@ inline void json_to_operator(const std::string& filename, U& oper)
     std::vector<std::string> version_split = split_string(Doc["format-version"], ".");
     int major_version = std::stoi(version_split[0]);
     int minor_version = std::stoi(version_split[1]);
-
 
     if constexpr(std::is_same_v<U, QubitOperator>)
     {
@@ -305,14 +307,15 @@ inline void json_to_operator(const std::string& filename, U& oper)
             set_extended_flag(term);
             oper.terms[kk] = term;
         }
-         // look to see if method-type exists, should in V1.1
-        if(major_version >=1 && minor_version >= 1)
+        // look to see if method-type exists, should in V1.1
+        if(major_version >= 1 && minor_version >= 1)
         {
             if(Doc.contains("method-type"))
             {
                 oper.type = Doc["method-type"];
             }
-            else{
+            else
+            {
                 throw std::runtime_error("JSON format 1.1+ should have a 'method-type' key");
             }
         }

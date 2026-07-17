@@ -34,11 +34,8 @@ inline std::size_t term_offdiag_structure(const T& term)
     return out;
 }
 
-
-
 template <typename T>
-inline void set_weight_ptrs(std::vector<T>& __restrict terms,
-                            std::vector<std::size_t>& vec)
+inline void set_weight_ptrs(std::vector<T>& __restrict terms, std::vector<std::size_t>& vec)
 {
     vec.resize(0);
     vec.push_back(0);
@@ -54,7 +51,6 @@ inline void set_weight_ptrs(std::vector<T>& __restrict terms,
     }
     vec.push_back(terms.size());
 }
-
 
 /**
  * Set the pointers for the off-diagonal structure
@@ -85,7 +81,6 @@ inline void set_offdiag_structure_ptrs(const std::vector<T>& __restrict terms,
     }
 }
 
-
 /**
  * Combine repeated terms that represent same
  * operators, dropping terms smaller than requested tolerance.
@@ -104,7 +99,7 @@ inline void combine_terms(std::vector<T>& __restrict terms,
                           std::vector<T>& __restrict out_terms,
                           std::vector<std::size_t>& __restrict sort_ptrs,
                           width_t* touched,
-                         double atol)
+                          double atol)
 {
     std::size_t kk, qq, num_terms = terms.size();
     std::vector<std::vector<T>> temp_terms;

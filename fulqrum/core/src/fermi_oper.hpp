@@ -22,20 +22,17 @@
 #include <unordered_map>
 #include <vector>
 #ifdef FQ_TBB
-#include <oneapi/tbb/parallel_sort.h>
+#    include <oneapi/tbb/parallel_sort.h>
 #endif
 
 #include "constants.hpp"
 #include "fermi_term.hpp"
 #include "io.hpp"
-#include "qubit_oper.hpp"
 #include "oper_utils.hpp"
-
+#include "qubit_oper.hpp"
 
 // forward definitions
 void set_fermi_sorting_flags(FermionicOperator& oper, std::string kind);
-
-
 
 /** @struct FermionicOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
@@ -50,7 +47,8 @@ typedef struct FermionicOperator
     unsigned int combined = 0; // have the repeated operators indices been combined?
     unsigned int unique_terms = 0; // are the terms unique? i.e. duplicates removed
     int weight_sorted{0}; // Are the operator terms weight sorted
-    int structure_sorted{0}; // Are the operator terms sorted by (non-unique) off-diagonal structure?
+    int structure_sorted{
+        0}; // Are the operator terms sorted by (non-unique) off-diagonal structure?
     std::vector<FermionicTerm_t> terms;
     FermionicOperator() {}
     /**
@@ -287,14 +285,17 @@ typedef struct FermionicOperator
     {
         if(!(this->weight_sorted))
         {
-            // sort by weight
-            #ifdef FQ_TBB
-            tbb::parallel_sort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2)
-                                                  {return term1.indices.size() < term2.indices.size();});
-            #else
-            std::sort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2)
-                                                  {return term1.indices.size() < term2.indices.size();});
-            #endif
+// sort by weight
+#ifdef FQ_TBB
+            tbb::parallel_sort(
+                terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
+                    return term1.indices.size() < term2.indices.size();
+                });
+#else
+            std::sort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
+                return term1.indices.size() < term2.indices.size();
+            });
+#endif
             set_fermi_sorting_flags(*this, "weight");
         }
         return *this;
@@ -307,14 +308,17 @@ typedef struct FermionicOperator
     {
         if(!(this->structure_sorted))
         {
-            // sort by weight
-            #ifdef FQ_TBB
-            tbb::parallel_sort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2)
-                                                  {return term1.offdiag_structure < term2.offdiag_structure;});
-            #else
-            std::sort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2)
-                                                  {return term1.offdiag_structure < term2.offdiag_structure;});
-            #endif
+// sort by weight
+#ifdef FQ_TBB
+            tbb::parallel_sort(
+                terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
+                    return term1.offdiag_structure < term2.offdiag_structure;
+                });
+#else
+            std::sort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
+                return term1.offdiag_structure < term2.offdiag_structure;
+            });
+#endif
             set_fermi_sorting_flags(*this, "structure");
         }
         return *this;
@@ -437,8 +441,6 @@ typedef struct FermionicOperator
         return out;
     }
 } FermionicOperator_t;
-
-
 
 /**
  * Set the FermionicOperator flags when performing sorting of various kinds

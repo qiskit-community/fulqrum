@@ -74,7 +74,7 @@ typedef struct OperatorTerm
                 values.push_back(val);
                 indices.push_back(ind);
                 offdiag_weight += static_cast<width_t>(val > 2);
-                offdiag_structure += (ind+1) * (val > 2);
+                offdiag_structure += (ind + 1) * (val > 2);
             }
         }
         //check that length of values == length of indices
