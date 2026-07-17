@@ -282,6 +282,20 @@ cdef class FermionicOperator():
         """
         self.oper.offdiag_structure_sort()
         return self
+
+    @cython.boundscheck(False)
+    def offdiag_structure_ptrs(self):
+        """Off-diagonal structures of each term in operator
+        """
+        cdef size_t kk
+        cdef vector[size_t] ptrs
+        if self.oper.terms.size() == 0:
+            raise FulqrumError('FermionicOperator has zero terms')
+        ptrs = self.oper.offdiag_structure_ptrs()
+        cdef size_t[::1] out = np.empty(ptrs.size(), dtype=np.uintp)
+        for kk in range(ptrs.size()):
+            out[kk] = ptrs[kk]
+        return np.asarray(out)
     
     @cython.boundscheck(False)
     def offdiag_structures(self):

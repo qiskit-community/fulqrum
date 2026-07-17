@@ -136,8 +136,8 @@ inline void combine_terms(std::vector<T>& __restrict terms,
                     continue;
                 }
                 current_term = &terms[mm];
-                // filter if offdiag weights differ
-                if(target_term.offdiag_weight != current_term->offdiag_weight)
+                // move on if number of indices does not match
+                if(target_term.indices.size() != current_term->indices.size())
                 {
                     continue;
                 }

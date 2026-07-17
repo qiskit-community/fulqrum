@@ -103,6 +103,7 @@ cdef extern from "../src/base.hpp":
         FermionicOperator_t offdiag_structure_sort() nogil
         FermionicOperator_t combine_repeated_terms(double)
         QubitOperator_t extended_jw_transformation() nogil
+        vector[size_t] offdiag_structure_ptrs() nogil
 
 
     size_t max_offdiag_ptr_size(vector[size_t]&)

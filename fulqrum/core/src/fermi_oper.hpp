@@ -320,6 +320,20 @@ typedef struct FermionicOperator
         return *this;
     }
     /**
+    * Pointers to starting indices for structure sorted operator
+    * 
+    */
+    std::vector<std::size_t> offdiag_structure_ptrs()
+    {
+        std::vector<std::size_t> ptrs;
+        if(!this->structure_sorted)
+        {
+            this->offdiag_structure_sort();
+        }
+        set_offdiag_structure_ptrs(terms, ptrs);
+        return ptrs;
+    }
+    /**
     * Combine repeated terms in operator
     * 
     * @param[in] atol Tolerance for determining if a combined coefficient is zero
@@ -398,15 +412,19 @@ typedef struct FermionicOperator
     {
         FermionicOperator& fermi = *this;
         // This requires combining repeated indices
-        if(!this->combined)
+        if(!fermi.combined)
         {
             fermi = fermi.combine_repeat_indices();
+        }
+        if(!fermi.unique_terms)
+        {
+            fermi = fermi.combine_repeated_terms();
         }
         QubitOperator_t out = QubitOperator(fermi.width);
         std::size_t kk;
         std::size_t num_terms = fermi.size();
         out.terms.resize(num_terms);
-#pragma omp parallel for schedule(dynamic) if(num_terms > 128)
+#pragma omp parallel for if(num_terms > 128)
         for(kk = 0; kk < num_terms; kk++)
         {
             jw_term(fermi.terms[kk], out.terms[kk]);
