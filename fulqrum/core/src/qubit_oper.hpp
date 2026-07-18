@@ -23,6 +23,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <boost/sort/pdqsort/pdqsort.hpp>
 #ifdef FQ_TBB
 #    include <oneapi/tbb/parallel_sort.h>
 #endif
@@ -902,7 +903,7 @@ typedef struct QubitOperator
             return term1.indices.size() < term2.indices.size();
         });
 #else
-        std::sort(terms.begin(), terms.end(), [&](OperatorTerm term1, OperatorTerm term2) {
+        boost::sort::pdqsort(terms.begin(), terms.end(), [&](OperatorTerm term1, OperatorTerm term2) {
             return term1.indices.size() < term2.indices.size();
         });
 #endif
@@ -916,7 +917,7 @@ typedef struct QubitOperator
     QubitOperator& offdiag_weight_sort()
     {
         // sort by off-diagonal weight
-        std::sort(terms.begin(), terms.end(), offweight_comp);
+        boost::sort::pdqsort(terms.begin(), terms.end(), offweight_comp);
         set_sorting_flags(*this, "off_weight");
         return *this;
     }
@@ -1279,7 +1280,7 @@ inline void term_offdiag_sort(QubitOperator& oper)
         return keys[a] < keys[b];
     });
 #else
-    std::sort(order.begin(), order.end(), [&keys](std::size_t a, std::size_t b) {
+    boost::sort::pdqsort(order.begin(), order.end(), [&keys](std::size_t a, std::size_t b) {
         return keys[a] < keys[b];
     });
 #endif

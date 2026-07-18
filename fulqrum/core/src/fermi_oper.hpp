@@ -21,6 +21,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <boost/sort/pdqsort/pdqsort.hpp>
 #ifdef FQ_TBB
 #    include <oneapi/tbb/parallel_sort.h>
 #endif
@@ -292,7 +293,7 @@ typedef struct FermionicOperator
                     return term1.indices.size() < term2.indices.size();
                 });
 #else
-            std::sort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
+            boost::sort::pdqsort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
                 return term1.indices.size() < term2.indices.size();
             });
 #endif
@@ -315,7 +316,7 @@ typedef struct FermionicOperator
                     return term1.offdiag_structure < term2.offdiag_structure;
                 });
 #else
-            std::sort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
+            boost::sort::pdqsort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
                 return term1.offdiag_structure < term2.offdiag_structure;
             });
 #endif
@@ -428,11 +429,13 @@ typedef struct FermionicOperator
         std::size_t kk;
         std::size_t num_terms = fermi.size();
         out.terms.resize(num_terms);
-#pragma omp parallel for if(num_terms > 128)
+#pragma omp parallel for schedule(dynamic, 1) if(num_terms > 128)
         for(kk = 0; kk < num_terms; kk++)
         {
             jw_term(fermi.terms[kk], out.terms[kk]);
-            out.terms[kk].sort_term_data();
+            // elements are added high to low, so must reverse to get correct order
+            std::reverse(out.terms[kk].indices.begin(), out.terms[kk].indices.end());
+            std::reverse(out.terms[kk].values.begin(), out.terms[kk].values.end());
             set_offdiag_weight_and_phase(out.terms[kk]);
             set_extended_flag(out.terms[kk]);
             out.terms[kk].set_proj_indices();
