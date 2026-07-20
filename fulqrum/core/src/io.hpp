@@ -26,6 +26,7 @@
 #include "./external/json.hpp"
 #include "base.hpp"
 #include "version.hpp"
+#include "term_utils.hpp"
 
 using json = nlohmann::json;
 typedef std::complex<double> complex;
@@ -302,7 +303,7 @@ inline void json_to_operator(const std::string& filename, U& oper)
             JsonTerm item = terms[kk];
             auto [a, b] = std::get<2>(item);
             OperatorTerm term = OperatorTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
-            term.set_proj_indices();
+            set_term_proj_indices(term);
             set_offdiag_weight_and_phase(term);
             set_extended_flag(term);
             oper.terms[kk] = term;
@@ -333,6 +334,7 @@ inline void json_to_operator(const std::string& filename, U& oper)
             auto [a, b] = std::get<2>(item);
             FermionicTerm term = FermionicTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
             term.insertion_sort();
+            set_term_proj_indices(term);
             oper.terms[kk] = term;
         }
     }

@@ -29,6 +29,7 @@
 #include "constants.hpp"
 #include "fermi_term.hpp"
 #include "io.hpp"
+#include "term_utils.hpp"
 #include "oper_utils.hpp"
 #include "qubit_oper.hpp"
 
@@ -438,7 +439,7 @@ typedef struct FermionicOperator
             std::reverse(out.terms[kk].values.begin(), out.terms[kk].values.end());
             set_offdiag_weight_and_phase(out.terms[kk]);
             set_extended_flag(out.terms[kk]);
-            out.terms[kk].set_proj_indices();
+            set_term_proj_indices(out.terms[kk]);
         }
         out.type = 2; // set type=2
         return out;

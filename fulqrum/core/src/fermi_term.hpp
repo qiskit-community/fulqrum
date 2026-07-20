@@ -43,6 +43,7 @@ typedef struct FermionicTerm
     std::vector<width_t> proj_bits;
     width_t offdiag_weight{0};
     unsigned int offdiag_structure{0};
+    unsigned int proj_structure{0};
 
     FermionicTerm() {}
     FermionicTerm(std::complex<double> c)
@@ -78,6 +79,7 @@ typedef struct FermionicTerm
             throw std::runtime_error("Size of values vector does not equal that of indices.");
         }
         insertion_sort();
+        set_term_proj_indices(*this);
     }
     // destructor
     ~FermionicTerm()
@@ -90,8 +92,11 @@ typedef struct FermionicTerm
         FermionicTerm out = FermionicTerm(this->coeff);
         out.values = this->values;
         out.indices = this->indices;
+        out.proj_indices = this->proj_indices;
+        out.proj_bits = this->proj_bits;
         out.offdiag_weight = this->offdiag_weight;
         out.offdiag_structure = this->offdiag_structure;
+        out.proj_structure = this->proj_structure;
         return out;
     }
     /**
@@ -327,5 +332,6 @@ inline void deflate_term_indices(const FermionicTerm& term,
         new_term.offdiag_structure += (current_index + 1) * (current_value > 2);
     }
     new_term.coeff = term.coeff;
+    set_term_proj_indices(new_term);
     out_terms.push_back(new_term);
 }

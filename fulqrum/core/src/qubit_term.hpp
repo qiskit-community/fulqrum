@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "constants.hpp"
+#include "term_utils.hpp"
 #include "oper_utils.hpp"
 
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
@@ -40,6 +41,7 @@ typedef struct OperatorTerm
     std::vector<width_t> proj_bits;
     width_t offdiag_weight{0};
     unsigned int offdiag_structure{0};
+    unsigned int proj_structure{0};
     int extended{0};
     int real_phase{1}; // 'phase' of real part (+/- 1), 0 means operator is complex-valued
     int group{-1}; // -1 means unset here
@@ -108,8 +110,11 @@ typedef struct OperatorTerm
         out.indices = this->indices;
         out.proj_indices = this->proj_indices;
         out.proj_bits = this->proj_bits;
+        out.proj_indices = this->proj_indices;
+        out.proj_bits = this->proj_bits;
         out.offdiag_weight = this->offdiag_weight;
         out.offdiag_structure = this->offdiag_structure;
+        out.proj_structure = this->proj_structure;
         return out;
     }
     /**
@@ -174,19 +179,7 @@ typedef struct OperatorTerm
      */
     OperatorTerm& set_proj_indices()
     {
-        std::size_t kk;
-        width_t val;
-        proj_indices.resize(0);
-        proj_bits.resize(0);
-        for(kk = 0; kk < values.size(); kk++)
-        {
-            val = values[kk];
-            if(val == 1 || val == 2)
-            {
-                proj_indices.push_back(indices[kk]);
-                proj_bits.push_back(val - 1);
-            }
-        }
+        set_term_proj_indices(*this);
         return *this;
     }
     std::vector<OpData> operators() const
@@ -217,24 +210,3 @@ typedef struct OperatorTerm
         return diag;
     }
 } OperatorTerm_t;
-
-/**
- * In-pace set the projector indices and bits for term in a Hamiltonian
- */
-inline OperatorTerm& set_proj_indices(OperatorTerm& term)
-{
-    std::size_t kk;
-    width_t val;
-    term.proj_indices.resize(0);
-    term.proj_bits.resize(0);
-    for(kk = 0; kk < term.values.size(); kk++)
-    {
-        val = term.values[kk];
-        if(val == 1 || val == 2)
-        {
-            term.proj_indices.push_back(term.indices[kk]);
-            term.proj_bits.push_back(val - 1);
-        }
-    }
-    return term;
-}
