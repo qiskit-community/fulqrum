@@ -12,6 +12,8 @@
  * that they have been altered from the originals.
  */
 #pragma once
+#include "constants.hpp"
+#include <boost/sort/pdqsort/pdqsort.hpp>
 #include <vector>
 
 /**

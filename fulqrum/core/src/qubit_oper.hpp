@@ -14,6 +14,7 @@
 
 #pragma once
 #include <algorithm>
+#include <boost/sort/pdqsort/pdqsort.hpp>
 #include <cmath>
 #include <complex>
 #include <cstdlib>
@@ -23,7 +24,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <boost/sort/pdqsort/pdqsort.hpp>
 #ifdef FQ_TBB
 #    include <oneapi/tbb/parallel_sort.h>
 #endif
@@ -903,9 +903,10 @@ typedef struct QubitOperator
             return term1.indices.size() < term2.indices.size();
         });
 #else
-        boost::sort::pdqsort(terms.begin(), terms.end(), [&](OperatorTerm term1, OperatorTerm term2) {
-            return term1.indices.size() < term2.indices.size();
-        });
+        boost::sort::pdqsort(
+            terms.begin(), terms.end(), [&](OperatorTerm term1, OperatorTerm term2) {
+                return term1.indices.size() < term2.indices.size();
+            });
 #endif
         set_sorting_flags(*this, "weight");
         return *this;

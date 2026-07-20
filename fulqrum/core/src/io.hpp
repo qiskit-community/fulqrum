@@ -25,8 +25,8 @@
 
 #include "./external/json.hpp"
 #include "base.hpp"
-#include "version.hpp"
 #include "term_utils.hpp"
+#include "version.hpp"
 
 using json = nlohmann::json;
 typedef std::complex<double> complex;

@@ -22,8 +22,8 @@
 #include <vector>
 
 #include "constants.hpp"
-#include "term_utils.hpp"
 #include "oper_utils.hpp"
+#include "term_utils.hpp"
 
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
  *

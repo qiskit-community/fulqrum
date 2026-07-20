@@ -13,6 +13,7 @@
  */
 #pragma once
 #include <algorithm>
+#include <boost/sort/pdqsort/pdqsort.hpp>
 #include <cmath>
 #include <complex>
 #include <cstdlib>
@@ -21,7 +22,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <boost/sort/pdqsort/pdqsort.hpp>
 #ifdef FQ_TBB
 #    include <oneapi/tbb/parallel_sort.h>
 #endif
@@ -29,9 +29,9 @@
 #include "constants.hpp"
 #include "fermi_term.hpp"
 #include "io.hpp"
-#include "term_utils.hpp"
 #include "oper_utils.hpp"
 #include "qubit_oper.hpp"
+#include "term_utils.hpp"
 
 // forward definitions
 void set_fermi_sorting_flags(FermionicOperator& oper, std::string kind);
@@ -294,9 +294,10 @@ typedef struct FermionicOperator
                     return term1.indices.size() < term2.indices.size();
                 });
 #else
-            boost::sort::pdqsort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
-                return term1.indices.size() < term2.indices.size();
-            });
+            boost::sort::pdqsort(
+                terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
+                    return term1.indices.size() < term2.indices.size();
+                });
 #endif
             set_fermi_sorting_flags(*this, "weight");
         }
@@ -317,9 +318,10 @@ typedef struct FermionicOperator
                     return term1.offdiag_structure < term2.offdiag_structure;
                 });
 #else
-            boost::sort::pdqsort(terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
-                return term1.offdiag_structure < term2.offdiag_structure;
-            });
+            boost::sort::pdqsort(
+                terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
+                    return term1.offdiag_structure < term2.offdiag_structure;
+                });
 #endif
             set_fermi_sorting_flags(*this, "structure");
         }
