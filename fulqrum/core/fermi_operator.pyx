@@ -309,6 +309,18 @@ cdef class FermionicOperator():
             out[kk] = self.oper.terms[kk].offdiag_structure
         return np.asarray(out)
 
+    @cython.boundscheck(False)
+    def proj_structures(self):
+        """Off-diagonal structures of each term in operator
+        """
+        cdef size_t kk
+        if self.oper.terms.size() == 0:
+            raise FulqrumError('FermionicOperator has zero terms')
+        cdef unsigned int[::1] out = np.empty(self.oper.terms.size(), dtype=np.uint32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].proj_structure
+        return np.asarray(out)
+
     @property
     def coeff(self):
         """Return the coeff for a single term or empty operator

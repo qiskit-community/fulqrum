@@ -31,6 +31,7 @@ cdef extern from "../src/base.hpp":
         int real_phase
         int group
         unsigned int offdiag_structure
+        unsigned int proj_structure
         void sort_term_data()
         void set_proj_indices()
         OperatorTerm_t()
@@ -86,8 +87,11 @@ cdef extern from "../src/base.hpp":
         double complex coeff
         vector[width_t] indices
         vector[unsigned char] values
+        vector[width_t] proj_indices
+        vector[width_t] proj_bits
         width_t offdiag_weight
         unsigned int offdiag_structure
+        unsigned int proj_structure
         void insertion_sort()
 
 
