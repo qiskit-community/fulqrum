@@ -303,9 +303,6 @@ inline void json_to_operator(const std::string& filename, U& oper)
             JsonTerm item = terms[kk];
             auto [a, b] = std::get<2>(item);
             OperatorTerm term = OperatorTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
-            set_term_proj_indices(term);
-            set_offdiag_weight_and_phase(term);
-            set_extended_flag(term);
             oper.terms[kk] = term;
         }
         // look to see if method-type exists, should in V1.1
@@ -333,8 +330,6 @@ inline void json_to_operator(const std::string& filename, U& oper)
             JsonTerm item = terms[kk];
             auto [a, b] = std::get<2>(item);
             FermionicTerm term = FermionicTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
-            term.insertion_sort();
-            set_term_proj_indices(term);
             oper.terms[kk] = term;
         }
     }
