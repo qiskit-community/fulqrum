@@ -83,8 +83,6 @@ inline void set_offdiag_structure_ptrs(const std::vector<T>& __restrict terms,
     }
 }
 
-
-
 /**
  * Combine repeated terms that represent same
  * operators, dropping terms smaller than requested tolerance.
@@ -105,8 +103,8 @@ inline void combine_terms(std::vector<T>& __restrict terms,
                           double atol)
 {
     std::size_t kk, num_terms = terms.size();
-    // do sort over each collection of terms with same weight
-    #pragma omp parallel for if(num_terms > 4096) schedule(guided)
+// do sort over each collection of terms with same weight
+#pragma omp parallel for if(num_terms > 4096) schedule(guided)
     for(kk = 0; kk < sort_ptrs.size() - 1; kk++)
     {
         std::size_t jj, mm, qq;
@@ -118,21 +116,20 @@ inline void combine_terms(std::vector<T>& __restrict terms,
         start = sort_ptrs[kk];
         stop = sort_ptrs[kk + 1];
         std::vector<T> temp_terms;
-        temp_terms.reserve(stop-start);
+        temp_terms.reserve(stop - start);
         std::vector<std::size_t> new_ptrs;
         new_ptrs.push_back(start);
         unsigned int val;
         // If the number of terms in the bucket is greater than this value then
         // do an additional sort based on the projector structure to make smaller buckets
         // to search over
-        if(stop-start > 10000)
+        if(stop - start > 10000)
         {
-            boost::sort::pdqsort(
-                    terms.begin()+start, terms.begin()+stop, [](T term1, T term2) {
-                        return term1.proj_structure < term2.proj_structure;
-                    });
+            boost::sort::pdqsort(terms.begin() + start, terms.begin() + stop, [](T term1, T term2) {
+                return term1.proj_structure < term2.proj_structure;
+            });
             val = terms[start].proj_structure;
-            for(jj = start+1; jj < stop; jj++)
+            for(jj = start + 1; jj < stop; jj++)
             {
                 if(terms[jj].proj_structure > val)
                 {
@@ -142,26 +139,26 @@ inline void combine_terms(std::vector<T>& __restrict terms,
             }
         }
         new_ptrs.push_back(stop);
-        for(jj = 0; jj < new_ptrs.size()-1; jj++)
+        for(jj = 0; jj < new_ptrs.size() - 1; jj++)
         {
             sub_start = new_ptrs[jj];
-            sub_stop = new_ptrs[jj+1];
-            std::vector<bool> touched(sub_stop-sub_start, 0);
-            for(qq=0; qq < (sub_stop-sub_start); qq++)
+            sub_stop = new_ptrs[jj + 1];
+            std::vector<bool> touched(sub_stop - sub_start, 0);
+            for(qq = 0; qq < (sub_stop - sub_start); qq++)
             {
                 if(touched[qq]) // If touched, move onto next term
                 {
                     continue;
                 }
                 touched[qq] = 1;
-                target_term = terms[qq+sub_start];
-                for(mm = qq + 1; mm < (sub_stop-sub_start); mm++)
+                target_term = terms[qq + sub_start];
+                for(mm = qq + 1; mm < (sub_stop - sub_start); mm++)
                 {
                     if(touched[mm])
                     {
                         continue;
                     }
-                    current_term = &terms[mm+sub_start];
+                    current_term = &terms[mm + sub_start];
                     // move on if number of indices does not match
                     if(target_term.indices.size() != current_term->indices.size())
                     {
@@ -170,11 +167,11 @@ inline void combine_terms(std::vector<T>& __restrict terms,
 
                     do_combine = 1;
                     // look to see if indices and values match
-                     if((target_term.indices != current_term->indices) ||
-                        (target_term.values != current_term->values))
-                        {
-                            do_combine = 0;
-                        }
+                    if((target_term.indices != current_term->indices) ||
+                       (target_term.values != current_term->values))
+                    {
+                        do_combine = 0;
+                    }
                     if(do_combine)
                     {
                         touched[mm] = 1;
@@ -188,7 +185,7 @@ inline void combine_terms(std::vector<T>& __restrict terms,
                 }
             }
         } // end main jj loop
-        #pragma omp critical
+#pragma omp critical
         {
             out_terms.insert(out_terms.end(), temp_terms.begin(), temp_terms.end());
         }
