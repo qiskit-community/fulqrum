@@ -362,9 +362,7 @@ typedef struct FermionicOperator
         }
         std::vector<std::size_t> ptrs;
         set_offdiag_structure_ptrs(terms, ptrs);
-        std::vector<width_t> touched;
-        touched.resize(this->size());
-        combine_terms(this->terms, out.terms, ptrs, &touched[0], atol);
+        combine_terms(this->terms, out.terms, ptrs, atol);
         this->unique_terms = 1;
         return out;
     }

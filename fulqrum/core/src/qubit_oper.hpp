@@ -1067,9 +1067,7 @@ typedef struct QubitOperator
         }
         std::vector<std::size_t> weight_ptrs;
         set_weight_ptrs(terms, weight_ptrs);
-        std::vector<width_t> touched;
-        touched.resize(this->size());
-        combine_terms(this->terms, out.terms, weight_ptrs, &touched[0], atol);
+        combine_terms(this->terms, out.terms, weight_ptrs, atol);
         out.type = this->type;
         return out;
     }

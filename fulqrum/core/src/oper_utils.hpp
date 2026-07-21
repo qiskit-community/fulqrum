@@ -83,6 +83,8 @@ inline void set_offdiag_structure_ptrs(const std::vector<T>& __restrict terms,
     }
 }
 
+
+
 /**
  * Combine repeated terms that represent same
  * operators, dropping terms smaller than requested tolerance.
@@ -100,77 +102,96 @@ template <typename T>
 inline void combine_terms(std::vector<T>& __restrict terms,
                           std::vector<T>& __restrict out_terms,
                           std::vector<std::size_t>& __restrict sort_ptrs,
-                          width_t* touched,
                           double atol)
 {
-    std::size_t kk, qq, num_terms = terms.size();
-    std::vector<std::vector<T>> temp_terms;
-    temp_terms.resize(sort_ptrs.size() - 1);
+    std::size_t kk, num_terms = terms.size();
     // do sort over each collection of terms with same weight
-#pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
+    #pragma omp parallel for if(num_terms > 4096) schedule(guided)
     for(kk = 0; kk < sort_ptrs.size() - 1; kk++)
     {
-        std::size_t jj, mm, pp;
-        std::size_t start, stop;
+        std::size_t jj, mm, qq;
+        std::size_t start, stop, sub_start, sub_stop;
         T target_term;
         T* current_term;
         int do_combine;
         // set start and stop for terms based on ptrs
         start = sort_ptrs[kk];
         stop = sort_ptrs[kk + 1];
-        for(jj = start; jj < stop; jj++)
+        std::vector<T> temp_terms;
+        temp_terms.reserve(stop-start);
+        std::vector<std::size_t> new_ptrs;
+        new_ptrs.push_back(start);
+        unsigned int val;
+        // If the number of terms in the bucket is greater than this value then
+        // do an additional sort based on the projector structure to make smaller buckets
+        // to search over
+        if(stop-start > 10000)
         {
-            if(touched[jj]) // If touched, move onto next term
+            boost::sort::pdqsort(
+                    terms.begin()+start, terms.begin()+stop, [](T term1, T term2) {
+                        return term1.proj_structure < term2.proj_structure;
+                    });
+            val = terms[start].proj_structure;
+            for(jj = start+1; jj < stop; jj++)
             {
-                continue;
+                if(terms[jj].proj_structure > val)
+                {
+                    new_ptrs.push_back(jj);
+                    val = terms[jj].proj_structure;
+                }
             }
-            touched[jj] = 1;
-            target_term = terms[jj];
-            for(mm = jj + 1; mm < stop; mm++)
+        }
+        new_ptrs.push_back(stop);
+        for(jj = 0; jj < new_ptrs.size()-1; jj++)
+        {
+            sub_start = new_ptrs[jj];
+            sub_stop = new_ptrs[jj+1];
+            std::vector<bool> touched(sub_stop-sub_start, 0);
+            for(qq=0; qq < (sub_stop-sub_start); qq++)
             {
-                if(touched[mm])
+                if(touched[qq]) // If touched, move onto next term
                 {
                     continue;
                 }
-                current_term = &terms[mm];
-                // move on if number of indices does not match
-                if(target_term.indices.size() != current_term->indices.size())
+                touched[qq] = 1;
+                target_term = terms[qq+sub_start];
+                for(mm = qq + 1; mm < (sub_stop-sub_start); mm++)
                 {
-                    continue;
-                }
-
-                do_combine = 1;
-                // look to see if indices and values match
-                for(pp = 0; pp < target_term.indices.size(); pp++)
-                {
-                    if((target_term.indices[pp] != current_term->indices[pp]) ||
-                       (target_term.values[pp] != current_term->values[pp]))
+                    if(touched[mm])
                     {
-                        do_combine = 0;
-                        break;
+                        continue;
                     }
-                }
-                if(do_combine)
+                    current_term = &terms[mm+sub_start];
+                    // move on if number of indices does not match
+                    if(target_term.indices.size() != current_term->indices.size())
+                    {
+                        continue;
+                    }
+
+                    do_combine = 1;
+                    // look to see if indices and values match
+                     if((target_term.indices != current_term->indices) ||
+                        (target_term.values != current_term->values))
+                        {
+                            do_combine = 0;
+                        }
+                    if(do_combine)
+                    {
+                        touched[mm] = 1;
+                        target_term.coeff += current_term->coeff;
+                    }
+                } // end mm for-loop
+                // Add term to output if either real or imag parts are greater than atol
+                if(std::abs(target_term.coeff) > atol)
                 {
-                    touched[mm] = 1;
-                    target_term.coeff += current_term->coeff;
+                    temp_terms.push_back(target_term);
                 }
-            } // end mm for-loop
-            // Add term to output if either real or imag parts are greater than atol
-            if(std::abs(target_term.coeff) > atol)
-            {
-                temp_terms[kk].push_back(target_term);
             }
         } // end main jj loop
-    } //end kk-loop
-
-    // at end of all, add to output terms
-    for(kk = 0; kk < sort_ptrs.size() - 1; kk++)
-    {
-        for(qq = 0; qq < temp_terms[kk].size(); qq++)
+        #pragma omp critical
         {
-            out_terms.push_back(temp_terms[kk][qq]);
+            out_terms.insert(out_terms.end(), temp_terms.begin(), temp_terms.end());
         }
-    }
+    } //end kk-loop
 
 } // end combine_terms
