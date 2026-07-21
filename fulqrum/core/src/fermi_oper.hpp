@@ -430,7 +430,7 @@ typedef struct FermionicOperator
         std::size_t kk;
         std::size_t num_terms = fermi.size();
         out.terms.resize(num_terms);
-#pragma omp parallel for schedule(dynamic, 1) if(num_terms > 128)
+#pragma omp parallel for schedule(guided) if(num_terms > 1024)
         for(kk = 0; kk < num_terms; kk++)
         {
             jw_term(fermi.terms[kk], out.terms[kk]);
