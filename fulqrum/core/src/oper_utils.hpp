@@ -111,7 +111,6 @@ inline void combine_terms(std::vector<T>& __restrict terms,
         std::size_t start, stop, sub_start, sub_stop;
         T target_term;
         T* current_term;
-        int do_combine;
         // set start and stop for terms based on ptrs
         start = sort_ptrs[kk];
         stop = sort_ptrs[kk + 1];
@@ -143,15 +142,16 @@ inline void combine_terms(std::vector<T>& __restrict terms,
         {
             sub_start = new_ptrs[jj];
             sub_stop = new_ptrs[jj + 1];
-            std::vector<bool> touched(sub_stop - sub_start, 0);
+            std::vector<bool> touched(sub_stop - sub_start, false);
             for(qq = 0; qq < (sub_stop - sub_start); qq++)
             {
                 if(touched[qq]) // If touched, move onto next term
                 {
                     continue;
                 }
-                touched[qq] = 1;
-                target_term = terms[qq + sub_start];
+                touched[qq] = true;
+                T target_term = terms[qq + sub_start];
+                const std::size_t target_size = target_term.indices.size();
                 for(mm = qq + 1; mm < (sub_stop - sub_start); mm++)
                 {
                     if(touched[mm])
@@ -160,34 +160,30 @@ inline void combine_terms(std::vector<T>& __restrict terms,
                     }
                     current_term = &terms[mm + sub_start];
                     // move on if number of indices does not match
-                    if(target_term.indices.size() != current_term->indices.size())
+                    if(target_size != current_term->indices.size())
                     {
                         continue;
                     }
-
-                    do_combine = 1;
                     // look to see if indices and values match
-                    if((target_term.indices != current_term->indices) ||
-                       (target_term.values != current_term->values))
+                    if((target_term.indices == current_term->indices) &&
+                       (target_term.values == current_term->values))
                     {
-                        do_combine = 0;
-                    }
-                    if(do_combine)
-                    {
-                        touched[mm] = 1;
+                        touched[mm] = true;
                         target_term.coeff += current_term->coeff;
                     }
                 } // end mm for-loop
                 // Add term to output if either real or imag parts are greater than atol
                 if(std::abs(target_term.coeff) > atol)
                 {
-                    temp_terms.push_back(target_term);
+                    temp_terms.push_back(std::move(target_term));
                 }
             }
         } // end main jj loop
 #pragma omp critical
         {
-            out_terms.insert(out_terms.end(), temp_terms.begin(), temp_terms.end());
+            out_terms.insert(out_terms.end(),
+                             std::make_move_iterator(temp_terms.begin()),
+                             std::make_move_iterator(temp_terms.end()));
         }
     } //end kk-loop
 
