@@ -98,12 +98,13 @@ cdef class QubitOperator():
                                 term.indices.push_back(inds[kk])
                                 ind = STR_TO_IND[op_str[kk]]
                                 term.values.push_back(ind)
+                                term.offdiag_structure += (inds[kk] + 1) * (ind > 2)
                         term.coeff = coeff
                 else:
                     term.coeff = 1
                 term.sort_term_data()
                 set_offdiag_weight_and_phase(term)
-                set_proj_indices(term)
+                term.set_proj_indices()
                 set_extended_flag(term)
                 self.oper.terms.push_back(term)
 
@@ -263,6 +264,18 @@ cdef class QubitOperator():
         """
 
         return self.oper.ladder_width
+
+    @cython.boundscheck(False)
+    def offdiag_structures(self):
+        """Off-diagonal structures of each term in operator
+        """
+        cdef size_t kk
+        if self.oper.terms.size() == 0:
+            raise FulqrumError('QubitOperator has zero terms')
+        cdef unsigned int[::1] out = np.empty(self.oper.terms.size(), dtype=np.uint32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].offdiag_structure
+        return np.asarray(out)
 
     def copy(self):
         """Copy QubitOperator

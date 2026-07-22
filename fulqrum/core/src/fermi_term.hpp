@@ -12,8 +12,6 @@
  * that they have been altered from the originals.
  */
 #pragma once
-#include "constants.hpp"
-#include "qubit_term.hpp"
 #include <algorithm>
 #include <cmath>
 #include <complex>
@@ -23,6 +21,10 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "constants.hpp"
+#include "oper_utils.hpp"
+#include "qubit_term.hpp"
 
 // Fermionic components ---------------------------------------------------------------------------
 
@@ -37,6 +39,11 @@ typedef struct FermionicTerm
     std::vector<unsigned char> values;
     std::vector<width_t> indices;
     std::complex<double> coeff;
+    std::vector<width_t> proj_indices;
+    std::vector<width_t> proj_bits;
+    width_t offdiag_weight{0};
+    unsigned int offdiag_structure{0};
+    unsigned int proj_structure{0};
 
     FermionicTerm() {}
     FermionicTerm(std::complex<double> c)
@@ -46,16 +53,24 @@ typedef struct FermionicTerm
         : indices(inds)
         , coeff(c)
     {
+        unsigned char val;
+        width_t ind;
+        unsigned int counter = 0;
         // Iterate over string of values, mapping to new values and adding to term
         for(std::string::iterator it = vals.begin(); it != vals.end(); ++it)
         {
-            if(*it == 73)
+            counter += 1;
+            if(*it != 73)
             {
-                throw std::runtime_error("Cannot use identity operators in sparse format.");
+                val = oper_map[*it];
+                ind = inds[counter - 1];
+                values.push_back(val);
+                offdiag_weight += static_cast<width_t>(val > 2);
+                offdiag_structure += (ind + 1) * (val > 2);
             }
             else
             {
-                values.push_back(oper_map[*it]);
+                throw std::runtime_error("Cannot use identity operators in sparse format.");
             }
         }
         //check that length of values == length of indices
@@ -64,6 +79,7 @@ typedef struct FermionicTerm
             throw std::runtime_error("Size of values vector does not equal that of indices.");
         }
         insertion_sort();
+        set_term_proj_indices(*this);
     }
     // destructor
     ~FermionicTerm()
@@ -76,6 +92,11 @@ typedef struct FermionicTerm
         FermionicTerm out = FermionicTerm(this->coeff);
         out.values = this->values;
         out.indices = this->indices;
+        out.proj_indices = this->proj_indices;
+        out.proj_bits = this->proj_bits;
+        out.offdiag_weight = this->offdiag_weight;
+        out.offdiag_structure = this->offdiag_structure;
+        out.proj_structure = this->proj_structure;
         return out;
     }
     /**
@@ -307,7 +328,10 @@ inline void deflate_term_indices(const FermionicTerm& term,
         }
         new_term.indices.push_back(current_index);
         new_term.values.push_back(current_value);
+        new_term.offdiag_weight += static_cast<width_t>(current_value > 2);
+        new_term.offdiag_structure += (current_index + 1) * (current_value > 2);
     }
     new_term.coeff = term.coeff;
+    set_term_proj_indices(new_term);
     out_terms.push_back(new_term);
 }

@@ -13,6 +13,7 @@
  */
 #pragma once
 #include <algorithm>
+#include <boost/sort/pdqsort/pdqsort.hpp>
 #include <cmath>
 #include <complex>
 #include <cstdlib>
@@ -21,11 +22,19 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#ifdef FQ_TBB
+#    include <oneapi/tbb/parallel_sort.h>
+#endif
 
 #include "constants.hpp"
 #include "fermi_term.hpp"
 #include "io.hpp"
+#include "oper_utils.hpp"
 #include "qubit_oper.hpp"
+#include "term_utils.hpp"
+
+// forward definitions
+void set_fermi_sorting_flags(FermionicOperator& oper, std::string kind);
 
 /** @struct FermionicOperator
  * @brief Data structure for each a qubit operator, i.e. a collection of 'words'
@@ -38,6 +47,10 @@ typedef struct FermionicOperator
 {
     width_t width;
     unsigned int combined = 0; // have the repeated operators indices been combined?
+    unsigned int unique_terms = 0; // are the terms unique? i.e. duplicates removed
+    int weight_sorted{0}; // Are the operator terms weight sorted
+    int structure_sorted{
+        0}; // Are the operator terms sorted by (non-unique) off-diagonal structure?
     std::vector<FermionicTerm_t> terms;
     FermionicOperator() {}
     /**
@@ -262,6 +275,99 @@ typedef struct FermionicOperator
         FermionicOperator out = FermionicOperator(this->width);
         out.terms = this->terms;
         out.combined = this->combined;
+        out.weight_sorted = this->weight_sorted;
+        out.structure_sorted = this->structure_sorted;
+        return out;
+    }
+    /**
+    * In-place sorting of terms by weight
+    * 
+    */
+    FermionicOperator& weight_sort()
+    {
+        if(!(this->weight_sorted))
+        {
+// sort by weight
+#ifdef FQ_TBB
+            tbb::parallel_sort(terms.begin(),
+                               terms.end(),
+                               [](const FermionicTerm& term1, const FermionicTerm& term2) {
+                                   return term1.indices.size() < term2.indices.size();
+                               });
+#else
+            boost::sort::pdqsort(terms.begin(),
+                                 terms.end(),
+                                 [](const FermionicTerm& term1, const FermionicTerm& term2) {
+                                     return term1.indices.size() < term2.indices.size();
+                                 });
+#endif
+            set_fermi_sorting_flags(*this, "weight");
+        }
+        return *this;
+    }
+    /**
+    * In-place sorting of terms by weight
+    * 
+    */
+    FermionicOperator& offdiag_structure_sort()
+    {
+        if(!(this->structure_sorted))
+        {
+// sort by weight
+#ifdef FQ_TBB
+            tbb::parallel_sort(terms.begin(),
+                               terms.end(),
+                               [](const FermionicTerm& term1, const FermionicTerm& term2) {
+                                   return term1.offdiag_structure < term2.offdiag_structure;
+                               });
+#else
+            boost::sort::pdqsort(terms.begin(),
+                                 terms.end(),
+                                 [](const FermionicTerm& term1, const FermionicTerm& term2) {
+                                     return term1.offdiag_structure < term2.offdiag_structure;
+                                 });
+#endif
+            set_fermi_sorting_flags(*this, "structure");
+        }
+        return *this;
+    }
+    /**
+    * Pointers to starting indices for structure sorted operator
+    * 
+    */
+    std::vector<std::size_t> offdiag_structure_ptrs()
+    {
+        std::vector<std::size_t> ptrs;
+        if(!this->structure_sorted)
+        {
+            this->offdiag_structure_sort();
+        }
+        set_offdiag_structure_ptrs(terms, ptrs);
+        return ptrs;
+    }
+    /**
+    * Combine repeated terms in operator
+    * 
+    * @param[in] atol Tolerance for determining if a combined coefficient is zero
+    * 
+    * @return Output QubitOperator with terms combined
+    * 
+    */
+    FermionicOperator combine_repeated_terms(double atol = 1e-12)
+    {
+        FermionicOperator out = FermionicOperator(this->width);
+        if(!this->size())
+        {
+            return out;
+        }
+        if(!this->structure_sorted)
+        {
+            this->offdiag_structure_sort();
+        }
+        std::vector<std::size_t> ptrs;
+        set_offdiag_structure_ptrs(terms, ptrs);
+        combine_terms(this->terms, out.terms, ptrs, atol);
+        this->unique_terms = 1;
         return out;
     }
     /**
@@ -316,24 +422,56 @@ typedef struct FermionicOperator
     {
         FermionicOperator& fermi = *this;
         // This requires combining repeated indices
-        if(!this->combined)
+        if(!fermi.combined)
         {
-            fermi = this->combine_repeat_indices();
+            fermi = fermi.combine_repeat_indices();
         }
-        QubitOperator_t out = QubitOperator(this->width);
+        if(!fermi.unique_terms)
+        {
+            fermi = fermi.combine_repeated_terms();
+        }
+        QubitOperator_t out = QubitOperator(fermi.width);
         std::size_t kk;
-        std::size_t num_terms = this->size();
+        std::size_t num_terms = fermi.size();
         out.terms.resize(num_terms);
-#pragma omp parallel for schedule(dynamic) if(num_terms > 128)
+#pragma omp parallel for schedule(guided) if(num_terms > 1024)
         for(kk = 0; kk < num_terms; kk++)
         {
             jw_term(fermi.terms[kk], out.terms[kk]);
-            out.terms[kk].sort_term_data();
+            // elements are added high to low, so must reverse to get correct order
+            std::reverse(out.terms[kk].indices.begin(), out.terms[kk].indices.end());
+            std::reverse(out.terms[kk].values.begin(), out.terms[kk].values.end());
             set_offdiag_weight_and_phase(out.terms[kk]);
             set_extended_flag(out.terms[kk]);
-            out.terms[kk].set_proj_indices();
+            set_term_proj_indices(out.terms[kk]);
         }
         out.type = 2; // set type=2
-        return out.combine_repeated_terms();
+        return out;
     }
 } FermionicOperator_t;
+
+/**
+ * Set the FermionicOperator flags when performing sorting of various kinds
+ * 
+ * @param[in, out] oper The operator whose flags to set
+ * @param[in] kind Sting indicating the type of sorting that was performed
+ * 
+ * @throws Error if sorting type is not a valid kind
+ */
+inline void set_fermi_sorting_flags(FermionicOperator& oper, std::string kind)
+{
+    if(kind == "weight")
+    {
+        oper.weight_sorted = 1;
+        oper.structure_sorted = 0;
+    }
+    else if(kind == "structure")
+    {
+        oper.weight_sorted = 0;
+        oper.structure_sorted = 1;
+    }
+    else
+    {
+        throw std::runtime_error("Invalid sorting type.");
+    }
+}

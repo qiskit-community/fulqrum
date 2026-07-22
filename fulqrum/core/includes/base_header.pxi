@@ -30,6 +30,8 @@ cdef extern from "../src/base.hpp":
         int extended
         int real_phase
         int group
+        unsigned int offdiag_structure
+        unsigned int proj_structure
         void sort_term_data()
         void set_proj_indices()
         OperatorTerm_t()
@@ -85,6 +87,11 @@ cdef extern from "../src/base.hpp":
         double complex coeff
         vector[width_t] indices
         vector[unsigned char] values
+        vector[width_t] proj_indices
+        vector[width_t] proj_bits
+        width_t offdiag_weight
+        unsigned int offdiag_structure
+        unsigned int proj_structure
         void insertion_sort()
 
 
@@ -92,10 +99,16 @@ cdef extern from "../src/base.hpp":
         width_t width
         vector[FermionicTerm_t] terms
         size_t size()
+        int weight_sorted
         void to_json(string, bool) except +
         FermionicOperator_t from_json(string) except +
         FermionicOperator_t combine_repeat_indices() nogil
+        FermionicOperator_t weight_sort() nogil
+        FermionicOperator_t offdiag_structure_sort() nogil
+        FermionicOperator_t combine_repeated_terms(double)
         QubitOperator_t extended_jw_transformation() nogil
+        vector[size_t] offdiag_structure_ptrs() nogil
+
 
     size_t max_offdiag_ptr_size(vector[size_t]&)
 
