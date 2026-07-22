@@ -124,7 +124,7 @@ inline void combine_terms(std::vector<T>& __restrict terms,
         // to search over
         if(stop - start > 10000)
         {
-            boost::sort::pdqsort(terms.begin() + start, terms.begin() + stop, [](T term1, T term2) {
+            boost::sort::pdqsort(terms.begin() + start, terms.begin() + stop, [](const T& term1, const T& term2) {
                 return term1.proj_structure < term2.proj_structure;
             });
             val = terms[start].proj_structure;

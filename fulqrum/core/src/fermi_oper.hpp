@@ -290,12 +290,12 @@ typedef struct FermionicOperator
 // sort by weight
 #ifdef FQ_TBB
             tbb::parallel_sort(
-                terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
+                terms.begin(), terms.end(), [](const FermionicTerm& term1, const FermionicTerm& term2) {
                     return term1.indices.size() < term2.indices.size();
                 });
 #else
             boost::sort::pdqsort(
-                terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
+                terms.begin(), terms.end(), [](const FermionicTerm& term1, const FermionicTerm& term2) {
                     return term1.indices.size() < term2.indices.size();
                 });
 #endif
@@ -314,12 +314,12 @@ typedef struct FermionicOperator
 // sort by weight
 #ifdef FQ_TBB
             tbb::parallel_sort(
-                terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
+                terms.begin(), terms.end(), [](const FermionicTerm& term1, const FermionicTerm& term2) {
                     return term1.offdiag_structure < term2.offdiag_structure;
                 });
 #else
             boost::sort::pdqsort(
-                terms.begin(), terms.end(), [&](FermionicTerm term1, FermionicTerm term2) {
+                terms.begin(), terms.end(), [](const FermionicTerm& term1, const FermionicTerm& term2) {
                     return term1.offdiag_structure < term2.offdiag_structure;
                 });
 #endif
