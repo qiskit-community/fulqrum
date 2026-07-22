@@ -87,7 +87,7 @@ inline void set_offdiag_structure_ptrs(const std::vector<T>& __restrict terms,
  * Combine repeated terms that represent same
  * operators, dropping terms smaller than requested tolerance.
  *
- * Input terms must be sorted by weight before calling this routine
+ * Input terms must be sorted before calling this routine
  *
  * @param[in] terms Terms for input operator
  * @param[in] out_terms Terms for output operator (to push_back to)
