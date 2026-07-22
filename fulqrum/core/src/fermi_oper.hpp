@@ -289,15 +289,17 @@ typedef struct FermionicOperator
         {
 // sort by weight
 #ifdef FQ_TBB
-            tbb::parallel_sort(
-                terms.begin(), terms.end(), [](const FermionicTerm& term1, const FermionicTerm& term2) {
-                    return term1.indices.size() < term2.indices.size();
-                });
+            tbb::parallel_sort(terms.begin(),
+                               terms.end(),
+                               [](const FermionicTerm& term1, const FermionicTerm& term2) {
+                                   return term1.indices.size() < term2.indices.size();
+                               });
 #else
-            boost::sort::pdqsort(
-                terms.begin(), terms.end(), [](const FermionicTerm& term1, const FermionicTerm& term2) {
-                    return term1.indices.size() < term2.indices.size();
-                });
+            boost::sort::pdqsort(terms.begin(),
+                                 terms.end(),
+                                 [](const FermionicTerm& term1, const FermionicTerm& term2) {
+                                     return term1.indices.size() < term2.indices.size();
+                                 });
 #endif
             set_fermi_sorting_flags(*this, "weight");
         }
@@ -313,15 +315,17 @@ typedef struct FermionicOperator
         {
 // sort by weight
 #ifdef FQ_TBB
-            tbb::parallel_sort(
-                terms.begin(), terms.end(), [](const FermionicTerm& term1, const FermionicTerm& term2) {
-                    return term1.offdiag_structure < term2.offdiag_structure;
-                });
+            tbb::parallel_sort(terms.begin(),
+                               terms.end(),
+                               [](const FermionicTerm& term1, const FermionicTerm& term2) {
+                                   return term1.offdiag_structure < term2.offdiag_structure;
+                               });
 #else
-            boost::sort::pdqsort(
-                terms.begin(), terms.end(), [](const FermionicTerm& term1, const FermionicTerm& term2) {
-                    return term1.offdiag_structure < term2.offdiag_structure;
-                });
+            boost::sort::pdqsort(terms.begin(),
+                                 terms.end(),
+                                 [](const FermionicTerm& term1, const FermionicTerm& term2) {
+                                     return term1.offdiag_structure < term2.offdiag_structure;
+                                 });
 #endif
             set_fermi_sorting_flags(*this, "structure");
         }

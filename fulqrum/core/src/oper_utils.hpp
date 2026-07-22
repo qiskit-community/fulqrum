@@ -91,7 +91,6 @@ inline void set_offdiag_structure_ptrs(const std::vector<T>& __restrict terms,
  *
  * @param[in] terms Terms for input operator
  * @param[in] out_terms Terms for output operator (to push_back to)
- * @param[in] touched pointer array indicating if term has been touched
  * @param[in] num_terms Number of terms in input operator
  * @param[in] atol Absolute tolerance for term truncation
  *
@@ -103,88 +102,67 @@ inline void combine_terms(std::vector<T>& __restrict terms,
                           double atol)
 {
     std::size_t kk, num_terms = terms.size();
+    const std::size_t num_blocks = sort_ptrs.size() - 1;
+    // Do a double sorting here so that we can iterate once through the terms
+    // in each block
+    auto term_data_sort = [](const T& a, const T& b) -> bool {
+        if(a.indices.size() != b.indices.size())
+            return a.indices.size() < b.indices.size();
+        if(a.indices != b.indices)
+            return a.indices < b.indices;
+        return a.values < b.values;
+    };
+    // term data equality check
+    auto term_eq = [](const T& a, const T& b) -> bool {
+        return a.indices == b.indices && a.values == b.values;
+    };
+
+    std::vector<std::vector<T>> temp_results(num_blocks);
+
 // do sort over each collection of terms with same weight
-#pragma omp parallel for if(num_terms > 4096) schedule(guided)
-    for(kk = 0; kk < sort_ptrs.size() - 1; kk++)
+#pragma omp parallel for if(num_terms > 4096)
+    for(kk = 0; kk < num_blocks; kk++)
     {
-        std::size_t jj, mm, qq;
-        std::size_t start, stop, sub_start, sub_stop;
-        T target_term;
-        T* current_term;
-        // set start and stop for terms based on ptrs
+        std::size_t start, stop;
         start = sort_ptrs[kk];
         stop = sort_ptrs[kk + 1];
-        std::vector<T> temp_terms;
+
+        std::vector<T>& temp_terms = temp_results[kk];
         temp_terms.reserve(stop - start);
-        std::vector<std::size_t> new_ptrs;
-        new_ptrs.push_back(start);
-        unsigned int val;
-        // If the number of terms in the bucket is greater than this value then
-        // do an additional sort based on the projector structure to make smaller buckets
-        // to search over
-        if(stop - start > 10000)
-        {
-            boost::sort::pdqsort(terms.begin() + start, terms.begin() + stop, [](const T& term1, const T& term2) {
-                return term1.proj_structure < term2.proj_structure;
+
+        // Sort by proj_structure, if different, otherwise sort by data
+        boost::sort::pdqsort(
+            terms.begin() + start, terms.begin() + stop, [&](const T& a, const T& b) {
+                if(a.proj_structure != b.proj_structure)
+                    return a.proj_structure < b.proj_structure;
+                return term_data_sort(a, b);
             });
-            val = terms[start].proj_structure;
-            for(jj = start + 1; jj < stop; jj++)
-            {
-                if(terms[jj].proj_structure > val)
-                {
-                    new_ptrs.push_back(jj);
-                    val = terms[jj].proj_structure;
-                }
-            }
-        }
-        new_ptrs.push_back(stop);
-        for(jj = 0; jj < new_ptrs.size() - 1; jj++)
+
+        for(std::size_t qq = start; qq < stop;)
         {
-            sub_start = new_ptrs[jj];
-            sub_stop = new_ptrs[jj + 1];
-            std::vector<bool> touched(sub_stop - sub_start, false);
-            for(qq = 0; qq < (sub_stop - sub_start); qq++)
+            T accum = terms[qq];
+            std::size_t next = qq + 1;
+            while(next < stop && term_eq(terms[next], accum))
             {
-                if(touched[qq]) // If touched, move onto next term
-                {
-                    continue;
-                }
-                touched[qq] = true;
-                T target_term = terms[qq + sub_start];
-                const std::size_t target_size = target_term.indices.size();
-                for(mm = qq + 1; mm < (sub_stop - sub_start); mm++)
-                {
-                    if(touched[mm])
-                    {
-                        continue;
-                    }
-                    current_term = &terms[mm + sub_start];
-                    // move on if number of indices does not match
-                    if(target_size != current_term->indices.size())
-                    {
-                        continue;
-                    }
-                    // look to see if indices and values match
-                    if((target_term.indices == current_term->indices) &&
-                       (target_term.values == current_term->values))
-                    {
-                        touched[mm] = true;
-                        target_term.coeff += current_term->coeff;
-                    }
-                } // end mm for-loop
-                // Add term to output if either real or imag parts are greater than atol
-                if(std::abs(target_term.coeff) > atol)
-                {
-                    temp_terms.push_back(std::move(target_term));
-                }
+                accum.coeff += terms[next].coeff;
+                ++next;
             }
-        } // end main jj loop
-#pragma omp critical
-        {
-            out_terms.insert(out_terms.end(),
-                             std::make_move_iterator(temp_terms.begin()),
-                             std::make_move_iterator(temp_terms.end()));
+            if(std::abs(accum.coeff) > atol)
+            {
+                temp_terms.push_back(std::move(accum));
+            }
+            qq = next;
         }
     } //end kk-loop
+
+    // merge all block results together into ouput operator terms
+    std::size_t total = 0;
+    for(const auto& item : temp_results)
+        total += item.size();
+    out_terms.reserve(out_terms.size() + total);
+    for(auto& item : temp_results)
+        out_terms.insert(out_terms.end(),
+                         std::make_move_iterator(item.begin()),
+                         std::make_move_iterator(item.end()));
 
 } // end combine_terms
