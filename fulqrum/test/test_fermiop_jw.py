@@ -363,3 +363,16 @@ def test_jw_op_ordering():
     for kk in range(op.size):
         ops = np.asarray([item[1] for item in op[kk].operators])
         assert np.allclose(ops, np.sort(ops))
+
+
+def test_jw_op_projector_structure():
+    """Term operators at output have the correct projector structure values"""
+    path = Path(__file__).parent / "data/lih.json"
+    fop = FermionicOperator.from_json(path)
+    op = fop.extended_jw_transformation()
+    pstructs = op.proj_structures()
+    for kk in range(len(op)):
+        term_pstruct = sum(
+            [(item[1] + 1) for item in op[kk].operators if item[0] in ["0", "1"]]
+        )
+        assert term_pstruct == pstructs[kk]

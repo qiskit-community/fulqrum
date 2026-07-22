@@ -31,7 +31,7 @@ inline T& set_term_proj_indices(T& term)
         if(val == 1 || val == 2)
         {
             term.proj_indices.push_back(term.indices[kk]);
-            term.proj_structure += term.indices[kk];
+            term.proj_structure += (term.indices[kk] + 1);
             term.proj_bits.push_back(val - 1);
         }
     }
