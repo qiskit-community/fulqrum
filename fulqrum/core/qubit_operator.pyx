@@ -848,7 +848,16 @@ cdef class QubitOperator():
         for kk in range(num_terms):
             out[kk] = passes_proj_validation(&self.oper.terms[kk], bits.bits)
         return np.asarray(out)
-
+    
+    @cython.boundscheck(False)
+    def proj_structures(self):
+        """Off-diagonal structures of each term in operator
+        """
+        cdef size_t kk
+        cdef unsigned int[::1] out = np.empty(self.oper.terms.size(), dtype=np.uint32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].proj_structure
+        return np.asarray(out)
 
     @cython.boundscheck(False)
     def worst_case_offdiag_group_amplitudes(self):
