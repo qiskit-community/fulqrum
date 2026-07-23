@@ -378,7 +378,7 @@ inline void set_group_offdiag_indices(const std::vector<OperatorTerm_t>& terms,
     std::size_t kk;
     width_t inds_len;
     group_indices.resize(num_groups);
-    #pragma omp parallel for if(num_groups > 1024)
+#pragma omp parallel for if(num_groups > 4096)
     for(kk = 0; kk < num_groups; kk++)
     {
         inds_len = terms[group_ptrs[kk]].offdiag_weight;
