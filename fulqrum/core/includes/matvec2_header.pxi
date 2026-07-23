@@ -31,11 +31,11 @@ cdef extern from "../src/matvec2.hpp":
                 const T * in_vec,
                 T * out_vec) nogil
 
-    cdef cppclass HalfStrContext[T]:
-        HalfStrContext() except +
+    cdef cppclass HalfStrTables[T]:
+        HalfStrTables() except +
         bint usable
 
-    void build_halfstr_context[T](vector[OperatorTerm_t]& terms,
+    void build_halfstr_tables[T](vector[OperatorTerm_t]& terms,
                 const BitsetHashMapWrapper& subspace,
                 width_t width,
                 size_t subspace_dim,
@@ -44,9 +44,9 @@ cdef extern from "../src/matvec2.hpp":
                 const vector[vector[width_t]]& group_offdiag_inds,
                 unsigned int num_groups,
                 unsigned int ladder_offset,
-                HalfStrContext[T]& context) nogil
+                HalfStrTables[T]& context) nogil
 
-    void omp_matvec2_halfstr[T](const HalfStrContext[T]& context,
+    void omp_matvec2_halfstr[T](const HalfStrTables[T]& context,
                 vector[OperatorTerm_t]& terms,
                 const BitsetHashMapWrapper& subspace,
                 T * diag_vec,

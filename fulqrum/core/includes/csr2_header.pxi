@@ -35,7 +35,7 @@ cdef extern from "../src/csr2.hpp":
                               U * data,
                               int compute_values) nogil
 
-    void csr_matrix_builder2_halfstr[T, U](const HalfStrContext[U]& context,
+    void csr_matrix_builder2_halfstr[T, U](const HalfStrTables[U]& context,
                               const vector[OperatorTerm_t]& terms,
                               const BitsetHashMapWrapper& subspace,
                               const U * diag_vec,

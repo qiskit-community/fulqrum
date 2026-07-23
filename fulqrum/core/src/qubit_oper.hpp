@@ -200,7 +200,7 @@ inline std::size_t term_offdiag_structure(const OperatorTerm_t& term)
     std::size_t kk;
     std::size_t out = 0;
 #pragma omp simd reduction(+ : out)
-    for(kk = 0; kk < term.values.size(); ++kk)
+    for(kk = 0; kk < term.values.size(); kk++)
     {
         out += (term.indices[kk] + 1) * (term.values[kk] > 2);
     }
@@ -1432,7 +1432,7 @@ inline void term_offdiag_sort(QubitOperator& oper)
     // Precompute structure key for each term once instead of recomputing
     // it on every comparison during sort.
     std::vector<std::size_t> keys(n);
-    for(std::size_t ii = 0; ii < n; ++ii)
+    for(std::size_t ii = 0; ii < n; ii++)
         keys[ii] = term_offdiag_structure(terms[ii]);
 
     std::vector<std::size_t> order(n);
@@ -1442,7 +1442,7 @@ inline void term_offdiag_sort(QubitOperator& oper)
     });
 
     std::vector<OperatorTerm_t> tmp(n);
-    for(std::size_t ii = 0; ii < n; ++ii)
+    for(std::size_t ii = 0; ii < n; ii++)
         tmp[ii] = std::move(terms[order[ii]]);
     terms = std::move(tmp);
     set_sorting_flags(oper, "structure");

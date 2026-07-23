@@ -35,7 +35,7 @@ cdef extern from "../src/csrlike_builder2.hpp":
                               vector[vector[T]]& data,
                               ) nogil
 
-    void csrlike_builder2_halfstr[T, U](const HalfStrContext[T]& context,
+    void csrlike_builder2_halfstr[T, U](const HalfStrTables[T]& context,
                               const vector[OperatorTerm_t]& terms,
                               const BitsetHashMapWrapper& subspace,
                               const T * diag_vec,

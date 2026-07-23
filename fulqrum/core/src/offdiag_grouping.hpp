@@ -58,10 +58,10 @@ inline void flatten_offdiag_inds(const std::vector<std::vector<width_t>>& group_
     const std::size_t num_groups = group_offdiag_inds.size();
     offsets.resize(num_groups + 1);
     offsets[0] = 0;
-    for(std::size_t g = 0; g < num_groups; ++g)
+    for(std::size_t g = 0; g < num_groups; g++)
         offsets[g + 1] = offsets[g] + group_offdiag_inds[g].size();
     flat_inds.resize(offsets[num_groups]);
-    for(std::size_t g = 0; g < num_groups; ++g)
+    for(std::size_t g = 0; g < num_groups; g++)
     {
         const auto& v = group_offdiag_inds[g];
         std::copy(v.begin(), v.end(), flat_inds.begin() + offsets[g]);

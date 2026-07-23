@@ -47,7 +47,7 @@ typedef struct FermionicTerm
         , coeff(c)
     {
         // Iterate over string of values, mapping to new values and adding to term
-        for(std::string::iterator it = vals.begin(); it != vals.end(); ++it)
+        for(std::string::iterator it = vals.begin(); it != vals.end(); it++)
         {
             if(*it == 73)
             {
