@@ -249,7 +249,7 @@ inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
             } // end kk loop
 
             // sort by group index within the start and stop indices
-            std::sort(terms.begin() + start, terms.begin() + stop, offdiag_group_comp);
+            boost::sort::pdqsort(terms.begin() + start, terms.begin() + stop, offdiag_group_comp);
         } // end ii loop
 
     } // end omp parallel
