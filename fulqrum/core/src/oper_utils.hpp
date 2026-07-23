@@ -16,7 +16,6 @@
 #include <boost/sort/pdqsort/pdqsort.hpp>
 #include <vector>
 
-
 template <typename T>
 inline void set_weight_ptrs(std::vector<T>& __restrict terms, std::vector<std::size_t>& vec)
 {

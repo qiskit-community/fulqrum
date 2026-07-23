@@ -941,23 +941,23 @@ typedef struct QubitOperator
     {
         if(!(this->structure_sorted))
         {
-        // sort by weight
-        #ifdef FQ_TBB
+// sort by weight
+#ifdef FQ_TBB
             tbb::parallel_sort(terms.begin(),
-                            terms.end(),
-                            [](const OperatorTerm& term1, const OperatorTerm& term2) {
-                                return term1.offdiag_structure < term2.offdiag_structure;
-                            });
-        #else
+                               terms.end(),
+                               [](const OperatorTerm& term1, const OperatorTerm& term2) {
+                                   return term1.offdiag_structure < term2.offdiag_structure;
+                               });
+#else
             boost::sort::pdqsort(terms.begin(),
-                                terms.end(),
-                                [](const OperatorTerm& term1, const OperatorTerm& term2) {
-                                    return term1.offdiag_structure < term2.offdiag_structure;
-                                });
-        #endif
-        set_sorting_flags(*this, "structure");
+                                 terms.end(),
+                                 [](const OperatorTerm& term1, const OperatorTerm& term2) {
+                                     return term1.offdiag_structure < term2.offdiag_structure;
+                                 });
+#endif
+            set_sorting_flags(*this, "structure");
         }
-                return *this;
+        return *this;
     }
     /**
     * Pointers to starting indices for off-diagonally sorted operator
