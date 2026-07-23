@@ -329,6 +329,7 @@ inline void deflate_term_indices(const FermionicTerm& term,
         new_term.indices.push_back(current_index);
         new_term.values.push_back(current_value);
         new_term.offdiag_weight += static_cast<width_t>(current_value > 2);
+        new_term.offdiag_structure += (current_index + 1) * (current_value > 2);
     }
     new_term.coeff = term.coeff;
     set_term_proj_indices(new_term);
