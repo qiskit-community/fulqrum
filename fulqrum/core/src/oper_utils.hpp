@@ -16,25 +16,6 @@
 #include <boost/sort/pdqsort/pdqsort.hpp>
 #include <vector>
 
-/**
- * Compute an integer value from the off-diagonal structure of a term
- *
- * @param term The term
- *
- * @return Structure value
- */
-template <typename T>
-inline std::size_t term_offdiag_structure(const T& term)
-{
-    std::size_t kk;
-    std::size_t out = 0;
-#pragma omp simd reduction(+ : out)
-    for(kk = 0; kk < term.values.size(); ++kk)
-    {
-        out += (term.indices[kk] + 1) * (term.values[kk] > 2);
-    }
-    return out;
-}
 
 template <typename T>
 inline void set_weight_ptrs(std::vector<T>& __restrict terms, std::vector<std::size_t>& vec)
@@ -69,14 +50,14 @@ inline void set_offdiag_structure_ptrs(const std::vector<T>& __restrict terms,
     std::size_t kk;
     if(terms.size())
     {
-        std::size_t val = term_offdiag_structure(terms[0]);
+        std::size_t val = terms[0].offdiag_structure;
         vec.push_back(0);
         for(kk = 1; kk < terms.size(); kk++)
         {
-            if(term_offdiag_structure(terms[kk]) > val)
+            if(terms[kk].offdiag_structure > val)
             {
                 vec.push_back(kk);
-                val = term_offdiag_structure(terms[kk]);
+                val = terms[kk].offdiag_structure;
             }
         }
         vec.push_back(terms.size());

@@ -24,9 +24,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#ifdef FQ_TBB
-#    include <oneapi/tbb/parallel_sort.h>
-#endif
 
 #include "constants.hpp"
 #include "io.hpp"
@@ -506,6 +503,7 @@ typedef struct QubitOperator
                 val = oper_map[*it];
                 term.values.push_back(val);
                 term.indices.push_back(counter);
+                term.offdiag_structure += (counter + 1) * (val > 2);
             }
             counter += 1;
         }
@@ -937,6 +935,31 @@ typedef struct QubitOperator
         return ptrs;
     }
     /**
+    * In-place sorting of terms by offdiag structure
+    */
+    QubitOperator& offdiag_structure_sort()
+    {
+        if(!(this->structure_sorted))
+        {
+        // sort by weight
+        #ifdef FQ_TBB
+            tbb::parallel_sort(terms.begin(),
+                            terms.end(),
+                            [](const OperatorTerm& term1, const OperatorTerm& term2) {
+                                return term1.offdiag_structure < term2.offdiag_structure;
+                            });
+        #else
+            boost::sort::pdqsort(terms.begin(),
+                                terms.end(),
+                                [](const OperatorTerm& term1, const OperatorTerm& term2) {
+                                    return term1.offdiag_structure < term2.offdiag_structure;
+                                });
+        #endif
+        set_sorting_flags(*this, "structure");
+        }
+                return *this;
+    }
+    /**
     * Pointers to starting indices for off-diagonally sorted operator
     * 
     */
@@ -945,7 +968,7 @@ typedef struct QubitOperator
         std::vector<std::size_t> ptrs;
         if(!this->structure_sorted)
         {
-            term_offdiag_sort(*this);
+            this->offdiag_structure_sort();
         }
         set_offdiag_structure_ptrs(terms, ptrs);
         return ptrs;
@@ -960,7 +983,7 @@ typedef struct QubitOperator
         {
             if(!this->structure_sorted)
             {
-                term_offdiag_sort(*this);
+                this->offdiag_structure_sort();
             }
             std::vector<std::size_t> ptrs = this->offdiag_structure_ptrs();
             std::size_t max_group_size = max_offdiag_ptr_size(ptrs);
@@ -1253,40 +1276,4 @@ inline void set_sorting_flags(QubitOperator& oper, std::string kind)
     {
         throw std::runtime_error("Invalid sorting type.");
     }
-}
-
-/**
- * Sort terms in operator by their off-diagonal structure value
- *
- * @param terms Vector of operator terms
- *
- */
-inline void term_offdiag_sort(QubitOperator& oper)
-{
-    std::vector<OperatorTerm_t>& terms = oper.terms;
-    const std::size_t n = terms.size();
-
-    // Precompute structure key for each term once instead of recomputing
-    // it on every comparison during sort.
-    std::vector<std::size_t> keys(n);
-    for(std::size_t ii = 0; ii < n; ++ii)
-        keys[ii] = term_offdiag_structure(terms[ii]);
-
-    std::vector<std::size_t> order(n);
-    std::iota(order.begin(), order.end(), 0);
-#ifdef FQ_TBB
-    tbb::parallel_sort(order.begin(), order.end(), [&keys](std::size_t a, std::size_t b) {
-        return keys[a] < keys[b];
-    });
-#else
-    boost::sort::pdqsort(order.begin(), order.end(), [&keys](std::size_t a, std::size_t b) {
-        return keys[a] < keys[b];
-    });
-#endif
-
-    std::vector<OperatorTerm_t> tmp(n);
-    for(std::size_t ii = 0; ii < n; ++ii)
-        tmp[ii] = std::move(terms[order[ii]]);
-    terms = std::move(tmp);
-    set_sorting_flags(oper, "structure");
 }
