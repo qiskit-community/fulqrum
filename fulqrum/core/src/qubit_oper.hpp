@@ -195,7 +195,7 @@ inline int offdiag_group_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
  *
  */
 inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
-                            std::size_t* __restrict weight_ptrs,
+                            std::size_t* __restrict struct_ptrs,
                             std::size_t len_ptrs,
                             std::size_t max_group_size)
 {
@@ -216,8 +216,8 @@ inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
 #pragma omp for schedule(dynamic)
         for(ii = 0; ii < len_ptrs - 1; ii++)
         {
-            std::size_t start = weight_ptrs[ii];
-            std::size_t stop = weight_ptrs[ii + 1];
+            std::size_t start = struct_ptrs[ii];
+            std::size_t stop = struct_ptrs[ii + 1];
             int group_idx = static_cast<int>(ii * max_group_size);
 
             if(terms[start].group == 0) // group is the diagonal group
