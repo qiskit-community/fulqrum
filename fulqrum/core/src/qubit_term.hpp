@@ -197,6 +197,6 @@ typedef struct OperatorTerm
      */
     bool is_diagonal() const
     {
-        return this->offdiag_weight == 0;
+        return !(this->offdiag_weight);
     }
 } OperatorTerm_t;
