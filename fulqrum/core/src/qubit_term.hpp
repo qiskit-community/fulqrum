@@ -197,16 +197,6 @@ typedef struct OperatorTerm
      */
     bool is_diagonal() const
     {
-        std::size_t kk;
-        bool diag = 1;
-        for(kk = 0; kk < values.size(); kk++)
-        {
-            if(values[kk] > 2)
-            {
-                diag = 0;
-                break;
-            }
-        }
-        return diag;
+        return !(this->offdiag_weight);
     }
 } OperatorTerm_t;
