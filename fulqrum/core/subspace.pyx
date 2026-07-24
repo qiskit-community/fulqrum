@@ -11,6 +11,8 @@
 # that they have been altered from the originals.
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 from libcpp.string cimport string
+from libcpp.vector cimport vector
+from libcpp.algorithm cimport sort as stdsort
 from libcpp cimport bool
 from libc.math cimport abs
 
@@ -133,6 +135,9 @@ cdef class Subspace():
         if not subspace_strs:
             return
         cdef int input_bitsets = 0
+        cdef vector[string] alpha_strs
+        cdef vector[string] beta_strs
+        cdef size_t size, num_qubits
         if len(subspace_strs) == 0:
             return
         elif len(subspace_strs) == 1:
@@ -145,14 +150,11 @@ cdef class Subspace():
         elif len(subspace_strs) == 2:
             alpha_strs = subspace_strs[0]
             beta_strs = subspace_strs[1]
-            alpha_strs.sort()
-            beta_strs.sort()
-            iterator = map(
-                lambda ab: ab[0] + ab[1],
-                itertools.product(beta_strs, alpha_strs)
-            )
-            num_qubits = len(next(iter(alpha_strs))) + len(next(iter(beta_strs)))
-            size = len(alpha_strs) * len(beta_strs)
+            stdsort(alpha_strs.begin(), alpha_strs.end())
+            stdsort(beta_strs.begin(), beta_strs.end())
+            
+            num_qubits = alpha_strs[0].size() + beta_strs[0].size()
+            size = alpha_strs.size() * beta_strs.size()
         else:
             raise ValueError("bitstrings are wrongly formatted")
 
@@ -173,7 +175,7 @@ cdef class Subspace():
         # The +1 is here because insertion would fail for a dim=1 subspace otherwise
         self.subspace.bitstrings.reserve(self.subspace.size * reserve_multiplier + 1)
 
-        cdef size_t idx
+        cdef size_t idx, jj, counter=0
         cdef string key
         cdef bitset_t temp_bits
         cdef Bitset bit_key
@@ -182,9 +184,16 @@ cdef class Subspace():
             for idx, bit_key in enumerate(iterator):
                 self.subspace.bitstrings.insert_unique(bit_key.bits, idx)
         else:
-            for idx, key in enumerate(iterator):
-                temp_bits = bitset_t(key, 0, self.subspace.num_qubits)
-                self.subspace.bitstrings.insert_unique(temp_bits, idx)
+            if len(subspace_strs) == 1:
+                for idx, key in enumerate(iterator):
+                    temp_bits = bitset_t(key, 0, self.subspace.num_qubits)
+                    self.subspace.bitstrings.insert_unique(temp_bits, idx)
+            else:
+                for idx in range(beta_strs.size()):
+                    for jj in range(alpha_strs.size()):
+                        temp_bits = bitset_t(beta_strs[idx]+alpha_strs[jj], 0, num_qubits)
+                        self.subspace.bitstrings.insert_unique(temp_bits, counter)
+                        counter += 1
 
     def __dealloc__(self):
         # Clear hash table upon deallocation of class
