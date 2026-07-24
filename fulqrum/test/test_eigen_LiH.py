@@ -289,7 +289,7 @@ def test_grnd_dist_lih_eigen_csr_fast():
 
 def test_proj_indices_set():
     """Test that projector indices set properly after JW transform"""
-    for kk in range(OP.num_terms):
+    for kk in range(OP.size()):
         has_proj_ops = 0
         for op_idx_pair in OP[kk].operators:
             if op_idx_pair[0] in ["0", "1"]:

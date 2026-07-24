@@ -188,16 +188,7 @@ cdef class QubitOperator():
         else:
             raise FulqrumError("Operator must have a single-term to get coeff.  Otherwise use op.coefficients()")
 
-    @property
-    def num_terms(self):
-        """Return the number of terms in the operator
 
-        Returns:
-            int: Number of terms in operator
-        """
-        return self.oper.size()
-
-    @property
     def size(self):
         """Return the number of terms in the operator
 
@@ -250,7 +241,7 @@ cdef class QubitOperator():
         Returns:
             int : Number of groups in operator
         """
-        if self.num_terms == 0:
+        if self.size() == 0:
             return 0
         self.oper.group_sort()
         return self.oper.group_ptrs().size() - 1
@@ -358,9 +349,9 @@ cdef class QubitOperator():
         cdef size_t kk, jj
         cdef OperatorTerm_t * term
         cdef list out = []
-        if self.num_terms > 1:
+        if self.size() > 1:
             raise FulqrumError('Can only grab operators from operators with < 2 terms')
-        elif self.num_terms == 0:
+        elif self.size() == 0:
             return None
         else:
             for kk in range(self.oper.terms.size()):
@@ -872,7 +863,7 @@ cdef class QubitOperator():
             ndarray: Worse case amplitudes of groups
         """
         diag_op, _ = self.split_diagonal()
-        if diag_op.num_terms != 0:
+        if diag_op.size() != 0:
             raise FulqrumError('Operator must contain off-diagonal terms only')
         cdef size_t[::1] group_ptrs = self.group_ptrs()
         cdef size_t[::1] ladder_starts

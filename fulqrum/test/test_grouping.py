@@ -162,15 +162,15 @@ def test_square_group_pointers():
 
     h_ptrs = H.group_ptrs()
     H_diag, H_off = H.split_diagonal()
-    assert H_diag.num_terms == h_ptrs[1]
+    assert H_diag.size() == h_ptrs[1]
     hdiag_ptrs = H_diag.group_ptrs()
     assert hdiag_ptrs.shape[0] == 2
     assert hdiag_ptrs[1] == h_ptrs[1]
-    assert np.allclose(H_diag.groups(), np.zeros(H_diag.num_terms))
+    assert np.allclose(H_diag.groups(), np.zeros(H_diag.size()))
     hoff_ptrs = H_off.group_ptrs()
     # XX and YY have same off-diagonal structure so this is True here
-    assert H_off.num_terms // 2 == (hoff_ptrs.shape[0] - 1)
-    assert np.allclose(np.diff(hoff_ptrs), 2 * np.ones(H_off.num_terms // 2))
+    assert H_off.size() // 2 == (hoff_ptrs.shape[0] - 1)
+    assert np.allclose(np.diff(hoff_ptrs), 2 * np.ones(H_off.size() // 2))
 
 
 def test_square_group_pointers_h2_example():
@@ -180,8 +180,8 @@ def test_square_group_pointers_h2_example():
     op = fop.extended_jw_transformation()
     op_ptrs = op.group_ptrs()
     diag, off = op.split_diagonal()
-    assert diag.num_terms == op_ptrs[1]
-    assert off.num_terms == op_ptrs[2] - op_ptrs[1]
+    assert diag.size() == op_ptrs[1]
+    assert off.size() == op_ptrs[2] - op_ptrs[1]
     # All the elements in the off-diagonal component have the same diagonal structure
     assert np.allclose(off.group_ptrs(), np.array([0, 4]))
 

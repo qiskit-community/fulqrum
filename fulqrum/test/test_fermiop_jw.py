@@ -360,7 +360,7 @@ def test_jw_op_ordering():
     path = Path(__file__).parent / "data/lih.json"
     fop = FermionicOperator.from_json(path)
     op = fop.extended_jw_transformation()
-    for kk in range(op.size):
+    for kk in range(op.size()):
         ops = np.asarray([item[1] for item in op[kk].operators])
         assert np.allclose(ops, np.sort(ops))
 

@@ -34,7 +34,7 @@ def test_openfermion_qubit_op_to_fulqrum():
 
     fulqrum_qubit_op = openfermion_qubit_op_to_fulqrum(openf_qubit_op)
 
-    for idx in range(fulqrum_qubit_op.num_terms):
+    for idx in range(fulqrum_qubit_op.size()):
         label = labels[idx].split()
         label = [(item[0], qubit_reorder_map[int(item[1:])]) for item in label]
         label = sorted(label, key=lambda x: x[1])
@@ -73,7 +73,7 @@ def test_openfermion_fermi_op_to_fulqrum():
 
     fulqrum_fermi_op = openfermion_fermi_op_to_fulqrum(openf_fermi_op)
 
-    for idx in range(fulqrum_fermi_op.num_terms):
+    for idx in range(fulqrum_fermi_op.size()):
         single_terms = []
         for elem in terms[idx].split():
             if "^" in elem:
