@@ -74,12 +74,12 @@ inline std::string exec_command(const char* cmd)
     // run a process and create a streambuf that reads its stdout and stderr
     redi::ipstream proc(cmd, redi::pstreams::pstdout | redi::pstreams::pstderr);
     std::string line, result;
-    while (std::getline(proc.out(), line))
+    while(std::getline(proc.out(), line))
     {
         result += line;
     }
     // if reading stdout stopped at EOF then reset the state:
-    if (proc.eof() && proc.fail())
+    if(proc.eof() && proc.fail())
     {
         proc.clear();
     }
