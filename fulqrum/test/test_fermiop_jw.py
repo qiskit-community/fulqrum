@@ -353,3 +353,26 @@ def test_jwH2():
     np.allclose(ans_indices, op_mat.indices, 1e-14)
     np.allclose(ans_indptr, op_mat.indptr, 1e-14)
     np.allclose(ans_data, op_mat.data)
+
+
+def test_jw_op_ordering():
+    """Term operators are ordered low -> high in output OperatorTerms"""
+    path = Path(__file__).parent / "data/lih.json"
+    fop = FermionicOperator.from_json(path)
+    op = fop.extended_jw_transformation()
+    for kk in range(op.size):
+        ops = np.asarray([item[1] for item in op[kk].operators])
+        assert np.allclose(ops, np.sort(ops))
+
+
+def test_jw_op_projector_structure():
+    """Term operators at output have the correct projector structure values"""
+    path = Path(__file__).parent / "data/lih.json"
+    fop = FermionicOperator.from_json(path)
+    op = fop.extended_jw_transformation()
+    pstructs = op.proj_structures()
+    for kk in range(len(op)):
+        term_pstruct = sum(
+            [(item[1] + 1) for item in op[kk].operators if item[0] in ["0", "1"]]
+        )
+        assert term_pstruct == pstructs[kk]

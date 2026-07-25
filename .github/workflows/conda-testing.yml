@@ -43,9 +43,7 @@ jobs:
         pytest -p no:warnings --pyargs fulqrum/test
     - name: Run C++ tests
       run: |
-        cmake -S . -B build
-        cmake --build build -j4
-        ./build/fulqrum_tests
+        sh cpp-tests.sh
     - name: Build docs
       run: |
         conda install pandoc
