@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "./external/json.hpp"
+#include "./external/pstream.h"
 #include "base.hpp"
 #include "term_utils.hpp"
 #include "version.hpp"
@@ -70,16 +71,17 @@ inline bool file_exists(const std::string& name)
  */
 inline std::string exec(const char* cmd)
 {
-    std::vector<char> buffer(128);
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if(!pipe)
+    // run a process and create a streambuf that reads its stdout and stderr
+    redi::ipstream proc(cmd, redi::pstreams::pstdout | redi::pstreams::pstderr);
+    std::string line, result;
+    while (std::getline(proc.out(), line))
     {
-        throw std::runtime_error("popen() failed!");
+        result += line;
     }
-    while(fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr)
+    // if reading stdout stopped at EOF then reset the state:
+    if (proc.eof() && proc.fail())
     {
-        result += buffer.data();
+        proc.clear();
     }
     return result;
 }
