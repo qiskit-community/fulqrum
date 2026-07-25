@@ -112,11 +112,14 @@ inline int words_range_parity(const std::uint64_t* __restrict k,
 // One unit of work in type2_visit_non_cartesian: determinants [beg, end) of grid line
 // `grp` (a beta row in pass A, an alpha column in pass B). Lines partition the
 // determinants, so a task owns every determinant it writes -> lock-free.
+// nslice != 0: this represents a giant-line slice, partitioned by residue bucket and bounded by its AABB span
 struct FsTask
 {
     std::uint32_t grp;
     std::uint32_t beg;
     std::uint32_t end;
+    std::uint16_t slice = 0;
+    std::uint16_t nslice = 0;
 };
 
 template <typename T>
@@ -172,6 +175,7 @@ struct HalfStrTables
     std::size_t residue_min = 4096; // same-sector lines longer than this use residue
         // hashing (item 2) instead of the O(len^2) scan;
         // 0 = off (overridden by the builder; see FQ_FS_RESIDUE_MIN)
+    std::size_t giant_min = 49152;
     std::vector<std::int32_t> a_pair_rank; // half_width^2, -1 = pair not in any aabb group
     // flip-position -> group, for recovering g at a scan hit
     emhash8::HashMap<std::uint32_t, std::size_t, PackedFlipHash> aa_map, bb_map;
@@ -183,6 +187,12 @@ struct HalfStrTables
     std::vector<AabbConn> a_aabb;
     std::vector<std::uint64_t> b_aabb_off; // num_beta + 1
     std::vector<AabbConn> b_aabb;
+    // precomputed term masks
+    std::size_t tw = 0;
+    std::size_t pt_stride = 0;
+    std::vector<std::uint64_t> pt_masks;
+    std::vector<double> pt_mag; // terms.size(): real_phase * coeff.real() * (-1)^{#Y}
+    bool pt_on = false;
 };
 
 template <std::size_t K>
@@ -332,6 +342,75 @@ struct DynKeyOps
         return acc;
     }
 };
+
+template <typename T>
+void precompute_term_masks(const std::vector<OperatorTerm_t>& terms,
+                           const width_t width,
+                           HalfStrTables<T>& tables)
+{
+    if constexpr(std::is_same_v<T, double>)
+    {
+        if(std::getenv("FQ_NO_PRECOMPUTED_TERMS") != nullptr)
+            return;
+        const std::size_t n = terms.size();
+        const std::size_t tw = (static_cast<std::size_t>(width) + 63) / 64;
+        tables.tw = tw;
+        tables.pt_stride = 3 * tw;
+        tables.pt_masks.assign(n * tables.pt_stride, 0);
+        tables.pt_mag.resize(n);
+        int pt_bad = 0;
+#pragma omp parallel for schedule(static)
+        for(std::size_t t = 0; t < n; t++)
+        {
+            const OperatorTerm_t& term = terms[t];
+            std::uint64_t* __restrict pm = tables.pt_masks.data() + t * tables.pt_stride;
+            std::uint64_t* __restrict pe = pm + tw;
+            std::uint64_t* __restrict pa = pe + tw;
+            int ny = 0;
+            for(std::size_t k = 0; k < term.values.size(); k++)
+            {
+                const std::size_t p = static_cast<std::size_t>(term.indices[k]);
+                const std::uint64_t bit = 1ULL << (p & 63);
+                const unsigned v = term.values[k];
+                if(v == 0)
+                    pa[p >> 6] |= bit;
+                else if(v == 1 || v == 5)
+                    pm[p >> 6] |= bit;
+                else if(v == 2 || v == 6)
+                {
+                    pm[p >> 6] |= bit;
+                    pe[p >> 6] |= bit;
+                }
+                else if(v == 4)
+                {
+                    pa[p >> 6] |= bit;
+                    ny++;
+                }
+                else if(v != 3)
+                    pt_bad = 1;
+            }
+            double mag = static_cast<double>(term.real_phase) * term.coeff.real();
+            if(ny & 1)
+                mag = -mag;
+            tables.pt_mag[t] = mag;
+        }
+        if(pt_bad)
+        {
+            tables.pt_masks.clear();
+            tables.pt_masks.shrink_to_fit();
+            tables.pt_mag.clear();
+            tables.pt_mag.shrink_to_fit();
+            return;
+        }
+        tables.pt_on = true;
+    }
+    else
+    {
+        (void)terms;
+        (void)width;
+        (void)tables;
+    }
+}
 
 template <typename T, typename Policy>
 void build_halfstr_tables_impl(const std::vector<OperatorTerm_t>& terms,
@@ -774,6 +853,13 @@ void build_halfstr_tables_impl(const std::vector<OperatorTerm_t>& terms,
                 if(v >= 0)
                     tables.residue_min = static_cast<std::size_t>(v);
             }
+            tables.giant_min = 49152;
+            if(const char* e = std::getenv("FQ_FS_GIANT_MIN"))
+            {
+                const long v = std::atol(e);
+                if(v >= 0)
+                    tables.giant_min = static_cast<std::size_t>(v);
+            }
 
             tables.row_start.assign(num_beta + 1, 0);
             tables.col_start.assign(num_alpha + 1, 0);
@@ -805,6 +891,11 @@ void build_halfstr_tables_impl(const std::vector<OperatorTerm_t>& terms,
                 }
             }
 
+#ifdef _OPENMP
+            const std::size_t fs_nthr = static_cast<std::size_t>(omp_get_max_threads());
+#else
+            const std::size_t fs_nthr = 1;
+#endif
             auto make_tasks = [&](const std::vector<std::size_t>& start,
                                   std::size_t n,
                                   std::vector<FsTask>& out) {
@@ -814,7 +905,20 @@ void build_halfstr_tables_impl(const std::vector<OperatorTerm_t>& terms,
                     if(len == 0)
                         continue;
                     const bool residue = tables.residue_min && len > tables.residue_min;
-                    if(len <= tables.chunk || residue)
+                    if(residue && tables.sym && fs_nthr > 1 && tables.giant_min &&
+                       len > tables.giant_min)
+                    {
+                        // ~1.25 slices per thread; every slice covers >= 16K determinants
+                        std::size_t K = std::min((5 * fs_nthr + 3) / 4, len / 16384);
+                        K = std::max<std::size_t>(std::min<std::size_t>(K, 65535), 2);
+                        for(std::size_t s = 0; s < K; s++)
+                            out.push_back({static_cast<std::uint32_t>(g),
+                                           static_cast<std::uint32_t>(len * s / K),
+                                           static_cast<std::uint32_t>(len * (s + 1) / K),
+                                           static_cast<std::uint16_t>(s),
+                                           static_cast<std::uint16_t>(K)});
+                    }
+                    else if(len <= tables.chunk || residue)
                         out.push_back(
                             {static_cast<std::uint32_t>(g), 0, static_cast<std::uint32_t>(len)});
                     else
@@ -834,7 +938,10 @@ void build_halfstr_tables_impl(const std::vector<OperatorTerm_t>& terms,
                     const double span = static_cast<double>(t.end - t.beg);
                     const bool whole = (t.beg == 0 && static_cast<double>(t.end) == len);
                     if(tables.residue_min && len > static_cast<double>(tables.residue_min))
-                        return len * 8200.0; // residue task ~8.2 us/det (measured)
+                    {
+                        const double c = len * 8200.0 * (1.0 + len / 65536.0);
+                        return t.nslice ? c / static_cast<double>(t.nslice) : c;
+                    }
                     if(whole)
                         return len * len * 6.7; // whole-line triangle scan (~6.7 ns/pair)
                     return span * len * 6.7; // chunk scans the whole line per det
@@ -896,6 +1003,7 @@ void build_halfstr_tables_impl(const std::vector<OperatorTerm_t>& terms,
     }
     tables.rsb_w = width;
     tables.num_blocks = (subspace_dim + tables.BLK - 1) / tables.BLK;
+    precompute_term_masks(terms, width, tables);
     tables.usable = true;
 
     if(std::getenv("FQ_HALFSTR_VERBOSE"))

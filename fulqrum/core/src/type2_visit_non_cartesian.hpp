@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <unordered_map>
@@ -159,6 +160,10 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
     const std::uint64_t* __restrict akeyw = tables.akeyw.data();
     const std::int32_t* __restrict a_pair_rank = tables.a_pair_rank.data();
     const std::size_t hw = tables.half_width;
+    const bool use_pt = tables.pt_on;
+    const std::uint64_t* __restrict pt_masks = tables.pt_masks.data();
+    const double* __restrict pt_mag = tables.pt_mag.data();
+    const std::size_t pt_tw = tables.tw;
 
     auto gview = [&](std::size_t g) -> GroupIndsView {
         const std::size_t off = inds_offsets[g];
@@ -172,8 +177,91 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
     const bool no_radix = std::getenv("FQ_FS_NORADIX") != nullptr;
     auto radix_ok = [&](std::size_t len) { return hw < 64 && ((len - 1) >> (64 - hw)) == 0; };
 
+    const bool fs_timing = std::getenv("FQ_FS_TIMING") != nullptr;
+#ifdef _OPENMP
+    const int fs_nthreads = fs_timing ? omp_get_max_threads() : 1;
+#else
+    const int fs_nthreads = 1;
+#endif
+    std::vector<double> fs_busy_a, fs_busy_b;
+    std::vector<double> fs_maxdt_a, fs_maxdt_b;
+    std::vector<std::size_t> fs_maxlen_a, fs_maxlen_b;
+    std::vector<int> fs_ntasks_a, fs_ntasks_b;
+    struct alignas(64) FsCnt
+    {
+        std::uint64_t ev = 0, term = 0, pair = 0, aabb = 0;
+    };
+    std::vector<FsCnt> fs_cnt_a, fs_cnt_b;
+    double fs_t0 = 0.0, fs_tA_end = 0.0, fs_tB_end = 0.0;
+    if(fs_timing)
+    {
+        fs_busy_a.assign(static_cast<std::size_t>(fs_nthreads), 0.0);
+        fs_busy_b.assign(static_cast<std::size_t>(fs_nthreads), 0.0);
+        fs_maxdt_a.assign(static_cast<std::size_t>(fs_nthreads), 0.0);
+        fs_maxdt_b.assign(static_cast<std::size_t>(fs_nthreads), 0.0);
+        fs_maxlen_a.assign(static_cast<std::size_t>(fs_nthreads), 0);
+        fs_maxlen_b.assign(static_cast<std::size_t>(fs_nthreads), 0);
+        fs_ntasks_a.assign(static_cast<std::size_t>(fs_nthreads), 0);
+        fs_ntasks_b.assign(static_cast<std::size_t>(fs_nthreads), 0);
+        fs_cnt_a.assign(static_cast<std::size_t>(fs_nthreads), FsCnt{});
+        fs_cnt_b.assign(static_cast<std::size_t>(fs_nthreads), FsCnt{});
+#ifdef _OPENMP
+        fs_t0 = omp_get_wtime();
+#endif
+    }
+    struct FsTimer
+    {
+        bool on;
+        double t0 = 0.0;
+        std::vector<double>* busy;
+        std::vector<double>* maxdt;
+        std::vector<std::size_t>* maxlen;
+        std::vector<int>* ntasks;
+        std::size_t len;
+        FsTimer(bool on_,
+                std::vector<double>* b,
+                std::vector<double>* md,
+                std::vector<std::size_t>* ml,
+                std::vector<int>* nt,
+                std::size_t len_)
+            : on(on_)
+            , busy(b)
+            , maxdt(md)
+            , maxlen(ml)
+            , ntasks(nt)
+            , len(len_)
+        {
+#ifdef _OPENMP
+            if(on)
+                t0 = omp_get_wtime();
+#endif
+        }
+        ~FsTimer()
+        {
+#ifdef _OPENMP
+            if(!on)
+                return;
+            const std::size_t tid = static_cast<std::size_t>(omp_get_thread_num());
+            const double dt = omp_get_wtime() - t0;
+            (*busy)[tid] += dt;
+            (*ntasks)[tid]++;
+            if(len > (*maxlen)[tid])
+            {
+                (*maxlen)[tid] = len;
+                (*maxdt)[tid] = dt;
+            }
+#endif
+        }
+    };
+
 #pragma omp parallel
     {
+#ifdef _OPENMP
+        const std::size_t fs_tid = static_cast<std::size_t>(omp_get_thread_num());
+#else
+        const std::size_t fs_tid = 0;
+#endif
+        FsCnt* fs_c = fs_timing ? &fs_cnt_a[fs_tid] : nullptr;
         std::vector<std::uint8_t> rsb(tables.rsb_w, 0);
         boost::dynamic_bitset<std::size_t> col_vec;
         std::vector<std::int32_t> map;
@@ -191,6 +279,53 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
         // sort of packed (residue<<pos_bits | pos) uint64 pairs replaces the hash-CSR above.
         // Many times faster on the giant line because it never touches a hash map.
         std::vector<std::uint64_t> rp_a, rp_b;
+
+        struct SplitWrite
+        {
+            std::uint32_t row, col;
+            T val;
+        };
+        const std::size_t SPLIT_FLUSH = 32768;
+        std::vector<SplitWrite> tbuf;
+        bool task_buffered = false; // current task is a slice of a split line
+        std::uint32_t task_slice = 0, task_nslice = 0; // 0 nslice = unsplit
+        auto slice_of = [](std::uint64_t resid, std::uint32_t k) {
+            return static_cast<std::uint32_t>((resid * 0x9E3779B97F4A7C15ULL) >> 33) % k;
+        };
+        auto flush_tbuf = [&]() {
+            if(tbuf.empty())
+                return;
+#pragma omp critical(fq_fs_split_flush)
+            for(const SplitWrite& w : tbuf)
+                sink(static_cast<std::size_t>(w.row), static_cast<std::size_t>(w.col), w.val);
+            tbuf.clear();
+        };
+        auto emit_pair = [&](std::size_t i, std::size_t j, T v) {
+            if(fs_c)
+                fs_c->pair++;
+            if(!task_buffered)
+            {
+                sink(i, j, v);
+                sink(j, i, v);
+                return;
+            }
+            tbuf.push_back({static_cast<std::uint32_t>(i), static_cast<std::uint32_t>(j), v});
+            tbuf.push_back({static_cast<std::uint32_t>(j), static_cast<std::uint32_t>(i), v});
+            if(tbuf.size() >= SPLIT_FLUSH)
+                flush_tbuf();
+        };
+        auto emit_one = [&](std::size_t i, std::size_t j, T v) {
+            if(fs_c)
+                fs_c->aabb++;
+            if(!task_buffered)
+            {
+                sink(i, j, v);
+                return;
+            }
+            tbuf.push_back({static_cast<std::uint32_t>(i), static_cast<std::uint32_t>(j), v});
+            if(tbuf.size() >= SPLIT_FLUSH)
+                flush_tbuf();
+        };
 
         auto set_rsb = [&](const boost::dynamic_bitset<std::size_t>& row) {
             std::fill(rsb.begin(), rsb.end(), 0);
@@ -213,8 +348,16 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
             const std::size_t s = static_cast<std::size_t>(ladder32[g * ladder_offset + row_int]);
             const std::size_t e =
                 static_cast<std::size_t>(ladder32[g * ladder_offset + row_int + 1]);
+            if(fs_c)
+            {
+                fs_c->ev++;
+                fs_c->term += e - s;
+            }
             if(s >= e)
                 return T(0);
+            if(use_pt)
+                return static_cast<T>(
+                    pt_eval_terms(pt_masks, pt_mag, pt_tw, row.m_bits.data(), s, e));
             col_vec = row;
             flip_bits(col_vec, gi.data(), gi.size());
             T val = 0;
@@ -302,6 +445,8 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
                         const T val = eval(g, row);
                         if(std::abs(val) <= ATOL)
                             continue;
+                        if(fs_c)
+                            fs_c->pair++;
                         const std::size_t j = flats[q];
                         sink(i, j, val);
                         if(triangle)
@@ -321,19 +466,24 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
                 // run cb(residue) for each n-removal residue of the det at line position r
                 auto gen = [&](int nrem, std::size_t r, auto&& cb) {
                     const std::uint64_t k = keyw[static_cast<std::size_t>(ids[r])];
+                    auto emit = [&](std::uint64_t resid) {
+                        if(task_nslice && slice_of(resid, task_nslice) != task_slice)
+                            return;
+                        cb(resid);
+                    };
                     std::uint64_t v1 = k;
                     while(v1)
                     {
                         const std::uint64_t b1 = v1 & (0ULL - v1); // lowest set bit
                         if(nrem == 1)
-                            cb(k ^ b1);
+                            emit(k ^ b1);
                         else
                         {
                             std::uint64_t v2 = v1 & (v1 - 1);
                             while(v2)
                             {
                                 const std::uint64_t b2 = v2 & (0ULL - v2);
-                                cb(k ^ b1 ^ b2);
+                                emit(k ^ b1 ^ b2);
                                 v2 &= v2 - 1;
                             }
                         }
@@ -422,8 +572,7 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
                                 if(std::abs(val) <= ATOL)
                                     continue;
                                 const std::size_t j = flats[pb];
-                                sink(ia, j, val);
-                                sink(j, ia, val);
+                                emit_pair(ia, j, val);
                             }
                         }
                     }
@@ -446,15 +595,13 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
                 // so the 2-removal pass emits exactly C(nset,2) residues/det. Size to that.
                 const int nset = __builtin_popcountll(keyw[static_cast<std::size_t>(ids[0])]);
                 const std::size_t per2 = static_cast<std::size_t>(nset) * (nset - 1) / 2;
-                if(rp_a.size() < len * per2)
-                {
-                    rp_a.resize(len * per2);
-                    rp_b.resize(len * per2);
-                }
+                const std::size_t cap = task_nslice ? len * per2 / task_nslice + 4096 : len * per2;
+                if(rp_a.capacity() < cap)
+                    rp_a.reserve(cap);
 
                 auto process = [&](int nrem, bool need_hd4) {
                     // generate packed (residue<<pos_bits | pos) into rp_a
-                    std::size_t N = 0;
+                    rp_a.clear();
                     for(std::size_t r = 0; r < len; r++)
                     {
                         const std::uint64_t k = keyw[static_cast<std::size_t>(ids[r])];
@@ -463,22 +610,31 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
                         {
                             const std::uint64_t b1 = v1 & (0ULL - v1);
                             if(nrem == 1)
-                                rp_a[N++] = ((k ^ b1) << pos_bits) | r;
+                            {
+                                const std::uint64_t res = k ^ b1;
+                                if(!task_nslice || slice_of(res, task_nslice) == task_slice)
+                                    rp_a.push_back((res << pos_bits) | r);
+                            }
                             else
                             {
                                 std::uint64_t v2 = v1 & (v1 - 1);
                                 while(v2)
                                 {
                                     const std::uint64_t b2 = v2 & (0ULL - v2);
-                                    rp_a[N++] = ((k ^ b1 ^ b2) << pos_bits) | r;
+                                    const std::uint64_t res = k ^ b1 ^ b2;
+                                    if(!task_nslice || slice_of(res, task_nslice) == task_slice)
+                                        rp_a.push_back((res << pos_bits) | r);
                                     v2 &= v2 - 1;
                                 }
                             }
                             v1 &= v1 - 1;
                         }
                     }
+                    const std::size_t N = rp_a.size();
                     if(N == 0)
                         return;
+                    if(rp_b.size() < N)
+                        rp_b.resize(N);
                     // LSD radix sort by the residue field (bits pos_bits..64)
                     std::uint64_t* src = rp_a.data();
                     std::uint64_t* dst = rp_b.data();
@@ -557,8 +713,7 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
                                 if(std::abs(val) <= ATOL)
                                     continue;
                                 const std::size_t j = flats[pb];
-                                sink(ia, j, val);
-                                sink(j, ia, val);
+                                emit_pair(ia, j, val);
                             }
                         }
                         a = be;
@@ -575,9 +730,13 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
             const FsTask tk = tables.task_a[t];
             const std::size_t r0 = tables.row_start[tk.grp];
             const std::size_t len = tables.row_start[tk.grp + 1] - r0;
+            FsTimer fs_timer_a(fs_timing, &fs_busy_a, &fs_maxdt_a, &fs_maxlen_a, &fs_ntasks_a, len);
             const bool whole = (tk.beg == 0 && tk.end == len);
+            task_buffered = tk.nslice != 0;
+            task_slice = tk.slice;
+            task_nslice = tk.nslice;
 
-            if(residue_min && whole && sym && len > residue_min)
+            if(residue_min && (whole || task_buffered) && sym && len > residue_min)
             {
                 if(!no_radix && radix_ok(len))
                     radix_residue_line(tables.akeyw.data(),
@@ -608,7 +767,10 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
             const std::size_t cb0 = tables.b_aabb_off[tk.grp];
             const std::size_t cb1 = tables.b_aabb_off[tk.grp + 1];
             if(cb0 == cb1 || nbp == 0)
+            {
+                flush_tbuf();
                 continue;
+            }
             for(std::size_t ci = cb0; ci < cb1; ci++)
             {
                 const AabbConn cb = tables.b_aabb[ci];
@@ -664,9 +826,9 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
                             if(std::abs(coeff) <= ATOL)
                                 continue;
                             const int sa = words_range_parity(ka, kw, pp[0] + 1u, pp[1]) ? -1 : 1;
-                            sink(i,
-                                 static_cast<std::size_t>(tables.row_flat[q]),
-                                 coeff * static_cast<T>(sa * sb));
+                            emit_one(i,
+                                     static_cast<std::size_t>(tables.row_flat[q]),
+                                     coeff * static_cast<T>(sa * sb));
                         }
                     }
                     continue;
@@ -698,7 +860,8 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
                         const T coeff = vrow[static_cast<std::size_t>(ca.rank)];
                         if(std::abs(coeff) <= ATOL)
                             continue;
-                        sink(i, static_cast<std::size_t>(m), coeff * static_cast<T>(ca.sign * sb));
+                        emit_one(
+                            i, static_cast<std::size_t>(m), coeff * static_cast<T>(ca.sign * sb));
                     }
                 }
                 for(std::size_t q = t0; q < t1; q++)
@@ -708,17 +871,64 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
                     bmap[a >> 6] &= ~(1ULL << (a & 63));
                 }
             }
+            flush_tbuf();
         }
 
-        // pass B: beta same-sector, over alpha columns
+#ifdef _OPENMP
+#    pragma omp master
+        if(fs_timing)
+        {
+            fs_tA_end = omp_get_wtime();
+            const double wall = fs_tA_end - fs_t0;
+            std::fprintf(stderr, "[FQ_FS_TIMING] pass A wall=%.3fs\n", wall);
+            double bs = 0;
+            std::uint64_t ev = 0, tm = 0, pr = 0, ab = 0;
+            for(int i = 0; i < fs_nthreads; i++)
+            {
+                const std::size_t ti = static_cast<std::size_t>(i);
+                std::fprintf(stderr,
+                             "  thread %2d: busy=%.3fs idle=%.3fs tasks=%d longest_task "
+                             "len=%zu dt=%.4fs\n",
+                             i,
+                             fs_busy_a[ti],
+                             wall - fs_busy_a[ti],
+                             fs_ntasks_a[ti],
+                             fs_maxlen_a[ti],
+                             fs_maxdt_a[ti]);
+                bs += fs_busy_a[ti];
+                ev += fs_cnt_a[ti].ev;
+                tm += fs_cnt_a[ti].term;
+                pr += fs_cnt_a[ti].pair;
+                ab += fs_cnt_a[ti].aabb;
+            }
+            std::fprintf(stderr,
+                         "  totals: evals=%llu terms=%llu (%.2f/eval) pairs=%llu "
+                         "aabb_writes=%llu busy_sum=%.1fs (%.0f ns/eval incl. find+aabb)\n",
+                         static_cast<unsigned long long>(ev),
+                         static_cast<unsigned long long>(tm),
+                         ev ? static_cast<double>(tm) / static_cast<double>(ev) : 0.0,
+                         static_cast<unsigned long long>(pr),
+                         static_cast<unsigned long long>(ab),
+                         bs,
+                         ev ? bs * 1e9 / static_cast<double>(ev) : 0.0);
+        }
+#endif
+        if(fs_c)
+            fs_c = &fs_cnt_b[fs_tid];
+
+            // pass B: beta same-sector, over alpha columns
 #pragma omp for schedule(dynamic, 1)
         for(std::size_t t = 0; t < tables.task_b.size(); t++)
         {
             const FsTask tk = tables.task_b[t];
             const std::size_t c0 = tables.col_start[tk.grp];
             const std::size_t len = tables.col_start[tk.grp + 1] - c0;
+            FsTimer fs_timer_b(fs_timing, &fs_busy_b, &fs_maxdt_b, &fs_maxlen_b, &fs_ntasks_b, len);
             const bool whole = (tk.beg == 0 && tk.end == len);
-            if(residue_min && whole && sym && len > residue_min)
+            task_buffered = tk.nslice != 0;
+            task_slice = tk.slice;
+            task_nslice = tk.nslice;
+            if(residue_min && (whole || task_buffered) && sym && len > residue_min)
             {
                 if(!no_radix && radix_ok(len))
                     radix_residue_line(tables.bkeyw.data(),
@@ -745,6 +955,47 @@ void type2_visit_non_cartesian(const HalfStrTables<T>& tables,
                           sym && whole,
                           tables.bb_map,
                           tables.bbbb_map);
+            flush_tbuf();
         }
+
+#ifdef _OPENMP
+#    pragma omp master
+        if(fs_timing)
+        {
+            fs_tB_end = omp_get_wtime();
+            const double wall = fs_tB_end - fs_tA_end;
+            std::fprintf(stderr, "[FQ_FS_TIMING] pass B wall=%.3fs\n", wall);
+            double bs = 0;
+            std::uint64_t ev = 0, tm = 0, pr = 0;
+            for(int i = 0; i < fs_nthreads; i++)
+            {
+                const std::size_t ti = static_cast<std::size_t>(i);
+                std::fprintf(stderr,
+                             "  thread %2d: busy=%.3fs idle=%.3fs tasks=%d longest_task "
+                             "len=%zu dt=%.4fs\n",
+                             i,
+                             fs_busy_b[ti],
+                             wall - fs_busy_b[ti],
+                             fs_ntasks_b[ti],
+                             fs_maxlen_b[ti],
+                             fs_maxdt_b[ti]);
+                bs += fs_busy_b[ti];
+                ev += fs_cnt_b[ti].ev;
+                tm += fs_cnt_b[ti].term;
+                pr += fs_cnt_b[ti].pair;
+            }
+            std::fprintf(stderr,
+                         "  totals: evals=%llu terms=%llu (%.2f/eval) pairs=%llu "
+                         "busy_sum=%.1fs (%.0f ns/eval incl. find)\n",
+                         static_cast<unsigned long long>(ev),
+                         static_cast<unsigned long long>(tm),
+                         ev ? static_cast<double>(tm) / static_cast<double>(ev) : 0.0,
+                         static_cast<unsigned long long>(pr),
+                         bs,
+                         ev ? bs * 1e9 / static_cast<double>(ev) : 0.0);
+            std::fprintf(
+                stderr, "[FQ_FS_TIMING] total (pass A + pass B) wall=%.3fs\n", fs_tB_end - fs_t0);
+        }
+#endif
     }
 }

@@ -67,6 +67,10 @@ void type2_visit_cartesian(const HalfStrTables<T>& tables,
     const std::size_t* __restrict inds_offsets = tables.inds_offsets.data();
     const std::uint32_t* __restrict ladder32 = tables.ladder32.data();
     const T* __restrict aabb_val_2d = tables.aabb_val_2d.data();
+    const bool use_pt = tables.pt_on;
+    const std::uint64_t* __restrict pt_masks = tables.pt_masks.data();
+    const double* __restrict pt_mag = tables.pt_mag.data();
+    const std::size_t pt_tw = tables.tw;
 
     auto gview = [&](std::size_t g) -> GroupIndsView {
         const std::size_t off = inds_offsets[g];
@@ -104,6 +108,9 @@ void type2_visit_cartesian(const HalfStrTables<T>& tables,
                 static_cast<std::size_t>(ladder32[g * ladder_offset + row_int + 1]);
             if(s >= e)
                 return T(0);
+            if(use_pt)
+                return static_cast<T>(
+                    pt_eval_terms(pt_masks, pt_mag, pt_tw, row.m_bits.data(), s, e));
             col_vec = row;
             flip_bits(col_vec, group_inds.data(), group_inds.size());
             T val = 0;

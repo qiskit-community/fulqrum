@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 
 #include "constants.hpp"
 // For rapidhashNano (used by PackedFlipHash below). NOTE: external/rapidhash.h has no
@@ -64,6 +65,73 @@ struct PackedFlipHash
         return (*this)(static_cast<std::uint64_t>(k));
     }
 };
+
+inline double pt_eval_terms(const std::uint64_t* __restrict pt_masks,
+                            const double* __restrict pt_mag,
+                            const std::size_t tw,
+                            const std::size_t* __restrict rw,
+                            const std::size_t s,
+                            const std::size_t e) noexcept
+{
+    double val = 0;
+    if(tw == 2)
+    {
+        const std::uint64_t r0 = rw[0], r1 = rw[1];
+        const std::uint64_t* __restrict p = pt_masks + s * 6;
+        for(std::size_t idx = s; idx < e; idx++, p += 6)
+        {
+            const std::uint64_t neq = ((r0 & p[0]) ^ p[2]) | ((r1 & p[1]) ^ p[3]);
+            const std::uint64_t par = (r0 & p[4]) ^ (r1 & p[5]);
+            std::uint64_t mb;
+            std::memcpy(&mb, &pt_mag[idx], 8);
+            mb ^= static_cast<std::uint64_t>(__builtin_popcountll(par) & 1) << 63;
+            mb &= -static_cast<std::uint64_t>(neq == 0);
+            double f;
+            std::memcpy(&f, &mb, 8);
+            val += f;
+        }
+    }
+    else if(tw == 1)
+    {
+        const std::uint64_t r0 = rw[0];
+        const std::uint64_t* __restrict p = pt_masks + s * 3;
+        for(std::size_t idx = s; idx < e; idx++, p += 3)
+        {
+            const std::uint64_t neq = (r0 & p[0]) ^ p[1];
+            const std::uint64_t par = r0 & p[2];
+            std::uint64_t mb;
+            std::memcpy(&mb, &pt_mag[idx], 8);
+            mb ^= static_cast<std::uint64_t>(__builtin_popcountll(par) & 1) << 63;
+            mb &= -static_cast<std::uint64_t>(neq == 0);
+            double f;
+            std::memcpy(&f, &mb, 8);
+            val += f;
+        }
+    }
+    else
+    {
+        const std::size_t stride = 3 * tw;
+        const std::uint64_t* __restrict p = pt_masks + s * stride;
+        for(std::size_t idx = s; idx < e; idx++, p += stride)
+        {
+            std::uint64_t neq = 0, par = 0;
+            for(std::size_t w = 0; w < tw; w++)
+            {
+                const std::uint64_t r = rw[w];
+                neq |= (r & p[w]) ^ p[tw + w];
+                par ^= r & p[2 * tw + w];
+            }
+            std::uint64_t mb;
+            std::memcpy(&mb, &pt_mag[idx], 8);
+            mb ^= static_cast<std::uint64_t>(__builtin_popcountll(par) & 1) << 63;
+            mb &= -static_cast<std::uint64_t>(neq == 0);
+            double f;
+            std::memcpy(&f, &mb, 8);
+            val += f;
+        }
+    }
+    return val;
+}
 
 // Every early return in build_halfstr_tables_impl leaves usable=false, which drops the caller
 // onto type2_visit_groups. That answer is still correct; just orders of magnitude slower
