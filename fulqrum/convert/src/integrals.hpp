@@ -47,12 +47,11 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_bod
             "Input flat_two_body_integral array does not match expected length");
     }
 
-    std::string ob_str = "+-"; // One-body operator string (normal ordered)
-    std::string tb_str = "++--"; // Two-body operator string (normal ordered)
+    static const std::string ob_str = "+-"; // One-body operator string (normal ordered)
+    static const std::string tb_str = "++--"; // Two-body operator string (normal ordered)
 
     std::vector<width_t> qubit_mapping(num_qubits);
-    width_t p, q, r, s, ii, jj, kk, ll;
-    T temp_one_body, temp_two_body;
+    width_t p, kk;
 
     for(kk = 0; kk < num_qubits; kk++)
     {
@@ -62,11 +61,27 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_bod
     FermionicOperator fop = FermionicOperator(num_qubits);
     if(std::abs(constant) > EQ_TOLERANCE)
     {
-        fop += FermionicOperator(num_qubits, {{{}, {}, constant}});
+        fop.terms.emplace_back(constant);
+    }
+    // set capacity of fermi terms to worst case
+    std::size_t capacity = (std::abs(constant) > EQ_TOLERANCE ? 1 : 0)
+                               + 2 * half_num_qubits * half_num_qubits
+                               + 4 * half_num_qubits * half_num_qubits * half_num_qubits * half_num_qubits;
+    fop.terms.reserve(capacity);
+
+    std::vector<std::vector<FermionicTerm>> temp_terms;
+    temp_terms.resize(half_num_qubits);
+    // reserve worst case for each temp terms
+    for(kk = 0; kk < half_num_qubits; kk++)
+    {
+        temp_terms[kk].reserve(2*half_num_qubits+4*half_num_qubits*half_num_qubits*half_num_qubits);
     }
 
+    #pragma omp parallel for if(half_num_qubits > 8)
     for(p = 0; p < half_num_qubits; p++)
     {
+        width_t q, r, s, ii, jj, ll;
+        std::complex<double> temp_one_body, temp_two_body;
         for(q = 0; q < half_num_qubits; q++)
         {
             temp_one_body = flat_one_body_integrals[_flat_index2d(p, q, half_num_qubits)];
@@ -75,13 +90,11 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_bod
                 // Populate 1-body coefficients. Require p and q have same spin.
                 ii = 2 * p;
                 jj = 2 * q;
-                fop += FermionicOperator(
-                    num_qubits, {{ob_str, {qubit_mapping[ii], qubit_mapping[jj]}, temp_one_body}});
+                temp_terms[p].emplace_back(ob_str, std::vector<width_t>{qubit_mapping[ii], qubit_mapping[jj]}, temp_one_body);
 
                 ii = 2 * p + 1;
                 jj = 2 * q + 1;
-                fop += FermionicOperator(
-                    num_qubits, {{ob_str, {qubit_mapping[ii], qubit_mapping[jj]}, temp_one_body}});
+                temp_terms[p].emplace_back(ob_str, std::vector<width_t>{qubit_mapping[ii], qubit_mapping[jj]}, temp_one_body);
             }
             // Continue looping to prepare 2-body coefficients.
             for(r = 0; r < half_num_qubits; r++)
@@ -97,54 +110,46 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_bod
                         jj = 2 * q + 1;
                         kk = 2 * r + 1;
                         ll = 2 * s;
-                        fop += FermionicOperator(num_qubits,
-                                                 {{tb_str,
-                                                   {qubit_mapping[ii],
-                                                    qubit_mapping[jj],
-                                                    qubit_mapping[kk],
-                                                    qubit_mapping[ll]},
-                                                   temp_two_body}});
+                        temp_terms[p].emplace_back(tb_str, std::vector<width_t>{qubit_mapping[ii],
+                                                        qubit_mapping[jj],
+                                                        qubit_mapping[kk],
+                                                        qubit_mapping[ll]}, temp_two_body);
 
                         ii = 2 * p + 1;
                         jj = 2 * q;
                         kk = 2 * r;
                         ll = 2 * s + 1;
-                        fop += FermionicOperator(num_qubits,
-                                                 {{tb_str,
-                                                   {qubit_mapping[ii],
-                                                    qubit_mapping[jj],
-                                                    qubit_mapping[kk],
-                                                    qubit_mapping[ll]},
-                                                   temp_two_body}});
+                        temp_terms[p].emplace_back(tb_str, std::vector<width_t>{qubit_mapping[ii],
+                                                        qubit_mapping[jj],
+                                                        qubit_mapping[kk],
+                                                        qubit_mapping[ll]}, temp_two_body);
 
                         // Same spin
                         ii = 2 * p;
                         jj = 2 * q;
                         kk = 2 * r;
                         ll = 2 * s;
-                        fop += FermionicOperator(num_qubits,
-                                                 {{tb_str,
-                                                   {qubit_mapping[ii],
-                                                    qubit_mapping[jj],
-                                                    qubit_mapping[kk],
-                                                    qubit_mapping[ll]},
-                                                   temp_two_body}});
+                        temp_terms[p].emplace_back(tb_str, std::vector<width_t>{qubit_mapping[ii],
+                                                        qubit_mapping[jj],
+                                                        qubit_mapping[kk],
+                                                        qubit_mapping[ll]}, temp_two_body);
 
                         ii = 2 * p + 1;
                         jj = 2 * q + 1;
                         kk = 2 * r + 1;
                         ll = 2 * s + 1;
-                        fop += FermionicOperator(num_qubits,
-                                                 {{tb_str,
-                                                   {qubit_mapping[ii],
-                                                    qubit_mapping[jj],
-                                                    qubit_mapping[kk],
-                                                    qubit_mapping[ll]},
-                                                   temp_two_body}});
+                        temp_terms[p].emplace_back(tb_str, std::vector<width_t>{qubit_mapping[ii],
+                                                        qubit_mapping[jj],
+                                                        qubit_mapping[kk],
+                                                        qubit_mapping[ll]}, temp_two_body);
                     }
                 }
             }
         }
     }
+    for(auto& item : temp_terms)
+        fop.terms.insert(fop.terms.end(),
+                         std::make_move_iterator(item.begin()),
+                         std::make_move_iterator(item.end()));
     return fop;
 }
