@@ -63,9 +63,17 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_bod
     {
         fop.terms.emplace_back(constant);
     }
+    std::size_t capacity = (std::abs(constant) > EQ_TOLERANCE ? 1 : 0)
+                               + 2 * half_num_qubits * half_num_qubits
+                               + 4 * half_num_qubits * half_num_qubits * half_num_qubits * half_num_qubits;
+    fop.terms.reserve(capacity);
 
     std::vector<std::vector<FermionicTerm>> temp_terms;
     temp_terms.resize(half_num_qubits);
+    for(kk = 0; kk < half_num_qubits; kk++)
+    {
+        temp_terms[kk].reserve(2*half_num_qubits+4*half_num_qubits*half_num_qubits*half_num_qubits);
+    }
 
     #pragma omp parallel for if(half_num_qubits > 8)
     for(p = 0; p < half_num_qubits; p++)
