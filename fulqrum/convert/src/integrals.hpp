@@ -63,6 +63,7 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_bod
     {
         fop.terms.emplace_back(constant);
     }
+    // set capacity of fermi terms to worst case
     std::size_t capacity = (std::abs(constant) > EQ_TOLERANCE ? 1 : 0)
                                + 2 * half_num_qubits * half_num_qubits
                                + 4 * half_num_qubits * half_num_qubits * half_num_qubits * half_num_qubits;
@@ -70,6 +71,7 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_bod
 
     std::vector<std::vector<FermionicTerm>> temp_terms;
     temp_terms.resize(half_num_qubits);
+    // reserve worst case for each temp terms
     for(kk = 0; kk < half_num_qubits; kk++)
     {
         temp_terms[kk].reserve(2*half_num_qubits+4*half_num_qubits*half_num_qubits*half_num_qubits);
