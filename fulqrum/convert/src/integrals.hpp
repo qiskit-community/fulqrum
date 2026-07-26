@@ -47,12 +47,12 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_bod
             "Input flat_two_body_integral array does not match expected length");
     }
 
-    std::string ob_str = "+-"; // One-body operator string (normal ordered)
-    std::string tb_str = "++--"; // Two-body operator string (normal ordered)
+    static const std::string ob_str = "+-"; // One-body operator string (normal ordered)
+    static const std::string tb_str = "++--"; // Two-body operator string (normal ordered)
 
     std::vector<width_t> qubit_mapping(num_qubits);
     width_t p, q, r, s, ii, jj, kk, ll;
-    T temp_one_body, temp_two_body;
+    std::complex<double> temp_one_body, temp_two_body;
 
     for(kk = 0; kk < num_qubits; kk++)
     {
@@ -62,7 +62,7 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_bod
     FermionicOperator fop = FermionicOperator(num_qubits);
     if(std::abs(constant) > EQ_TOLERANCE)
     {
-        fop += FermionicOperator(num_qubits, {{{}, {}, constant}});
+        fop.terms.emplace_back(constant);
     }
 
     for(p = 0; p < half_num_qubits; p++)
@@ -75,13 +75,11 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_bod
                 // Populate 1-body coefficients. Require p and q have same spin.
                 ii = 2 * p;
                 jj = 2 * q;
-                fop += FermionicOperator(
-                    num_qubits, {{ob_str, {qubit_mapping[ii], qubit_mapping[jj]}, temp_one_body}});
+                fop.terms.emplace_back(ob_str, std::vector<width_t>{qubit_mapping[ii], qubit_mapping[jj]}, temp_one_body);
 
                 ii = 2 * p + 1;
                 jj = 2 * q + 1;
-                fop += FermionicOperator(
-                    num_qubits, {{ob_str, {qubit_mapping[ii], qubit_mapping[jj]}, temp_one_body}});
+                fop.terms.emplace_back(ob_str, std::vector<width_t>{qubit_mapping[ii], qubit_mapping[jj]}, temp_one_body);
             }
             // Continue looping to prepare 2-body coefficients.
             for(r = 0; r < half_num_qubits; r++)
@@ -97,50 +95,38 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_bod
                         jj = 2 * q + 1;
                         kk = 2 * r + 1;
                         ll = 2 * s;
-                        fop += FermionicOperator(num_qubits,
-                                                 {{tb_str,
-                                                   {qubit_mapping[ii],
-                                                    qubit_mapping[jj],
-                                                    qubit_mapping[kk],
-                                                    qubit_mapping[ll]},
-                                                   temp_two_body}});
+                        fop.terms.emplace_back(tb_str, std::vector<width_t>{qubit_mapping[ii],
+                                                        qubit_mapping[jj],
+                                                        qubit_mapping[kk],
+                                                        qubit_mapping[ll]}, temp_two_body);
 
                         ii = 2 * p + 1;
                         jj = 2 * q;
                         kk = 2 * r;
                         ll = 2 * s + 1;
-                        fop += FermionicOperator(num_qubits,
-                                                 {{tb_str,
-                                                   {qubit_mapping[ii],
-                                                    qubit_mapping[jj],
-                                                    qubit_mapping[kk],
-                                                    qubit_mapping[ll]},
-                                                   temp_two_body}});
+                        fop.terms.emplace_back(tb_str, std::vector<width_t>{qubit_mapping[ii],
+                                                        qubit_mapping[jj],
+                                                        qubit_mapping[kk],
+                                                        qubit_mapping[ll]}, temp_two_body);
 
                         // Same spin
                         ii = 2 * p;
                         jj = 2 * q;
                         kk = 2 * r;
                         ll = 2 * s;
-                        fop += FermionicOperator(num_qubits,
-                                                 {{tb_str,
-                                                   {qubit_mapping[ii],
-                                                    qubit_mapping[jj],
-                                                    qubit_mapping[kk],
-                                                    qubit_mapping[ll]},
-                                                   temp_two_body}});
+                        fop.terms.emplace_back(tb_str, std::vector<width_t>{qubit_mapping[ii],
+                                                        qubit_mapping[jj],
+                                                        qubit_mapping[kk],
+                                                        qubit_mapping[ll]}, temp_two_body);
 
                         ii = 2 * p + 1;
                         jj = 2 * q + 1;
                         kk = 2 * r + 1;
                         ll = 2 * s + 1;
-                        fop += FermionicOperator(num_qubits,
-                                                 {{tb_str,
-                                                   {qubit_mapping[ii],
-                                                    qubit_mapping[jj],
-                                                    qubit_mapping[kk],
-                                                    qubit_mapping[ll]},
-                                                   temp_two_body}});
+                        fop.terms.emplace_back(tb_str, std::vector<width_t>{qubit_mapping[ii],
+                                                        qubit_mapping[jj],
+                                                        qubit_mapping[kk],
+                                                        qubit_mapping[ll]}, temp_two_body);
                     }
                 }
             }
