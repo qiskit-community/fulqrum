@@ -43,7 +43,7 @@ class SubspaceHamiltonian(LinearOperator):
         self.diag_H, self.off_H = hamiltonian.split_diagonal()
         self.diag_H, self.const_energy = self.diag_H.remove_constant_terms()
         # if there are no off-diagonal terms then we pass a dummy empty array of len=1
-        self.off_H.offdiag_term_grouping()
+        self.off_H.group_sort()
         self.group_ptrs = np.zeros(1, dtype=np.uintp)
         self.group_ladder_ptrs = np.zeros(1, dtype=np.uintp)
 
