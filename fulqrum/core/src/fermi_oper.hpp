@@ -353,7 +353,7 @@ typedef struct FermionicOperator
     * @return Output QubitOperator with terms combined
     * 
     */
-    FermionicOperator combine_repeated_terms(double atol = 1e-12)
+    FermionicOperator combine_repeat_terms(double atol = 1e-12)
     {
         FermionicOperator out = FermionicOperator(this->width);
         if(!this->size())
@@ -428,7 +428,7 @@ typedef struct FermionicOperator
         }
         if(!fermi.unique_terms)
         {
-            fermi = fermi.combine_repeated_terms();
+            fermi = fermi.combine_repeat_terms();
         }
         QubitOperator_t out = QubitOperator(fermi.width);
         std::size_t kk;

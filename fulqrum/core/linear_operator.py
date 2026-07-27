@@ -82,6 +82,11 @@ class SubspaceHamiltonian(LinearOperator):
         return self.off_H.num_groups
 
     def update_subspace(self, subspace):
+        """Replace the subspace used for projection with another.
+
+        Notes:
+            This does not update the current subspace in-place.
+        """
         self.spmv.update_subspace(subspace)
         self.shape = (len(subspace),) * 2
 

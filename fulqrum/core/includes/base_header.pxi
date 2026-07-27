@@ -60,7 +60,7 @@ cdef extern from "../src/base.hpp":
         vector[int] groups()
         vector[size_t] group_ptrs()
         QubitOperator_t& group_term_sort_by_ladder_int(width_t)
-        QubitOperator_t combine_repeated_terms(double)
+        QubitOperator_t combine_repeat_terms(double)
         vector[size_t] offdiag_weight_ptrs()
         QubitOperator_t& from_label(string)
         double constant_energy()
@@ -105,7 +105,7 @@ cdef extern from "../src/base.hpp":
         FermionicOperator_t combine_repeat_indices() nogil
         FermionicOperator_t weight_sort() nogil
         FermionicOperator_t offdiag_structure_sort() nogil
-        FermionicOperator_t combine_repeated_terms(double)
+        FermionicOperator_t combine_repeat_terms(double)
         QubitOperator_t extended_jw_transformation() nogil
         vector[size_t] offdiag_structure_ptrs() nogil
 
