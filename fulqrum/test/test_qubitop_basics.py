@@ -21,21 +21,21 @@ def test_empty_qubitoperator():
     """Test empty QubitOperator"""
     N = 5
     qo = QubitOperator(N)
-    assert qo.num_terms == 0
+    assert qo.size() == 0
 
 
 def test_identity():
     """Test identity QubitOperator"""
     N = 5
     qo = QubitOperator(N, [()])
-    assert qo.num_terms == 1
+    assert qo.size() == 1
 
 
 def test_identity2():
     """Test identity QubitOperator 2"""
     N = 5
     qo = QubitOperator(N, [[]])
-    assert qo.num_terms == 1
+    assert qo.size() == 1
 
 
 def test_coeff():
@@ -130,8 +130,8 @@ def test_operator_diagonal_splitting():
         op += QubitOperator(N, [(oper, 0, 1 / (N + kk))])
     diag, off_diag = op.split_diagonal()
 
-    assert diag.num_terms == 4
-    assert off_diag.num_terms == 2
+    assert diag.size() == 4
+    assert off_diag.size() == 2
 
 
 def test_operator_identity_removal():
@@ -145,7 +145,7 @@ def test_operator_identity_removal():
 
     assert abs(op.constant_energy() - 0.25757575757575757) < 1e-15
     new_op, _ = op.remove_constant_terms()
-    assert new_op.num_terms == 4
+    assert new_op.size() == 4
     assert new_op.constant_energy() == 0
 
 

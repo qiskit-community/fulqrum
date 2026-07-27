@@ -131,7 +131,7 @@ cdef class Bitset:
 
             FulqrumError: Size of Bitset and QubitOperator do not match
         """
-        if op.num_terms > 1:
+        if op.size() > 1:
             raise FulqrumError("Operator must contain a single-term only")
         if self.size() != op.width:
             raise FulqrumError('Bitset and Operator must have same size')

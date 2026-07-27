@@ -249,16 +249,6 @@ cdef class FermionicOperator():
         out.oper.terms.push_back(term)
         return out
 
-    @property
-    def num_terms(self):
-        """Return the number of terms in the operator
-
-        Returns:
-            int: Number of terms in operator
-        """
-        warnings.warn("'num_terms' will be removed, use 'size()' instead")
-        return self.size()
-
     def size(self):
         """Return the number of terms in the operator
 
