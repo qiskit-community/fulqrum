@@ -19,21 +19,21 @@ def test_empty_fermioperator():
     """Test empty FermionicOperator"""
     N = 5
     fo = FermionicOperator(N)
-    assert fo.num_terms == 0
+    assert fo.size() == 0
 
 
 def test_id_fermioperator1():
     """Test identity FermionicOperator"""
     N = 5
     fo = FermionicOperator(N, [()])
-    assert fo.num_terms == 1
+    assert fo.size() == 1
 
 
 def test_id_fermioperator2():
     """Test identity FermionicOperator"""
     N = 5
     fo = FermionicOperator(N, [[]])
-    assert fo.num_terms == 1
+    assert fo.size() == 1
 
 
 def test_fermioperator_coeff():

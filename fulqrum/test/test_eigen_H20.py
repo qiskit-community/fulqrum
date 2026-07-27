@@ -133,7 +133,7 @@ def test_full_dist_h20_eigenenergy_csr_linearoperator_fast():
 
 def test_proj_indices_set():
     """Test that projector indices set properly after JW transform"""
-    for kk in range(NEW_OP.num_terms):
+    for kk in range(NEW_OP.size()):
         has_proj_ops = 0
         for op_idx_pair in NEW_OP[kk].operators:
             if op_idx_pair[0] in ["0", "1"]:

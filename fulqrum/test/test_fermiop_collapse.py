@@ -217,6 +217,6 @@ def test_deflate_multi_term():
     fop += FermionicOperator(3, [("-+", [1, 1])])
     fop += FermionicOperator(3, [("+--++", [0, 0, 1, 2, 2])])  # term is zero
     fop_deflate = fop.deflate_repeated_indices()
-    assert fop_deflate.num_terms == 2  # since last term is zero
+    assert fop_deflate.size() == 2  # since last term is zero
     assert fop_deflate[0].operators == [("1", 0), ("-", 1), ("+", 2)]
     assert fop_deflate[1].operators == [("0", 1)]

@@ -47,10 +47,10 @@ class SubspaceHamiltonian(LinearOperator):
         self.group_ptrs = np.zeros(1, dtype=np.uintp)
         self.group_ladder_ptrs = np.zeros(1, dtype=np.uintp)
 
-        if self.off_H.num_terms:
+        if self.off_H.size():
             self.group_ptrs = self.off_H.group_ptrs()
         if self.off_H.type == 2:
-            if self.off_H.num_terms:
+            if self.off_H.size():
                 # Default changed from 4 to 2 as it is empirically faster.
                 # User can override using FQ_LADDER_WIDTH env flag.
                 self.off_H.group_term_sort_by_ladder_int(
