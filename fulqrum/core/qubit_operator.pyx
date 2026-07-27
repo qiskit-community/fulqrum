@@ -736,7 +736,7 @@ cdef class QubitOperator():
         return np.asarray(out)
 
 
-    def combine_repeated_terms(self, double atol=1e-12):
+    def combine_repeat_terms(self, double atol=1e-12):
         """Combine repeated terms that represent same
         operators, dropping terms smaller than requested tolerance.
 
@@ -747,7 +747,7 @@ cdef class QubitOperator():
             QubitOperator: Operator with repeat terms combined
         """
         cdef QubitOperator out = QubitOperator(self.oper.width)
-        out.oper = self.oper.combine_repeated_terms(atol)
+        out.oper = self.oper.combine_repeat_terms(atol)
         return out
 
     @cython.boundscheck(False)

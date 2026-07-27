@@ -25,7 +25,7 @@ def test_combining_terms1():
     op += QubitOperator.from_label("IZYXI")
     op += QubitOperator.from_label("IIIII")
     op += QubitOperator.from_label("I0YXI")
-    new_op = op.combine_repeated_terms()
+    new_op = op.combine_repeat_terms()
     assert new_op.size() == 3
     assert np.allclose(new_op.weights(), [0, 3, 3])
     assert new_op[1].coefficients()[0] == 5.0

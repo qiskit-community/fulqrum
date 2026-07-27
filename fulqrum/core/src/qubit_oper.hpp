@@ -1077,7 +1077,7 @@ typedef struct QubitOperator
     * @return Output QubitOperator with terms combined
     * 
     */
-    QubitOperator combine_repeated_terms(double atol = 1e-12)
+    QubitOperator combine_repeat_terms(double atol = 1e-12)
     {
         QubitOperator out = QubitOperator(this->width);
         if(!this->size())

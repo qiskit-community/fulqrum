@@ -426,16 +426,6 @@ cdef class FermionicOperator():
 
 
     @cython.boundscheck(False)
-    def deflate_repeated_indices(self):
-        """Collapse repeated indices into singles and remove zero terms
-
-        Returns:
-            FermionicOperator: Deflated operator
-        """
-        warnings.warn("'deflate_repeated_indices()' will be removed.  Use 'combine_repeat_indices()' instead")
-        return self.combine_repeat_indices()
-
-    @cython.boundscheck(False)
     def combine_repeat_indices(self):
         """Collapse repeated indices into singles and remove zero terms
 
@@ -447,11 +437,11 @@ cdef class FermionicOperator():
         out.oper = self.oper.combine_repeat_indices()
         return out
 
-    def combine_repeated_terms(self, double atol=1e-12):
+    def combine_repeat_terms(self, double atol=1e-12):
         """In-place sort terms by their standard weight
         """
         cdef FermionicOperator out = FermionicOperator(self.width)
-        out.oper = self.oper.combine_repeated_terms(atol)
+        out.oper = self.oper.combine_repeat_terms(atol)
         return out
 
     def extended_jw_transformation(self):
@@ -460,7 +450,7 @@ cdef class FermionicOperator():
         """
         cdef QubitOperator out = QubitOperator(self.width)
         out.oper = self.oper.extended_jw_transformation()
-        return out.combine_repeated_terms()
+        return out.combine_repeat_terms()
 
     @cython.boundscheck(False)
     def to_dict(self):
