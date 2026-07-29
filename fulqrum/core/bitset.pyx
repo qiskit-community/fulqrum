@@ -79,6 +79,46 @@ cdef class Bitset:
     def __gt__(self, Bitset other):
         return self.bits > other.bits
 
+    def all(self):
+        """Check if all bits are set
+
+        Returns:
+            bool
+        """
+        return self.bits.all()
+
+    def any(self):
+        """Check if any bits are set
+
+        Returns:
+            bool
+        """
+        return self.bits.any()
+
+    def count(self):
+        """Count the number of set bits
+
+        Returns:
+            int
+        """
+        return self.bits.count()
+
+    def empty(self):
+        """Check if bitset has size zero
+
+        Returns:
+            bool
+        """
+        return self.bits.empty()
+
+    def none(self):
+        """Check if bitset has no set bits
+
+        Returns:
+            bool
+        """
+        return self.bits.none()
+
     def num_blocks(self):
         """Number of blocks (int64) used to store Bitset
 
