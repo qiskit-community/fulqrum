@@ -258,6 +258,35 @@ def test_grnd_dist_lih_eigen():
     assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
 
 
+def test_grnd_dist_lih_eigen_type1():
+    """Test grnd state space solution against exact for type=1 operator"""
+    O = OP.copy()
+    O.set_type(1)
+    S = fq.Subspace([list(GROUND_DIST.keys())])
+    Hsub = fq.SubspaceHamiltonian(O, S)
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if O.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+    #
+    S = fq.Subspace([list(GROUND_DIST.keys())], use_all_bitset_blocks=False)
+    Hsub = fq.SubspaceHamiltonian(O, S)
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if O.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+    x0p = np.ones((len(S), 1), dtype=float if O.is_real() else complex)
+    evals2, evecs2 = primme.eigsh(Hsub, k=1, which="SA", v0=x0p)
+    assert evecs2.dtype == float
+    assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
+
+
 def test_grnd_dist_lih_eigen_csr():
     """Test grnd space CSR solution against exact"""
     S = fq.Subspace([list(GROUND_DIST.keys())])
