@@ -63,7 +63,7 @@ cdef class Bitset:
         cdef size_t size = self.bits.size()
         if idx < 0:
             idx += size
-        if idx < 0 or idx > (size - 1):
+        if idx < 0 or idx > <np.int64_t>(size - 1):
             raise FulqrumError("Index out of range")
         return self.bits[idx]
 
@@ -146,6 +146,26 @@ cdef class Bitset:
         cdef string s
         to_string(self.bits, s)
         return int(s, 2)
+
+    def find_first(self):
+        """Finds first set bit
+        
+        Returns:
+            int: Index of first set bit
+        """
+        return self.bits.find_first()
+
+
+    def find_next(self, size_t pos=0):
+        """Finds next set bit with index > pos
+
+        Parameters:
+            pos (int): Integer position
+        
+        Returns:
+            int: Index of next set bit
+        """
+        return self.bits.find_next(pos)
 
     def flip(self, object bits):
         """Flip one or more bits inplace
