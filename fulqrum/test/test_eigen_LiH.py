@@ -128,8 +128,8 @@ def test_full_dist_lih_eigen():
     assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
 
 
-def test_full_dist_lih_eigen():
-    """Test full space solution against exact"""
+def test_full_dist_lih_eigen_type1():
+    """Test full space solution against exact for type=1 operator"""
     full_dist = {}
     for kk in range(2**OP.width):
         full_dist[bin(kk)[2:].zfill(OP.width)] = None
