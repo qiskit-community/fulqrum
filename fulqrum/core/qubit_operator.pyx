@@ -706,9 +706,8 @@ cdef class QubitOperator():
         return np.asarray(out)
 
 
-    def offdiag_term_grouping(self):
-        """Inplace sorting of operator terms according to off-diagonal
-        structure.
+    def group_sort(self):
+        """Inplace sorting of operator terms into groups that represent matrix-elements.
         """
         self.oper.group_sort()
 
