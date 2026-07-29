@@ -15,6 +15,7 @@ from libcpp cimport string
 from libc.stdint cimport uint8_t
 from libcpp.vector cimport vector
 
+cimport numpy as np
 import numpy as np
 import numbers
 from collections.abc import Iterable
@@ -58,7 +59,12 @@ cdef class Bitset:
         """
         return self.bits.size()
 
-    def __getitem__(self, size_t idx):
+    def __getitem__(self, np.int64_t idx):
+        cdef size_t size = self.bits.size()
+        if idx < 0:
+            idx += size
+        if idx < 0 or idx > (size - 1):
+            raise FulqrumError("Index out of range")
         return self.bits[idx]
 
     def __eq__(self, Bitset other):
