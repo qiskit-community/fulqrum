@@ -7,15 +7,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // http://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/current_function.hpp>
 #include <boost/config.hpp>
+#include <boost/config/workaround.hpp>
 #include <boost/cstdint.hpp>
+#include <iosfwd>
 #include <string>
 #include <cstdio>
 #include <cstring>
-
-#if !defined(BOOST_NO_IOSTREAM)
-#include <iosfwd>
-#endif
 
 #if defined(__cpp_lib_source_location) && __cpp_lib_source_location >= 201907L
 # include <source_location>
@@ -135,25 +134,17 @@ public:
     }
 };
 
-#if !defined(BOOST_NO_IOSTREAM)
-
 template<class E, class T> std::basic_ostream<E, T> & operator<<( std::basic_ostream<E, T> & os, source_location const & loc )
 {
     os << loc.to_string();
     return os;
 }
 
-#endif
-
 } // namespace boost
 
 #if defined(BOOST_DISABLE_CURRENT_LOCATION)
 
 # define BOOST_CURRENT_LOCATION ::boost::source_location()
-
-#elif defined(BOOST_MSVC) && BOOST_MSVC >= 1935
-
-# define BOOST_CURRENT_LOCATION ::boost::source_location(__builtin_FILE(), __builtin_LINE(), __builtin_FUNCSIG(), __builtin_COLUMN())
 
 #elif defined(BOOST_MSVC) && BOOST_MSVC >= 1926
 
@@ -170,10 +161,7 @@ template<class E, class T> std::basic_ostream<E, T> & operator<<( std::basic_ost
 
 # define BOOST_CURRENT_LOCATION ::boost::source_location(__FILE__, BOOST_CURRENT_LOCATION_IMPL_1(__LINE__), "")
 
-#elif defined(__cpp_lib_source_location) && __cpp_lib_source_location >= 201907L && !defined(__NVCC__)
-
-// Under nvcc, __builtin_source_location is not constexpr
-// https://github.com/boostorg/assert/issues/32
+#elif defined(__cpp_lib_source_location) && __cpp_lib_source_location >= 201907L
 
 # define BOOST_CURRENT_LOCATION ::boost::source_location(::std::source_location::current())
 
@@ -181,12 +169,9 @@ template<class E, class T> std::basic_ostream<E, T> & operator<<( std::basic_ost
 
 # define BOOST_CURRENT_LOCATION ::boost::source_location(__builtin_FILE(), __builtin_LINE(), __builtin_FUNCTION(), __builtin_COLUMN())
 
-#elif defined(BOOST_GCC) && BOOST_GCC >= 80000
+#elif defined(BOOST_GCC) && BOOST_GCC >= 70000
 
 // The built-ins are available in 4.8+, but are not constant expressions until 7
-// In addition, reproducible builds require -ffile-prefix-map, which is GCC 8
-// https://github.com/boostorg/assert/issues/38
-
 # define BOOST_CURRENT_LOCATION ::boost::source_location(__builtin_FILE(), __builtin_LINE(), __builtin_FUNCTION())
 
 #elif defined(BOOST_GCC) && BOOST_GCC >= 50000
