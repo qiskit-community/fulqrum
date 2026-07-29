@@ -101,6 +101,7 @@ cdef extern from "../src/base.hpp":
         size_t size()
         int weight_sorted
         void to_json(string, bool) except +
+        FermionicOperator_t copy()
         FermionicOperator_t from_json(string) except +
         FermionicOperator_t combine_repeat_indices() nogil
         FermionicOperator_t weight_sort() nogil

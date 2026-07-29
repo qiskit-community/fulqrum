@@ -266,6 +266,16 @@ cdef class FermionicOperator():
         """
         return self.oper.width
 
+    def copy(self):
+        """Return a copy of the operator
+
+        Returns:
+            FermionicOperator
+        """
+        cdef FermionicOperator out = FermionicOperator(self.width)
+        out.oper = self.oper.copy()
+        return out
+
     @cython.boundscheck(False)
     def offdiag_structure_sort(self):
         """Off-diagonal structures of each term in operator

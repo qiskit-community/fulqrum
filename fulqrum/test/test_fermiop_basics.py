@@ -12,6 +12,7 @@
 # pylint: disable=no-name-in-module
 """Test basic core functionality"""
 
+import numpy as np
 from fulqrum import FermionicOperator
 
 
@@ -116,3 +117,15 @@ def test_fermioperator_from_label():
     fop1 = FermionicOperator.from_label(5, "+:0 1:2 -:3", -5 + 3j)
     fop2 = FermionicOperator(5, [("+1-", (0, 2, 3), -5 + 3j)])
     assert fop1.operators == fop2.operators
+
+
+def test_fermionoperator_copy():
+    """Test fermi operator copy"""
+    N = 6
+    fop1 = FermionicOperator(N, [("+", [0], 1)]) - FermionicOperator(N, [("-", [0], 2)])
+    fop2 = fop1.copy()
+    assert fop2.width == 6
+    assert fop2.size() == 2
+    assert fop2[0].operators == fop1[0].operators
+    assert fop2[1].operators == fop1[1].operators
+    assert np.allclose(fop2.coefficients(), fop1.coefficients())
