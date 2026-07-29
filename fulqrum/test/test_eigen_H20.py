@@ -50,6 +50,33 @@ def test_full_dist_h20_eigenenergy_matrix_free():
     assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
 
 
+def test_full_dist_h20_eigenenergy_matrix_free_type1():
+    """Test full space solution against exact as type=1 operator"""
+    full_dist = {}
+    for kk in range(2**14):
+        full_dist[bin(kk)[2:].zfill(14)] = None
+
+    O = NEW_OP.copy()
+    O.set_type(1)
+    S = Subspace([list(full_dist.keys())])
+    Hsub = SubspaceHamiltonian(O, S)
+
+    evals, _ = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=float))
+    assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+    # single bitset block
+    S = Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
+    Hsub = SubspaceHamiltonian(O, S)
+
+    evals, _ = spla.eigsh(Hsub, k=1, which="SA", v0=np.ones(len(S), dtype=float))
+    assert np.allclose(evals, GROUND_ENERGY, 1e-12)
+
+    evals2, _ = primme.eigsh(
+        Hsub, k=1, which="SA", v0=np.ones((len(S), 1), dtype=float)
+    )
+    assert np.allclose(evals2, GROUND_ENERGY, 1e-12)
+
+
 def test_full_dist_h20_eigenenergy_csr():
     """Test full space solution against exact for CSR matrix"""
     full_dist = {}
