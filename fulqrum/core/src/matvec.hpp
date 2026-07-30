@@ -12,11 +12,12 @@
  * that they have been altered from the originals.
  */
 #pragma once
+#include <algorithm>
 #include <complex>
 #include <cstddef>
 #include <cstdlib>
-#include <mutex>
 #include <vector>
+#include <mutex>
 
 #include "base.hpp"
 #include "bitset_hashmap.hpp"
@@ -39,9 +40,12 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                 const T* __restrict in_vec,
                 T* __restrict out_vec)
 {
-    std::size_t kk;
     const auto* bitsets = subspace.get_bitsets();
 
+    // Flatten group_offdiag_inds from a vector-of-vectors (scattered heap
+    // allocations with pointer chasing per group visit) into a single
+    // contiguous CSR-like buffer.  The indirection cost was measurable
+    // in profiles, especially for large num_groups.
     std::vector<width_t> _flat_inds;
     std::vector<std::size_t> _inds_offsets;
     flatten_offdiag_inds(group_offdiag_inds, _flat_inds, _inds_offsets);
@@ -51,113 +55,148 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
         const std::size_t off = inds_offsets[g];
         return GroupIndsView{flat_inds + off, inds_offsets[g + 1] - off};
     };
-
     std::vector<std::mutex> mutex1(subspace_dim);
-
+    // grp_max_inds[g] = the highest bit-flip index for group g.
+    // Used to detect lower-triangle elements without building col_vec.
+    // See get_group_max_inds() in offdiag_grouping.hpp for the rationale.
     std::vector<uint16_t> grp_max_inds(num_groups, width);
     get_group_max_inds(grp_max_inds, group_offdiag_inds, num_groups);
+
+    // Block size for the tiled outer loop.
+    std::size_t BLK = 128;
+    if(const char* _blk_env = std::getenv("FQ_BLK"))
+    {
+        long _blk = std::atol(_blk_env);
+        if(_blk > 0)
+            BLK = static_cast<std::size_t>(_blk);
+    }
+    const std::size_t rsb_w = width; // one uint8 per qubit
+    const std::size_t num_blocks = (subspace_dim + BLK - 1) / BLK;
 
 #pragma omp parallel if(subspace_dim > 4096)
     {
         // Take care of diagonal term first, if any (usually there is)
         if(has_nonzero_diag)
         {
-#pragma omp for
-            for(kk = 0; kk < subspace_dim; kk++)
+#pragma omp for schedule(static)
+            for(std::size_t kk = 0; kk < subspace_dim; kk++)
             {
                 out_vec[kk] = diag_vec[kk] * in_vec[kk];
             }
         }
 
-        std::size_t num_terms = terms.size();
+        const std::size_t num_terms = terms.size();
         // Take care of off-diagonal terms
         if(num_terms)
         {
+            // Per-thread scratch buffers, allocated once and reused for all
+            // blocks assigned to this thread (avoids per-row heap allocation).
+            std::vector<uint8_t> rsb_buf;          // row_set_bits for BLK rows
+            boost::dynamic_bitset<std::size_t> col_vec;
+
 #pragma omp for schedule(dynamic)
-            for(kk = 0; kk < subspace_dim; kk++)
+            for(std::size_t blk = 0; blk < num_blocks; ++blk)
             {
-                const boost::dynamic_bitset<size_t>& row = bitsets[kk].first;
+                const std::size_t r0 = blk * BLK;
+                const std::size_t r1 = std::min(r0 + BLK, subspace_dim);
+                const std::size_t bn = r1 - r0;
 
-                boost::dynamic_bitset<std::size_t> col_vec;
-                T temp_val;
-                const OperatorTerm_t* term;
-                std::size_t group_start, group_stop, group;
-                std::size_t* col_ptr;
-                std::size_t idx, col_idx;
-                GroupIndsView group_inds;
-
-                std::vector<uint8_t> row_set_bits(row.size(), 0);
-                bitset_to_bitvec(row, row_set_bits);
-
-                // Loop over all off-diagonal terms in operator
-                for(group = 0; group < num_groups; group++)
+                // Build the bit-vector for every row in the block.
+                // Stored contiguously as bn * rsb_w bytes so the
+                // group loop can stride over rows cheaply.
+                rsb_buf.assign(bn * rsb_w, 0);
+                for(std::size_t row_in_block = 0; row_in_block < bn; ++row_in_block)
                 {
-                    // Detects a lower or an upper
-                    // triangle matrix element.
-                    // See details in ``get_group_max_inds()``
-                    // in fulqrum/core/src/offdiag_grouping.hpp
-                    if(!row_set_bits[grp_max_inds[group]])
+                    const boost::dynamic_bitset<std::size_t>& row =
+                        bitsets[r0 + row_in_block].first;
+                    uint8_t* dst = rsb_buf.data() + row_in_block * rsb_w;
+                    for(std::size_t b = 0; b < row.num_blocks(); ++b)
                     {
-                        continue;
+                        std::size_t bits = row.m_bits[b];
+                        while(bits != 0)
+                        {
+                            int r = __builtin_ctzll(bits);
+                            dst[b * BITS_PER_BLOCK + r] = 1;
+                            bits &= bits - 1;
+                        }
                     }
+                }
 
-                    group_start = group_ptrs[group];
-                    group_stop = group_ptrs[group + 1];
-                    group_inds = gview(group);
-                    temp_val = 0;
-                    if(group_start < group_stop)
+                // Loop over all groups, then over all rows in the block.
+                // out_vec[r0 + row_in_block] is owned exclusively by this
+                // thread/block, so no mutex or atomic is needed.
+                for(std::size_t group = 0; group < num_groups; group++)
+                {
+                    const GroupIndsView group_inds = gview(group);
+                    const std::size_t group_start = group_ptrs[group];
+                    const std::size_t group_stop  = group_ptrs[group + 1];
+                    if(group_start >= group_stop)
+                        continue;
+
+                    const uint16_t max_ind = grp_max_inds[group];
+                    for(std::size_t row_in_block = 0; row_in_block < bn; ++row_in_block)
                     {
+
+                        const uint8_t* row_set_bits = rsb_buf.data() + row_in_block * rsb_w;
+                        // Lower-triangle check: skip upper-triangle elements.
+                        // See get_group_max_inds() in offdiag_grouping.hpp.
+                        if(!row_set_bits[max_ind])
+                            continue;
+
+                        const std::size_t kk = r0 + row_in_block;
+                        const boost::dynamic_bitset<std::size_t>& row = bitsets[kk].first;
                         col_vec = row;
                         flip_bits(col_vec, group_inds.data(), group_inds.size());
 
-                        col_ptr = subspace.get_ptr(col_vec);
+                        std::size_t* col_ptr = subspace.get_ptr(col_vec);
                         if(col_ptr == nullptr)
-                        {
                             continue;
-                        } // column is NOT in the subspace so break group
-                        col_idx = *col_ptr;
-                    }
-                    for(idx = group_start; idx < group_stop; idx++)
-                    {
-                        term = &terms[idx];
-                        if(passes_proj_validation(term, row))
-                        {
-                            accum_element(row,
-                                          col_vec,
-                                          term->indices,
-                                          term->values,
-                                          term->coeff,
-                                          term->real_phase,
-                                          term->indices.size(),
-                                          temp_val);
-                        }
-                    } // end loop for this group
-                    if(std::abs(temp_val) > ATOL)
-                    {
-                        // see fulqrum/core/src/csr.hpp for details
-                        // about these Mutex locks
-                        {
-                            std::lock_guard<std::mutex> lock1(mutex1[kk]);
-                            out_vec[kk] += (temp_val * in_vec[col_idx]);
-                        }
+                        const std::size_t col_idx = *col_ptr;
 
+                        T temp_val = 0;
+                        for(std::size_t idx = group_start; idx < group_stop; idx++)
                         {
-                            std::lock_guard<std::mutex> lock2(mutex1[col_idx]);
-                            if constexpr(std::is_same_v<T, double>)
+                            const OperatorTerm_t* term = &terms[idx];
+                            if(passes_proj_validation(term, row))
                             {
-                                out_vec[col_idx] += (temp_val * in_vec[kk]);
+                                accum_element(row,
+                                              col_vec,
+                                              term->indices,
+                                              term->values,
+                                              term->coeff,
+                                              term->real_phase,
+                                              term->indices.size(),
+                                              temp_val);
                             }
-                            else
+                        } // end loop for this group
+
+                        if(std::abs(temp_val) > ATOL)
+                        {
+                            // see fulqrum/core/src/csr.hpp for details
+                            // about these Mutex locks
                             {
-                                // for complex-valued matrix, the upper triangle
-                                // element will be complex conjugate of the lower
-                                // triangle element
-                                out_vec[col_idx] += (std::conj(temp_val) * in_vec[kk]);
+                                std::lock_guard<std::mutex> lock1(mutex1[kk]);
+                                out_vec[kk] += (temp_val * in_vec[col_idx]);
+                            }
+
+                            {
+                                std::lock_guard<std::mutex> lock2(mutex1[col_idx]);
+                                if constexpr(std::is_same_v<T, double>)
+                                {
+                                    out_vec[col_idx] += (temp_val * in_vec[kk]);
+                                }
+                                else
+                                {
+                                    // for complex-valued matrix, the upper triangle
+                                    // element will be complex conjugate of the lower
+                                    // triangle element
+                                    out_vec[col_idx] += (std::conj(temp_val) * in_vec[kk]);
+                                }
                             }
                         }
-                    }
-                } // end loop over all groups
-            } // end for-loop over rows
+                    } // end row_in_block loop
+                } // end group loop
+            } // end block loop
         } // end if num_terms
     } // end parallel region
 } // end matvec
