@@ -55,7 +55,11 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
         const std::size_t off = inds_offsets[g];
         return GroupIndsView{flat_inds + off, inds_offsets[g + 1] - off};
     };
-    std::vector<std::mutex> mutex1(subspace_dim);
+    struct alignas(64) PaddedMutex
+    {
+        std::mutex m;
+    };
+    std::vector<PaddedMutex> mutex1(subspace_dim);
     // grp_max_inds[g] = the highest bit-flip index for group g.
     // Used to detect lower-triangle elements without building col_vec.
     // See get_group_max_inds() in offdiag_grouping.hpp for the rationale.
@@ -175,12 +179,12 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                             // see fulqrum/core/src/csr.hpp for details
                             // about these Mutex locks
                             {
-                                std::lock_guard<std::mutex> lock1(mutex1[kk]);
+                                std::lock_guard<std::mutex> lock1(mutex1[kk].m);
                                 out_vec[kk] += (temp_val * in_vec[col_idx]);
                             }
 
                             {
-                                std::lock_guard<std::mutex> lock2(mutex1[col_idx]);
+                                std::lock_guard<std::mutex> lock2(mutex1[col_idx].m);
                                 if constexpr(std::is_same_v<T, double>)
                                 {
                                     out_vec[col_idx] += (temp_val * in_vec[kk]);
