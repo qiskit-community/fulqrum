@@ -42,6 +42,16 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
     std::size_t kk;
     const auto* bitsets = subspace.get_bitsets();
 
+    std::vector<width_t> _flat_inds;
+    std::vector<std::size_t> _inds_offsets;
+    flatten_offdiag_inds(group_offdiag_inds, _flat_inds, _inds_offsets);
+    const width_t* __restrict flat_inds = _flat_inds.data();
+    const std::size_t* __restrict inds_offsets = _inds_offsets.data();
+    auto gview = [&](std::size_t g) -> GroupIndsView {
+        const std::size_t off = inds_offsets[g];
+        return GroupIndsView{flat_inds + off, inds_offsets[g + 1] - off};
+    };
+
     std::vector<std::mutex> mutex1(subspace_dim);
 
     std::vector<uint16_t> grp_max_inds(num_groups, width);
@@ -74,7 +84,7 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                 std::size_t group_start, group_stop, group;
                 std::size_t* col_ptr;
                 std::size_t idx, col_idx;
-                const std::vector<width_t>* group_inds;
+                GroupIndsView group_inds;
 
                 std::vector<uint8_t> row_set_bits(row.size(), 0);
                 bitset_to_bitvec(row, row_set_bits);
@@ -93,12 +103,12 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
 
                     group_start = group_ptrs[group];
                     group_stop = group_ptrs[group + 1];
-                    group_inds = &group_offdiag_inds[group];
+                    group_inds = gview(group);
                     temp_val = 0;
                     if(group_start < group_stop)
                     {
                         col_vec = row;
-                        flip_bits(col_vec, group_inds->data(), group_inds->size());
+                        flip_bits(col_vec, group_inds.data(), group_inds.size());
 
                         col_ptr = subspace.get_ptr(col_vec);
                         if(col_ptr == nullptr)
