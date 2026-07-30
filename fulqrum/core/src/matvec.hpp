@@ -96,7 +96,8 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
             // Per-thread scratch buffers, allocated once and reused for all
             // blocks assigned to this thread (avoids per-row heap allocation).
             std::vector<uint8_t> rsb_buf;          // row_set_bits for BLK rows
-            boost::dynamic_bitset<std::size_t> col_vec;
+            boost::dynamic_bitset<std::size_t> col_vec(width);
+            const std::size_t num_col_blocks = col_vec.num_blocks();
 
 #pragma omp for schedule(dynamic)
             for(std::size_t blk = 0; blk < num_blocks; ++blk)
@@ -149,7 +150,9 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
 
                         const std::size_t kk = r0 + row_in_block;
                         const boost::dynamic_bitset<std::size_t>& row = bitsets[kk].first;
-                        col_vec = row;
+                        std::memcpy(col_vec.m_bits.data(),
+                                    row.m_bits.data(),
+                                    num_col_blocks * sizeof(std::size_t));
                         flip_bits(col_vec, group_inds.data(), group_inds.size());
 
                         std::size_t* col_ptr = subspace.get_ptr(col_vec);
