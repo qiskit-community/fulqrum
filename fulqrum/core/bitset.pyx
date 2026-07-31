@@ -15,6 +15,7 @@ from libcpp cimport string
 from libc.stdint cimport uint8_t
 from libcpp.vector cimport vector
 
+cimport numpy as np
 import numpy as np
 import numbers
 from collections.abc import Iterable
@@ -58,7 +59,12 @@ cdef class Bitset:
         """
         return self.bits.size()
 
-    def __getitem__(self, size_t idx):
+    def __getitem__(self, np.int64_t idx):
+        cdef size_t size = self.bits.size()
+        if idx < 0:
+            idx += size
+        if idx < 0 or idx > <np.int64_t>(size - 1):
+            raise FulqrumError("Index out of range")
         return self.bits[idx]
 
     def __eq__(self, Bitset other):
@@ -72,6 +78,46 @@ cdef class Bitset:
 
     def __gt__(self, Bitset other):
         return self.bits > other.bits
+
+    def all(self):
+        """Check if all bits are set
+
+        Returns:
+            bool
+        """
+        return self.bits.all()
+
+    def any(self):
+        """Check if any bits are set
+
+        Returns:
+            bool
+        """
+        return self.bits.any()
+
+    def count(self):
+        """Count the number of set bits
+
+        Returns:
+            int
+        """
+        return self.bits.count()
+
+    def empty(self):
+        """Check if bitset has size zero
+
+        Returns:
+            bool
+        """
+        return self.bits.empty()
+
+    def none(self):
+        """Check if bitset has no set bits
+
+        Returns:
+            bool
+        """
+        return self.bits.none()
 
     def num_blocks(self):
         """Number of blocks (int64) used to store Bitset
@@ -100,6 +146,26 @@ cdef class Bitset:
         cdef string s
         to_string(self.bits, s)
         return int(s, 2)
+
+    def find_first(self):
+        """Finds first set bit
+        
+        Returns:
+            int: Index of first set bit
+        """
+        return self.bits.find_first()
+
+
+    def find_next(self, size_t pos=0):
+        """Finds next set bit with index > pos
+
+        Parameters:
+            pos (int): Integer position
+        
+        Returns:
+            int: Index of next set bit
+        """
+        return self.bits.find_next(pos)
 
     def flip(self, object bits):
         """Flip one or more bits inplace
