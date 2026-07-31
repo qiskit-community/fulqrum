@@ -90,7 +90,7 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
         {
             // Per-thread scratch buffers, allocated once and reused for all
             // blocks assigned to this thread (avoids per-row heap allocation).
-            std::vector<uint8_t> rsb_buf;          // row_set_bits for BLK rows
+            std::vector<uint8_t> rsb_buf; // row_set_bits for BLK rows
             boost::dynamic_bitset<std::size_t> col_vec(width);
             const std::size_t num_col_blocks = col_vec.num_blocks();
 
@@ -129,7 +129,7 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                 {
                     const GroupIndsView group_inds = gview(group);
                     const std::size_t group_start = group_ptrs[group];
-                    const std::size_t group_stop  = group_ptrs[group + 1];
+                    const std::size_t group_stop = group_ptrs[group + 1];
                     if(group_start >= group_stop)
                         continue;
 
@@ -176,23 +176,24 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                         {
                             if constexpr(std::is_same_v<T, double>)
                             {
-                                #pragma omp atomic update
+#pragma omp atomic update
                                 out_vec[kk] += (temp_val * in_vec[col_idx]);
                             }
                             else
                             {
                                 const T update_val = temp_val * in_vec[col_idx];
                                 double* __restrict p = reinterpret_cast<double*>(&out_vec[kk]);
-                                const double* __restrict q = reinterpret_cast<const double*>(&update_val);
-                                #pragma omp atomic
+                                const double* __restrict q =
+                                    reinterpret_cast<const double*>(&update_val);
+#pragma omp atomic
                                 p[0] += q[0]; // real part
-                                #pragma omp atomic
+#pragma omp atomic
                                 p[1] += q[1]; // imag part
                             }
                             // upper triangle pieces
                             if constexpr(std::is_same_v<T, double>)
                             {
-                                #pragma omp atomic update
+#pragma omp atomic update
                                 out_vec[col_idx] += (temp_val * in_vec[kk]);
                             }
                             else
@@ -201,11 +202,13 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                                 // element will be complex conjugate of the lower
                                 // triangle element
                                 const T update_val2 = std::conj(temp_val) * in_vec[kk];
-                                double* __restrict p2 = reinterpret_cast<double*>(&out_vec[col_idx]);
-                                const double* __restrict q2 = reinterpret_cast<const double*>(&update_val2);
-                                #pragma omp atomic
+                                double* __restrict p2 =
+                                    reinterpret_cast<double*>(&out_vec[col_idx]);
+                                const double* __restrict q2 =
+                                    reinterpret_cast<const double*>(&update_val2);
+#pragma omp atomic
                                 p2[0] += q2[0]; // real part
-                                #pragma omp atomic
+#pragma omp atomic
                                 p2[1] += q2[1]; // imag part
                             }
                         }
