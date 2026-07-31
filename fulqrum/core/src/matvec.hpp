@@ -17,7 +17,6 @@
 #include <cstddef>
 #include <cstdlib>
 #include <vector>
-#include <mutex>
 
 #include "base.hpp"
 #include "bitset_hashmap.hpp"
@@ -55,11 +54,7 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
         const std::size_t off = inds_offsets[g];
         return GroupIndsView{flat_inds + off, inds_offsets[g + 1] - off};
     };
-    struct alignas(64) PaddedMutex
-    {
-        std::mutex m;
-    };
-    std::vector<PaddedMutex> mutex1(subspace_dim);
+
     // grp_max_inds[g] = the highest bit-flip index for group g.
     // Used to detect lower-triangle elements without building col_vec.
     // See get_group_max_inds() in offdiag_grouping.hpp for the rationale.
@@ -179,26 +174,39 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
 
                         if(std::abs(temp_val) > ATOL)
                         {
-                            // see fulqrum/core/src/csr.hpp for details
-                            // about these Mutex locks
+                            if constexpr(std::is_same_v<T, double>)
                             {
-                                std::lock_guard<std::mutex> lock1(mutex1[kk].m);
+                                #pragma omp atomic update
                                 out_vec[kk] += (temp_val * in_vec[col_idx]);
                             }
-
+                            else
                             {
-                                std::lock_guard<std::mutex> lock2(mutex1[col_idx].m);
-                                if constexpr(std::is_same_v<T, double>)
-                                {
-                                    out_vec[col_idx] += (temp_val * in_vec[kk]);
-                                }
-                                else
-                                {
-                                    // for complex-valued matrix, the upper triangle
-                                    // element will be complex conjugate of the lower
-                                    // triangle element
-                                    out_vec[col_idx] += (std::conj(temp_val) * in_vec[kk]);
-                                }
+                                const T update_val = temp_val * in_vec[col_idx];
+                                double* __restrict p = reinterpret_cast<double*>(&out_vec[kk]);
+                                const double* __restrict q = reinterpret_cast<const double*>(&update_val);
+                                #pragma omp atomic
+                                p[0] += q[0]; // real part
+                                #pragma omp atomic
+                                p[1] += q[1]; // imag part
+                            }
+                            // upper triangle pieces
+                            if constexpr(std::is_same_v<T, double>)
+                            {
+                                #pragma omp atomic update
+                                out_vec[col_idx] += (temp_val * in_vec[kk]);
+                            }
+                            else
+                            {
+                                // for complex-valued matrix, the upper triangle
+                                // element will be complex conjugate of the lower
+                                // triangle element
+                                const T update_val2 = std::conj(temp_val) * in_vec[kk];
+                                double* __restrict p2 = reinterpret_cast<double*>(&out_vec[col_idx]);
+                                const double* __restrict q2 = reinterpret_cast<const double*>(&update_val2);
+                                #pragma omp atomic
+                                p2[0] += q2[0]; // real part
+                                #pragma omp atomic
+                                p2[1] += q2[1]; // imag part
                             }
                         }
                     } // end row_in_block loop
