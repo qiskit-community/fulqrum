@@ -122,9 +122,6 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                     }
                 }
 
-                // Loop over all groups, then over all rows in the block.
-                // out_vec[r0 + row_in_block] is owned exclusively by this
-                // thread/block, so no mutex or atomic is needed.
                 for(std::size_t group = 0; group < num_groups; group++)
                 {
                     const GroupIndsView group_inds = gview(group);
