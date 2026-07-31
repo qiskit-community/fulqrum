@@ -67,6 +67,41 @@ def test_full_dist_h2_eigen():
     assert np.allclose(evals2, GROUND_ENERGY)
 
 
+def test_full_dist_h2_eigen_type1():
+    """Test full space solution against exact as type=1 operator"""
+    full_dist = {}
+    for kk in range(2**4):
+        full_dist[bin(kk)[2:].zfill(4)] = None
+
+    O = OP.copy()
+    O.set_type(1)
+    S = Subspace([list(full_dist.keys())])
+    Hsub = SubspaceHamiltonian(O, S)
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if O.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+    # use single bitset block for hashing
+    S = Subspace([list(full_dist.keys())], use_all_bitset_blocks=False)
+    Hsub = SubspaceHamiltonian(O, S)
+
+    # here we use starting vector of all ones to match phase with direct ans
+    x0 = np.ones(len(S), dtype=float if O.is_real() else complex)
+    evals, evecs = spla.eigsh(Hsub, k=1, which="SA", v0=x0)
+    assert evecs.dtype == float
+    assert np.allclose(evals, GROUND_ENERGY)
+    assert np.allclose(evecs.ravel(), ANS_EVECS[:, 0])
+
+    x0p = np.ones((len(S), 1), dtype=float if O.is_real() else complex)
+    evals2, evecs2 = primme.eigsh(Hsub, k=1, which="SA", v0=x0p)
+    assert evecs2.dtype == float
+    assert np.allclose(evals2, GROUND_ENERGY)
+
+
 def test_partial_dist_h2_eigen1():
     """Test subspace that overlaps with ground state still works"""
     part_dist = GROUND_DIST.copy()
