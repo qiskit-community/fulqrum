@@ -41,9 +41,9 @@ typedef struct FermionicTerm
     std::complex<double> coeff{0};
     std::vector<width_t> proj_indices;
     std::vector<width_t> proj_bits;
-    width_t offdiag_weight{0};
     unsigned int offdiag_structure{0};
     unsigned int proj_structure{0};
+    width_t offdiag_weight{0};
 
     FermionicTerm() {}
     FermionicTerm(std::complex<double> c)
