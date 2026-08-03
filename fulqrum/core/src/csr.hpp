@@ -152,20 +152,31 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
                     // simultaneous writing into a same vector.
                     #pragma omp atomic write
                     indices[elem_start + row_nnz] = col_idx;
-                    { // process kk (row index)
-                        std::lock_guard<std::mutex> lock_kk(mutex1[kk]);
+                    if constexpr(std::is_same_v<U, double>)
+                    {
+                        #pragma omp atomic write
                         data[elem_start + row_nnz] = val;
+                    }
+                    else
+                    {
+                        double* __restrict p = reinterpret_cast<double*>(&data[elem_start + row_nnz]);
+                        const double* __restrict q = reinterpret_cast<const double*>(&val);
+                        #pragma omp atomic
+                        p[0] += q[0]; // real part
+                        #pragma omp atomic
+                        p[1] += q[1]; // imag part
                     }
                     #pragma omp atomic
                     row_nnz += 1;
                     
                     row_nnz_col_idx = row_nnz_s[col_idx];
                     elem_start_col_idx = indptr[col_idx];
+                    #pragma omp atomic write
+                    indices[elem_start_col_idx + row_nnz_col_idx] = kk;
+                    #pragma omp atomic
+                    row_nnz_s[col_idx] += 1;
                     { // process col_idx
                         std::lock_guard<std::mutex> lock_col_idx(mutex1[col_idx]);
-                        indices[elem_start_col_idx + row_nnz_col_idx] = kk;
-                        row_nnz_s[col_idx] += 1;
-
                         if constexpr(std::is_same_v<U, double>)
                         {
                             data[elem_start_col_idx + row_nnz_col_idx] = val;
