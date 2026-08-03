@@ -150,18 +150,19 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
                     // These scoped (inside each curly braces
                     // {}) Mutex-based locks prevents
                     // simultaneous writing into a same vector.
+                    #pragma omp atomic write
+                    indices[elem_start + row_nnz] = col_idx;
                     { // process kk (row index)
                         std::lock_guard<std::mutex> lock_kk(mutex1[kk]);
-
-                        indices[elem_start + row_nnz] = col_idx;
                         data[elem_start + row_nnz] = val;
-                        row_nnz += 1;
                     }
-
+                    #pragma omp atomic
+                    row_nnz += 1;
+                    
+                    row_nnz_col_idx = row_nnz_s[col_idx];
+                    elem_start_col_idx = indptr[col_idx];
                     { // process col_idx
                         std::lock_guard<std::mutex> lock_col_idx(mutex1[col_idx]);
-                        row_nnz_col_idx = row_nnz_s[col_idx];
-                        elem_start_col_idx = indptr[col_idx];
                         indices[elem_start_col_idx + row_nnz_col_idx] = kk;
                         row_nnz_s[col_idx] += 1;
 
@@ -179,16 +180,12 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
                     }
                 }
                 if(!compute_values)
-                {
-                    {
-                        std::lock_guard<std::mutex> lock1(mutex2[kk]);
-                        row_nnz += 1;
-                    }
+                {    
+                    #pragma omp atomic
+                    row_nnz += 1;
 
-                    {
-                        std::lock_guard<std::mutex> lock2(mutex2[col_idx]);
-                        row_nnz_s[col_idx] += 1;
-                    }
+                    #pragma omp atomic
+                    row_nnz_s[col_idx] += 1;
                 }
             }
         } // end loop over groups
