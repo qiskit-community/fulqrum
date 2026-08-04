@@ -44,8 +44,12 @@ void csrlike_builder(const std::vector<OperatorTerm_t>& terms,
 
     cols.resize(subspace_dim);
     data.resize(subspace_dim);
-
-    std::vector<std::mutex> mutex1(subspace_dim);
+    // pad the mutex from 40 -> 64 bytes
+    struct alignas(64) PaddedMutex
+    {
+        std::mutex m;
+    };
+    std::vector<PaddedMutex> mutex1(subspace_dim);
 
     std::vector<uint16_t> grp_max_inds(num_groups, width);
     get_group_max_inds(grp_max_inds, group_offdiag_inds, num_groups);
@@ -131,13 +135,13 @@ void csrlike_builder(const std::vector<OperatorTerm_t>& terms,
                 // see fulqrum/core/src/csr.hpp for details
                 // about these Mutex locks
                 {
-                    std::lock_guard<std::mutex> lock_kk(mutex1[kk]);
+                    std::lock_guard<std::mutex> lock_kk(mutex1[kk].m);
                     cols[kk].push_back(col_idx);
                     data[kk].push_back(val);
                 }
 
                 {
-                    std::lock_guard<std::mutex> lock_col_idx(mutex1[col_idx]);
+                    std::lock_guard<std::mutex> lock_col_idx(mutex1[col_idx].m);
                     cols[col_idx].push_back(kk);
                     if constexpr(std::is_same_v<T, double>)
                     {
