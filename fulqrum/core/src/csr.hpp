@@ -47,11 +47,13 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
     std::vector<uint16_t> grp_max_inds(num_groups, width);
     get_group_max_inds(grp_max_inds, group_offdiag_inds, num_groups);
 
-    // do diagonal first, if any
     std::vector<T> row_nnz_s(subspace_dim, 0);
+    #pragma omp parallel if(subspace_dim > 4096)
+    {
+    // do diagonal first, if any
     if(has_nonzero_diag)
     {
-#pragma omp parallel for if(subspace_dim > 4096)
+        #pragma omp for
         for(kk = 0; kk < subspace_dim; kk++)
         {
             T& row_nnz = row_nnz_s[kk]; // reference T& is critical
@@ -68,7 +70,7 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
         }
     }
 
-#pragma omp parallel for if(subspace_dim > 4096)
+    #pragma omp for
     for(kk = 0; kk < subspace_dim; kk++)
     { // begin loop over all rows
         // define variables locally for omp for loop
@@ -193,6 +195,7 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
             }
         } // end loop over groups
     } // end loop over all rows
+    } // end omp parallel region
 
     if(!compute_values) // Done with all rows so accumulate for correct indptr structure
     {
