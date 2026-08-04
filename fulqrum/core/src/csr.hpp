@@ -14,7 +14,6 @@
 #pragma once
 #include <complex>
 #include <cstdlib>
-#include <mutex>
 #include <vector>
 
 #include "base.hpp"
@@ -44,9 +43,6 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
     T temp, _sum;
 
     const auto* bitsets = subspace.get_bitsets();
-
-    std::vector<std::mutex> mutex1(subspace_dim);
-    std::vector<std::mutex> mutex2(subspace_dim);
 
     std::vector<uint16_t> grp_max_inds(num_groups, width);
     get_group_max_inds(grp_max_inds, group_offdiag_inds, num_groups);
@@ -140,24 +136,14 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
             {
                 if(compute_values)
                 {
-                    // Mutex locks to avoid write contention
-                    // inside OMP parallel for loop. After
-                    // detecting an lower triangle elements, we
-                    // also populate corresponding upper
-                    // triangle position. It may lead to
-                    // multiple parallel threads writing into
-                    // the same inner vector at the same time.
-                    // These scoped (inside each curly braces
-                    // {}) Mutex-based locks prevents
-                    // simultaneous writing into a same vector.
                     #pragma omp atomic write
                     indices[elem_start + row_nnz] = col_idx;
-                    if constexpr(std::is_same_v<U, double>)
+                    if constexpr(std::is_same_v<U, double>) // real case
                     {
                         #pragma omp atomic write
                         data[elem_start + row_nnz] = val;
                     }
-                    else
+                    else // imaginary case
                     {
                         double* __restrict p = reinterpret_cast<double*>(&data[elem_start + row_nnz]);
                         const double* __restrict q = reinterpret_cast<const double*>(&val);
@@ -175,20 +161,26 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
                     indices[elem_start_col_idx + row_nnz_col_idx] = kk;
                     #pragma omp atomic
                     row_nnz_s[col_idx] += 1;
-                    { // process col_idx
-                        std::lock_guard<std::mutex> lock_col_idx(mutex1[col_idx]);
-                        if constexpr(std::is_same_v<U, double>)
-                        {
-                            data[elem_start_col_idx + row_nnz_col_idx] = val;
-                        }
-                        else
-                        {
-                            // for complex-valued matrix, the upper triangle
-                            // element will be complex conjugate of the lower
-                            // triangle element
-                            data[elem_start_col_idx + row_nnz_col_idx] = std::conj(val);
-                        }
+                    // process col_idx
+                    if constexpr(std::is_same_v<U, double>)
+                    {
+                        #pragma omp atomic write
+                        data[elem_start_col_idx + row_nnz_col_idx] = val;
                     }
+                    else
+                    {
+                        // for complex-valued matrix, the upper triangle
+                        // element will be complex conjugate of the lower
+                        // triangle element
+                        const U update_val = std::conj(val);
+                        double* __restrict p2 = reinterpret_cast<double*>(&data[elem_start_col_idx + row_nnz_col_idx]);
+                        const double* __restrict q2 = reinterpret_cast<const double*>(&update_val);
+                        #pragma omp atomic write
+                        p2[0] = q2[0]; // real part
+                        #pragma omp atomic write
+                        p2[1] = q2[1]; // imag part
+                    }
+                 
                 }
                 if(!compute_values)
                 {    
