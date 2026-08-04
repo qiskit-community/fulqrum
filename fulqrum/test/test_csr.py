@@ -356,9 +356,9 @@ def test_csr6a():
 
 def test_csr_nnz_dimer():
     """Validat the NNZ in the CSR output for the dimer"""
-    op = fq.QubitOperator.from_json(PATH+"ch4_dimer_jw.json.xz")
+    op = fq.QubitOperator.from_json(PATH + "ch4_dimer_jw.json.xz")
     op.set_type(1)
-    dist = fq.utils.io.json_to_dict(PATH+"dimer_subspace.json.xz")
+    dist = fq.utils.io.json_to_dict(PATH + "dimer_subspace.json.xz")
     S = fq.Subspace([list(dist.keys())])
     Hsub = fq.SubspaceHamiltonian(op, S)
     A = Hsub.to_csr_linearoperator()
