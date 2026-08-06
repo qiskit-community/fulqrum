@@ -19,7 +19,6 @@
 #include <ostream>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "constants.hpp"
@@ -45,60 +44,47 @@ typedef struct FermionicTerm
     unsigned int proj_structure{0};
     width_t offdiag_weight{0};
 
-    FermionicTerm() {}
+    FermionicTerm() = default;
+    FermionicTerm(const FermionicTerm&) = default;
+    FermionicTerm(FermionicTerm&&) = default;
+    FermionicTerm& operator=(const FermionicTerm&) = default;
+    FermionicTerm& operator=(FermionicTerm&&) = default;
+    ~FermionicTerm() = default;
+
     FermionicTerm(std::complex<double> c)
         : coeff(c)
     {} // Init empty term with given coefficient
+
     FermionicTerm(std::string vals, std::vector<width_t> inds, std::complex<double> c)
-        : indices(inds)
+        : indices(std::move(inds))
         , coeff(c)
     {
-        unsigned char val;
-        width_t ind;
-        unsigned int counter = 0;
-        // Iterate over string of values, mapping to new values and adding to term
-        for(std::string::iterator it = vals.begin(); it != vals.end(); ++it)
+        const std::size_t n = vals.size();
+        if(n != indices.size())
         {
-            counter += 1;
-            if(*it != 73)
-            {
-                val = oper_map[*it];
-                ind = inds[counter - 1];
-                values.push_back(val);
-                offdiag_weight += static_cast<width_t>(val > 2);
-                offdiag_structure += (ind + 1) * (val > 2);
-            }
-            else
+            throw std::runtime_error("Size of values vector does not equal that of indices.");
+        }
+        values.reserve(n);
+        // Iterate over string of values, mapping to internal codes
+        for(std::size_t i = 0; i < n; ++i)
+        {
+            const unsigned char ch = static_cast<unsigned char>(vals[i]);
+            if(ch == 73) // 'I' identity
             {
                 throw std::runtime_error("Cannot use identity operators in sparse format.");
             }
-        }
-        //check that length of values == length of indices
-        if(values.size() != indices.size())
-        {
-            throw std::runtime_error("Size of values vector does not equal that of indices.");
+            const unsigned char val = oper_map[ch];
+            values.push_back(val);
+            const bool is_offdiag = (val > 2);
+            offdiag_weight += static_cast<width_t>(is_offdiag);
+            offdiag_structure += (indices[i] + 1) * static_cast<unsigned int>(is_offdiag);
         }
         insertion_sort();
         set_term_proj_indices(*this);
     }
-    // destructor
-    ~FermionicTerm()
-    {
-        std::vector<unsigned char>().swap(values);
-        std::vector<width_t>().swap(indices);
-    }
-    FermionicTerm copy() const
-    {
-        FermionicTerm out = FermionicTerm(this->coeff);
-        out.values = this->values;
-        out.indices = this->indices;
-        out.proj_indices = this->proj_indices;
-        out.proj_bits = this->proj_bits;
-        out.offdiag_weight = this->offdiag_weight;
-        out.offdiag_structure = this->offdiag_structure;
-        out.proj_structure = this->proj_structure;
-        return out;
-    }
+
+    FermionicTerm copy() const { return *this; }
+
     /**
      * Inplace multiplication by a complex value
      */
@@ -110,18 +96,18 @@ typedef struct FermionicTerm
     /**
      * Term multiplication by a complex number
      */
-    friend FermionicTerm operator*(FermionicTerm& op, std::complex<double> c)
+    friend FermionicTerm operator*(const FermionicTerm& op, std::complex<double> c)
     {
-        FermionicTerm out = op.copy();
+        FermionicTerm out = op;
         out.coeff *= c;
         return out;
     }
     /**
      * Term multiplication by a complex number
      */
-    friend FermionicTerm operator*(std::complex<double> c, FermionicTerm& op)
+    friend FermionicTerm operator*(std::complex<double> c, const FermionicTerm& op)
     {
-        FermionicTerm out = op.copy();
+        FermionicTerm out = op;
         out.coeff *= c;
         return out;
     }
@@ -146,34 +132,28 @@ typedef struct FermionicTerm
         return out;
     }
     /**
-     * Insertion sort indices (and values) in the term
+     * Insertion sort indices (and values) in the term.
+     * Tracks anticommutation sign flips for ladder operators (val > 4).
      */
     void insertion_sort()
     {
-        int kk, ll;
-        int num_elems = static_cast<int>(indices.size());
-        width_t temp_index;
-        unsigned char temp_value;
+        const int num_elems = static_cast<int>(indices.size());
         int prefactor = 1;
-        for(kk = 1; kk < num_elems; kk++)
+        for(int kk = 1; kk < num_elems; kk++)
         {
-            temp_index = indices[kk];
-            temp_value = values[kk];
-            ll = kk - 1;
-            // Only switch elements if they are of different indices
-            // In this case we always pick up a minus sign that
-            // we need to keep track of with the 'prefactor'
+            const width_t temp_index = indices[kk];
+            const unsigned char temp_value = values[kk];
+            int ll = kk - 1;
+            // Swapping two ladder operators (val > 4) over different indices costs a sign.
             while(ll >= 0 && temp_index < indices[ll])
             {
                 indices[ll + 1] = indices[ll];
                 values[ll + 1] = values[ll];
-                // Only add a minus sign if both operators (values)
-                // are not projectors (ie. > 4 since '-'=5 and '+'=6)
-                if((temp_value > 4) and (values[ll] > 4))
+                if(temp_value > 4 && values[ll] > 4)
                 {
-                    prefactor *= -1;
+                    prefactor = -prefactor;
                 }
-                ll -= 1;
+                --ll;
             }
             indices[ll + 1] = temp_index;
             values[ll + 1] = temp_value;
@@ -183,28 +163,15 @@ typedef struct FermionicTerm
 } FermionicTerm_t;
 
 /**
- * Compute the JW phase for a given operator
+ * Compute the JW phase for a given operator.
+ * Returns -1 for op=5 ('-') or op=2 ('1'), +1 otherwise.
  *
  * @param[in] op The operator in question
- * 
- * @return Integer phase value
+ * @return Integer phase value (+1 or -1)
  */
 inline int jw_phase(const unsigned char op)
 {
-    int out;
-    switch(op)
-    {
-    case 5: //minus sign if op = '-'
-        out = -1;
-        break;
-    case 2: //minus sign if op = '1'
-        out = -1;
-        break;
-    default:
-        out = 1;
-        break;
-    }
-    return out;
+    return (op == 2 || op == 5) ? -1 : 1;
 }
 
 /**
@@ -215,25 +182,28 @@ inline int jw_phase(const unsigned char op)
  */
 inline void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
 {
-    int num_elems = static_cast<int>(fermi_term.indices.size());
-    int kk, mm;
-    width_t jj;
+    const int num_elems = static_cast<int>(fermi_term.indices.size());
     int phase = 1;
-    width_t current_ind;
-    unsigned char current_val;
     qubit_term.coeff = fermi_term.coeff;
     qubit_term.extended = (num_elems > 0);
-    //Start with do_z = 0 since nothing has been done yet
-    int do_z = 0;
-    for(kk = num_elems - 1; kk > -1; kk--)
+
+    // Reserve for case where all elements plus Z-fill between them
+    if(num_elems > 0)
     {
-        current_ind = fermi_term.indices[kk];
-        current_val = fermi_term.values[kk];
+        qubit_term.indices.reserve(fermi_term.indices[0] + 1);
+        qubit_term.values.reserve(fermi_term.indices[0] + 1);
+    }
+
+    // Start with do_z = 0 since nothing has been done yet
+    int do_z = 0;
+    for(int kk = num_elems - 1; kk > -1; kk--)
+    {
+        const width_t current_ind = fermi_term.indices[kk];
+        const unsigned char current_val = fermi_term.values[kk];
         // Add start element to qubit operator
         qubit_term.indices.push_back(current_ind);
         qubit_term.values.push_back(current_val);
-        // If a Z term acts on the current value then need to account
-        // for the phase factor in the coefficient
+        // If a Z term acts on the current value, need to take into account phase factor
         if(do_z)
         {
             phase *= jw_phase(current_val);
@@ -241,97 +211,81 @@ inline void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_ter
         // update do_z with this operator
         do_z ^= (current_val > 4);
         // if not at last element in num_elems and do_z
-        // make every id element between start and the next elem a Z operator
+        // make every identity site between this and the next element a Z operator
         if(kk && do_z)
         {
-            for(jj = current_ind - 1; jj > fermi_term.indices[kk - 1]; jj--)
+            for(width_t jj = current_ind - 1; jj > fermi_term.indices[kk - 1]; jj--)
             {
                 qubit_term.indices.push_back(jj);
                 qubit_term.values.push_back(0);
             }
         }
-        // If only one element exists then kk=0 but I still need to
-        // add Z operators down to zero
+        // If only one element exists (kk==0) but do_z, add Z operators down to site 0
         else if(num_elems == 1 && do_z)
         {
-            for(mm = static_cast<int>(current_ind) - 1; mm > -1; mm--)
+            for(int mm = static_cast<int>(current_ind) - 1; mm > -1; mm--)
             {
                 qubit_term.indices.push_back(static_cast<width_t>(mm));
                 qubit_term.values.push_back(0);
             }
         }
     } // end kk loop
-    qubit_term.coeff *= phase; // multiple coefficient by phase factor
+    qubit_term.coeff *= phase;
+    qubit_term.indices.shrink_to_fit();
+    qubit_term.values.shrink_to_fit();
+
 }
 
-// Converts a regular value index into a deflated one
+// Converts internal operator code into a deflated index.
+// Codes: 1->0, 2->1, 5->2, 6->3
 inline int collapse_value(unsigned char x)
 {
-    int out;
-    switch(x)
-    {
-    case 1:
-        out = 0;
-        break;
-    case 2:
-        out = 1;
-        break;
-    case 5:
-        out = 2;
-        break;
-    default: //  x=6
-        out = 3;
-        break;
-    }
-    return out;
+    // Small look up table for collapse values
+    static constexpr int collapse_lookup[7] = {0, 0, 1, 0, 0, 2, 3};
+    return collapse_lookup[x];
 }
 
 inline void deflate_term_indices(const FermionicTerm& term,
                                  std::vector<FermionicTerm>& out_terms,
                                  const std::vector<int>& collapsed_values)
 {
-    std::size_t num_elems = term.indices.size();
-    std::size_t kk, num_touched;
-    FermionicTerm_t new_term = FermionicTerm();
-    width_t current_index;
-    int temp_int;
-    unsigned char current_value;
+    const std::size_t num_elems = term.indices.size();
+    FermionicTerm_t new_term;
+    new_term.indices.reserve(num_elems);
+    new_term.values.reserve(num_elems);
 
-    num_touched = 0;
+    std::size_t num_touched = 0;
     while(num_touched < num_elems)
     {
-        current_index = term.indices[num_touched];
-        current_value = term.values[num_touched];
-        num_touched += 1;
-        for(kk = num_touched; kk < num_elems; kk++)
+        width_t current_index = term.indices[num_touched];
+        unsigned char current_value = term.values[num_touched];
+        ++num_touched;
+        for(std::size_t kk = num_touched; kk < num_elems; kk++)
         {
             // next term has a matching index with the current one
             if(term.indices[kk] == current_index)
             {
-                temp_int = collapsed_values[4 * collapse_value(current_value) +
-                                            collapse_value(term.values[kk])];
-                // This operator becomes a null operator return
+                const int temp_int = collapsed_values[4 * collapse_value(current_value) +
+                                                      collapse_value(term.values[kk])];
+                // This operator becomes a null operator so get rid of whole term
                 if(temp_int < 0)
                 {
                     return;
                 }
-                else
-                {
-                    current_value = static_cast<unsigned char>(temp_int);
-                }
-                num_touched += 1;
+                current_value = static_cast<unsigned char>(temp_int);
+                ++num_touched;
             }
             else
-            { // Move on to next index since not matching and we assume we index sorted already
+            { // Move on to next index, note we already index sorted here
                 break;
             }
         }
         new_term.indices.push_back(current_index);
         new_term.values.push_back(current_value);
         new_term.offdiag_weight += static_cast<width_t>(current_value > 2);
-        new_term.offdiag_structure += (current_index + 1) * (current_value > 2);
+        new_term.offdiag_structure += (current_index + 1) * static_cast<unsigned int>(current_value > 2);
     }
     new_term.coeff = term.coeff;
     set_term_proj_indices(new_term);
-    out_terms.push_back(new_term);
+    out_terms.push_back(std::move(new_term));
 }
