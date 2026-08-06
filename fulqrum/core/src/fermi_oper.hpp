@@ -33,7 +33,6 @@
 #include "qubit_oper.hpp"
 #include "term_utils.hpp"
 
-
 // forward definitions
 void set_fermi_sorting_flags(FermionicOperator& oper, std::string kind);
 
@@ -356,10 +355,6 @@ typedef struct FermionicOperator
     */
     FermionicOperator combine_repeat_terms(double atol = 1e-12)
     {
-        if(!this->unique_terms)
-        {
-            return *this;
-        }
         FermionicOperator out = FermionicOperator(this->width);
         if(!this->size())
         {
@@ -401,12 +396,8 @@ typedef struct FermionicOperator
     }
     FermionicOperator combine_repeat_indices() const
     {
-        if(this->combined)
-        {
-            return *this;
-        }
         FermionicOperator out = FermionicOperator(this->width);
-        static const std::vector<int> collapsed_values = {
+        const std::vector<int> collapsed_values = {
             1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6, -1, 2, -1};
         // This loop is not done in parallel because some of the terms zero out and the length
         // of the input terms is not the same as the length of the out terms
@@ -427,7 +418,7 @@ typedef struct FermionicOperator
      *
      * @return QubitOperator after extended JW transformation
      */
-    QubitOperator& extended_jw_transformation()
+    QubitOperator extended_jw_transformation()
     {
         FermionicOperator& fermi = *this;
         // This requires combining repeated indices
@@ -439,23 +430,23 @@ typedef struct FermionicOperator
         {
             fermi = fermi.combine_repeat_terms();
         }
-        QubitOperator_t * out = new QubitOperator(fermi.width);
+        QubitOperator_t out = QubitOperator(fermi.width);
         std::size_t kk;
-        const std::size_t num_terms = fermi.size();
-        out->terms.resize(num_terms);
-#pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
+        std::size_t num_terms = fermi.size();
+        out.terms.resize(num_terms);
+#pragma omp parallel for schedule(guided) if(num_terms > 1024)
         for(kk = 0; kk < num_terms; kk++)
         {
-            jw_term(fermi.terms[kk], out->terms[kk]);
+            jw_term(fermi.terms[kk], out.terms[kk]);
             // elements are added high to low, so must reverse to get correct order
-            std::reverse(out->terms[kk].indices.begin(), out->terms[kk].indices.end());
-            std::reverse(out->terms[kk].values.begin(), out->terms[kk].values.end());
-            set_offdiag_weight_and_phase(out->terms[kk]);
-            set_extended_flag(out->terms[kk]);
-            set_term_proj_indices(out->terms[kk]);
+            std::reverse(out.terms[kk].indices.begin(), out.terms[kk].indices.end());
+            std::reverse(out.terms[kk].values.begin(), out.terms[kk].values.end());
+            set_offdiag_weight_and_phase(out.terms[kk]);
+            set_extended_flag(out.terms[kk]);
+            set_term_proj_indices(out.terms[kk]);
         }
-        out->type = 2; // set type=2
-        return *out;
+        out.type = 2; // set type=2
+        return out;
     }
 } FermionicOperator_t;
 

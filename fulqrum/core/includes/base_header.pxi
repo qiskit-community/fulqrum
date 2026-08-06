@@ -103,11 +103,11 @@ cdef extern from "../src/base.hpp":
         void to_json(string, bool) except +
         FermionicOperator_t copy()
         FermionicOperator_t from_json(string) except +
-        FermionicOperator_t& combine_repeat_indices() nogil
+        FermionicOperator_t combine_repeat_indices() nogil
         FermionicOperator_t weight_sort() nogil
         FermionicOperator_t offdiag_structure_sort() nogil
-        FermionicOperator_t& combine_repeat_terms(double)
-        QubitOperator_t& extended_jw_transformation() nogil
+        FermionicOperator_t combine_repeat_terms(double)
+        QubitOperator_t extended_jw_transformation() nogil
         vector[size_t] offdiag_structure_ptrs() nogil
 
 
