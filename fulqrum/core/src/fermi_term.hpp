@@ -83,7 +83,10 @@ typedef struct FermionicTerm
         set_term_proj_indices(*this);
     }
 
-    FermionicTerm copy() const { return *this; }
+    FermionicTerm copy() const
+    {
+        return *this;
+    }
 
     /**
      * Inplace multiplication by a complex value
@@ -280,7 +283,8 @@ inline void deflate_term_indices(const FermionicTerm& term,
         out_term.indices.push_back(current_index);
         out_term.values.push_back(current_value);
         out_term.offdiag_weight += static_cast<width_t>(current_value > 2);
-        out_term.offdiag_structure += (current_index + 1) * static_cast<unsigned int>(current_value > 2);
+        out_term.offdiag_structure +=
+            (current_index + 1) * static_cast<unsigned int>(current_value > 2);
     }
     out_term.coeff = term.coeff;
     set_term_proj_indices(out_term);

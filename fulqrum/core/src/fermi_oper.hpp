@@ -409,7 +409,7 @@ typedef struct FermionicOperator
             1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6, -1, 2, -1};
         std::vector<FermionicTerm_t> temp_terms;
         temp_terms.resize(this->size());
-        #pragma omp parallel for schedule(dynamic) if(this->size() > 65536)
+#pragma omp parallel for schedule(dynamic) if(this->size() > 65536)
         for(std::size_t kk = 0; kk < terms.size(); kk++)
         {
             deflate_term_indices(terms[kk], temp_terms[kk], collapsed_values);
