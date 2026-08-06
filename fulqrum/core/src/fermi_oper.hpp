@@ -397,7 +397,7 @@ typedef struct FermionicOperator
     FermionicOperator combine_repeat_indices() const
     {
         FermionicOperator out = FermionicOperator(this->width);
-        static const std::vector<int> collapsed_values = {
+        const std::vector<int> collapsed_values = {
             1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6, -1, 2, -1};
         // This loop is not done in parallel because some of the terms zero out and the length
         // of the input terms is not the same as the length of the out terms
@@ -422,19 +422,19 @@ typedef struct FermionicOperator
     {
         FermionicOperator& fermi = *this;
         // This requires combining repeated indices
-        if(!fermi.unique_terms)
-        {
-            fermi = fermi.combine_repeat_terms();
-        }
         if(!fermi.combined)
         {
             fermi = fermi.combine_repeat_indices();
         }
+        if(!fermi.unique_terms)
+        {
+            fermi = fermi.combine_repeat_terms();
+        }
         QubitOperator_t out = QubitOperator(fermi.width);
         std::size_t kk;
-        const std::size_t num_terms = fermi.size();
+        std::size_t num_terms = fermi.size();
         out.terms.resize(num_terms);
-#pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
+#pragma omp parallel for schedule(guided) if(num_terms > 1024)
         for(kk = 0; kk < num_terms; kk++)
         {
             jw_term(fermi.terms[kk], out.terms[kk]);
