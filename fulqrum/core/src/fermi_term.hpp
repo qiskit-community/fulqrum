@@ -243,7 +243,7 @@ inline int collapse_value(unsigned char x)
 }
 
 inline void deflate_term_indices(const FermionicTerm& term,
-                                 std::vector<FermionicTerm>& out_terms,
+                                 FermionicTerm& out_term,
                                  const std::vector<int>& collapsed_values)
 {
     const std::size_t num_elems = term.indices.size();
@@ -277,12 +277,11 @@ inline void deflate_term_indices(const FermionicTerm& term,
                 break;
             }
         }
-        new_term.indices.push_back(current_index);
-        new_term.values.push_back(current_value);
-        new_term.offdiag_weight += static_cast<width_t>(current_value > 2);
-        new_term.offdiag_structure += (current_index + 1) * static_cast<unsigned int>(current_value > 2);
+        out_term.indices.push_back(current_index);
+        out_term.values.push_back(current_value);
+        out_term.offdiag_weight += static_cast<width_t>(current_value > 2);
+        out_term.offdiag_structure += (current_index + 1) * static_cast<unsigned int>(current_value > 2);
     }
-    new_term.coeff = term.coeff;
-    set_term_proj_indices(new_term);
-    out_terms.push_back(std::move(new_term));
+    out_term.coeff = term.coeff;
+    set_term_proj_indices(out_term);
 }

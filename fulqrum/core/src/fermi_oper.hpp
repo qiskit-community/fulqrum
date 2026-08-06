@@ -407,12 +407,19 @@ typedef struct FermionicOperator
         FermionicOperator out = FermionicOperator(this->width);
         static const std::vector<int> collapsed_values = {
             1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6, -1, 2, -1};
-        // This loop is not done in parallel because some of the terms zero out and the length
-        // of the input terms is not the same as the length of the out terms
-        // @note this loop should probably also be moved inside of the deflate terms routine
+        std::vector<FermionicTerm_t> temp_terms;
+        temp_terms.resize(this->size());
+        #pragma omp parallel for schedule(dynamic) if(this->size() > 65536)
         for(std::size_t kk = 0; kk < terms.size(); kk++)
         {
-            deflate_term_indices(terms[kk], out.terms, collapsed_values);
+            deflate_term_indices(terms[kk], temp_terms[kk], collapsed_values);
+        }
+        for(std::size_t kk = 0; kk < terms.size(); kk++)
+        {
+            if(temp_terms[kk].coeff != 0.0)
+            {
+                out.terms.push_back(std::move(temp_terms[kk]));
+            }
         }
         out.combined = 1;
         return out;
