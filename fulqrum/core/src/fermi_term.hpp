@@ -231,9 +231,6 @@ inline void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_ter
         }
     } // end kk loop
     qubit_term.coeff *= phase;
-    qubit_term.indices.shrink_to_fit();
-    qubit_term.values.shrink_to_fit();
-
 }
 
 // Converts internal operator code into a deflated index.
