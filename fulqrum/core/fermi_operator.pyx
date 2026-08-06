@@ -460,7 +460,7 @@ cdef class FermionicOperator():
         """
         cdef QubitOperator out = QubitOperator(self.width)
         out.oper = self.oper.extended_jw_transformation()
-        return out.combine_repeat_terms()
+        return out
 
     @cython.boundscheck(False)
     def to_dict(self):
