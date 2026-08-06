@@ -283,7 +283,7 @@ def test_group_terms_ladder_int_width3():
 
 def test_group_terms_ladder_int_width4():
     """Test that sorting groups by ladder ints obeys ladder_width"""
-    op = fq.QubitOperator.from_label("_+II")
+    op = fq.QubitOperator.from_label("-+II")
     op += fq.QubitOperator.from_label("++II")
     op += fq.QubitOperator.from_label("IIIZ")
     op.set_type(2)
