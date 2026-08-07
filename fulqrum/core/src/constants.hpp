@@ -12,11 +12,11 @@
  * that they have been altered from the originals.
  */
 #pragma once
+#include <array>
 #include <complex>
 #include <cstdint>
 #include <cstdlib>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 typedef uint16_t width_t;
@@ -33,13 +33,24 @@ const unsigned int BLOCK_SHIFT = BITS_PER_BLOCK - 1;
 typedef std::tuple<std::string, std::vector<width_t>, std::complex<double>> TermData;
 typedef std::tuple<std::string, std::vector<width_t>> OpData;
 
-// Map converting standard char values into continuous values
-inline std::unordered_map<unsigned char, unsigned char> oper_map = {
-    {90, 0}, {48, 1}, {49, 2}, {88, 3}, {89, 4}, {45, 5}, {43, 6}};
+// Maps operator standard char values into continuous values used internally.
+// Unused values are set to 0xFF for clarity that they really do nothing.
+// Mapping: 'Z'=90->0, '0'=48->1, '1'=49->2, 'X'=88->3, 'Y'=89->4, '-'=45->5, '+'=43->6
+inline constexpr std::array<unsigned char, 91> oper_map = {
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 0-9
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 10-19
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 20-29
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 30-39
+    0xFF, 0xFF, 0xFF, 6,    0xFF, 5,    0xFF, 0xFF, 1,    2, // 40-49 [+=43,  -=45,  0=48, 1=49]
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 50-59
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 60-69
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 70-79
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 3,    4, // 80-89 [X=88, Y=89]
+    0}; // 90    [Z=90]
 
-// Reverse map back to standard char values
-inline std::unordered_map<unsigned char, unsigned char> rev_oper_map = {
-    {0, 90}, {1, 48}, {2, 49}, {3, 88}, {4, 89}, {5, 45}, {6, 43}};
+// Reverse operator map to get back to standard char values for things like printing out
+// operators
+inline constexpr std::array<unsigned char, 7> rev_oper_map = {90, 48, 49, 88, 89, 45, 43};
 
 /**
  * Validate that term indices are less than operator width

@@ -31,7 +31,7 @@ inline std::size_t _flat_index4d(width_t i, width_t j, width_t k, width_t l, wid
 }
 
 template <typename T>
-inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_body_integrals,
+inline FermionicOperator& pyscf_integrals_to_fermionic(T* __restrict flat_one_body_integrals,
                                                       T* __restrict flat_two_body_integrals,
                                                       unsigned int ob_arr_len,
                                                       unsigned int tb_arr_len,
@@ -58,16 +58,16 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_bod
         qubit_mapping[kk] = ((!(kk % 2)) * kk / 2) + ((kk % 2) * (kk / 2 + half_num_qubits));
     }
 
-    FermionicOperator fop = FermionicOperator(num_qubits);
+    FermionicOperator * fop = new FermionicOperator(num_qubits);
     if(std::abs(constant) > EQ_TOLERANCE)
     {
-        fop.terms.emplace_back(constant);
+        fop->terms.emplace_back(constant);
     }
     // set capacity of fermi terms to worst case
     std::size_t capacity = (std::abs(constant) > EQ_TOLERANCE ? 1 : 0)
                                + 2 * half_num_qubits * half_num_qubits
                                + 4 * half_num_qubits * half_num_qubits * half_num_qubits * half_num_qubits;
-    fop.terms.reserve(capacity);
+    fop->terms.reserve(capacity);
 
     std::vector<std::vector<FermionicTerm>> temp_terms;
     temp_terms.resize(half_num_qubits);
@@ -148,8 +148,8 @@ inline FermionicOperator pyscf_integrals_to_fermionic(T* __restrict flat_one_bod
         }
     }
     for(auto& item : temp_terms)
-        fop.terms.insert(fop.terms.end(),
+        fop->terms.insert(fop->terms.end(),
                          std::make_move_iterator(item.begin()),
                          std::make_move_iterator(item.end()));
-    return fop;
+    return *fop;
 }

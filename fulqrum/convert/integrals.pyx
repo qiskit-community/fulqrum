@@ -77,7 +77,7 @@ def fcidump_to_fq_fermionic_op(fcidump_path: str | Path, bool verbose=False) -> 
         print("FCIDump import time", round(ft-st, 3))
 
     st = time.perf_counter()
-    out = integrals_to_fq_fermionic_op(
+    cdef FermionicOperator out = integrals_to_fq_fermionic_op(
         one_body_integrals=hcore,
         two_body_integrals=eri,
         constant=nuclear_repulsion_energy,

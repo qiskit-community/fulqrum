@@ -125,7 +125,7 @@ TEST_CASE("Verify diagonal operator returns true")
 {
     width_t N = 25;
     QubitOperator_t op = QubitOperator(N);
-    std::vector<std::string> diag_ops = {"Z", "O", "1"};
+    std::vector<std::string> diag_ops = {"Z", "0", "1"};
     width_t kk;
     for(kk = 0; kk < N; kk++)
     {

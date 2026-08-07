@@ -355,6 +355,10 @@ typedef struct FermionicOperator
     */
     FermionicOperator combine_repeat_terms(double atol = 1e-12)
     {
+        if(this->unique_terms)
+        {
+            return *this;
+        }
         FermionicOperator out = FermionicOperator(this->width);
         if(!this->size())
         {
@@ -396,15 +400,26 @@ typedef struct FermionicOperator
     }
     FermionicOperator combine_repeat_indices() const
     {
+        if(this->combined)
+        {
+            return *this;
+        }
         FermionicOperator out = FermionicOperator(this->width);
-        const std::vector<int> collapsed_values = {
+        static const std::vector<int> collapsed_values = {
             1, -1, 5, -1, -1, 2, -1, 6, -1, 5, -1, 1, 6, -1, 2, -1};
-        // This loop is not done in parallel because some of the terms zero out and the length
-        // of the input terms is not the same as the length of the out terms
-        // @note this loop should probably also be moved inside of the deflate terms routine
+        std::vector<FermionicTerm_t> temp_terms;
+        temp_terms.resize(this->size());
+#pragma omp parallel for schedule(dynamic) if(this->size() > 65536)
         for(std::size_t kk = 0; kk < terms.size(); kk++)
         {
-            deflate_term_indices(terms[kk], out.terms, collapsed_values);
+            deflate_term_indices(terms[kk], temp_terms[kk], collapsed_values);
+        }
+        for(std::size_t kk = 0; kk < terms.size(); kk++)
+        {
+            if(temp_terms[kk].coeff != 0.0)
+            {
+                out.terms.push_back(std::move(temp_terms[kk]));
+            }
         }
         out.combined = 1;
         return out;
@@ -432,9 +447,9 @@ typedef struct FermionicOperator
         }
         QubitOperator_t out = QubitOperator(fermi.width);
         std::size_t kk;
-        std::size_t num_terms = fermi.size();
+        const std::size_t num_terms = fermi.size();
         out.terms.resize(num_terms);
-#pragma omp parallel for schedule(guided) if(num_terms > 1024)
+#pragma omp parallel for schedule(dynamic) if(num_terms > 1024)
         for(kk = 0; kk < num_terms; kk++)
         {
             jw_term(fermi.terms[kk], out.terms[kk]);
