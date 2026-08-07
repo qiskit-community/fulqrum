@@ -59,14 +59,18 @@ typedef struct FermionicTerm
         : indices(std::move(inds))
         , coeff(c)
     {
-        const std::size_t n = vals.size();
-        if(n != indices.size())
+        const std::size_t num_vals = vals.size();
+        if(num_vals != indices.size())
         {
             throw std::runtime_error("Size of values vector does not equal that of indices.");
         }
-        values.reserve(n);
+        values.reserve(num_vals);
+        if(!num_vals && c==0.0) //if empty data is passed in then we assume this is an identity and set coeff properly
+        {
+            this->coeff = 1.0;
+        }
         // Iterate over string of values, mapping to internal codes
-        for(std::size_t i = 0; i < n; ++i)
+        for(std::size_t i = 0; i < num_vals; ++i)
         {
             const unsigned char ch = static_cast<unsigned char>(vals[i]);
             if(ch == 73) // 'I' identity
