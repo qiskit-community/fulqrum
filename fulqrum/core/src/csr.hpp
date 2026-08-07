@@ -105,7 +105,7 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
         boost::dynamic_bitset<std::size_t> col_vec(width);
         const std::size_t num_col_blocks = col_vec.num_blocks();
 
-#pragma omp for
+#pragma omp for schedule(dynamic)
         for(std::size_t blk = 0; blk < num_blocks; ++blk)
         {
             const std::size_t r0 = blk * BLK;

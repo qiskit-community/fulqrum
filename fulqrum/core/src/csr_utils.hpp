@@ -15,8 +15,7 @@
 #include <boost/sort/pdqsort/pdqsort.hpp>
 #include <complex>
 #include <cstdlib>
-#include <cstring>
-#include <numeric>
+#include <utility>
 #include <vector>
 
 template <typename T, typename U>
@@ -70,34 +69,30 @@ void sort_paired(std::vector<std::vector<T>>& cols, std::vector<std::vector<U>>&
 {
 #pragma omp parallel
     {
-        std::vector<T> tmp1;
-        std::vector<U> tmp2;
-        std::vector<size_t> idx;
+        std::vector<std::pair<T, U>> tmp;
 
 #pragma omp for schedule(dynamic)
-        for(size_t kk = 0; kk < cols.size(); kk++)
+        for(std::size_t kk = 0; kk < cols.size(); kk++)
         {
             auto& row1 = cols[kk];
             auto& row2 = data[kk];
-            const size_t n = row1.size();
+            std::size_t jj;
+            const std::size_t num_elems = row1.size();
 
-            idx.resize(n);
-            tmp1.resize(n);
-            tmp2.resize(n);
-
-            std::iota(idx.begin(), idx.end(), 0);
+            tmp.resize(num_elems);
+            for(jj = 0; jj < num_elems; jj++)
+                tmp[jj] = {row1[jj], row2[jj]};
 
             boost::sort::pdqsort(
-                idx.begin(), idx.end(), [&](size_t a, size_t b) { return row1[a] < row1[b]; });
+                tmp.begin(), tmp.end(), [](const std::pair<T, U>& a, const std::pair<T, U>& b) {
+                    return a.first < b.first;
+                });
 
-            for(size_t i = 0; i < n; i++)
+            for(jj = 0; jj < num_elems; jj++)
             {
-                tmp1[i] = row1[idx[i]];
-                tmp2[i] = row2[idx[i]];
+                row1[jj] = std::move(tmp[jj].first);
+                row2[jj] = std::move(tmp[jj].second);
             }
-
-            memcpy(row1.data(), tmp1.data(), n * sizeof(T));
-            memcpy(row2.data(), tmp2.data(), n * sizeof(U));
         }
     }
 }
