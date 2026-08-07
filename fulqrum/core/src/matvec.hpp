@@ -138,7 +138,7 @@ void omp_matvec(const std::vector<OperatorTerm_t>& terms,
                         // Lower-triangle check: skip upper-triangle elements.
                         // See get_group_max_inds() in offdiag_grouping.hpp.
                         if(!row_set_bits[max_ind])
-                            continue;
+                            continue; // continue onto new row
 
                         const std::size_t kk = r0 + row_in_block;
                         const boost::dynamic_bitset<std::size_t>& row = bitsets[kk].first;
