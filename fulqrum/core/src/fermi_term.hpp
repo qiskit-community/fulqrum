@@ -65,7 +65,9 @@ typedef struct FermionicTerm
             throw std::runtime_error("Size of values vector does not equal that of indices.");
         }
         values.reserve(num_vals);
-        if(!num_vals && c==0.0) //if empty data is passed in then we assume this is an identity and set coeff properly
+        if(!num_vals &&
+           c ==
+               0.0) //if empty data is passed in then we assume this is an identity and set coeff properly
         {
             this->coeff = 1.0;
         }
