@@ -32,11 +32,11 @@ inline std::size_t _flat_index4d(width_t i, width_t j, width_t k, width_t l, wid
 
 template <typename T>
 inline FermionicOperator& pyscf_integrals_to_fermionic(T* __restrict fobi,
-                                                      T* __restrict ftbi,
-                                                      unsigned int ob_arr_len,
-                                                      unsigned int tb_arr_len,
-                                                      std::complex<double> constant = 0,
-                                                      double EQ_TOLERANCE = 1e-12)
+                                                       T* __restrict ftbi,
+                                                       unsigned int ob_arr_len,
+                                                       unsigned int tb_arr_len,
+                                                       std::complex<double> constant = 0,
+                                                       double EQ_TOLERANCE = 1e-12)
 {
     width_t half_num_qubits = std::sqrt(ob_arr_len);
     width_t num_qubits = 2 * half_num_qubits;
@@ -58,7 +58,7 @@ inline FermionicOperator& pyscf_integrals_to_fermionic(T* __restrict fobi,
         qubit_mapping[kk] = ((!(kk % 2)) * kk / 2) + ((kk % 2) * (kk / 2 + half_num_qubits));
     }
 
-    FermionicOperator * fop = new FermionicOperator(num_qubits);
+    FermionicOperator* fop = new FermionicOperator(num_qubits);
     if(std::abs(constant) > EQ_TOLERANCE)
     {
         fop->terms.emplace_back(constant);
@@ -66,7 +66,7 @@ inline FermionicOperator& pyscf_integrals_to_fermionic(T* __restrict fobi,
     std::vector<std::vector<FermionicTerm>> temp_terms;
     temp_terms.resize(half_num_qubits);
 
-    #pragma omp parallel for schedule(dynamic) if(half_num_qubits > 8)
+#pragma omp parallel for schedule(dynamic) if(half_num_qubits > 8)
     for(p = 0; p < half_num_qubits; p++)
     {
         width_t q, r, s, ii, jj, ll;
@@ -80,13 +80,15 @@ inline FermionicOperator& pyscf_integrals_to_fermionic(T* __restrict fobi,
                 // Populate 1-body coefficients. Require p and q have same spin.
                 ii = 2 * p;
                 jj = 2 * q;
-                temp_terms[p].emplace_back(ob_str, std::vector<width_t>{qubit_mapping[ii], qubit_mapping[jj]}, valob);
+                temp_terms[p].emplace_back(
+                    ob_str, std::vector<width_t>{qubit_mapping[ii], qubit_mapping[jj]}, valob);
 
                 ii = 2 * p + 1;
                 jj = 2 * q + 1;
-                temp_terms[p].emplace_back(ob_str, std::vector<width_t>{qubit_mapping[ii], qubit_mapping[jj]}, valob);
+                temp_terms[p].emplace_back(
+                    ob_str, std::vector<width_t>{qubit_mapping[ii], qubit_mapping[jj]}, valob);
             }
-            if (q < p)
+            if(q < p)
             {
                 continue;
             }
@@ -109,7 +111,8 @@ inline FermionicOperator& pyscf_integrals_to_fermionic(T* __restrict fobi,
                         }
                         else if(s > r)
                         {
-                            val01 = 0.5*(ftbi[_flat_index4d(p, q, r, s, half_num_qubits)] + ftbi[_flat_index4d(p, q, s, r, half_num_qubits)]);
+                            val01 = 0.5 * (ftbi[_flat_index4d(p, q, r, s, half_num_qubits)] +
+                                           ftbi[_flat_index4d(p, q, s, r, half_num_qubits)]);
                             do0 = std::abs(val01) > EQ_TOLERANCE;
                             do1 = do0;
                         }
@@ -118,18 +121,22 @@ inline FermionicOperator& pyscf_integrals_to_fermionic(T* __restrict fobi,
                     {
                         if(s == r)
                         {
-                            val01 = 0.5*(ftbi[_flat_index4d(p, q, r, s, half_num_qubits)] + ftbi[_flat_index4d(q, p, r, s, half_num_qubits)]);
+                            val01 = 0.5 * (ftbi[_flat_index4d(p, q, r, s, half_num_qubits)] +
+                                           ftbi[_flat_index4d(q, p, r, s, half_num_qubits)]);
                             do0 = std::abs(val01) > EQ_TOLERANCE;
                             do1 = do0;
                         }
                         else
                         {
-                            val01 = 0.5*(ftbi[_flat_index4d(p, q, r, s, half_num_qubits)] + ftbi[_flat_index4d(q, p, s, r, half_num_qubits)]);
+                            val01 = 0.5 * (ftbi[_flat_index4d(p, q, r, s, half_num_qubits)] +
+                                           ftbi[_flat_index4d(q, p, s, r, half_num_qubits)]);
                             do0 = std::abs(val01) > EQ_TOLERANCE;
                             do1 = do0;
-                            if (s > r)
+                            if(s > r)
                             {
-                                val23 = val01 - 0.5*(ftbi[_flat_index4d(p, q, s, r, half_num_qubits)] + ftbi[_flat_index4d(q, p, r, s, half_num_qubits)]);
+                                val23 = val01 -
+                                        0.5 * (ftbi[_flat_index4d(p, q, s, r, half_num_qubits)] +
+                                               ftbi[_flat_index4d(q, p, r, s, half_num_qubits)]);
                                 do2 = std::abs(val23) > EQ_TOLERANCE;
                                 do3 = do2;
                             }
@@ -142,10 +149,12 @@ inline FermionicOperator& pyscf_integrals_to_fermionic(T* __restrict fobi,
                         jj = 2 * q + 1;
                         kk = 2 * r + 1;
                         ll = 2 * s;
-                        temp_terms[p].emplace_back(tb_str, std::vector<width_t>{qubit_mapping[ii],
-                                                        qubit_mapping[jj],
-                                                        qubit_mapping[kk],
-                                                        qubit_mapping[ll]}, val01);
+                        temp_terms[p].emplace_back(tb_str,
+                                                   std::vector<width_t>{qubit_mapping[ii],
+                                                                        qubit_mapping[jj],
+                                                                        qubit_mapping[kk],
+                                                                        qubit_mapping[ll]},
+                                                   val01);
                     }
                     if(do1)
                     {
@@ -153,10 +162,12 @@ inline FermionicOperator& pyscf_integrals_to_fermionic(T* __restrict fobi,
                         jj = 2 * q;
                         kk = 2 * r;
                         ll = 2 * s + 1;
-                        temp_terms[p].emplace_back(tb_str, std::vector<width_t>{qubit_mapping[ii],
-                                                        qubit_mapping[jj],
-                                                        qubit_mapping[kk],
-                                                        qubit_mapping[ll]}, val01);
+                        temp_terms[p].emplace_back(tb_str,
+                                                   std::vector<width_t>{qubit_mapping[ii],
+                                                                        qubit_mapping[jj],
+                                                                        qubit_mapping[kk],
+                                                                        qubit_mapping[ll]},
+                                                   val01);
                     }
                     if(do2)
                     {
@@ -164,10 +175,12 @@ inline FermionicOperator& pyscf_integrals_to_fermionic(T* __restrict fobi,
                         jj = 2 * q;
                         kk = 2 * r;
                         ll = 2 * s;
-                        temp_terms[p].emplace_back(tb_str, std::vector<width_t>{qubit_mapping[ii],
-                                                        qubit_mapping[jj],
-                                                        qubit_mapping[kk],
-                                                        qubit_mapping[ll]}, val23);
+                        temp_terms[p].emplace_back(tb_str,
+                                                   std::vector<width_t>{qubit_mapping[ii],
+                                                                        qubit_mapping[jj],
+                                                                        qubit_mapping[kk],
+                                                                        qubit_mapping[ll]},
+                                                   val23);
                     }
                     if(do3)
                     {
@@ -175,10 +188,12 @@ inline FermionicOperator& pyscf_integrals_to_fermionic(T* __restrict fobi,
                         jj = 2 * q + 1;
                         kk = 2 * r + 1;
                         ll = 2 * s + 1;
-                        temp_terms[p].emplace_back(tb_str, std::vector<width_t>{qubit_mapping[ii],
-                                                        qubit_mapping[jj],
-                                                        qubit_mapping[kk],
-                                                        qubit_mapping[ll]}, val23);
+                        temp_terms[p].emplace_back(tb_str,
+                                                   std::vector<width_t>{qubit_mapping[ii],
+                                                                        qubit_mapping[jj],
+                                                                        qubit_mapping[kk],
+                                                                        qubit_mapping[ll]},
+                                                   val23);
                     }
                 } // end s-loop
             } // end r-loop
@@ -187,8 +202,8 @@ inline FermionicOperator& pyscf_integrals_to_fermionic(T* __restrict fobi,
     for(auto& item : temp_terms)
     {
         fop->terms.insert(fop->terms.end(),
-                         std::make_move_iterator(item.begin()),
-                         std::make_move_iterator(item.end()));
+                          std::make_move_iterator(item.begin()),
+                          std::make_move_iterator(item.end()));
     }
     fop->terms.shrink_to_fit();
     fop->unique_terms = 1; // all the terms are unique by construction
