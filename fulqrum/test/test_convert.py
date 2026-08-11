@@ -183,6 +183,7 @@ def test_integrals_to_fq_fermionic_op():
                         break
                 assert found
             assert num_touched == fop.size()
+            assert fop.size() == fop2.size()
 
 
 @pytest.mark.skip(reason="Not implemented as it uses already tested functions")
