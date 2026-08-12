@@ -414,6 +414,7 @@ typedef struct FermionicOperator
         {
             deflate_term_indices(terms[kk], temp_terms[kk], collapsed_values);
         }
+        out.terms.reserve(this->size());
         for(std::size_t kk = 0; kk < terms.size(); kk++)
         {
             if(temp_terms[kk].coeff != 0.0)
@@ -421,6 +422,7 @@ typedef struct FermionicOperator
                 out.terms.push_back(std::move(temp_terms[kk]));
             }
         }
+        out.terms.shrink_to_fit();
         out.combined = 1;
         return out;
     }
