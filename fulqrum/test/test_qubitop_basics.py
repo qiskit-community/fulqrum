@@ -241,3 +241,11 @@ def test_qubitop_iter():
 
     for idx, item in enumerate(op):
         assert item.operators == op[idx].operators
+
+
+def test_matrix_elements_index_gt_31():
+    """Test for issue #100"""
+    N = 32
+    op = fq.QubitOperator(N, [("X", N - 1, 1.0)])
+    val = op.matrix_element("0".zfill(N), "1" + "0".zfill(N - 1))
+    assert val == 1.0
