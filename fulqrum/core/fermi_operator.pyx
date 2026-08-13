@@ -22,6 +22,7 @@ from .. import __version__ as VERSION
 from .qubit_operator cimport QubitOperator
 from ..utils.io import dict_to_json, json_to_dict
 from ..exceptions import FulqrumError
+from ..convert import fcidump_to_fq_fermionic_op
 
 
 from pathlib import Path
@@ -537,3 +538,7 @@ cdef class FermionicOperator():
         cdef FermionicOperator out = FermionicOperator(1) #dummy width
         out.oper = out.oper.from_json(str(filename))
         return out
+
+    @classmethod
+    def from_fcidump(self, filename):
+        return fcidump_to_fq_fermionic_op(filename)

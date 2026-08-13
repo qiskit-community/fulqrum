@@ -165,6 +165,9 @@ def test_integrals_to_fq_fermionic_op():
             fop2 = old_integrals_to_fq_fermionic_op(
                 one_body_integrals=hcore, two_body_integrals=eri
             )
+            fop = fop.combine_repeat_indices()
+            fop2 = fop2.combine_repeat_terms()
+            fop2 = fop2.combine_repeat_indices()
             # A brute force way to check for operator equality
             assert fop.size() == fop2.size()
             num_touched = 0
@@ -180,6 +183,7 @@ def test_integrals_to_fq_fermionic_op():
                         break
                 assert found
             assert num_touched == fop.size()
+            assert fop.size() == fop2.size()
 
 
 @pytest.mark.skip(reason="Not implemented as it uses already tested functions")

@@ -256,9 +256,8 @@ inline void deflate_term_indices(const FermionicTerm& term,
                                  const std::vector<int>& collapsed_values)
 {
     const std::size_t num_elems = term.indices.size();
-    FermionicTerm_t new_term;
-    new_term.indices.reserve(num_elems);
-    new_term.values.reserve(num_elems);
+    out_term.indices.reserve(num_elems);
+    out_term.values.reserve(num_elems);
 
     std::size_t num_touched = 0;
     while(num_touched < num_elems)
