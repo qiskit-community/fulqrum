@@ -26,9 +26,13 @@ from ..convert import fcidump_to_fq_fermionic_op
 
 
 from pathlib import Path
+import time
 import warnings
 import numpy as np
 cimport numpy as np
+
+import logging
+logger = logging.getLogger(__name__)
 
 include "includes/base_header.pxi"
 include "includes/converters.pxi"
@@ -443,24 +447,33 @@ cdef class FermionicOperator():
         Returns:
             FermionicOperator: Deflated operator
         """
+        st = time.perf_counter()
         cdef size_t kk
         cdef FermionicOperator out = FermionicOperator(self.width)
         out.oper = self.oper.combine_repeat_indices()
+        ft = time.perf_counter()
+        logger.info("Combine repeat indices time: %s ms", round((ft - st) * 1000, 3))
         return out
 
     def combine_repeat_terms(self, double atol=1e-12):
         """In-place sort terms by their standard weight
         """
+        st = time.perf_counter()
         cdef FermionicOperator out = FermionicOperator(self.width)
         out.oper = self.oper.combine_repeat_terms(atol)
+        ft = time.perf_counter()
+        logger.info("Combine repeat terms time: %s ms", round((ft - st) * 1000, 3))
         return out
 
     def extended_jw_transformation(self):
         """Jordan-Wigner transformation over extended alphabet
         from Fermionic -> Qubit operator
         """
+        st = time.perf_counter()
         cdef QubitOperator out = QubitOperator(self.width)
         out.oper = self.oper.extended_jw_transformation()
+        ft = time.perf_counter()
+        logger.info("Extended JW time: %s ms", round((ft - st) * 1000, 3))
         return out
 
     @cython.boundscheck(False)
