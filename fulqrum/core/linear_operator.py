@@ -50,6 +50,8 @@ class SubspaceHamiltonian(LinearOperator):
         logger.info("Number of qubits: %s", hamiltonian.width)
         self.diag_H, self.off_H = hamiltonian.split_diagonal()
         self.diag_H, self.const_energy = self.diag_H.remove_constant_terms()
+        logger.info("Num. diagonal terms %s", self.diag_H.size())
+        logger.info("Num. off-diagonal terms %s", self.off_H.size())
         # if there are no off-diagonal terms then we pass a dummy empty array of len=1
         group_start = time.perf_counter()
         self.off_H.group_sort()
@@ -71,7 +73,7 @@ class SubspaceHamiltonian(LinearOperator):
                 )
                 self.group_ladder_ptrs = self.off_H.group_ladder_bin_starts()
 
-        logger.info("Number of groups: %s", self.group_ptrs[-1])
+        logger.info("Num. off-diagonal groups: %s", self.group_ptrs.shape[0] - 1)
 
         self.spmv = FulqrumSpMV(
             self.diag_H,

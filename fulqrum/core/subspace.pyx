@@ -148,7 +148,7 @@ cdef class Subspace():
             logger.info("Empty subspace")
             return
         elif len(subspace_strs) == 1:
-            logger.info("Full subspace")
+            logger.info("Full subspace bit-strings")
             iterator = subspace_strs[0]
             iterator.sort()
             num_qubits = len(next(iter(iterator)))
@@ -156,7 +156,7 @@ cdef class Subspace():
             if isinstance(iterator[0], Bitset):
                 input_bitsets = 1
         elif len(subspace_strs) == 2:
-            logger.info("Cartesian-product subspace")
+            logger.info("Cartesian-product subspace bit-strings")
             alpha_strs = subspace_strs[0]
             beta_strs = subspace_strs[1]
             stdsort(alpha_strs.begin(), alpha_strs.end())

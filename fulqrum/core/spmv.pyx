@@ -110,10 +110,8 @@ cdef class FulqrumSpMV():
              # Init diagonal memoryview to None because
              # we only build it when needed
             self.complex_diag_vec = None
-            logger.info("Operator has diag entries")
         else:
             self.has_nonzero_diag = 0
-            logger.info("Operator has no diag entries")
         self.init_diag = 0
         # We have to init something here otherwise
         # grabbing a pointer to the data is going to complain
