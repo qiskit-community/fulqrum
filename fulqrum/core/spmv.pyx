@@ -25,11 +25,16 @@ from .constants cimport width_t
 from .constants import np_width_t
 from ..exceptions import FulqrumError
 
+
 from cython.parallel cimport prange, parallel
 import time
 import numpy as np
 import scipy.sparse as sp
 import psutil
+
+import logging
+logger = logging.getLogger(__name__)
+
 cimport numpy as np
 np.import_array()
 
@@ -60,6 +65,8 @@ cdef class FulqrumSpMV():
                   size_t[::1]& group_ptrs,
                   size_t[::1]& group_ladder_ptrs):
 
+        logger.info("Initializing FulqrumSpMV")
+        spmv_start = time.perf_counter()
         cdef size_t kk
         self.diag_oper = diag_hamiltonian.oper
         self.const_energy = const_energy
@@ -79,7 +86,14 @@ cdef class FulqrumSpMV():
             set_group_offdiag_indices(self.oper.terms, self.group_offdiag_inds,
                                       &self.group_ptrs[0], self.num_groups)
 
+        # Log is operator is real or not
+        if self.is_real:
+            logger.info("Operator is real")
+        else:
+            logger.info("Operator is complex")
+        
         if self.oper.type == 2:
+            logger.info("Operator type = 2")
             self.fast_diag = fast_diag_compatible(self.diag_oper)
             if self.oper.terms.size():
                 self.group_rowint_length = hamiltonian.group_rowint_length()
@@ -89,19 +103,24 @@ cdef class FulqrumSpMV():
             else:
                 # Need to set memoryview but not used
                 self.group_rowint_length = np.zeros(1, dtype=np_width_t)
-
+        else:
+            logger.info("Operator type = 1")
         if self.diag_oper.terms.size() > 0 or self.const_energy:
             self.has_nonzero_diag = 1
              # Init diagonal memoryview to None because
              # we only build it when needed
             self.complex_diag_vec = None
+            logger.info("Operator has diag entries")
         else:
             self.has_nonzero_diag = 0
+            logger.info("Operator has no diag entries")
         self.init_diag = 0
         # We have to init something here otherwise
         # grabbing a pointer to the data is going to complain
         self.real_diag_vec = np.empty(shape=(1,), dtype=float)
         self.complex_diag_vec = np.empty(shape=(1,), dtype=complex)
+        spmv_stop = time.perf_counter()
+        logger.info("FulqrumSpMV total init time: %s ms", round((spmv_stop - spmv_start)*1000, 3))
 
     def __repr__(self):
         out = f"<FulqrumSpMV(width={self.width}, "
@@ -123,6 +142,7 @@ cdef class FulqrumSpMV():
     cpdef int compute_diag_vector(self):
         if self.init_diag:
             return 0
+        diag_start = time.perf_counter()
         width_check(self.width, self.subspace.width)    
         cdef bool fast_diag = self.fast_diag
         if self._disable_fast_diag:
@@ -152,6 +172,8 @@ cdef class FulqrumSpMV():
                                 self.diag_oper,
                                 self.subspace_dim)
         self.init_diag = 1
+        diag_stop = time.perf_counter()
+        logger.info("Diagonal vector build time: %s ms", round((diag_stop - diag_start)*1000, 3))
         return 1
 
     def fast_diag_compatible(self):

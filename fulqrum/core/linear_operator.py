@@ -13,6 +13,7 @@
 """Fulqrum linearoperator module"""
 
 import os
+import time
 import numpy as np
 from scipy.sparse.linalg import LinearOperator
 
@@ -20,6 +21,10 @@ from .spmv import FulqrumSpMV
 from .csr import csr_matvec
 from .subspace import Subspace
 from ..exceptions import FulqrumError
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SubspaceHamiltonian(LinearOperator):
@@ -35,15 +40,23 @@ class SubspaceHamiltonian(LinearOperator):
         """A SciPy `LinearOperator` that represents a Hamiltonian restricted to the given
         subspace.
         """
+        logger.info("Initializing SubspaceHamiltonian")
+        hsub_init_start = time.perf_counter()
         if subspace:
             if hamiltonian.width != subspace.width:
                 raise FulqrumError("Operator and subspace widths do not match")
         else:
             subspace = Subspace()
+        logger.info("Number of qubits: %s", hamiltonian.width)
         self.diag_H, self.off_H = hamiltonian.split_diagonal()
         self.diag_H, self.const_energy = self.diag_H.remove_constant_terms()
         # if there are no off-diagonal terms then we pass a dummy empty array of len=1
+        group_start = time.perf_counter()
         self.off_H.group_sort()
+        group_stop = time.perf_counter()
+        logger.info(
+            "Term grouping time: %s ms", round((group_stop - group_start) * 1000, 3)
+        )
         self.group_ptrs = np.zeros(1, dtype=np.uintp)
         self.group_ladder_ptrs = np.zeros(1, dtype=np.uintp)
 
@@ -58,6 +71,8 @@ class SubspaceHamiltonian(LinearOperator):
                 )
                 self.group_ladder_ptrs = self.off_H.group_ladder_bin_starts()
 
+        logger.info("Number of groups: %s", self.group_ptrs[-1])
+
         self.spmv = FulqrumSpMV(
             self.diag_H,
             self.const_energy,
@@ -70,6 +85,11 @@ class SubspaceHamiltonian(LinearOperator):
         super().__init__(
             shape=(len(subspace),) * 2,
             dtype=np.dtype(float) if self.spmv.is_real else np.dtype(complex),
+        )
+        hsub_init_stop = time.perf_counter()
+        logger.info(
+            "SubspaceHamiltonian total init time: %s ms",
+            round((hsub_init_stop - hsub_init_start) * 1000, 3),
         )
 
     @property
@@ -165,6 +185,7 @@ class SubspaceHamiltonian(LinearOperator):
         Returns:
             ndarray: Output vector after SpMV on input vector
         """
+        start = time.perf_counter()
         col_vec = False
         if len(x.shape) == 2:
             col_vec = True
@@ -176,6 +197,8 @@ class SubspaceHamiltonian(LinearOperator):
         out = self.spmv.matvec(x)
         if col_vec:
             out = out.view().reshape(x.shape[0], 1)
+        stop = time.perf_counter()
+        logger.info("Matvec time: %s ms", round((stop - start) * 1000, 3))
         return out
 
     def to_csr_linearoperator(self, verbose=False):

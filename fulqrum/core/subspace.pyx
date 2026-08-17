@@ -16,11 +16,15 @@ from libcpp.algorithm cimport sort as stdsort
 from libcpp cimport bool
 from libc.math cimport abs
 
+import time
 import itertools
 import math
 cimport cython
 import numpy as np
 cimport numpy as np
+
+import logging
+logger = logging.getLogger(__name__)
 
 from ..exceptions import FulqrumError
 from .bitset cimport bitset_t, to_string
@@ -134,6 +138,8 @@ cdef class Subspace():
         """
         if not subspace_strs:
             return
+        logger.info("Initializing Subspace")
+        sub_start = time.perf_counter()
         cdef int input_bitsets = 0
         cdef vector[string] alpha_strs
         cdef vector[string] beta_strs
@@ -166,6 +172,9 @@ cdef class Subspace():
 
         self.subspace.num_qubits = num_qubits
         self.subspace.size = <size_t>size
+        logger.info("Subspace size: %s", size)
+        logger.info("Number of bits: %s", num_qubits)
+        
         if not use_all_bitset_blocks:
             self.subspace.bitstrings = BitsetHashMapWrapper(use_all_bitset_blocks)
         if reserve_multiplier < 1:
@@ -194,6 +203,8 @@ cdef class Subspace():
                         temp_bits = bitset_t(beta_strs[idx]+alpha_strs[jj], 0, num_qubits)
                         self.subspace.bitstrings.insert_unique(temp_bits, counter)
                         counter += 1
+        sub_stop = time.perf_counter()
+        logger.info("Subspace total init time: %s ms", round((sub_stop - sub_start)*1000, 3))
 
     def __dealloc__(self):
         # Clear hash table upon deallocation of class
