@@ -177,15 +177,13 @@ cdef class FulqrumSpMV():
     def fast_diag_compatible(self):
         return fast_diag_compatible(self.diag_oper)
     
-    def diagonal_vector(self, int verbose=0, bool disable_fast_mode=False):
+    def diagonal_vector(self, bool disable_fast_mode=False):
         """Diagonal vector of subspace Hamitlonian
 
         Returns:
             ndarray: Array of complex numbers representing diagonal
         """
         width_check(self.width, self.subspace.width)
-        if verbose:
-            st = time.perf_counter()
         if not self.has_nonzero_diag:
             if self.is_real:
                 return np.full(self.subspace_dim, self.const_energy, dtype=float)
@@ -193,14 +191,10 @@ cdef class FulqrumSpMV():
                 return np.full(self.subspace_dim, self.const_energy, dtype=complex)
         cdef bool temp = self._disable_fast_diag
         self._disable_fast_diag = disable_fast_mode
-        if verbose:
-            print("Diagonal fast mode enabled: ", (not self._disable_fast_diag))
         self.compute_diag_vector()
         self._disable_fast_diag = temp
         if self.is_real:
             return np.asarray(self.real_diag_vec)
-        if verbose:
-            print("Diagonal vector build time: ", time.perf_counter() - st)
         return np.asarray(self.complex_diag_vec)
 
 
@@ -298,11 +292,8 @@ cdef class FulqrumSpMV():
         return np.asarray(out)
 
 
-    def to_csr_array(self, int verbose=0):
+    def to_csr_array(self):
         """Convert subspace Hamiltonian to a SciPy CSR array
-
-        Parameters:
-            verbose (int): Turn on or off verbose mode, default=0.
 
         Returns:
             csr_array: Sparse representation of subspace Hamiltonian
@@ -321,8 +312,6 @@ cdef class FulqrumSpMV():
 
         # Compute diag vec if we have not done so already
         cdef int did_diag_build = 0
-        if verbose:
-            st = time.perf_counter()
         did_diag_build = self.compute_diag_vector()
 
         cdef double start, stop
@@ -535,7 +524,7 @@ cdef class FulqrumSpMV():
         logger.info("CSR total matrix build time: %s ms", round((csr_stop - csr_start)*1000, 3))
         return mat
 
-    def to_csrlike(self, int verbose=0):
+    def to_csrlike(self):
         # This is here to prevent a circular import
         from .linear_operator import CSRLikeLinearOperator
         # Compute diag vec if we have not done so already

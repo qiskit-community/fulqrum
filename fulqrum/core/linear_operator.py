@@ -112,16 +112,15 @@ class SubspaceHamiltonian(LinearOperator):
         self.spmv.update_subspace(subspace)
         self.shape = (len(subspace),) * 2
 
-    def diagonal_vector(self, verbose=False, disable_fast_mode=False):
+    def diagonal_vector(self, disable_fast_mode=False):
         """Return diagonal vector of Hamiltonian in subspace
 
         Parameters:
-            verbose (bool): optional, verbose output, default=False
             disable_fast_mode (bool): optional, disable fast computation for type=2 Hamiltonians, default=False
         Returns:
             ndarray: Complex vector for diagonal of Hamiltonian
         """
-        return self.spmv.diagonal_vector(verbose, disable_fast_mode)
+        return self.spmv.diagonal_vector(disable_fast_mode)
 
     def minimum_diagonal_energy(self):
         """Return the minimum diagonal energy
@@ -203,36 +202,30 @@ class SubspaceHamiltonian(LinearOperator):
         logger.info("Matvec time: %s ms", round((stop - start) * 1000, 3))
         return out
 
-    def to_csr_linearoperator(self, verbose=False):
+    def to_csr_linearoperator(self):
         """Convert subspace Hamiltonian to a LinearOperator wrapping a CSR matrix
-
-        Parameters:
-            verbose (bool): Turn on verbose mode, default=False.
 
         Returns:
             CSRLinearOperator: LinearOperator wrapping a CSR matrix.
         """
-        M = self.spmv.to_csr_array(verbose=verbose)
+        M = self.spmv.to_csr_array()
         return CSRLinearOperator(M, self.spmv.is_real)
 
-    def to_csr_linearoperator_fast(self, verbose=False):
+    def to_csr_linearoperator_fast(self):
         """Convert subspace Hamiltonian to a CSR LinearOperator faster but with a copy
 
-        Parameters:
-            verbose (bool): Turn on verbose mode, default=False.
+        Returns:
+            CSRLinearOperator: LinearOperator wrapping a CSR matrix.
         """
-        M = self.spmv.to_csrlike(verbose).to_csr_array(verbose)
+        M = self.spmv.to_csrlike().to_csr_array()
         return CSRLinearOperator(M, self.spmv.is_real)
 
-    def _to_linearoperator(self, verbose=False):
+    def _to_linearoperator(self):
         """Convert subspace Hamiltonian to a CSR-like format LinearOperator
 
         This saves a matrix-traversal at the expense of a non-standard data type
-
-        Parameters:
-            verbose (bool): Turn on verbose mode, default=False.
         """
-        out = self.spmv.to_csrlike(verbose)
+        out = self.spmv.to_csrlike()
         return out
 
 
