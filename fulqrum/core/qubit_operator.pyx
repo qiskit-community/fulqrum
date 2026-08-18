@@ -33,9 +33,13 @@ from .constants import np_width_t
 
 from collections.abc import Iterable
 from pathlib import Path
+import time
 import numbers
 import numpy as np
 cimport numpy as np
+
+import logging
+logger = logging.getLogger(__name__)
 
 include "includes/base_header.pxi"
 include "includes/elements_header.pxi"
@@ -47,9 +51,6 @@ include "includes/diag_header.pxi"
 
 
 cdef const OperatorTerm_t EmptyOperatorTerm
-
-
-
 
 
 cdef class QubitOperator():
@@ -709,7 +710,10 @@ cdef class QubitOperator():
     def group_sort(self):
         """Inplace sorting of operator terms into groups that represent matrix-elements.
         """
+        cdef double st = time.perf_counter()
         self.oper.group_sort()
+        cdef double ft = time.perf_counter()
+        logger.info("Term grouping time: %s ms", round((ft - st) * 1000, 3))
 
     def offdiag_weight_sort(self):
         """In-place sort terms by their off-diagonal weight
@@ -745,8 +749,11 @@ cdef class QubitOperator():
         Returns:
             QubitOperator: Operator with repeat terms combined
         """
+        cdef double st = time.perf_counter()
         cdef QubitOperator out = QubitOperator(self.oper.width)
         out.oper = self.oper.combine_repeat_terms(atol)
+        cdef double ft = time.perf_counter()
+        logger.info("Combine repeat terms time: %s ms", round((ft - st) * 1000, 3))
         return out
 
     @cython.boundscheck(False)
@@ -811,7 +818,11 @@ cdef class QubitOperator():
         """
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
+        logger.info("Starting ladder int grouping, ladder_width = %s", ladder_width)
+        cdef double st = time.perf_counter()
         self.oper.group_term_sort_by_ladder_int(ladder_width)
+        cdef double ft = time.perf_counter()
+        logger.info("Ladder int grouping time: %s ms", round((ft - st) * 1000, 3))
 
     def group_ladder_bin_starts(self):
         if not self.oper.type == 2:
