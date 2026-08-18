@@ -350,6 +350,7 @@ cdef class FulqrumSpMV():
                 if (indptr64[self.subspace_dim] < max_int) and (<int64>(self.subspace_dim + 1) < max_int):
                     int_64 = 0
                 nnz = indptr64[self.subspace_dim]
+                logger.info("CSR NNZ: %s ", nnz)
                 logger.info("CSR use int64 indices: %s ", True if int_64 else False)
                 # check if matrix will fit into memory
                 if int_64:
