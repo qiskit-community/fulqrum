@@ -307,6 +307,8 @@ cdef class FulqrumSpMV():
         Returns:
             csr_array: Sparse representation of subspace Hamiltonian
         """
+        logger.info("Building CSR matrix")
+        csr_start = time.perf_counter()
         cdef int64 max_int = np.iinfo(np.int32).max
         cdef size_t num_terms = self.oper.terms.size()
 
@@ -322,13 +324,12 @@ cdef class FulqrumSpMV():
         if verbose:
             st = time.perf_counter()
         did_diag_build = self.compute_diag_vector()
-        if verbose and did_diag_build:
-            print("Diagonal vector build time:", round(time.perf_counter() - st, 3))
 
         cdef double start, stop
         cdef int compute_values, data_size
         cdef int64 total_bytes
         cdef int64 nnz
+        cdef int64 mem
         if self.is_real:
             data_size = 8 # size of double
         else:
@@ -349,16 +350,18 @@ cdef class FulqrumSpMV():
                 if (indptr64[self.subspace_dim] < max_int) and (<int64>(self.subspace_dim + 1) < max_int):
                     int_64 = 0
                 nnz = indptr64[self.subspace_dim]
+                logger.info("CSR use int64 indices: %s ", True if int_64 else False)
                 # check if matrix will fit into memory
                 if int_64:
                     # indptr + indices + data sizes
                     total_bytes = (self.subspace_dim + 1) * 8  + nnz * 8 + nnz * data_size
                 else:
                     total_bytes = (self.subspace_dim + 1) * 4  + nnz * 4 + nnz * data_size
-                if <int64>(psutil.virtual_memory().available) < total_bytes:
+                logger.info("Est. CSR matrix size: %s Mb", round(total_bytes/(1024**2), 3))
+                mem = psutil.virtual_memory().available
+                logger.info("Available memory size: %s Mb", round(mem/(1024**2), 3))
+                if mem < total_bytes:
                     raise FulqrumError(f"Sparse matrix of size {round(total_bytes/(1024**2), 3)}Mb does not fit within available memory.")
-                if verbose:
-                    print(f'Est. matrix size: {round(total_bytes/(1024**2), 3)}Mb')
 
                 if int_64:
                     indices64 = np.zeros(nnz, dtype=np.int64)
@@ -505,11 +508,10 @@ cdef class FulqrumSpMV():
                                             &complex_data[0],
                                             compute_values)
             stop = time.perf_counter()
-            if verbose:
-                if not compute_values:
-                    print('CSR structure time', round(stop-start, 3))
-                else:
-                    print('CSR fill time', round(stop-start, 3))
+            if not compute_values:
+                logger.info("CSR structure time: %s ms", round((stop - start)*1000, 3))
+            else:
+                logger.info("CSR fill time: %s ms", round((stop - start)*1000, 3))
         if int_64:
             if self.is_real:
                 mat = sp.csr_array((real_data, indices64, indptr64),
@@ -527,8 +529,9 @@ cdef class FulqrumSpMV():
         start = time.perf_counter()
         quicksort_indices(mat.indices, mat.indptr, mat.data)
         stop = time.perf_counter()
-        if verbose:
-            print('CSR indices sort time', round(stop-start, 3))
+        logger.info("CSR indices sort time: %s ms", round((stop - start)*1000, 3))
+        csr_stop = time.perf_counter()
+        logger.info("CSR total matrix build time: %s ms", round((csr_stop - csr_start)*1000, 3))
         return mat
 
     def to_csrlike(self, int verbose=0):
