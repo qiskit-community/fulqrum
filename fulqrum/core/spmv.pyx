@@ -545,6 +545,7 @@ cdef class FulqrumSpMV():
         self.compute_diag_vector()
         cdef CSRLike csrlike = CSRLike(self.subspace_dim, self.is_real)
         if csrlike.type_string == 'd32':
+            logger.info("CSR fast-mode double and int32")
             if self.oper.type == 1:
                 csrlike_builder(self.oper.terms,
                             self.subspace.subspace.bitstrings,
@@ -574,6 +575,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_d32.cols,
                             csrlike.data_d32.data)
         elif csrlike.type_string == 'd64':
+            logger.info("CSR fast-mode double and int64")
             if self.oper.type == 1:
                 csrlike_builder(self.oper.terms,
                             self.subspace.subspace.bitstrings,
@@ -603,6 +605,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_d64.cols,
                             csrlike.data_d64.data)
         elif csrlike.type_string == 'z32':
+            logger.info("CSR fast-mode complex and int32")
             if self.oper.type == 1:
                 csrlike_builder(self.oper.terms,
                             self.subspace.subspace.bitstrings,
@@ -632,6 +635,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_z32.cols,
                             csrlike.data_z32.data)
         elif csrlike.type_string == 'z64':
+            logger.info("CSR fast-mode complex and int64")
             if self.oper.type == 1:
                 csrlike_builder(self.oper.terms,
                             self.subspace.subspace.bitstrings,
