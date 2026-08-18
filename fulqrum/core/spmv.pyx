@@ -539,14 +539,11 @@ cdef class FulqrumSpMV():
         # This is here to prevent a circular import
         from .linear_operator import CSRLikeLinearOperator
         # Compute diag vec if we have not done so already
+        logger.info("Building CSR matrix fast-mode")
         cdef double stop, start
         start = time.perf_counter()
         self.compute_diag_vector()
-        stop = time.perf_counter()
-        if verbose:
-            print(f"Diagonal vector build time: {round(stop-start, 3)}")
         cdef CSRLike csrlike = CSRLike(self.subspace_dim, self.is_real)
-        start = time.perf_counter()
         if csrlike.type_string == 'd32':
             if self.oper.type == 1:
                 csrlike_builder(self.oper.terms,
@@ -665,8 +662,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_z64.data)
 
         stop = time.perf_counter()
-        if verbose:
-            print(f'LinearOperator build time: {round(stop-start, 3)}')
+        logger.info("CSR fast-mode total build time: %s ms", round((stop - start)*1000, 3))
         return CSRLikeLinearOperator(csrlike)
 
 
