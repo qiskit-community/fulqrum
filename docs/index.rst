@@ -43,6 +43,7 @@ As shown below, a typical eigenvalue problem is broken up into three pieces: 1) 
     Defining Subspaces <subspaces.ipynb>
     Operator IO <operator_io.ipynb>
     Subspace Hamiltonians <subspace_hamiltonians.ipynb>
+    Loading Molecular data <molecule_loading.ipynb>
 
 .. toctree::
     :maxdepth: 2
