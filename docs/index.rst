@@ -46,6 +46,13 @@ As shown below, a typical eigenvalue problem is broken up into three pieces: 1) 
     Loading Molecular data <molecule_loading.ipynb>
 
 .. toctree::
+    :maxdepth: 1
+    :caption: Tools
+    :hidden:
+    
+    Logging  <logging.ipynb>
+
+.. toctree::
     :maxdepth: 2
     :caption: Tutorials
     :hidden:
