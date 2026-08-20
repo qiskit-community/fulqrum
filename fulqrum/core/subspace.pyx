@@ -16,11 +16,15 @@ from libcpp.algorithm cimport sort as stdsort
 from libcpp cimport bool
 from libc.math cimport abs
 
+import time
 import itertools
 import math
 cimport cython
 import numpy as np
 cimport numpy as np
+
+import logging
+logger = logging.getLogger(__name__)
 
 from ..exceptions import FulqrumError
 from .bitset cimport bitset_t, to_string
@@ -134,13 +138,17 @@ cdef class Subspace():
         """
         if not subspace_strs:
             return
+        logger.info("Initializing Subspace")
+        sub_start = time.perf_counter()
         cdef int input_bitsets = 0
         cdef vector[string] alpha_strs
         cdef vector[string] beta_strs
         cdef size_t size, num_qubits
         if len(subspace_strs) == 0:
+            logger.info("Empty subspace")
             return
         elif len(subspace_strs) == 1:
+            logger.info("Full subspace bit-strings")
             iterator = subspace_strs[0]
             iterator.sort()
             num_qubits = len(next(iter(iterator)))
@@ -148,6 +156,7 @@ cdef class Subspace():
             if isinstance(iterator[0], Bitset):
                 input_bitsets = 1
         elif len(subspace_strs) == 2:
+            logger.info("Cartesian-product subspace bit-strings")
             alpha_strs = subspace_strs[0]
             beta_strs = subspace_strs[1]
             stdsort(alpha_strs.begin(), alpha_strs.end())
@@ -166,12 +175,17 @@ cdef class Subspace():
 
         self.subspace.num_qubits = num_qubits
         self.subspace.size = <size_t>size
+        logger.info("Subspace size: %s", size)
+        logger.info("Number of bits: %s", num_qubits)
+        
         if not use_all_bitset_blocks:
             self.subspace.bitstrings = BitsetHashMapWrapper(use_all_bitset_blocks)
+        logger.info("Using all bitset blocks: %s", use_all_bitset_blocks)
         if reserve_multiplier < 1:
             raise ValueError(
                 f"`reserve_multiplier(={reserve_multiplier})` must be >= 1"
             )
+        logger.info("Reserve multiplier: %s", reserve_multiplier)
         # The +1 is here because insertion would fail for a dim=1 subspace otherwise
         self.subspace.bitstrings.reserve(self.subspace.size * reserve_multiplier + 1)
 
@@ -194,6 +208,8 @@ cdef class Subspace():
                         temp_bits = bitset_t(beta_strs[idx]+alpha_strs[jj], 0, num_qubits)
                         self.subspace.bitstrings.insert_unique(temp_bits, counter)
                         counter += 1
+        sub_stop = time.perf_counter()
+        logger.info("Subspace total init time: %s ms", round((sub_stop - sub_start)*1000, 3))
 
     def __dealloc__(self):
         # Clear hash table upon deallocation of class

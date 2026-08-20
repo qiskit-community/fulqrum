@@ -13,6 +13,7 @@
 """Fulqrum linearoperator module"""
 
 import os
+import time
 import numpy as np
 from scipy.sparse.linalg import LinearOperator
 
@@ -20,6 +21,10 @@ from .spmv import FulqrumSpMV
 from .csr import csr_matvec
 from .subspace import Subspace
 from ..exceptions import FulqrumError
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SubspaceHamiltonian(LinearOperator):
@@ -35,15 +40,25 @@ class SubspaceHamiltonian(LinearOperator):
         """A SciPy `LinearOperator` that represents a Hamiltonian restricted to the given
         subspace.
         """
+        logger.info("Initializing SubspaceHamiltonian")
+        hsub_init_start = time.perf_counter()
         if subspace:
             if hamiltonian.width != subspace.width:
                 raise FulqrumError("Operator and subspace widths do not match")
         else:
             subspace = Subspace()
+        logger.info("Number of qubits: %s", hamiltonian.width)
         self.diag_H, self.off_H = hamiltonian.split_diagonal()
         self.diag_H, self.const_energy = self.diag_H.remove_constant_terms()
+        logger.info("Num. diagonal terms %s", self.diag_H.size())
+        logger.info("Num. off-diagonal terms %s", self.off_H.size())
         # if there are no off-diagonal terms then we pass a dummy empty array of len=1
+        group_start = time.perf_counter()
         self.off_H.group_sort()
+        group_stop = time.perf_counter()
+        logger.info(
+            "Term grouping time: %s ms", round((group_stop - group_start) * 1000, 3)
+        )
         self.group_ptrs = np.zeros(1, dtype=np.uintp)
         self.group_ladder_ptrs = np.zeros(1, dtype=np.uintp)
 
@@ -58,6 +73,8 @@ class SubspaceHamiltonian(LinearOperator):
                 )
                 self.group_ladder_ptrs = self.off_H.group_ladder_bin_starts()
 
+        logger.info("Num. off-diagonal groups: %s", self.group_ptrs.shape[0] - 1)
+
         self.spmv = FulqrumSpMV(
             self.diag_H,
             self.const_energy,
@@ -70,6 +87,11 @@ class SubspaceHamiltonian(LinearOperator):
         super().__init__(
             shape=(len(subspace),) * 2,
             dtype=np.dtype(float) if self.spmv.is_real else np.dtype(complex),
+        )
+        hsub_init_stop = time.perf_counter()
+        logger.info(
+            "SubspaceHamiltonian total init time: %s ms",
+            round((hsub_init_stop - hsub_init_start) * 1000, 3),
         )
 
     @property
@@ -90,16 +112,15 @@ class SubspaceHamiltonian(LinearOperator):
         self.spmv.update_subspace(subspace)
         self.shape = (len(subspace),) * 2
 
-    def diagonal_vector(self, verbose=False, disable_fast_mode=False):
+    def diagonal_vector(self, disable_fast_mode=False):
         """Return diagonal vector of Hamiltonian in subspace
 
         Parameters:
-            verbose (bool): optional, verbose output, default=False
             disable_fast_mode (bool): optional, disable fast computation for type=2 Hamiltonians, default=False
         Returns:
             ndarray: Complex vector for diagonal of Hamiltonian
         """
-        return self.spmv.diagonal_vector(verbose, disable_fast_mode)
+        return self.spmv.diagonal_vector(disable_fast_mode)
 
     def minimum_diagonal_energy(self):
         """Return the minimum diagonal energy
@@ -165,6 +186,7 @@ class SubspaceHamiltonian(LinearOperator):
         Returns:
             ndarray: Output vector after SpMV on input vector
         """
+        start = time.perf_counter()
         col_vec = False
         if len(x.shape) == 2:
             col_vec = True
@@ -176,38 +198,34 @@ class SubspaceHamiltonian(LinearOperator):
         out = self.spmv.matvec(x)
         if col_vec:
             out = out.view().reshape(x.shape[0], 1)
+        stop = time.perf_counter()
+        logger.info("Matvec time: %s ms", round((stop - start) * 1000, 3))
         return out
 
-    def to_csr_linearoperator(self, verbose=False):
+    def to_csr_linearoperator(self):
         """Convert subspace Hamiltonian to a LinearOperator wrapping a CSR matrix
-
-        Parameters:
-            verbose (bool): Turn on verbose mode, default=False.
 
         Returns:
             CSRLinearOperator: LinearOperator wrapping a CSR matrix.
         """
-        M = self.spmv.to_csr_array(verbose=verbose)
+        M = self.spmv.to_csr_array()
         return CSRLinearOperator(M, self.spmv.is_real)
 
-    def to_csr_linearoperator_fast(self, verbose=False):
+    def to_csr_linearoperator_fast(self):
         """Convert subspace Hamiltonian to a CSR LinearOperator faster but with a copy
 
-        Parameters:
-            verbose (bool): Turn on verbose mode, default=False.
+        Returns:
+            CSRLinearOperator: LinearOperator wrapping a CSR matrix.
         """
-        M = self.spmv.to_csrlike(verbose).to_csr_array(verbose)
+        M = self.spmv.to_csrlike().to_csr_array()
         return CSRLinearOperator(M, self.spmv.is_real)
 
-    def _to_linearoperator(self, verbose=False):
+    def _to_linearoperator(self):
         """Convert subspace Hamiltonian to a CSR-like format LinearOperator
 
         This saves a matrix-traversal at the expense of a non-standard data type
-
-        Parameters:
-            verbose (bool): Turn on verbose mode, default=False.
         """
-        out = self.spmv.to_csrlike(verbose)
+        out = self.spmv.to_csrlike()
         return out
 
 

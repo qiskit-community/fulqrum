@@ -25,11 +25,16 @@ from .constants cimport width_t
 from .constants import np_width_t
 from ..exceptions import FulqrumError
 
+
 from cython.parallel cimport prange, parallel
 import time
 import numpy as np
 import scipy.sparse as sp
 import psutil
+
+import logging
+logger = logging.getLogger(__name__)
+
 cimport numpy as np
 np.import_array()
 
@@ -60,6 +65,8 @@ cdef class FulqrumSpMV():
                   size_t[::1]& group_ptrs,
                   size_t[::1]& group_ladder_ptrs):
 
+        logger.info("Initializing FulqrumSpMV")
+        spmv_start = time.perf_counter()
         cdef size_t kk
         self.diag_oper = diag_hamiltonian.oper
         self.const_energy = const_energy
@@ -79,7 +86,14 @@ cdef class FulqrumSpMV():
             set_group_offdiag_indices(self.oper.terms, self.group_offdiag_inds,
                                       &self.group_ptrs[0], self.num_groups)
 
+        # Log is operator is real or not
+        if self.is_real:
+            logger.info("Operator is real")
+        else:
+            logger.info("Operator is complex")
+        
         if self.oper.type == 2:
+            logger.info("Operator type = 2")
             self.fast_diag = fast_diag_compatible(self.diag_oper)
             if self.oper.terms.size():
                 self.group_rowint_length = hamiltonian.group_rowint_length()
@@ -89,7 +103,8 @@ cdef class FulqrumSpMV():
             else:
                 # Need to set memoryview but not used
                 self.group_rowint_length = np.zeros(1, dtype=np_width_t)
-
+        else:
+            logger.info("Operator type = 1")
         if self.diag_oper.terms.size() > 0 or self.const_energy:
             self.has_nonzero_diag = 1
              # Init diagonal memoryview to None because
@@ -102,6 +117,8 @@ cdef class FulqrumSpMV():
         # grabbing a pointer to the data is going to complain
         self.real_diag_vec = np.empty(shape=(1,), dtype=float)
         self.complex_diag_vec = np.empty(shape=(1,), dtype=complex)
+        spmv_stop = time.perf_counter()
+        logger.info("FulqrumSpMV total init time: %s ms", round((spmv_stop - spmv_start)*1000, 3))
 
     def __repr__(self):
         out = f"<FulqrumSpMV(width={self.width}, "
@@ -123,6 +140,7 @@ cdef class FulqrumSpMV():
     cpdef int compute_diag_vector(self):
         if self.init_diag:
             return 0
+        diag_start = time.perf_counter()
         width_check(self.width, self.subspace.width)    
         cdef bool fast_diag = self.fast_diag
         if self._disable_fast_diag:
@@ -152,20 +170,20 @@ cdef class FulqrumSpMV():
                                 self.diag_oper,
                                 self.subspace_dim)
         self.init_diag = 1
+        diag_stop = time.perf_counter()
+        logger.info("Diagonal vector build time: %s ms", round((diag_stop - diag_start)*1000, 3))
         return 1
 
     def fast_diag_compatible(self):
         return fast_diag_compatible(self.diag_oper)
     
-    def diagonal_vector(self, int verbose=0, bool disable_fast_mode=False):
+    def diagonal_vector(self, bool disable_fast_mode=False):
         """Diagonal vector of subspace Hamitlonian
 
         Returns:
             ndarray: Array of complex numbers representing diagonal
         """
         width_check(self.width, self.subspace.width)
-        if verbose:
-            st = time.perf_counter()
         if not self.has_nonzero_diag:
             if self.is_real:
                 return np.full(self.subspace_dim, self.const_energy, dtype=float)
@@ -173,14 +191,10 @@ cdef class FulqrumSpMV():
                 return np.full(self.subspace_dim, self.const_energy, dtype=complex)
         cdef bool temp = self._disable_fast_diag
         self._disable_fast_diag = disable_fast_mode
-        if verbose:
-            print("Diagonal fast mode enabled: ", (not self._disable_fast_diag))
         self.compute_diag_vector()
         self._disable_fast_diag = temp
         if self.is_real:
             return np.asarray(self.real_diag_vec)
-        if verbose:
-            print("Diagonal vector build time: ", time.perf_counter() - st)
         return np.asarray(self.complex_diag_vec)
 
 
@@ -278,15 +292,14 @@ cdef class FulqrumSpMV():
         return np.asarray(out)
 
 
-    def to_csr_array(self, int verbose=0):
+    def to_csr_array(self):
         """Convert subspace Hamiltonian to a SciPy CSR array
-
-        Parameters:
-            verbose (int): Turn on or off verbose mode, default=0.
 
         Returns:
             csr_array: Sparse representation of subspace Hamiltonian
         """
+        logger.info("Building CSR matrix")
+        csr_start = time.perf_counter()
         cdef int64 max_int = np.iinfo(np.int32).max
         cdef size_t num_terms = self.oper.terms.size()
 
@@ -299,16 +312,13 @@ cdef class FulqrumSpMV():
 
         # Compute diag vec if we have not done so already
         cdef int did_diag_build = 0
-        if verbose:
-            st = time.perf_counter()
         did_diag_build = self.compute_diag_vector()
-        if verbose and did_diag_build:
-            print("Diagonal vector build time:", round(time.perf_counter() - st, 3))
 
         cdef double start, stop
         cdef int compute_values, data_size
         cdef int64 total_bytes
         cdef int64 nnz
+        cdef int64 mem
         if self.is_real:
             data_size = 8 # size of double
         else:
@@ -329,16 +339,19 @@ cdef class FulqrumSpMV():
                 if (indptr64[self.subspace_dim] < max_int) and (<int64>(self.subspace_dim + 1) < max_int):
                     int_64 = 0
                 nnz = indptr64[self.subspace_dim]
+                logger.info("CSR NNZ: %s ", nnz)
+                logger.info("CSR use int64 indices: %s ", True if int_64 else False)
                 # check if matrix will fit into memory
                 if int_64:
                     # indptr + indices + data sizes
                     total_bytes = (self.subspace_dim + 1) * 8  + nnz * 8 + nnz * data_size
                 else:
                     total_bytes = (self.subspace_dim + 1) * 4  + nnz * 4 + nnz * data_size
-                if <int64>(psutil.virtual_memory().available) < total_bytes:
+                logger.info("Est. CSR matrix size: %s Mb", round(total_bytes/(1024**2), 3))
+                mem = psutil.virtual_memory().available
+                logger.info("Available memory size: %s Mb", round(mem/(1024**2), 3))
+                if mem < total_bytes:
                     raise FulqrumError(f"Sparse matrix of size {round(total_bytes/(1024**2), 3)}Mb does not fit within available memory.")
-                if verbose:
-                    print(f'Est. matrix size: {round(total_bytes/(1024**2), 3)}Mb')
 
                 if int_64:
                     indices64 = np.zeros(nnz, dtype=np.int64)
@@ -485,11 +498,10 @@ cdef class FulqrumSpMV():
                                             &complex_data[0],
                                             compute_values)
             stop = time.perf_counter()
-            if verbose:
-                if not compute_values:
-                    print('CSR structure time', round(stop-start, 3))
-                else:
-                    print('CSR fill time', round(stop-start, 3))
+            if not compute_values:
+                logger.info("CSR structure time: %s ms", round((stop - start)*1000, 3))
+            else:
+                logger.info("CSR fill time: %s ms", round((stop - start)*1000, 3))
         if int_64:
             if self.is_real:
                 mat = sp.csr_array((real_data, indices64, indptr64),
@@ -507,23 +519,22 @@ cdef class FulqrumSpMV():
         start = time.perf_counter()
         quicksort_indices(mat.indices, mat.indptr, mat.data)
         stop = time.perf_counter()
-        if verbose:
-            print('CSR indices sort time', round(stop-start, 3))
+        logger.info("CSR indices sort time: %s ms", round((stop - start)*1000, 3))
+        csr_stop = time.perf_counter()
+        logger.info("CSR total matrix build time: %s ms", round((csr_stop - csr_start)*1000, 3))
         return mat
 
-    def to_csrlike(self, int verbose=0):
+    def to_csrlike(self):
         # This is here to prevent a circular import
         from .linear_operator import CSRLikeLinearOperator
         # Compute diag vec if we have not done so already
+        logger.info("Building CSR matrix fast-mode")
         cdef double stop, start
         start = time.perf_counter()
         self.compute_diag_vector()
-        stop = time.perf_counter()
-        if verbose:
-            print(f"Diagonal vector build time: {round(stop-start, 3)}")
         cdef CSRLike csrlike = CSRLike(self.subspace_dim, self.is_real)
-        start = time.perf_counter()
         if csrlike.type_string == 'd32':
+            logger.info("CSR fast-mode double and int32")
             if self.oper.type == 1:
                 csrlike_builder(self.oper.terms,
                             self.subspace.subspace.bitstrings,
@@ -553,6 +564,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_d32.cols,
                             csrlike.data_d32.data)
         elif csrlike.type_string == 'd64':
+            logger.info("CSR fast-mode double and int64")
             if self.oper.type == 1:
                 csrlike_builder(self.oper.terms,
                             self.subspace.subspace.bitstrings,
@@ -582,6 +594,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_d64.cols,
                             csrlike.data_d64.data)
         elif csrlike.type_string == 'z32':
+            logger.info("CSR fast-mode complex and int32")
             if self.oper.type == 1:
                 csrlike_builder(self.oper.terms,
                             self.subspace.subspace.bitstrings,
@@ -611,6 +624,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_z32.cols,
                             csrlike.data_z32.data)
         elif csrlike.type_string == 'z64':
+            logger.info("CSR fast-mode complex and int64")
             if self.oper.type == 1:
                 csrlike_builder(self.oper.terms,
                             self.subspace.subspace.bitstrings,
@@ -641,8 +655,7 @@ cdef class FulqrumSpMV():
                             csrlike.data_z64.data)
 
         stop = time.perf_counter()
-        if verbose:
-            print(f'LinearOperator build time: {round(stop-start, 3)}')
+        logger.info("CSR fast-mode total build time: %s ms", round((stop - start)*1000, 3))
         return CSRLikeLinearOperator(csrlike)
 
 
