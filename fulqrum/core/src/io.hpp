@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "./external/json.hpp"
+#include "./external/pstream.h"
 #include "base.hpp"
 #include "term_utils.hpp"
 #include "version.hpp"
@@ -68,18 +69,19 @@ inline bool file_exists(const std::string& name)
  *
  * @return Result from running the command
  */
-inline std::string exec(const char* cmd)
+inline std::string exec_command(const char* cmd)
 {
-    std::vector<char> buffer(128);
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if(!pipe)
+    // run a process and create a streambuf that reads its stdout and stderr
+    redi::ipstream proc(cmd, redi::pstreams::pstdout | redi::pstreams::pstderr);
+    std::string line, result;
+    while(std::getline(proc.out(), line))
     {
-        throw std::runtime_error("popen() failed!");
+        result += line;
     }
-    while(fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr)
+    // if reading stdout stopped at EOF then reset the state:
+    if(proc.eof() && proc.fail())
     {
-        result += buffer.data();
+        proc.clear();
     }
     return result;
 }
@@ -195,12 +197,12 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
     if(ending == "xz")
     {
         compress_str = "xz -9 -f -k -T0 -q " + short_filename + " ";
-        exec(compress_str.c_str()); // compress original json
+        exec_command(compress_str.c_str()); // compress original json
     }
     else if(ending == "zst")
     {
         compress_str = "zstd -16 --rm -k -q -f -T0 " + short_filename;
-        exec(compress_str.c_str()); // compress original json
+        exec_command(compress_str.c_str()); // compress original json
     }
     else if(ending != "json")
     {
@@ -257,12 +259,12 @@ inline void json_to_operator(const std::string& filename, U& oper)
     if(ending == "xz")
     {
         uncompress_str = "xz -d -f -k -q -T0 " + filename + " ";
-        exec(uncompress_str.c_str());
+        exec_command(uncompress_str.c_str());
     }
     else if(ending == "zst")
     {
         uncompress_str = "zstd -d -f -q -k -T0 " + filename;
-        exec(uncompress_str.c_str());
+        exec_command(uncompress_str.c_str());
     }
     else if(ending != "json")
     {

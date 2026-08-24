@@ -34,7 +34,7 @@ def test_openfermion_qubit_op_to_fulqrum():
 
     fulqrum_qubit_op = openfermion_qubit_op_to_fulqrum(openf_qubit_op)
 
-    for idx in range(fulqrum_qubit_op.num_terms):
+    for idx in range(fulqrum_qubit_op.size()):
         label = labels[idx].split()
         label = [(item[0], qubit_reorder_map[int(item[1:])]) for item in label]
         label = sorted(label, key=lambda x: x[1])
@@ -73,7 +73,7 @@ def test_openfermion_fermi_op_to_fulqrum():
 
     fulqrum_fermi_op = openfermion_fermi_op_to_fulqrum(openf_fermi_op)
 
-    for idx in range(fulqrum_fermi_op.num_terms):
+    for idx in range(fulqrum_fermi_op.size()):
         single_terms = []
         for elem in terms[idx].split():
             if "^" in elem:
@@ -165,6 +165,9 @@ def test_integrals_to_fq_fermionic_op():
             fop2 = old_integrals_to_fq_fermionic_op(
                 one_body_integrals=hcore, two_body_integrals=eri
             )
+            fop = fop.combine_repeat_indices()
+            fop2 = fop2.combine_repeat_terms()
+            fop2 = fop2.combine_repeat_indices()
             # A brute force way to check for operator equality
             assert fop.size() == fop2.size()
             num_touched = 0
@@ -180,6 +183,7 @@ def test_integrals_to_fq_fermionic_op():
                         break
                 assert found
             assert num_touched == fop.size()
+            assert fop.size() == fop2.size()
 
 
 @pytest.mark.skip(reason="Not implemented as it uses already tested functions")

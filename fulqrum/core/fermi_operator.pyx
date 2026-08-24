@@ -22,12 +22,17 @@ from .. import __version__ as VERSION
 from .qubit_operator cimport QubitOperator
 from ..utils.io import dict_to_json, json_to_dict
 from ..exceptions import FulqrumError
+from ..convert import fcidump_to_fq_fermionic_op
 
 
 from pathlib import Path
+import time
 import warnings
 import numpy as np
 cimport numpy as np
+
+import logging
+logger = logging.getLogger(__name__)
 
 include "includes/base_header.pxi"
 include "includes/converters.pxi"
@@ -274,16 +279,6 @@ cdef class FermionicOperator():
         out.oper.terms.push_back(term)
         return out
 
-    @property
-    def num_terms(self):
-        """Return the number of terms in the operator
-
-        Returns:
-            int: Number of terms in operator
-        """
-        warnings.warn("'num_terms' will be removed, use 'size()' instead")
-        return self.size()
-
     def size(self):
         """Return the number of terms in the operator
 
@@ -300,6 +295,16 @@ cdef class FermionicOperator():
             int
         """
         return self.oper.width
+
+    def copy(self):
+        """Return a copy of the operator
+
+        Returns:
+            FermionicOperator
+        """
+        cdef FermionicOperator out = FermionicOperator(self.width)
+        out.oper = self.oper.copy()
+        return out
 
     @cython.boundscheck(False)
     def offdiag_structure_sort(self):
@@ -461,41 +466,40 @@ cdef class FermionicOperator():
 
 
     @cython.boundscheck(False)
-    def deflate_repeated_indices(self):
-        """Collapse repeated indices into singles and remove zero terms
-
-        Returns:
-            FermionicOperator: Deflated operator
-        """
-        warnings.warn("'deflate_repeated_indices()' will be removed.  Use 'combine_repeat_indices()' instead")
-        return self.combine_repeat_indices()
-
-    @cython.boundscheck(False)
     def combine_repeat_indices(self):
         """Collapse repeated indices into singles and remove zero terms
 
         Returns:
             FermionicOperator: Deflated operator
         """
+        st = time.perf_counter()
         cdef size_t kk
         cdef FermionicOperator out = FermionicOperator(self.width)
         out.oper = self.oper.combine_repeat_indices()
+        ft = time.perf_counter()
+        logger.info("Combine repeat indices time: %s ms", round((ft - st) * 1000, 3))
         return out
 
-    def combine_repeated_terms(self, double atol=1e-12):
+    def combine_repeat_terms(self, double atol=1e-12):
         """In-place sort terms by their standard weight
         """
+        st = time.perf_counter()
         cdef FermionicOperator out = FermionicOperator(self.width)
-        out.oper = self.oper.combine_repeated_terms(atol)
+        out.oper = self.oper.combine_repeat_terms(atol)
+        ft = time.perf_counter()
+        logger.info("Combine repeat terms time: %s ms", round((ft - st) * 1000, 3))
         return out
 
     def extended_jw_transformation(self):
         """Jordan-Wigner transformation over extended alphabet
         from Fermionic -> Qubit operator
         """
+        st = time.perf_counter()
         cdef QubitOperator out = QubitOperator(self.width)
         out.oper = self.oper.extended_jw_transformation()
-        return out.combine_repeated_terms()
+        ft = time.perf_counter()
+        logger.info("Extended JW time: %s ms", round((ft - st) * 1000, 3))
+        return out
 
     @cython.boundscheck(False)
     def to_dict(self):
@@ -572,3 +576,7 @@ cdef class FermionicOperator():
         cdef FermionicOperator out = FermionicOperator(1) #dummy width
         out.oper = out.oper.from_json(str(filename))
         return out
+
+    @classmethod
+    def from_fcidump(self, filename):
+        return fcidump_to_fq_fermionic_op(filename)

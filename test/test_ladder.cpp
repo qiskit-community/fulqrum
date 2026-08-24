@@ -66,7 +66,7 @@ TEST_CASE("Test group term sort by ladder_width=1")
 
 TEST_CASE("Test group term sort ladder_width=3 2")
 {
-    QubitOperator op = QubitOperator::from_label("_+II");
+    QubitOperator op = QubitOperator::from_label("-+II");
     op += QubitOperator::from_label("++II");
     op += QubitOperator::from_label("IIIZ");
     op.set_type(2);

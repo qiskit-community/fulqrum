@@ -34,6 +34,8 @@ cdef extern from "<boost/dynamic_bitset.hpp>" namespace "boost":
         void set(size_t)
         void reset(size_t)
         void flip(size_t)
+        size_t find_first()
+        size_t find_next(size_t)
         void clear()
 
         size_t size()
