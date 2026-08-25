@@ -52,7 +52,7 @@ inline int offweight_comp(OperatorTerm_t& term1, OperatorTerm_t& term2)
 inline void set_group_ptrs(const std::vector<OperatorTerm>& __restrict terms,
                            std::vector<std::size_t>& vec)
 {
-    vec.resize(0);
+    vec.clear();
     vec.push_back(0);
     std::size_t kk;
     int val = terms[0].group;
@@ -77,7 +77,7 @@ inline void set_group_ptrs(const std::vector<OperatorTerm>& __restrict terms,
 inline void set_offdiag_weight_ptrs(const std::vector<OperatorTerm>& __restrict terms,
                                     std::vector<std::size_t>& vec)
 {
-    vec.resize(0);
+    vec.clear();
     std::size_t kk;
     width_t val = terms[0].offdiag_weight;
     vec.push_back(0);
