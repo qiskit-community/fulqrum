@@ -699,8 +699,8 @@ typedef struct QubitOperator
      */
     bool is_diagonal() const
     {
-        return std::all_of(terms.begin(), terms.end(),
-                           [](const OperatorTerm_t& t) { return t.is_diagonal(); });
+        return std::all_of(
+            terms.begin(), terms.end(), [](const OperatorTerm_t& t) { return t.is_diagonal(); });
     }
     /**
      * Can operator be described via a symmetric matrix
