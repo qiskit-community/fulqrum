@@ -232,12 +232,12 @@ inline void term_group_sort(std::vector<OperatorTerm_t>& terms,
                 OperatorTerm_t* term = &terms[kk];
 
                 // Build canonical key: sorted off-diagonal qubit indices
+                // (indices are already stored in ascending order, so no sort needed)
                 std::vector<width_t> key;
                 key.reserve(term->offdiag_weight);
                 for(std::size_t idx = 0; idx < term->values.size(); idx++)
                     if(term->values[idx] > 2)
                         key.push_back(term->indices[idx]);
-                std::sort(key.begin(), key.end());
 
                 auto result = pattern_to_group.emplace(key, 0);
                 if(result.second) // new pattern: allocate a new group
@@ -465,12 +465,11 @@ typedef struct QubitOperator
     {
         std::size_t num_terms = data.size();
         std::size_t kk;
-        TermData tdata;
-        OperatorTerm term;
         std::complex<double> coeff = 1.0;
+        terms.reserve(num_terms);
         for(kk = 0; kk < num_terms; kk++)
         {
-            tdata = data[kk];
+            const TermData& tdata = data[kk];
             _validate_indices(std::get<1>(tdata),
                               width); // validate that all indices are less than operator width
             // If there are no indices and the coeff==0 then the term should be an identity term with coeff=1
@@ -482,11 +481,11 @@ typedef struct QubitOperator
             {
                 coeff = std::get<2>(tdata);
             }
-            term = OperatorTerm(std::get<0>(tdata), std::get<1>(tdata), coeff);
+            OperatorTerm term(std::get<0>(tdata), std::get<1>(tdata), coeff);
             term.set_proj_indices();
             set_offdiag_weight_and_phase(term);
             set_extended_flag(term);
-            terms.push_back(term);
+            terms.push_back(std::move(term));
         }
     }
     /**
@@ -536,117 +535,90 @@ typedef struct QubitOperator
      */
     QubitOperator& operator*=(std::complex<double> c)
     {
-        for(std::size_t kk = 0; kk < this->size(); kk++)
-        {
-            terms[kk] *= c;
-        }
+        for(auto& term : terms)
+            term *= c;
         return *this;
     }
     /**
      * multiplication by a complex value (need one for mult on each side)
      */
-    friend QubitOperator operator*(QubitOperator& op, std::complex<double> c)
+    friend QubitOperator operator*(QubitOperator op, std::complex<double> c)
     {
-        QubitOperator out = op.copy();
-        for(std::size_t kk = 0; kk < out.size(); kk++)
-        {
-            out.terms[kk] *= c;
-        }
-        return out;
+        op *= c;
+        return op;
     }
-    friend QubitOperator operator*(std::complex<double> c, QubitOperator& op)
+    friend QubitOperator operator*(std::complex<double> c, QubitOperator op)
     {
-        QubitOperator out = op.copy();
-        for(std::size_t kk = 0; kk < out.size(); kk++)
-        {
-            out.terms[kk] *= c;
-        }
-        return out;
+        op *= c;
+        return op;
     }
     /**
      * Inplace addition by another QubitOperator
-     * 
+     *
      * @param[in] other Operator to add to this one
      * @throw Error if operators do not share the same width
      */
-    QubitOperator& operator+=(QubitOperator other)
+    QubitOperator& operator+=(const QubitOperator& other)
     {
         if(other.width != this->width)
         {
             throw std::runtime_error("Operators must have the same width");
         }
-        for(std::size_t kk = 0; kk < other.size(); kk++)
-        {
-            this->terms.push_back(other.terms[kk]);
-        }
+        this->terms.insert(this->terms.end(), other.terms.begin(), other.terms.end());
         this->sorted = 0;
         return *this;
     }
     /**
      * Inplace subtraction by another QubitOperator
-     * 
-     * @param[in] other Operator to add to this one
+     *
+     * @param[in] other Operator to subtract from this one
      * @throw Error if operators do not share the same width
      */
-    QubitOperator& operator-=(QubitOperator other)
+    QubitOperator& operator-=(const QubitOperator& other)
     {
         if(other.width != this->width)
         {
             throw std::runtime_error("Operators must have the same width");
         }
-
-        OperatorTerm term;
-        for(std::size_t kk = 0; kk < other.size(); kk++)
-        {
-            term = other.terms[kk];
-            term.coeff *= -1;
-            this->terms.push_back(term);
-        }
+        std::size_t old_size = this->terms.size();
+        this->terms.insert(this->terms.end(), other.terms.begin(), other.terms.end());
+        for(std::size_t kk = old_size; kk < this->terms.size(); kk++)
+            this->terms[kk].coeff *= -1;
         this->sorted = 0;
         return *this;
     }
     /**
      * Subtraction by another QubitOperator
-     * 
-     * @param[in] other Operator to subject to this one
+     *
+     * @param[in] other Operator to subtract from this one
      * @return New operator
      * @throw Error if operators do not share the same width
      */
-    QubitOperator operator-(QubitOperator other)
+    QubitOperator operator-(const QubitOperator& other) const
     {
         if(other.width != this->width)
         {
             throw std::runtime_error("Operators must have the same width");
         }
-
-        OperatorTerm term;
-        QubitOperator out = this->copy();
-        for(std::size_t kk = 0; kk < other.size(); kk++)
-        {
-            term = other.terms[kk];
-            term.coeff *= -1;
-            out.terms.push_back(term);
-        }
+        QubitOperator out = *this;
+        out -= other;
         return out;
     }
     /**
      * Addition by another QubitOperator
-     * 
+     *
      * @param[in] other Operator to add to this one
      * @return The new operator
      * @throw Error if operators do not share the same width
      */
-    QubitOperator operator+(QubitOperator other) const
+    QubitOperator operator+(const QubitOperator& other) const
     {
         if(other.width != this->width)
         {
             throw std::runtime_error("Operators must have the same width");
         }
-        QubitOperator out = this->copy();
-        for(std::size_t kk = 0; kk < other.size(); kk++)
-        {
-            out.terms.push_back(other.terms[kk]);
-        }
+        QubitOperator out = *this;
+        out += other;
         return out;
     }
     /**
@@ -720,33 +692,15 @@ typedef struct QubitOperator
      */
     QubitOperator copy() const
     {
-        QubitOperator out = QubitOperator(this->width);
-        out.terms = this->terms;
-        out.type = this->type;
-        out.ladder_width = this->ladder_width;
-        out.sorted = this->sorted;
-        out.weight_sorted = this->weight_sorted;
-        out.off_weight_sorted = this->off_weight_sorted;
-        out.ladder_sorted = this->ladder_sorted;
-        out.structure_sorted = this->structure_sorted;
-        return out;
+        return *this;
     }
     /**
      * Is the operator diagonal
      */
     bool is_diagonal() const
     {
-        std::size_t kk;
-        bool diag = 1;
-        for(kk = 0; kk < terms.size(); kk++)
-        {
-            if(!terms[kk].is_diagonal())
-            {
-                diag = 0;
-                break;
-            }
-        }
-        return diag;
+        return std::all_of(terms.begin(), terms.end(),
+                           [](const OperatorTerm_t& t) { return t.is_diagonal(); });
     }
     /**
      * Can operator be described via a symmetric matrix
@@ -787,53 +741,49 @@ typedef struct QubitOperator
     std::vector<std::complex<double>> coefficients() const
     {
         std::vector<std::complex<double>> out;
-        for(std::size_t kk = 0; kk < this->size(); kk++)
-        {
-            out.push_back(this->terms[kk].coeff);
-        }
+        out.reserve(this->size());
+        for(const auto& t : terms)
+            out.push_back(t.coeff);
         return out;
     }
     /**
     * Return vector of weights for each term
-    * 
+    *
     * @return Vector of weights for terms
-    * 
+    *
     */
     std::vector<width_t> weights() const
     {
         std::vector<width_t> out;
-        for(std::size_t kk = 0; kk < this->size(); kk++)
-        {
-            out.push_back(this->terms[kk].weight());
-        }
+        out.reserve(this->size());
+        for(const auto& t : terms)
+            out.push_back(t.weight());
         return out;
     }
     /**
     * Return vector of real-phases for each term
-    * 
+    *
     * @return Vector of real-phases for terms
     */
     std::vector<int> real_phases() const
     {
         std::vector<int> out;
-        for(std::size_t kk = 0; kk < this->size(); kk++)
-        {
-            out.push_back(this->terms[kk].real_phase);
-        }
+        out.reserve(this->size());
+        for(const auto& t : terms)
+            out.push_back(t.real_phase);
         return out;
     }
     /**
     * Return vector of showing which terms are extended alphabet
-    * 
+    *
     * @return Vector of showing which terms are extended alphabet
     */
     std::vector<int> extended_terms() const
     {
         std::vector<int> out;
-        for(std::size_t kk = 0; kk < this->size(); kk++)
-        {
-            out.push_back(this->terms[kk].extended);
-        }
+        out.reserve(this->size());
+        for(const auto& t : terms)
+            out.push_back(t.extended);
         return out;
     }
     /**
@@ -848,13 +798,9 @@ typedef struct QubitOperator
         for(auto term : this->terms)
         {
             if(!term.offdiag_weight)
-            {
                 diag.terms.push_back(term);
-            }
             else
-            {
                 off.terms.push_back(term);
-            }
         }
         off.type = this->type;
         diag.type = this->type;
@@ -1107,11 +1053,8 @@ typedef struct QubitOperator
     {
         std::vector<width_t> out;
         out.resize(terms.size());
-        std::size_t kk;
-        for(kk = 0; kk < terms.size(); kk++)
-        {
+        for(std::size_t kk = 0; kk < terms.size(); kk++)
             out[kk] = terms[kk].offdiag_weight;
-        }
         return out;
     }
     /**
@@ -1144,13 +1087,10 @@ typedef struct QubitOperator
     {
         std::vector<width_t> out;
         if(!this->ladder_sorted)
-        {
             this->group_term_sort_by_ladder_int();
-        }
+        out.reserve(this->size());
         for(std::size_t kk = 0; kk < this->size(); kk++)
-        {
             out.push_back(term_ladder_int(terms[kk], this->ladder_width));
-        }
         return out;
     }
     /**
