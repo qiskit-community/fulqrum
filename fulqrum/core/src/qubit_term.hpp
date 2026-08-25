@@ -13,10 +13,7 @@
  */
 #pragma once
 #include <algorithm>
-#include <cmath>
 #include <complex>
-#include <cstdlib>
-#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -60,36 +57,22 @@ typedef struct OperatorTerm
     OperatorTerm(std::string vals, std::vector<width_t> inds, std::complex<double> c)
         : coeff(c)
     {
-        //check that length of values == length of indices
-        if(vals.size() != inds.size())
+        const std::size_t n = vals.size();
+        if(n != inds.size())
         {
             throw std::runtime_error("Size of input string does not equal that of indices");
         }
-        unsigned char val;
-        width_t ind;
-        unsigned int counter = 0;
-        // Iterate over string of values, mapping to new values and adding to term
-        for(std::string::iterator it = vals.begin(); it != vals.end(); ++it)
+        values.reserve(n);
+        indices.reserve(n);
+        for(std::size_t i = 0; i < n; ++i)
         {
-            counter += 1;
-            if(*it == 73) // identity operator
-            {
+            if(static_cast<unsigned char>(vals[i]) == 73) // 'I' identity — skip
                 continue;
-            }
-            else
-            {
-                val = oper_map[*it];
-                ind = inds[counter - 1];
-                values.push_back(val);
-                indices.push_back(ind);
-                offdiag_weight += static_cast<width_t>(val > 2);
-                offdiag_structure += (ind + 1) * (val > 2);
-            }
-        }
-        //check that length of values == length of indices
-        if(values.size() != indices.size())
-        {
-            throw std::runtime_error("Size of values vector does not equal that of indices.");
+            const unsigned char val = oper_map[static_cast<unsigned char>(vals[i])];
+            values.push_back(val);
+            indices.push_back(inds[i]);
+            offdiag_weight += static_cast<width_t>(val > 2);
+            offdiag_structure += (inds[i] + 1) * static_cast<unsigned int>(val > 2);
         }
         sort_term_data(); // sort term data from low -> high indices
         set_proj_indices(); // set projection operator indices, if any
@@ -104,33 +87,23 @@ typedef struct OperatorTerm
     }
     OperatorTerm copy() const
     {
-        OperatorTerm out = OperatorTerm(this->coeff);
-        out.values = this->values;
-        out.indices = this->indices;
-        out.proj_indices = this->proj_indices;
-        out.proj_bits = this->proj_bits;
-        out.proj_indices = this->proj_indices;
-        out.proj_bits = this->proj_bits;
-        out.offdiag_weight = this->offdiag_weight;
-        out.offdiag_structure = this->offdiag_structure;
-        out.proj_structure = this->proj_structure;
-        return out;
+        return *this;
     }
     /**
      * Term multiplication by a complex number
      */
-    friend OperatorTerm operator*(OperatorTerm& op, std::complex<double> c)
+    friend OperatorTerm operator*(const OperatorTerm& op, std::complex<double> c)
     {
-        OperatorTerm out = op.copy();
+        OperatorTerm out = op;
         out.coeff *= c;
         return out;
     }
     /**
      * Term multiplication by a complex number
      */
-    friend OperatorTerm operator*(std::complex<double> c, OperatorTerm& op)
+    friend OperatorTerm operator*(std::complex<double> c, const OperatorTerm& op)
     {
-        OperatorTerm out = op.copy();
+        OperatorTerm out = op;
         out.coeff *= c;
         return out;
     }
@@ -155,21 +128,15 @@ typedef struct OperatorTerm
      */
     OperatorTerm& sort_term_data()
     {
-        std::size_t n = indices.size();
-        for(std::size_t i = 1; i < n; i++)
+        const std::size_t n = indices.size();
+        for(std::size_t i = 1; i < n; ++i)
         {
-            width_t key = indices[i];
-            char val = values[i];
-            std::size_t j =
-                std::lower_bound(indices.begin(), indices.begin() + i, key) - indices.begin();
-
-            for(std::size_t k = i; k > j; k--)
-            {
-                indices[k] = indices[k - 1];
-                values[k] = values[k - 1];
-            }
-            indices[j] = key;
-            values[j] = val;
+            const width_t key = indices[i];
+            const auto pos = std::lower_bound(indices.begin(), indices.begin() + i, key);
+            const std::size_t j = static_cast<std::size_t>(pos - indices.begin());
+            // use rotate for sort https://en.cppreference.com/cpp/algorithm/rotate
+            std::rotate(indices.begin() + j, indices.begin() + i, indices.begin() + i + 1);
+            std::rotate(values.begin() + j, values.begin() + i, values.begin() + i + 1);
         }
         return *this;
     }
