@@ -46,7 +46,14 @@ typedef struct OperatorTerm
     int group{-1}; // -1 means unset here
     width_t offdiag_weight{0};
 
-    OperatorTerm() {}
+    OperatorTerm() = default;
+    OperatorTerm(const OperatorTerm&) = default;
+    OperatorTerm(OperatorTerm&&) = default;
+    OperatorTerm& operator=(const OperatorTerm&) = default;
+    OperatorTerm& operator=(OperatorTerm&&) = default;
+    // destructor
+    ~OperatorTerm() = default;
+
     OperatorTerm(std::complex<double> c)
         : coeff(c)
     {} // Init empty term with given coefficient
@@ -86,14 +93,6 @@ typedef struct OperatorTerm
         }
         sort_term_data(); // sort term data from low -> high indices
         set_proj_indices(); // set projection operator indices, if any
-    }
-    // destructor
-    ~OperatorTerm()
-    {
-        std::vector<unsigned char>().swap(values);
-        std::vector<width_t>().swap(indices);
-        std::vector<width_t>().swap(proj_indices);
-        std::vector<width_t>().swap(proj_bits);
     }
     /**
      * Inplace multiplication by a complex value

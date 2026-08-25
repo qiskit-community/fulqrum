@@ -442,7 +442,14 @@ typedef struct QubitOperator
     int structure_sorted{
         0}; // Are the operator terms sorted by (non-unique) off-diagonal structure?
 
-    QubitOperator() {}
+    QubitOperator() = default;
+    QubitOperator(const QubitOperator&) = default;
+    QubitOperator(QubitOperator&&) = default;
+    QubitOperator& operator=(const QubitOperator&) = default;
+    QubitOperator& operator=(QubitOperator&&) = default;
+    // destructor
+    ~QubitOperator() = default;
+
     /**
      * Constructor building an empty operator with a given width
      *
@@ -481,11 +488,6 @@ typedef struct QubitOperator
             set_extended_flag(term);
             terms.push_back(term);
         }
-    }
-    // destructor
-    ~QubitOperator()
-    {
-        std::vector<OperatorTerm_t>().swap(terms);
     }
     /**
      * QubitOperator from string label

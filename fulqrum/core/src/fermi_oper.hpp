@@ -52,7 +52,13 @@ typedef struct FermionicOperator
     int structure_sorted{
         0}; // Are the operator terms sorted by (non-unique) off-diagonal structure?
     std::vector<FermionicTerm_t> terms;
-    FermionicOperator() {}
+    FermionicOperator() = default;
+    FermionicOperator(const FermionicOperator&) = default;
+    FermionicOperator(FermionicOperator&&) = default;
+    FermionicOperator& operator=(const FermionicOperator&) = default;
+    FermionicOperator& operator=(FermionicOperator&&) = default;
+    // deallocation
+    ~FermionicOperator() = default;
     /**
      * Constructor building an empty operator with a given width
      *
@@ -76,11 +82,6 @@ typedef struct FermionicOperator
             terms.push_back(
                 FermionicTerm(std::get<0>(tdata), std::get<1>(tdata), std::get<2>(tdata)));
         }
-    }
-    // deallocation
-    ~FermionicOperator()
-    {
-        std::vector<FermionicTerm_t>().swap(terms);
     }
     /**
      * Print object to standard output stream
