@@ -184,4 +184,3 @@ def test_integrals_to_fq_fermionic_op():
                 assert found
             assert num_touched == fop.size()
             assert fop.size() == fop2.size()
-
