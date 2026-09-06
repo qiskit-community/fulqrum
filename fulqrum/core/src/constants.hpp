@@ -33,6 +33,16 @@ const unsigned int BLOCK_SHIFT = BITS_PER_BLOCK - 1;
 typedef std::tuple<std::string, std::vector<width_t>, std::complex<double>> TermData;
 typedef std::tuple<std::string, std::vector<width_t>> OpData;
 
+// The internal operator values, as named constants. Use these names instead of the
+// raw numbers when you read or write ``OperatorTerm::values``.
+inline constexpr unsigned char OPER_VALUE_Z = 0;
+inline constexpr unsigned char OPER_VALUE_PROJ_0 = 1;
+inline constexpr unsigned char OPER_VALUE_PROJ_1 = 2;
+inline constexpr unsigned char OPER_VALUE_X = 3;
+inline constexpr unsigned char OPER_VALUE_Y = 4;
+inline constexpr unsigned char OPER_VALUE_MINUS = 5;
+inline constexpr unsigned char OPER_VALUE_PLUS = 6;
+
 // Maps operator standard char values into continuous values used internally.
 // Unused values are set to 0xFF for clarity that they really do nothing.
 // Mapping: 'Z'=90->0, '0'=48->1, '1'=49->2, 'X'=88->3, 'Y'=89->4, '-'=45->5, '+'=43->6
