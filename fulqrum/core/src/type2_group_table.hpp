@@ -56,7 +56,6 @@
 // group uses the half-key prefilter for early rejection. The split point is a boundary
 // for the prefilter, not a spin boundary. Any split point gives correct results.
 
-
 inline constexpr std::size_t MAX_PATTERN_FLIPS = 4;
 inline constexpr unsigned int NUM_MAX_FLIP_PATTERNS = 1u << MAX_PATTERN_FLIPS;
 
@@ -396,13 +395,11 @@ inline std::uint64_t half_hash(const boost::dynamic_bitset<std::size_t>& bitset,
     return rapidhashMicro(buffer.data(), num_blocks * sizeof(std::size_t));
 }
 
-
 struct PairedDirectGroup
 {
     std::uint32_t high_pair_id;
     std::size_t group;
 };
-
 
 struct Type2GroupTable
 {
