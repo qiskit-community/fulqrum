@@ -24,6 +24,7 @@ add_executable(fulqrum_tests
     test/test_qubit_operator_offdiag.cpp
     test/test_grouping.cpp
     test/test_ladder.cpp
+    test/test_type2_table.cpp
     test/test_fermi.cpp
     test/test_jw.cpp
     test/test_diag.cpp
