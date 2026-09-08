@@ -27,7 +27,6 @@ cdef extern from "../src/base.hpp":
         vector[width_t] proj_indices
         vector[width_t] proj_bits
         width_t offdiag_weight
-        int extended
         int real_phase
         int group
         unsigned int offdiag_structure
