@@ -68,7 +68,7 @@ inline constexpr std::array<unsigned char, 7> rev_oper_map = {90, 48, 49, 88, 89
  * @param[in] indices Indices for the given term
  * @param[in] width The operator width
  */
-inline void _validate_indices(std::vector<width_t>& inds, width_t width)
+inline void _validate_indices(const std::vector<width_t>& inds, width_t width)
 {
     std::size_t size = inds.size();
     for(std::size_t kk = 0; kk < size; kk++)
