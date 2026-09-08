@@ -38,7 +38,6 @@ typedef struct OperatorTerm
     std::vector<width_t> proj_bits;
     unsigned int offdiag_structure{0};
     unsigned int proj_structure{0};
-    int extended{0};
     int real_phase{1}; // 'phase' of real part (+/- 1), 0 means operator is complex-valued
     int group{-1}; // -1 means unset here
     width_t offdiag_weight{0};

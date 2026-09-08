@@ -129,22 +129,6 @@ inline std::size_t max_offdiag_ptr_size(std::vector<std::size_t>& vec)
 // Z, 0, 1, X, Y, -, +
 const int REV_EXT_MASK[7] = {1, 0, 0, 1, 1, 0, 0};
 
-/**
- * In-place marks a term as extended or not
- *
- * @param term Hamiltonian term
- *
- */
-inline void set_extended_flag(OperatorTerm_t& term)
-{
-    std::size_t kk;
-    int out = 1;
-    for(kk = 0; kk < term.values.size(); kk++)
-    {
-        out *= REV_EXT_MASK[term.values[kk]];
-    }
-    term.extended = (!out);
-}
 
 /**
  * In-place set off-diagonal weight and real_phase
@@ -484,7 +468,6 @@ typedef struct QubitOperator
             OperatorTerm term(std::get<0>(tdata), std::get<1>(tdata), coeff);
             term.set_proj_indices();
             set_offdiag_weight_and_phase(term);
-            set_extended_flag(term);
             terms.push_back(std::move(term));
         }
     }
@@ -511,7 +494,6 @@ typedef struct QubitOperator
         }
         set_offdiag_weight_and_phase(term);
         term.set_proj_indices();
-        set_extended_flag(term);
         out.terms.push_back(term);
         return out;
     }
@@ -771,19 +753,6 @@ typedef struct QubitOperator
         out.reserve(this->size());
         for(const auto& t : terms)
             out.push_back(t.real_phase);
-        return out;
-    }
-    /**
-    * Return vector of showing which terms are extended alphabet
-    *
-    * @return Vector of showing which terms are extended alphabet
-    */
-    std::vector<int> extended_terms() const
-    {
-        std::vector<int> out;
-        out.reserve(this->size());
-        for(const auto& t : terms)
-            out.push_back(t.extended);
         return out;
     }
     /**
