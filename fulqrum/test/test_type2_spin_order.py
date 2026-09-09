@@ -80,9 +80,9 @@ def _check_kernel(op, subspace, kernel, ladder_width, monkeypatch, block_size=No
     reference = _reference_matrix(op, subspace)
     hsub = fq.SubspaceHamiltonian(op, subspace)
     result = _kernel_matrix(hsub, kernel)
-    assert np.allclose(
-        result, reference, atol=1e-12
-    ), f"{kernel} differs from matrix_element at ladder_width={ladder_width}"
+    assert np.allclose(result, reference, atol=1e-12), (
+        f"{kernel} differs from matrix_element at ladder_width={ladder_width}"
+    )
     return reference
 
 
