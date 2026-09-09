@@ -1,8 +1,9 @@
 name: Build and deploy documentation
 
 on:
-  pull_request:
-    branches: []
+  push:
+    tags:
+      - '*'
 
 jobs:
   build_and_deploy_docs:
