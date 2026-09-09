@@ -13,7 +13,7 @@ In addition to eigensolving itself, Fulqrum provides tools for generating compac
 
 ## Documentation
 
-Development docs: https://qiskit-community.github.io/fulqrum/dev/
+Docs: https://qiskit-community.github.io/fulqrum
 
 
 ## Installation
