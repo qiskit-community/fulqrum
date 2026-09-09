@@ -1,6 +1,5 @@
 
-![fulqrum_logo](./docs/images/fulqrum_logo.png)
-
+![](https://raw.githubusercontent.com/qiskit-community/fulqrum/main/docs/images/fulqrum_logo.png)
 
 # Fulqrum
 
