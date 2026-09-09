@@ -1,0 +1,40 @@
+name: Release Artifacts
+on:
+  pull_request:
+    branches: []
+
+jobs:
+  make_sdist:
+    name: Make sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        name: Install Python
+        with:
+          python-version: '3.13'
+      - name: Install Deps
+        run: pip install -U twine build cython numpy
+      - name: Build Artifacts
+        run: |
+          python -m build . --sdist
+        shell: bash
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-sdist
+          path: dist/*.tar.gz
+
+  upload_all:
+    name: Upload to PyPi
+    needs: [make_sdist]
+    environment: release
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: cibw-*
+        path: dist
+        merge-multiple: true
+    - uses: pypa/gh-action-pypi-publish@release/v1
