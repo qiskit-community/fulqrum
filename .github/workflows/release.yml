@@ -1,8 +1,7 @@
 name: Release Artifacts
 on:
-  push:
-    tags:
-      - '*'
+  pull_request:
+    branches: []
 
 jobs:
   make_sdist:
@@ -10,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - uses: actions/setup-python@v5
         name: Install Python
         with:
