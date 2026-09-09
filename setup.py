@@ -10,7 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-"""Fulqrum : A generalized quantum subspace eigensolver"""
+"""Fulqrum : A generalized framework for quantum subspace diagonalization"""
 
 import os
 import sys
@@ -19,6 +19,9 @@ from setuptools.command.build_ext import build_ext
 
 import numpy as np
 from Cython.Build import cythonize
+
+DOCLINES = __doc__.split("\n")
+DESCRIPTION = DOCLINES[0]
 
 # read the contents of the README file
 from pathlib import Path
@@ -157,6 +160,7 @@ setuptools.setup(
     install_requires=REQUIREMENTS,
     package_data=PACKAGE_DATA,
     packages=PACKAGES,
+    description=DESCRIPTION,
     long_description=long_description,
     long_description_content_type='text/markdown',
     ext_modules=cythonize(
