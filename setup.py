@@ -20,6 +20,11 @@ from setuptools.command.build_ext import build_ext
 import numpy as np
 from Cython.Build import cythonize
 
+# read the contents of the README file
+from pathlib import Path
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
+
 n_parallel_threads = int(os.environ.get("FQ_BUILD_PARALLEL", "1"))
 using_inplace = "--inplace" in sys.argv
 
@@ -152,6 +157,8 @@ setuptools.setup(
     install_requires=REQUIREMENTS,
     package_data=PACKAGE_DATA,
     packages=PACKAGES,
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     ext_modules=cythonize(
         EXT_MODULES,
         nthreads=0 if using_inplace else n_parallel_threads,  # to avoid race condition

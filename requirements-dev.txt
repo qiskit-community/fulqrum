@@ -9,7 +9,6 @@ pycodestyle
 pydata_sphinx_theme
 pylatexenc
 pylint
-pyscf
 pytest
 pytest-benchmark
 qiskit-nature>=0.7.2
