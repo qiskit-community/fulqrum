@@ -1,6 +1,5 @@
 
-![fulqrum_logo](./docs/images/fulqrum_logo.png)
-
+![](https://raw.githubusercontent.com/qiskit-community/fulqrum/main/docs/images/fulqrum_logo.png)
 
 # Fulqrum
 
@@ -13,7 +12,7 @@ In addition to eigensolving itself, Fulqrum provides tools for generating compac
 
 ## Documentation
 
-Development docs: https://qiskit-community.github.io/fulqrum/dev/
+Docs: https://qiskit-community.github.io/fulqrum
 
 
 ## Installation
