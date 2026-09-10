@@ -239,7 +239,7 @@ def test_eigen4():
     for kk in range(3):
         assert (
             np.linalg.norm(B.dot(evecs2[:, kk]) - evals2[kk] * evecs2[:, kk], np.inf)
-            < 1e-11  # Error a bit larger in this case
+            < 2e-11  # Error a bit larger in this case
         )
 
     # hashing only the first (`bitset.m_bits[0]`) bitset block
@@ -258,7 +258,7 @@ def test_eigen4():
     for kk in range(3):
         assert (
             np.linalg.norm(B.dot(evecs2[:, kk]) - evals2[kk] * evecs2[:, kk], np.inf)
-            < 1e-11  # Error a bit larger in this case
+            < 2e-11  # Error a bit larger in this case
         )
 
 

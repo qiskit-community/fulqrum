@@ -10,6 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
+from pathlib import Path
 import numpy as np
 import scipy.sparse as sp
 import fulqrum as fq
@@ -18,6 +19,8 @@ from fulqrum.utils import qubitoperator_to_matrix
 """All test names ending with `a` uses `use_all_bitset_blocks=False` which
     using first (LSB) block of a bitset for hashing.
 """
+
+PATH = str(Path(__file__).parent) + "/data/"
 
 
 def matrix_subspace(A, rows):
@@ -349,3 +352,17 @@ def test_csr6a():
     assert np.allclose(P.indices, M.indices)
     assert np.allclose(P.data, M.data)
     assert P.indptr.dtype == np.int32
+
+
+def test_csr_nnz_LiH():
+    """Validat the NNZ in the CSR output for LiH"""
+    fop = fq.FermionicOperator.from_json(PATH + "lih.json")
+    op = fop.extended_jw_transformation()
+    op.set_type(1)
+    full_dist = {}
+    for kk in range(2**op.width):
+        full_dist[bin(kk)[2:].zfill(op.width)] = None
+    S = fq.Subspace([list(full_dist.keys())])
+    Hsub = fq.SubspaceHamiltonian(op, S)
+    A = Hsub.to_csr_linearoperator()
+    assert A.nnz == 102400

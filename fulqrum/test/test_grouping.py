@@ -25,7 +25,7 @@ def test_grouping1():
     H = QubitOperator(2, [])
     for item in ["XY", "XI", "IY", "YY", "IZ", "II", "Z0"]:
         H += QubitOperator.from_label(item)
-    H.offdiag_term_grouping()
+    H.group_sort()
     # three diag terms, two terms of weight two, and one of each others
     ans = np.array([0, 0, 0, 1, 2, 3, 3], dtype=np.int32)
     assert np.allclose(ans, H.groups())
@@ -36,7 +36,7 @@ def test_grouping2():
     H = QubitOperator(3, [])
     for item in ["III", "ZZ1", "Z0Z", "IZI", "ZI0"]:
         H += QubitOperator.from_label(item)
-    H.offdiag_term_grouping()
+    H.group_sort()
     ans = np.zeros(5, dtype=np.int32)
     assert np.allclose(ans, H.groups())
 
@@ -46,7 +46,7 @@ def test_grouping3():
     H = QubitOperator(4, [])
     for item in ["XIIY", "+ZZ-", "Y01X", "-00+"]:
         H += QubitOperator.from_label(item)
-    H.offdiag_term_grouping()
+    H.group_sort()
     ans = np.ones(4, dtype=np.int32)
     assert np.allclose(ans, H.groups())
 
@@ -56,7 +56,7 @@ def test_grouping_split():
     H = QubitOperator(4, [])
     for item in ["XIII", "ZYII", "ZIZI", "01+Z", "IIII", "+Z00"]:
         H += QubitOperator.from_label(item)
-    H.offdiag_term_grouping()
+    H.group_sort()
     diag, offdiag = H.split_diagonal()
     diag_ans = np.zeros(len(diag))
     offdiag_ans = np.array([1, 2, 3, 3])
@@ -135,7 +135,7 @@ def test_basic_group_pointers5():
     op += fq.QubitOperator.from_label("XYYX")
     op += fq.QubitOperator.from_label("IIIX")
     assert op.num_groups == 5
-    op.offdiag_term_grouping()
+    op.group_sort()
     assert np.allclose(op.group_ptrs(), np.array([0, 2, 3, 5, 6, 7]))
 
 
@@ -162,15 +162,15 @@ def test_square_group_pointers():
 
     h_ptrs = H.group_ptrs()
     H_diag, H_off = H.split_diagonal()
-    assert H_diag.num_terms == h_ptrs[1]
+    assert H_diag.size() == h_ptrs[1]
     hdiag_ptrs = H_diag.group_ptrs()
     assert hdiag_ptrs.shape[0] == 2
     assert hdiag_ptrs[1] == h_ptrs[1]
-    assert np.allclose(H_diag.groups(), np.zeros(H_diag.num_terms))
+    assert np.allclose(H_diag.groups(), np.zeros(H_diag.size()))
     hoff_ptrs = H_off.group_ptrs()
     # XX and YY have same off-diagonal structure so this is True here
-    assert H_off.num_terms // 2 == (hoff_ptrs.shape[0] - 1)
-    assert np.allclose(np.diff(hoff_ptrs), 2 * np.ones(H_off.num_terms // 2))
+    assert H_off.size() // 2 == (hoff_ptrs.shape[0] - 1)
+    assert np.allclose(np.diff(hoff_ptrs), 2 * np.ones(H_off.size() // 2))
 
 
 def test_square_group_pointers_h2_example():
@@ -180,8 +180,8 @@ def test_square_group_pointers_h2_example():
     op = fop.extended_jw_transformation()
     op_ptrs = op.group_ptrs()
     diag, off = op.split_diagonal()
-    assert diag.num_terms == op_ptrs[1]
-    assert off.num_terms == op_ptrs[2] - op_ptrs[1]
+    assert diag.size() == op_ptrs[1]
+    assert off.size() == op_ptrs[2] - op_ptrs[1]
     # All the elements in the off-diagonal component have the same diagonal structure
     assert np.allclose(off.group_ptrs(), np.array([0, 4]))
 
@@ -217,7 +217,7 @@ def test_group_ladder_indices2():
     op += fq.QubitOperator.from_label("IYYI")
     op += fq.QubitOperator.from_label("YYYY")
     op += fq.QubitOperator.from_label("YYIY")
-    op.offdiag_term_grouping()
+    op.group_sort()
     inds_list = op.group_offdiag_indices()
     assert np.allclose(inds_list[0], np.array([0, 2], dtype=np.uint32))
     assert np.allclose(inds_list[1], np.array([3], dtype=np.uint32))
@@ -283,7 +283,7 @@ def test_group_terms_ladder_int_width3():
 
 def test_group_terms_ladder_int_width4():
     """Test that sorting groups by ladder ints obeys ladder_width"""
-    op = fq.QubitOperator.from_label("_+II")
+    op = fq.QubitOperator.from_label("-+II")
     op += fq.QubitOperator.from_label("++II")
     op += fq.QubitOperator.from_label("IIIZ")
     op.set_type(2)
@@ -307,7 +307,7 @@ def test_group_ladder_bin_starts1():
     op += fq.QubitOperator.from_label("I---")  # int = 0
     op += fq.QubitOperator.from_label("I+++")  # int = 7
     op.set_type(2)
-    op.offdiag_term_grouping()
+    op.group_sort()
     op.group_term_sort_by_ladder_int()
 
     assert np.allclose(op.terms_by_group(2).ladder_ints(), [1, 2, 3])
@@ -346,7 +346,7 @@ def test_group_ladder_bin_starts3():
     op += fq.QubitOperator.from_label("Z0-+")  # int = 1
     op += fq.QubitOperator.from_label("ZI++")  # int = 3
     op.set_type(2)
-    op.offdiag_term_grouping()
+    op.group_sort()
     op.group_term_sort_by_ladder_int()
     assert np.allclose(op.terms_by_group(1).ladder_ints(), [0, 1, 1, 2, 2, 3, 3])
     assert np.allclose(op.terms_by_group(2).ladder_ints(), [0, 1, 1, 2, 2, 3])
@@ -429,7 +429,7 @@ def test_group_ladder_bin_starts6():
     op += fq.QubitOperator.from_label("Z00+")  # int = 1
     op += fq.QubitOperator.from_label("ZII+")  # int = 1
     op.set_type(2)
-    op.offdiag_term_grouping()
+    op.group_sort()
     op.group_term_sort_by_ladder_int()
     group_ladder_starts = op.group_ladder_bin_starts()
     ptr_size = 2**3 + 1

@@ -63,7 +63,7 @@ inline void get_column_bitset(boost::dynamic_bitset<std::size_t>& col,
         ind = pos[kk];
         block_num = ind / BITS_PER_BLOCK;
         block_idx = ind % BITS_PER_BLOCK;
-        col.m_bits[block_num] = col.m_bits[block_num] ^ (std::size_t)((val[kk] > 2) << block_idx);
+        col.m_bits[block_num] = col.m_bits[block_num] ^ (std::size_t(val[kk] > 2) << block_idx);
     }
 }
 

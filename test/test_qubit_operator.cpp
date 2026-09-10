@@ -125,7 +125,7 @@ TEST_CASE("Verify diagonal operator returns true")
 {
     width_t N = 25;
     QubitOperator_t op = QubitOperator(N);
-    std::vector<std::string> diag_ops = {"Z", "O", "1"};
+    std::vector<std::string> diag_ops = {"Z", "0", "1"};
     width_t kk;
     for(kk = 0; kk < N; kk++)
     {
@@ -266,7 +266,7 @@ TEST_CASE("Test operator splitting preserves operator type")
 TEST_CASE("Test combining terms doesn't crash for an empty operator")
 {
     QubitOperator op = QubitOperator(5);
-    QubitOperator new_op = op.combine_repeated_terms();
+    QubitOperator new_op = op.combine_repeat_terms();
     CHECK(new_op.size() == 0);
 }
 
@@ -279,7 +279,7 @@ TEST_CASE("Test QubitOperator combining terms")
     op += QubitOperator::from_label("IZYXI");
     op += QubitOperator::from_label("IIIII");
     op += QubitOperator::from_label("I0YXI");
-    QubitOperator new_op = op.combine_repeated_terms();
+    QubitOperator new_op = op.combine_repeat_terms();
     CHECK(new_op.size() == 3);
     CHECK(new_op[1].coeff == complex(5, 0));
 }

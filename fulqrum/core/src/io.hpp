@@ -16,15 +16,17 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <variant>
 #include <vector>
 
 #include "./external/json.hpp"
+#include "./external/pstream.h"
 #include "base.hpp"
+#include "term_utils.hpp"
 #include "version.hpp"
 
 using json = nlohmann::json;
@@ -67,18 +69,19 @@ inline bool file_exists(const std::string& name)
  *
  * @return Result from running the command
  */
-inline std::string exec(const char* cmd)
+inline std::string exec_command(const char* cmd)
 {
-    std::vector<char> buffer(128);
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if(!pipe)
+    // run a process and create a streambuf that reads its stdout and stderr
+    redi::ipstream proc(cmd, redi::pstreams::pstdout | redi::pstreams::pstderr);
+    std::string line, result;
+    while(std::getline(proc.out(), line))
     {
-        throw std::runtime_error("popen() failed!");
+        result += line;
     }
-    while(fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr)
+    // if reading stdout stopped at EOF then reset the state:
+    if(proc.eof() && proc.fail())
     {
-        result += buffer.data();
+        proc.clear();
     }
     return result;
 }
@@ -194,12 +197,12 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
     if(ending == "xz")
     {
         compress_str = "xz -9 -f -k -T0 -q " + short_filename + " ";
-        exec(compress_str.c_str()); // compress original json
+        exec_command(compress_str.c_str()); // compress original json
     }
     else if(ending == "zst")
     {
         compress_str = "zstd -16 --rm -k -q -f -T0 " + short_filename;
-        exec(compress_str.c_str()); // compress original json
+        exec_command(compress_str.c_str()); // compress original json
     }
     else if(ending != "json")
     {
@@ -251,17 +254,17 @@ inline void json_to_operator(const std::string& filename, U& oper)
     // the file *.json file.  Ideally we would not overwrite in
     // the first place, but that is a later issue.
     bool short_filename_exists = file_exists(short_filename);
-    
+
     std::string uncompress_str;
     if(ending == "xz")
     {
         uncompress_str = "xz -d -f -k -q -T0 " + filename + " ";
-        exec(uncompress_str.c_str());
+        exec_command(uncompress_str.c_str());
     }
     else if(ending == "zst")
     {
         uncompress_str = "zstd -d -f -q -k -T0 " + filename;
-        exec(uncompress_str.c_str());
+        exec_command(uncompress_str.c_str());
     }
     else if(ending != "json")
     {
@@ -276,7 +279,10 @@ inline void json_to_operator(const std::string& filename, U& oper)
     // remove temp json file if original is a compressed version
     if(ending == "xz" || ending == "zst")
     {
-        if(!short_filename_exists){std::remove(short_filename.c_str());}
+        if(!short_filename_exists)
+        {
+            std::remove(short_filename.c_str());
+        }
     }
 
     oper.width = Doc["width"];
@@ -286,7 +292,6 @@ inline void json_to_operator(const std::string& filename, U& oper)
     std::vector<std::string> version_split = split_string(Doc["format-version"], ".");
     int major_version = std::stoi(version_split[0]);
     int minor_version = std::stoi(version_split[1]);
-
 
     if constexpr(std::is_same_v<U, QubitOperator>)
     {
@@ -300,19 +305,17 @@ inline void json_to_operator(const std::string& filename, U& oper)
             JsonTerm item = terms[kk];
             auto [a, b] = std::get<2>(item);
             OperatorTerm term = OperatorTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
-            term.set_proj_indices();
-            set_offdiag_weight_and_phase(term);
-            set_extended_flag(term);
             oper.terms[kk] = term;
         }
-         // look to see if method-type exists, should in V1.1
-        if(major_version >=1 && minor_version >= 1)
+        // look to see if method-type exists, should in V1.1
+        if(major_version >= 1 && minor_version >= 1)
         {
             if(Doc.contains("method-type"))
             {
                 oper.type = Doc["method-type"];
             }
-            else{
+            else
+            {
                 throw std::runtime_error("JSON format 1.1+ should have a 'method-type' key");
             }
         }
@@ -329,7 +332,6 @@ inline void json_to_operator(const std::string& filename, U& oper)
             JsonTerm item = terms[kk];
             auto [a, b] = std::get<2>(item);
             FermionicTerm term = FermionicTerm(std::get<0>(item), std::get<1>(item), complex(a, b));
-            term.insertion_sort();
             oper.terms[kk] = term;
         }
     }

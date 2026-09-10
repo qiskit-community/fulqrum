@@ -26,7 +26,7 @@ def test_fermionic_json():
     FOP.to_json("lih.json", overwrite=True)
     new_fop = fq.FermionicOperator.from_json("lih.json")
     assert FOP.width == new_fop.width
-    assert FOP.num_terms == new_fop.num_terms
+    assert FOP.size() == new_fop.size()
     try:
         os.remove("lih.json")
     except FileNotFoundError:
@@ -38,7 +38,7 @@ def test_fermionic_xz():
     FOP.to_json("lih.json.xz", overwrite=True)
     new_fop = fq.FermionicOperator.from_json("lih.json.xz")
     assert FOP.width == new_fop.width
-    assert FOP.num_terms == new_fop.num_terms
+    assert FOP.size() == new_fop.size()
     try:
         os.remove("lih.json.xz")
     except FileNotFoundError:
@@ -54,7 +54,7 @@ def test_qubit_json():
     OP.to_json("lih_op.json", overwrite=True)
     new_op = fq.QubitOperator.from_json("lih_op.json")
     assert OP.width == new_op.width
-    assert OP.num_terms == new_op.num_terms
+    assert OP.size() == new_op.size()
     try:
         os.remove("lih_op.json")
     except FileNotFoundError:
@@ -66,7 +66,7 @@ def test_qubit_xz():
     OP.to_json("lih_op.json.xz", overwrite=True)
     new_op = fq.QubitOperator.from_json("lih_op.json.xz")
     assert OP.width == new_op.width
-    assert OP.num_terms == new_op.num_terms
+    assert OP.size() == new_op.size()
     try:
         os.remove("lih_op.json.xz")
     except FileNotFoundError:

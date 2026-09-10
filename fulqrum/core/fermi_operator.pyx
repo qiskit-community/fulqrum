@@ -22,12 +22,17 @@ from .. import __version__ as VERSION
 from .qubit_operator cimport QubitOperator
 from ..utils.io import dict_to_json, json_to_dict
 from ..exceptions import FulqrumError
+from ..convert import fcidump_to_fq_fermionic_op
 
 
 from pathlib import Path
+import time
 import warnings
 import numpy as np
 cimport numpy as np
+
+import logging
+logger = logging.getLogger(__name__)
 
 include "includes/base_header.pxi"
 include "includes/converters.pxi"
@@ -65,6 +70,7 @@ cdef class FermionicOperator():
         if operators is not None:
             for item in operators:
                 term = EmptyFermionicTerm
+<<<<<<< HEAD
 
                 if len(item) == 1:
                     term.coeff = item[0]
@@ -80,6 +86,24 @@ cdef class FermionicOperator():
                             ind = STR_TO_IND[op_str[kk]]
                             term.values.push_back(ind)
                     term.coeff = coeff
+=======
+                if any(item):
+                    if len(item) == 1:
+                        term.coeff = item[0]
+                    else:
+                        op_str = (<string>item[0]).c_str()
+                        inds = item[1] if isinstance(item[1], Iterable) else [item[1]]
+                        coeff = item[2] if len(item) == 3 else 1.0
+                        for kk in range(<size_t>len(item[0])):
+                            if inds[kk] > (self.oper.width - 1):
+                                raise FulqrumError(f'Index {item[1]} is out of range for width={self.oper.width}')
+                            if op_str[kk] != 73:
+                                term.indices.push_back(inds[kk])
+                                ind = STR_TO_IND[op_str[kk]]
+                                term.values.push_back(ind)
+                                term.offdiag_structure += (inds[kk] + 1) * (ind > 2)
+                        term.coeff = coeff
+>>>>>>> main
                 else:
                     term.coeff = 1
                 term.insertion_sort()
@@ -273,16 +297,6 @@ cdef class FermionicOperator():
         out.oper.terms.push_back(term)
         return out
 
-    @property
-    def num_terms(self):
-        """Return the number of terms in the operator
-
-        Returns:
-            int: Number of terms in operator
-        """
-        warnings.warn("'num_terms' will be removed, use 'size()' instead")
-        return self.size()
-
     def size(self):
         """Return the number of terms in the operator
 
@@ -299,6 +313,61 @@ cdef class FermionicOperator():
             int
         """
         return self.oper.width
+
+    def copy(self):
+        """Return a copy of the operator
+
+        Returns:
+            FermionicOperator
+        """
+        cdef FermionicOperator out = FermionicOperator(self.width)
+        out.oper = self.oper.copy()
+        return out
+
+    @cython.boundscheck(False)
+    def offdiag_structure_sort(self):
+        """Off-diagonal structures of each term in operator
+        """
+        self.oper.offdiag_structure_sort()
+        return self
+
+    @cython.boundscheck(False)
+    def offdiag_structure_ptrs(self):
+        """Off-diagonal structures of each term in operator
+        """
+        cdef size_t kk
+        cdef vector[size_t] ptrs
+        if self.oper.terms.size() == 0:
+            raise FulqrumError('FermionicOperator has zero terms')
+        ptrs = self.oper.offdiag_structure_ptrs()
+        cdef size_t[::1] out = np.empty(ptrs.size(), dtype=np.uintp)
+        for kk in range(ptrs.size()):
+            out[kk] = ptrs[kk]
+        return np.asarray(out)
+    
+    @cython.boundscheck(False)
+    def offdiag_structures(self):
+        """Off-diagonal structures of each term in operator
+        """
+        cdef size_t kk
+        if self.oper.terms.size() == 0:
+            raise FulqrumError('FermionicOperator has zero terms')
+        cdef unsigned int[::1] out = np.empty(self.oper.terms.size(), dtype=np.uint32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].offdiag_structure
+        return np.asarray(out)
+
+    @cython.boundscheck(False)
+    def proj_structures(self):
+        """Off-diagonal structures of each term in operator
+        """
+        cdef size_t kk
+        if self.oper.terms.size() == 0:
+            raise FulqrumError('FermionicOperator has zero terms')
+        cdef unsigned int[::1] out = np.empty(self.oper.terms.size(), dtype=np.uint32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].proj_structure
+        return np.asarray(out)
 
     @property
     def coeff(self):
@@ -386,6 +455,11 @@ cdef class FermionicOperator():
                     out.append((IND_TO_STR[term.values[jj]], term.indices[jj]))
             return out
 
+    def weight_sort(self):
+        """In-place sort terms by their standard weight
+        """
+        self.oper.weight_sort()
+    
     @cython.boundscheck(False)
     def weights(self):
         """Weight of each term in the operator
@@ -410,34 +484,40 @@ cdef class FermionicOperator():
 
 
     @cython.boundscheck(False)
-    def deflate_repeated_indices(self):
-        """Collapse repeated indices into singles and remove zero terms
-
-        Returns:
-            FermionicOperator: Deflated operator
-        """
-        warnings.warn("'deflate_repeated_indices()' will be removed.  Use 'combine_repeat_indices()' instead")
-        return self.combine_repeat_indices()
-
-    @cython.boundscheck(False)
     def combine_repeat_indices(self):
         """Collapse repeated indices into singles and remove zero terms
 
         Returns:
             FermionicOperator: Deflated operator
         """
+        st = time.perf_counter()
         cdef size_t kk
         cdef FermionicOperator out = FermionicOperator(self.width)
         out.oper = self.oper.combine_repeat_indices()
+        ft = time.perf_counter()
+        logger.info("Combine repeat indices time: %s ms", round((ft - st) * 1000, 3))
+        return out
+
+    def combine_repeat_terms(self, double atol=1e-12):
+        """In-place sort terms by their standard weight
+        """
+        st = time.perf_counter()
+        cdef FermionicOperator out = FermionicOperator(self.width)
+        out.oper = self.oper.combine_repeat_terms(atol)
+        ft = time.perf_counter()
+        logger.info("Combine repeat terms time: %s ms", round((ft - st) * 1000, 3))
         return out
 
     def extended_jw_transformation(self):
         """Jordan-Wigner transformation over extended alphabet
         from Fermionic -> Qubit operator
         """
+        st = time.perf_counter()
         cdef QubitOperator out = QubitOperator(self.width)
         out.oper = self.oper.extended_jw_transformation()
-        return out.combine_repeated_terms()
+        ft = time.perf_counter()
+        logger.info("Extended JW time: %s ms", round((ft - st) * 1000, 3))
+        return out
 
     @cython.boundscheck(False)
     def to_dict(self):
@@ -514,3 +594,7 @@ cdef class FermionicOperator():
         cdef FermionicOperator out = FermionicOperator(1) #dummy width
         out.oper = out.oper.from_json(str(filename))
         return out
+
+    @classmethod
+    def from_fcidump(self, filename):
+        return fcidump_to_fq_fermionic_op(filename)

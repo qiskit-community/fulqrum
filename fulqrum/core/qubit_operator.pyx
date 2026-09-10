@@ -33,9 +33,13 @@ from .constants import np_width_t
 
 from collections.abc import Iterable
 from pathlib import Path
+import time
 import numbers
 import numpy as np
 cimport numpy as np
+
+import logging
+logger = logging.getLogger(__name__)
 
 include "includes/base_header.pxi"
 include "includes/elements_header.pxi"
@@ -47,9 +51,6 @@ include "includes/diag_header.pxi"
 
 
 cdef const OperatorTerm_t EmptyOperatorTerm
-
-
-
 
 
 cdef class QubitOperator():
@@ -98,12 +99,13 @@ cdef class QubitOperator():
                                 term.indices.push_back(inds[kk])
                                 ind = STR_TO_IND[op_str[kk]]
                                 term.values.push_back(ind)
+                                term.offdiag_structure += (inds[kk] + 1) * (ind > 2)
                         term.coeff = coeff
                 else:
                     term.coeff = 1
                 term.sort_term_data()
                 set_offdiag_weight_and_phase(term)
-                set_proj_indices(term)
+                term.set_proj_indices()
                 set_extended_flag(term)
                 self.oper.terms.push_back(term)
 
@@ -187,16 +189,7 @@ cdef class QubitOperator():
         else:
             raise FulqrumError("Operator must have a single-term to get coeff.  Otherwise use op.coefficients()")
 
-    @property
-    def num_terms(self):
-        """Return the number of terms in the operator
 
-        Returns:
-            int: Number of terms in operator
-        """
-        return self.oper.size()
-
-    @property
     def size(self):
         """Return the number of terms in the operator
 
@@ -249,7 +242,7 @@ cdef class QubitOperator():
         Returns:
             int : Number of groups in operator
         """
-        if self.num_terms == 0:
+        if self.size() == 0:
             return 0
         self.oper.group_sort()
         return self.oper.group_ptrs().size() - 1
@@ -263,6 +256,18 @@ cdef class QubitOperator():
         """
 
         return self.oper.ladder_width
+
+    @cython.boundscheck(False)
+    def offdiag_structures(self):
+        """Off-diagonal structures of each term in operator
+        """
+        cdef size_t kk
+        if self.oper.terms.size() == 0:
+            raise FulqrumError('QubitOperator has zero terms')
+        cdef unsigned int[::1] out = np.empty(self.oper.terms.size(), dtype=np.uint32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].offdiag_structure
+        return np.asarray(out)
 
     def copy(self):
         """Copy QubitOperator
@@ -345,9 +350,9 @@ cdef class QubitOperator():
         cdef size_t kk, jj
         cdef OperatorTerm_t * term
         cdef list out = []
-        if self.num_terms > 1:
+        if self.size() > 1:
             raise FulqrumError('Can only grab operators from operators with < 2 terms')
-        elif self.num_terms == 0:
+        elif self.size() == 0:
             return None
         else:
             for kk in range(self.oper.terms.size()):
@@ -724,11 +729,13 @@ cdef class QubitOperator():
         return np.asarray(out)
 
 
-    def offdiag_term_grouping(self):
-        """Inplace sorting of operator terms according to off-diagonal
-        structure.
+    def group_sort(self):
+        """Inplace sorting of operator terms into groups that represent matrix-elements.
         """
+        cdef double st = time.perf_counter()
         self.oper.group_sort()
+        cdef double ft = time.perf_counter()
+        logger.info("Term grouping time: %s ms", round((ft - st) * 1000, 3))
 
     def offdiag_weight_sort(self):
         """In-place sort terms by their off-diagonal weight
@@ -754,7 +761,7 @@ cdef class QubitOperator():
         return np.asarray(out)
 
 
-    def combine_repeated_terms(self, double atol=1e-12):
+    def combine_repeat_terms(self, double atol=1e-12):
         """Combine repeated terms that represent same
         operators, dropping terms smaller than requested tolerance.
 
@@ -764,8 +771,11 @@ cdef class QubitOperator():
         Returns:
             QubitOperator: Operator with repeat terms combined
         """
+        cdef double st = time.perf_counter()
         cdef QubitOperator out = QubitOperator(self.oper.width)
-        out.oper = self.oper.combine_repeated_terms(atol)
+        out.oper = self.oper.combine_repeat_terms(atol)
+        cdef double ft = time.perf_counter()
+        logger.info("Combine repeat terms time: %s ms", round((ft - st) * 1000, 3))
         return out
 
     @cython.boundscheck(False)
@@ -830,7 +840,11 @@ cdef class QubitOperator():
         """
         if not self.oper.type == 2:
             raise FulqrumError("Operator must be type=2")
+        logger.info("Starting ladder int grouping, ladder_width = %s", ladder_width)
+        cdef double st = time.perf_counter()
         self.oper.group_term_sort_by_ladder_int(ladder_width)
+        cdef double ft = time.perf_counter()
+        logger.info("Ladder int grouping time: %s ms", round((ft - st) * 1000, 3))
 
     def group_ladder_bin_starts(self):
         if not self.oper.type == 2:
@@ -857,7 +871,16 @@ cdef class QubitOperator():
         for kk in range(num_terms):
             out[kk] = passes_proj_validation(&self.oper.terms[kk], bits.bits)
         return np.asarray(out)
-
+    
+    @cython.boundscheck(False)
+    def proj_structures(self):
+        """Off-diagonal structures of each term in operator
+        """
+        cdef size_t kk
+        cdef unsigned int[::1] out = np.empty(self.oper.terms.size(), dtype=np.uint32)
+        for kk in range(self.oper.terms.size()):
+            out[kk] = self.oper.terms[kk].proj_structure
+        return np.asarray(out)
 
     @cython.boundscheck(False)
     def worst_case_offdiag_group_amplitudes(self):
@@ -872,7 +895,7 @@ cdef class QubitOperator():
             ndarray: Worse case amplitudes of groups
         """
         diag_op, _ = self.split_diagonal()
-        if diag_op.num_terms != 0:
+        if diag_op.size() != 0:
             raise FulqrumError('Operator must contain off-diagonal terms only')
         cdef size_t[::1] group_ptrs = self.group_ptrs()
         cdef size_t[::1] ladder_starts
