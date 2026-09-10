@@ -210,7 +210,6 @@ inline void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_ter
     const int num_elems = static_cast<int>(fermi_term.indices.size());
     int phase = 1;
     qubit_term.coeff = fermi_term.coeff;
-    qubit_term.extended = (num_elems > 0);
 
     // Reserve for case where all elements plus Z-fill between them
     if(num_elems > 0)

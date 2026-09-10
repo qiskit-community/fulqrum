@@ -184,17 +184,3 @@ def test_integrals_to_fq_fermionic_op():
                 assert found
             assert num_touched == fop.size()
             assert fop.size() == fop2.size()
-
-
-@pytest.mark.skip(reason="Not implemented as it uses already tested functions")
-def test_fcidump_to_fq_fermionic_op():
-    """The function uses PySCF to extract one- and two-body integrals and then
-    calls  ``integrals_to_fq_fermionic_op()``. Therefore, we are skipping
-    explicitly testing this function for now.
-
-    Test Idea: Search fcidump for a small molecule such as
-        H2O, solve it for full subspace, and compare expected accuracy with
-        computed accuracy. If integral conversion is correct, then accuracies
-        must match.
-    """
-    pass

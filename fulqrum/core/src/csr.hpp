@@ -161,9 +161,6 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
                     if(col_ptr == nullptr)
                         continue;
                     const std::size_t col_idx = *col_ptr;
-                    T row_nnz_col_idx, elem_start_col_idx;
-                    T& row_nnz = row_nnz_s[kk];
-                    T& elem_start = indptr[kk];
                     U val = 0;
                     for(std::size_t idx = group_start; idx < group_stop; idx++)
                     { // begin loop over terms in this group
@@ -184,36 +181,21 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
                     {
                         if(compute_values)
                         {
-#pragma omp atomic write
+                            // To prevent write contention 
+                            T row_nnz;
+#pragma omp atomic capture
+                            row_nnz = row_nnz_s[kk]++;
+                            const T elem_start = indptr[kk];
                             indices[elem_start + row_nnz] = col_idx;
-                            if constexpr(std::is_same_v<U, double>) // real case
-                            {
-#pragma omp atomic write
-                                data[elem_start + row_nnz] = val;
-                            }
-                            else // imaginary case
-                            {
-                                double* __restrict p =
-                                    reinterpret_cast<double*>(&data[elem_start + row_nnz]);
-                                const double* __restrict q = reinterpret_cast<const double*>(&val);
-#pragma omp atomic
-                                p[0] += q[0]; // real part
-#pragma omp atomic
-                                p[1] += q[1]; // imag part
-                            }
-#pragma omp atomic
-                            row_nnz += 1;
+                            data[elem_start + row_nnz] = val;
 
-                            row_nnz_col_idx = row_nnz_s[col_idx];
-                            elem_start_col_idx = indptr[col_idx];
-#pragma omp atomic write
+                            T row_nnz_col_idx;
+#pragma omp atomic capture
+                            row_nnz_col_idx = row_nnz_s[col_idx]++;
+                            const T elem_start_col_idx = indptr[col_idx];
                             indices[elem_start_col_idx + row_nnz_col_idx] = kk;
-#pragma omp atomic
-                            row_nnz_s[col_idx] += 1;
-                            // process col_idx
                             if constexpr(std::is_same_v<U, double>)
                             {
-#pragma omp atomic write
                                 data[elem_start_col_idx + row_nnz_col_idx] = val;
                             }
                             else
@@ -221,21 +203,13 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
                                 // for complex-valued matrix, the upper triangle
                                 // element will be complex conjugate of the lower
                                 // triangle element
-                                const U update_val = std::conj(val);
-                                double* __restrict p2 = reinterpret_cast<double*>(
-                                    &data[elem_start_col_idx + row_nnz_col_idx]);
-                                const double* __restrict q2 =
-                                    reinterpret_cast<const double*>(&update_val);
-#pragma omp atomic write
-                                p2[0] = q2[0]; // real part
-#pragma omp atomic write
-                                p2[1] = q2[1]; // imag part
+                                data[elem_start_col_idx + row_nnz_col_idx] = std::conj(val);
                             }
                         }
                         else
                         {
 #pragma omp atomic
-                            row_nnz += 1;
+                            row_nnz_s[kk] += 1;
 
 #pragma omp atomic
                             row_nnz_s[col_idx] += 1;
