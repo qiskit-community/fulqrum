@@ -63,6 +63,7 @@ typedef struct OperatorTerm
         }
         values.reserve(n);
         indices.reserve(n);
+        unsigned int num_y = 0;
         for(std::size_t i = 0; i < n; ++i)
         {
             if(static_cast<unsigned char>(vals[i]) == 73) // 'I' identity — skip
@@ -72,7 +73,9 @@ typedef struct OperatorTerm
             indices.push_back(inds[i]);
             offdiag_weight += static_cast<width_t>(val > 2);
             offdiag_structure += (inds[i] + 1) * static_cast<unsigned int>(val > 2);
+            num_y += (val == 4);
         }
+        real_phase = ((num_y % 4) % 2) - 1;
         sort_term_data(); // sort term data from low -> high indices
         set_proj_indices(); // set projection operator indices, if any
     }

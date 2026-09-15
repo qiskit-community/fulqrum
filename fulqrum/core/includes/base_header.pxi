@@ -118,5 +118,5 @@ cdef extern from "../src/base.hpp":
                                    size_t num_groups)
 
     OperatorTerm_t& set_proj_indices(OperatorTerm_t&)
-    void set_offdiag_weight_and_phase(OperatorTerm_t& term) nogil
+    void set_offdiag_weight_phase_struct(OperatorTerm_t& term) nogil
     void set_extended_flag(OperatorTerm_t& term) nogil

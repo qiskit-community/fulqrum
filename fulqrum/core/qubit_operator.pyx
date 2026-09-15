@@ -99,12 +99,11 @@ cdef class QubitOperator():
                                 term.indices.push_back(inds[kk])
                                 ind = STR_TO_IND[op_str[kk]]
                                 term.values.push_back(ind)
-                                term.offdiag_structure += (inds[kk] + 1) * (ind > 2)
                         term.coeff = coeff
                 else:
                     term.coeff = 1
                 term.sort_term_data()
-                set_offdiag_weight_and_phase(term)
+                set_offdiag_weight_phase_struct(term)
                 term.set_proj_indices()
                 self.oper.terms.push_back(term)
 
