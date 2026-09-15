@@ -181,7 +181,7 @@ void csr_matrix_builder(const std::vector<OperatorTerm_t>& terms,
                     {
                         if(compute_values)
                         {
-                            // To prevent write contention 
+                            // To prevent write contention
                             T row_nnz;
 #pragma omp atomic capture
                             row_nnz = row_nnz_s[kk]++;

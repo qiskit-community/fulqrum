@@ -129,7 +129,6 @@ inline std::size_t max_offdiag_ptr_size(std::vector<std::size_t>& vec)
 // Z, 0, 1, X, Y, -, +
 const int REV_EXT_MASK[7] = {1, 0, 0, 1, 1, 0, 0};
 
-
 /**
  * In-place set off-diagonal weight and real_phase
  *
@@ -144,7 +143,7 @@ inline void set_offdiag_weight_phase_struct(OperatorTerm_t& term)
     }
     std::size_t kk;
     width_t weight = 0;
-    unsigned int temp, num_y = 0, st =0;
+    unsigned int temp, num_y = 0, st = 0;
     unsigned char* values = &term.values[0];
     width_t* indices = &term.indices[0];
     for(kk = 0; kk < term.values.size(); kk++)
