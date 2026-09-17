@@ -156,20 +156,20 @@ inline void set_offdiag_weight_phase_struct(OperatorTerm_t& term)
     term.offdiag_weight = weight;
     term.offdiag_structure = st;
     // Do the real_phase for checking if operator itself can be cast as symmetric (real)
-    switch (num_y % 4)
+    switch(num_y % 4)
     {
-        case 0:
-            phase = 1;
-            break;
-        case 1:
-            phase = 0;
-            break;
-        case 2:
-            phase = -1;
-            break;
-        case 3:
-            phase = 0;
-            break;
+    case 0:
+        phase = 1;
+        break;
+    case 1:
+        phase = 0;
+        break;
+    case 2:
+        phase = -1;
+        break;
+    case 3:
+        phase = 0;
+        break;
     }
     term.real_phase = phase;
 }
