@@ -459,7 +459,7 @@ typedef struct FermionicOperator
             // elements are added high to low, so must reverse to get correct order
             std::reverse(out.terms[kk].indices.begin(), out.terms[kk].indices.end());
             std::reverse(out.terms[kk].values.begin(), out.terms[kk].values.end());
-            set_offdiag_weight_and_phase(out.terms[kk]);
+            set_offdiag_weight_phase_struct(out.terms[kk]);
             set_term_proj_indices(out.terms[kk]);
         }
         out.type = 2; // set type=2

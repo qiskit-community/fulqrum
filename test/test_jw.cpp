@@ -155,3 +155,10 @@ TEST_CASE("Test JW medium 6")
     CHECK(op[0].operators() == ans[0].operators());
     CHECK(op[0].coeff == complex(1, 0));
 }
+
+TEST_CASE("Test JW sets off-diagonal structure")
+{
+    FermionicOperator_t fop = FermionicOperator(5, {{"+-", {1, 4}, 1}});
+    QubitOperator_t op = fop.extended_jw_transformation();
+    CHECK(op[0].offdiag_structure == 7);
+}
