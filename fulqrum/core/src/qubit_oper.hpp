@@ -143,8 +143,9 @@ inline void set_offdiag_weight_phase_struct(OperatorTerm_t& term)
     }
     std::size_t kk;
     width_t weight = 0;
-    unsigned int temp, num_y = 0, st = 0;
+    unsigned int num_y = 0, st = 0;
     unsigned char* values = &term.values[0];
+    char phase;
     width_t* indices = &term.indices[0];
     for(kk = 0; kk < term.values.size(); kk++)
     {
@@ -155,11 +156,22 @@ inline void set_offdiag_weight_phase_struct(OperatorTerm_t& term)
     term.offdiag_weight = weight;
     term.offdiag_structure = st;
     // Do the real_phase for checking if operator itself can be cast as symmetric (real)
-    temp = num_y % 4;
-    if(temp)
+    switch (num_y % 4)
     {
-        term.real_phase = (temp % 2) - 1;
+        case 0:
+            phase = 1;
+            break;
+        case 1:
+            phase = 0;
+            break;
+        case 2:
+            phase = -1;
+            break;
+        case 3:
+            phase = 0;
+            break;
     }
+    term.real_phase = phase;
 }
 
 /**
