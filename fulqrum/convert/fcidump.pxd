@@ -27,9 +27,10 @@ cdef extern from "./src/fcidump.hpp":
         int MS2
         int ISYM
         bool UHF
+        void two_body_integrals_to_ptr(double * out, int norb)
+
 
     FCIDumpData_t parse_fcidump(string& filename) except +
-
 
 cdef class FCIDumpData():
     cdef FCIDumpData_t data

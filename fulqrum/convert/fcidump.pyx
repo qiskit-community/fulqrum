@@ -13,10 +13,10 @@
 
 """PySCF conversion utilities"""
 from libcpp.vector cimport vector
-
 from pathlib import Path
 import time
 import numpy as np
+cimport numpy as np
 import logging
 logger = logging.getLogger(__name__)
 
@@ -74,6 +74,13 @@ cdef class FCIDumpData():
     def ORBSYM(self):
         cdef int[::1] arr = <int [:self.data.H2.size()]>self.data.ORBSYM.data()
         return np.asarray(arr)
+
+    
+    def two_body_integrals(self):
+        cdef int norb = self.data.NORB
+        cdef double[::1] out = np.zeros(norb * norb * norb * norb, dtype=float)
+        self.data.two_body_integrals_to_ptr(&out[0], norb)
+        return np.asarray(out)
 
 
 def read_fcidump(filename: str | Path):

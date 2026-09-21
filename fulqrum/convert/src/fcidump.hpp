@@ -103,7 +103,7 @@ inline int trans_index(const int idx, const int norb)
     return out;
 }
 
-inline void two_body_permute(std::vector<double>& vec, const int norb)
+inline void two_body_permute(double * vec, const int norb)
 {
     // permutation vector
     const int dim = norb * norb * norb * norb;
@@ -141,31 +141,38 @@ typedef struct FCIDumpData
     int ISYM{1}; // symmetry of state
     bool UHF{false}; // unrestricted HF
 
-    std::vector<double> two_body_integrals()
+    void two_body_integrals_to_ptr(double * out, const int norb)
     {
-        int norb = this->NORB;
         int norb2 = norb * norb;
         int norb3 = norb2 * norb;
         int npair = norb * (norb + 1) / 2;
         int i, j, ij;
         std::vector<double> buffer(npair);
-        std::vector<double> out(norb3 * norb);
         for (ij = 0, i = 0; i < norb; i++)
         {
             for (j = 0; j < i+1; j++, ij++)
             {
                 NPdunpack_row(npair, ij, &(this->H2)[0], &buffer[0]);
-                NPdunpack_tril(norb, &buffer[0], &out[0]+i*norb3+j*norb2, 1);
+                NPdunpack_tril(norb, &buffer[0], out+i*norb3+j*norb2, 1);
                 if (i > j)
                 {
-                    NPdcopy(&out[0]+j*norb3+i*norb2, &out[0]+i*norb3+j*norb2, norb2);
+                    NPdcopy(out+j*norb3+i*norb2, out+i*norb3+j*norb2, norb2);
                 }
             }
         }
         // permute the elements of out to match array4D.transpose(0, 2, 3, 1).ravel()
         two_body_permute(out, norb);
+    }
+
+    std::vector<double> two_body_integrals()
+    {
+        int norb = this->NORB;
+        std::vector<double> out(norb * norb * norb * norb);
+        two_body_integrals_to_ptr(&out[0], norb);
         return out;
     }
+
+
 } FCIDumpData_t;
 
 
