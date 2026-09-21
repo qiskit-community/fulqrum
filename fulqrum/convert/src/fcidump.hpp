@@ -103,7 +103,8 @@ inline int trans_index(const int idx, const int norb)
     return out;
 }
 
-/** Permute two body integrals to our ordering convention
+/** Permute two body integrals to the PQRS convention in OpenFermion.hamiltonians._molecular_data
+ *   # h[p,q,r,s] = (ps|qr)
  *  
  * @param vec Pointer to vector to be permuted
  * @param norb Number of orbitals
