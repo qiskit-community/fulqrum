@@ -84,7 +84,7 @@ inline void NPdunpack_row(int ndim, int row_id, double *tril, double *row)
 }
 
 /**
- * Perform transposition of original flat index to the one corresponding
+ * Transposition of original flat index to the one corresponding
  * to the operation array4D.transpose(0, 2, 3, 1).ravel()
  *
  * @param idx Index to be converted
@@ -103,6 +103,11 @@ inline int trans_index(const int idx, const int norb)
     return out;
 }
 
+/** Permute two body integrals to our ordering convention
+ *  
+ * @param vec Pointer to vector to be permuted
+ * @param norb Number of orbitals
+ */
 inline void two_body_permute(double * vec, const int norb)
 {
     // permutation vector
@@ -141,7 +146,13 @@ typedef struct FCIDumpData
     int ISYM{1}; // symmetry of state
     bool UHF{false}; // unrestricted HF
 
-    void two_body_integrals_to_ptr(double * out, const int norb)
+    /** Store two-body integrals into given pointer
+     *  
+     * @param out Pointer for storing integrals
+     * @param norb Number of orbitals
+     * @param permute Permute ordering, default is false
+    */
+    void two_body_integrals_to_ptr(double * out, const int norb, const bool permute=0)
     {
         int norb2 = norb * norb;
         int norb3 = norb2 * norb;
@@ -161,14 +172,20 @@ typedef struct FCIDumpData
             }
         }
         // permute the elements of out to match array4D.transpose(0, 2, 3, 1).ravel()
+        if(permute)
+        {
         two_body_permute(out, norb);
+        }
     }
-
-    std::vector<double> two_body_integrals()
+    /** Return vector of two body integrals
+     *  
+     * @param permute Permute ordering, default is false
+    */
+    std::vector<double> two_body_integrals(bool permute=0)
     {
         int norb = this->NORB;
         std::vector<double> out(norb * norb * norb * norb);
-        two_body_integrals_to_ptr(&out[0], norb);
+        two_body_integrals_to_ptr(&out[0], norb, permute);
         return out;
     }
 

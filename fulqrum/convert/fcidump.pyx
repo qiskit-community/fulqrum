@@ -13,6 +13,7 @@
 
 """PySCF conversion utilities"""
 from libcpp.vector cimport vector
+from libcpp cimport bool
 from pathlib import Path
 import time
 import numpy as np
@@ -76,10 +77,12 @@ cdef class FCIDumpData():
         return np.asarray(arr)
 
     
-    def two_body_integrals(self):
+    def two_body_integrals(self, bool permute=0):
+        """Two body integrals 
+        """
         cdef int norb = self.data.NORB
         cdef double[::1] out = np.zeros(norb * norb * norb * norb, dtype=float)
-        self.data.two_body_integrals_to_ptr(&out[0], norb)
+        self.data.two_body_integrals_to_ptr(&out[0], norb, permute)
         return np.asarray(out)
 
 
