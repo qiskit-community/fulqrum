@@ -25,6 +25,17 @@ cdef class FCIDumpData():
     def __cinit__(self, string filename):
         self.data = parse_fcidump(filename)
 
+    def __repr__(self):
+
+        cdef str data_str = ''
+        data_str += f'NORB={self.data.NORB}'
+        data_str += f', NELEC={self.data.NELEC}'
+        data_str += f', ISYM={self.data.ISYM}'
+        data_str += f', MS2={self.data.MS2}'
+        data_str += f', UHF={self.data.UHF}'
+        data_str += f', ECORE={self.data.ECORE}'
+        return f"<FCIDumpData[{data_str}]>"
+
     @property
     def NORB(self):
         return self.data.NORB
@@ -67,5 +78,5 @@ cdef class FCIDumpData():
 
 def read_fcidump(filename: str | Path):
     cdef string string_name = str(filename)
-    cdef FCIDumpData out = FCIDumpData(filename)
+    cdef FCIDumpData out = FCIDumpData(string_name)
     return out
