@@ -13,6 +13,7 @@
 
 """PySCF conversion utilities"""
 from libcpp.vector cimport vector
+from libc.string cimport memcpy
 from libcpp cimport bool
 from pathlib import Path
 import time
@@ -77,8 +78,27 @@ cdef class FCIDumpData():
         return np.asarray(arr)
 
     
+    def one_body_integrals(self):
+        """One body integrals:
+
+        Returns:
+            ndarray: NumPy array of integral values
+        """
+        cdef int norb = self.data.NORB
+        cdef int norb2 = norb * norb
+        cdef double[::1] out = np.zeros(norb2, dtype=float)
+        memcpy(&out[0], self.data.H1.data(), norb2*sizeof(double))
+        return np.asarray(out)
+    
+    
     def two_body_integrals(self, bool permute=0):
-        """Two body integrals 
+        """Two body integrals:
+
+        Parameters:
+            permute (bool): Permute indices to Fulqrum convention
+
+        Returns:
+            ndarray: NumPy array of integral values
         """
         cdef int norb = self.data.NORB
         cdef double[::1] out = np.zeros(norb * norb * norb * norb, dtype=float)
@@ -87,6 +107,14 @@ cdef class FCIDumpData():
 
 
 def read_fcidump(filename: str | Path):
+    """Read an fcidump file
+
+    Parameters:
+        filename : Path to input fcidump file
+
+    Returns:
+        FCIDumpData : Data file
+    """
     cdef string string_name = str(filename)
     cdef FCIDumpData out = FCIDumpData(string_name)
     return out
