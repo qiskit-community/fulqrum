@@ -202,7 +202,7 @@ def test_fcidump_parsing():
         assert pyscf_data["NELEC"] == fq_data.NELEC
         assert pyscf_data["ISYM"] == fq_data.ISYM
         assert pyscf_data["MS2"] == fq_data.MS2
-        assert pyscf_data['ECORE'] == fq_data.ECORE
+        assert pyscf_data["ECORE"] == fq_data.ECORE
 
         assert np.allclose(pyscf_data["H1"].ravel(), fq_data.H1)
         assert np.allclose(pyscf_data["H2"].ravel(), fq_data.H2)
