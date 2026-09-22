@@ -262,6 +262,11 @@ inline FCIDumpData_t parse_fcidump(const std::string& filename)
             file.close();
             throw std::runtime_error("ORBSYM size does not equal NORB");
         }
+        if(output.ISYM != 1)
+        {
+            file.close();
+            throw std::runtime_error("Only ISYM = 1 is currently supported.");
+        }
 
         int norb = output.NORB;
         int norb_pair = norb * (norb + 1) / 2;
