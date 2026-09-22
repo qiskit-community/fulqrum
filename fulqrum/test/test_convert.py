@@ -193,6 +193,7 @@ def test_fcidump_parsing():
     pyscf = pytest.importorskip("pyscf")
     from pyscf import ao2mo
     from pyscf.tools.fcidump import read
+
     path = str(Path(__file__).parent / "data/")
     for name in ["h2", "lih", "n2", "Fe4S4_MO"]:
         filename = path + os.sep + f"fcidump_{name}.txt"
