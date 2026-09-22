@@ -14,6 +14,7 @@ import os
 import pytest
 from pathlib import Path
 import numpy as np
+import fulqrum as fq
 from fulqrum.convert import (
     openfermion_fermi_op_to_fulqrum,
     openfermion_qubit_op_to_fulqrum,
@@ -213,3 +214,15 @@ def test_fcidump_parsing():
         eri_t = np.ascontiguousarray(np.asarray(eri).transpose(0, 2, 3, 1))
         assert np.allclose(eri.ravel(), fq_data.two_body_integrals(permute=0))
         assert np.allclose(eri_t.ravel(), fq_data.two_body_integrals(permute=1))
+
+
+def test_fcidump_parsing2():
+    """Validate basic properties of fcidump generated operators"""
+    widths = [4, 12, 20, 72]
+    sizes = [15, 631, 2239, 2476008]
+    path = str(Path(__file__).parent / "data/")
+    for idx, name in enumerate(["h2", "lih", "n2", "Fe4S4_MO"]):
+        filename = path + os.sep + f"fcidump_{name}.txt"
+        fop = fq.FermionicOperator.from_fcidump(filename)
+        assert fop.width == widths[idx]
+        assert fop.size() == sizes[idx]

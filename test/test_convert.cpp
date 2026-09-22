@@ -18,3 +18,31 @@
 
 typedef std::complex<double> complex;
 
+
+TEST_CASE("Test basic properites of H2 from fcidump")
+{
+    FermionicOperator_t fop = FermionicOperator::from_fcidump("test/data/fcidump_h2.txt");
+    CHECK(fop.width == 4);
+    CHECK(fop.size() == 15);
+}
+
+TEST_CASE("Test basic properites of LiH from fcidump")
+{
+    FermionicOperator_t fop = FermionicOperator::from_fcidump("test/data/fcidump_lih.txt");
+    CHECK(fop.width == 12);
+    CHECK(fop.size() == 631);
+}
+
+TEST_CASE("Test basic properites of N2 from fcidump")
+{
+    FermionicOperator_t fop = FermionicOperator::from_fcidump("test/data/fcidump_n2.txt");
+    CHECK(fop.width == 20);
+    CHECK(fop.size() == 2239);
+}
+
+TEST_CASE("Test basic properites of N2 from fcidump")
+{
+    FermionicOperator_t fop = FermionicOperator::from_fcidump("test/data/fcidump_Fe4S4_MO.txt");
+    CHECK(fop.width == 72);
+    CHECK(fop.size() == 2476008);
+}

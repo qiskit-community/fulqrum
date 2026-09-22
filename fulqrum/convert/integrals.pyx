@@ -77,7 +77,7 @@ def fcidump_to_fq_fermionic_op(fcidump_path: str | Path, double EQ_TOLERANCE=1e-
     cdef int norb = data.NORB
     cdef int norb2 = norb * norb
     cdef FermionicOperator fop = FermionicOperator(2*norb)
-    cdef vector[double] two_body_ints = data.two_body_integrals()
+    cdef vector[double] two_body_ints = data.two_body_integrals(1)
     fop.oper = pyscf_integrals_to_fermionic[double](&data.data.H1[0], &two_body_ints[0], norb2, norb2 * norb2,
                                                                       data.ECORE, EQ_TOLERANCE)
     cdef double ft = time.perf_counter()
