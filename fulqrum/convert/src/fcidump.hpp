@@ -83,55 +83,28 @@ inline void NPdunpack_row(int ndim, int row_id, double *tril, double *row)
     }
 }
 
-/**
- * Transposition of original flat index to the one corresponding
- * to the operation array4D.transpose(0, 2, 3, 1).ravel()
+/** Permute two body integrals 
  *
- * @param idx Index to be converted
- * @param norb The number of orbitals (dimension)
+ * Applies the in-place transposition array4D.transpose(0, 2, 3, 1),
+ * (i,j,k,l) -> (i,k,l,j)
  *
- */
-inline int trans_index(const int idx, const int norb)
-{
-    int norb2 = norb * norb;
-    int norb3 = norb2 * norb;
-    int out = 0;
-    out += (idx % norb) * norb2;           // dim**2 term
-    out += (idx / norb) % norb;            // dim**0 term
-    out += ((idx / norb2) % norb) * norb;  // dim**1 term
-    out += ((idx / norb3) % norb) * norb3; // dim**3 term
-    return out;
-}
-
-/** Permute two body integrals to the PQRS convention in OpenFermion.hamiltonians._molecular_data
- *   # h[p,q,r,s] = (ps|qr)
- *  
  * @param vec Pointer to vector to be permuted
  * @param norb Number of orbitals
  */
 inline void two_body_permute(double * vec, const int norb)
 {
-    // permutation vector
-    const int dim = norb * norb * norb * norb;
-    std::vector<int> P(dim);
-    int kk;
-    // generate permutation
-    for(kk=0; kk < P.size(); kk++)
+    const int norb2 = norb * norb;
+    const int norb3 = norb2 * norb;
+    std::vector<double> buf(norb3);
+
+    for (int i = 0; i < norb; i++)
     {
-        P[kk] = trans_index(kk, norb);
-    }
-    // do permutation
-    for (kk = 0; kk < P.size(); kk++)
-    {
-        int current = kk;
-        while (kk != P[current]) 
-        {
-            int next = P[current];
-            std::swap(vec[current], vec[next]);
-            P[current] = current;
-            current = next;
-        }
-        P[current] = current;
+        double * const slice = vec + i * norb3;
+        std::copy(slice, slice + norb3, buf.begin());
+        for (int j = 0; j < norb; j++)
+            for (int k = 0; k < norb; k++)
+                for (int l = 0; l < norb; l++)
+                    slice[k * norb2 + l * norb + j] = buf[j * norb2 + k * norb + l];
     }
 }
 
