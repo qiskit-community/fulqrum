@@ -191,7 +191,7 @@ def test_integrals_to_fq_fermionic_op():
 
 def test_fcidump_parsing():
     """Compare parsing of fcidump files to pyscf"""
-    pyscf = pytest.importorskip("pyscf")
+    _ = pytest.importorskip("pyscf")
     from pyscf import ao2mo
     from pyscf.tools.fcidump import read
 
