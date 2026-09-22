@@ -14,8 +14,6 @@ import os
 import pytest
 from pathlib import Path
 import numpy as np
-from pyscf import ao2mo
-from pyscf.tools.fcidump import read
 from fulqrum.convert import (
     openfermion_fermi_op_to_fulqrum,
     openfermion_qubit_op_to_fulqrum,
@@ -192,6 +190,9 @@ def test_integrals_to_fq_fermionic_op():
 
 def test_fcidump_parsing():
     """Compare parsing of fcidump files to pyscf"""
+    pyscf = pytest.importorskip("pyscf")
+    from pyscf import ao2mo
+    from pyscf.tools.fcidump import read
     path = str(Path(__file__).parent / "data/")
     for name in ["h2", "lih", "n2", "Fe4S4_MO"]:
         filename = path + os.sep + f"fcidump_{name}.txt"
