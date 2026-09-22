@@ -44,7 +44,7 @@ inline void NPdcopy(double *out, const double *in, const int n)
         std::memcpy(out, in, (size_t)n * sizeof(double));
 }
 
-inline void NPdsymm_triu(int n, double *mat, int hermi)
+inline void NPdsymm_triu(int n, double *mat)
 {
         int i, j, j0, j1;
         NPTRIU_LOOP(i, j)
@@ -53,7 +53,7 @@ inline void NPdsymm_triu(int n, double *mat, int hermi)
         }
 }
 
-inline void NPdunpack_tril(int norb, double *tril, double *mat, int hermi)
+inline void NPdunpack_tril(int norb, double *tril, double *mat)
 {
     int i, j, ij;
     for (ij = 0, i = 0; i < norb; i++)
@@ -63,7 +63,7 @@ inline void NPdunpack_tril(int norb, double *tril, double *mat, int hermi)
             mat[i*norb+j] = tril[ij];
         }
     }
-    NPdsymm_triu(norb, mat, hermi);
+    NPdsymm_triu(norb, mat);
 }
 
 // unpack one row from the compact matrix-tril coefficients
@@ -134,7 +134,7 @@ typedef struct FCIDumpData
             for (j = 0; j < i+1; j++, ij++)
             {
                 NPdunpack_row(npair, ij, &(this->H2)[0], &buffer[0]);
-                NPdunpack_tril(norb, &buffer[0], out+i*norb3+j*norb2, 1);
+                NPdunpack_tril(norb, &buffer[0], out+i*norb3+j*norb2);
                 if (i > j)
                 {
                     NPdcopy(out+j*norb3+i*norb2, out+i*norb3+j*norb2, norb2);
@@ -263,7 +263,7 @@ inline FCIDumpData_t parse_fcidump(const std::string& filename)
             }
         }
         // check that ORBSYM size matches NORB
-        if(output.ORBSYM.size() != output.NORB)
+        if(static_cast<int>(output.ORBSYM.size()) != output.NORB)
         {
             file.close();
             throw std::runtime_error("ORBSYM size does not equal NORB");

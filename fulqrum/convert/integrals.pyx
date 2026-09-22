@@ -60,24 +60,26 @@ def integrals_to_fq_fermionic_op(double_or_complex[:,::1] one_body_integrals, do
     return fop
 
 
-def fcidump_to_fq_fermionic_op(fcidump_path: str | Path) -> FermionicOperator:
+def fcidump_to_fq_fermionic_op(fcidump_path: str | Path, double EQ_TOLERANCE=1e-12) -> FermionicOperator:
     """Load one- and two-body integrals as numpy arrays into Fulqrum
         fermionic operator from FCIDUMP file.
 
     Parameters:
         fcidump_path (str | Path): The FCIDUMP file.
+        EQ_TOLERANCE (float): Equality tolerance.
 
     Returns:
         FermionicOperator: Converted operator.
     """
     logger.info("Starting import of FCIDump file")
+    cdef double st = time.perf_counter()
     cdef FCIDumpData data = FCIDumpData(str(fcidump_path))
-    st = time.perf_counter()
-    cdef FermionicOperator out = integrals_to_fq_fermionic_op(
-        one_body_integrals=data.H1,
-        two_body_integrals=data.two_body_integrals(),
-        constant=data.ECORE,
-    )
-    ft = time.perf_counter()
+    cdef int norb = data.NORB
+    cdef int norb2 = norb * norb
+    cdef FermionicOperator fop = FermionicOperator(2*norb)
+    cdef vector[double] two_body_ints = data.two_body_integrals()
+    fop.oper = pyscf_integrals_to_fermionic[double](&data.data.H1[0], &two_body_ints[0], norb2, norb2 * norb2,
+                                                                      data.ECORE, EQ_TOLERANCE)
+    cdef double ft = time.perf_counter()
     logger.info("FCIDump to FermionicOperator time: %s ms", round((ft - st) * 1000, 3))
-    return out
+    return fop
