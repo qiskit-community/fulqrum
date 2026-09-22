@@ -10,13 +10,17 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 # pylint: disable=no-name-in-module
+import os
 import pytest
-
+from pathlib import Path
 import numpy as np
+from pyscf import ao2mo
+from pyscf.tools.fcidump import read
 from fulqrum.convert import (
     openfermion_fermi_op_to_fulqrum,
     openfermion_qubit_op_to_fulqrum,
     integrals_to_fq_fermionic_op,
+    read_fcidump,
 )
 
 
@@ -184,3 +188,25 @@ def test_integrals_to_fq_fermionic_op():
                 assert found
             assert num_touched == fop.size()
             assert fop.size() == fop2.size()
+
+
+def test_fcidump_parsing():
+    """Compare parsing of fcidump files to pyscf"""
+    path = str(Path(__file__).parent / "data/")
+    for name in ["h2", "lih", "n2", "Fe4S4_MO"]:
+        filename = path + os.sep + f"fcidump_{name}.txt"
+        pyscf_data = read(filename, verbose=False)
+        fq_data = read_fcidump(filename)
+
+        assert pyscf_data["NORB"] == fq_data.NORB
+        assert pyscf_data["NELEC"] == fq_data.NELEC
+        assert pyscf_data["ISYM"] == fq_data.ISYM
+        assert pyscf_data["MS2"] == fq_data.MS2
+
+        assert np.allclose(pyscf_data["H1"].ravel(), fq_data.H1)
+        assert np.allclose(pyscf_data["H2"].ravel(), fq_data.H2)
+
+        eri = ao2mo.restore(1, pyscf_data["H2"], pyscf_data["NORB"])
+        eri_t = np.ascontiguousarray(np.asarray(eri).transpose(0, 2, 3, 1))
+        assert np.allclose(eri.ravel(), fq_data.two_body_integrals(permute=0))
+        assert np.allclose(eri_t.ravel(), fq_data.two_body_integrals(permute=1))

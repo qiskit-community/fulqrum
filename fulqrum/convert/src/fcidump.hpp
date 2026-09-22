@@ -24,7 +24,7 @@
 
 
 
-/* These functions and definintions (NP*) are taken from PySCF and used under the Apache 2 license
+/* These functions and definintions (NP*) are originally from PySCF and used under the Apache 2 license
     
     Copyright 2014-2018 The PySCF Developers. All Rights Reserved.
     Author: Qiming Sun <osirpt.sun@gmail.com>
