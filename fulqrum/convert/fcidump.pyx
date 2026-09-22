@@ -73,7 +73,7 @@ cdef class FCIDumpData():
 
     @property
     def ORBSYM(self):
-        cdef int[::1] arr = <int [:self.data.H2.size()]>self.data.ORBSYM.data()
+        cdef int[::1] arr = <int [:self.data.ORBSYM.size()]>self.data.ORBSYM.data()
         return np.asarray(arr)
 
     
