@@ -41,11 +41,7 @@
 
 inline void NPdcopy(double *out, const double *in, const int n)
 {
-        int i;
-        for (i = 0; i < n; i++)
-        {
-            out[i] = in[i];
-        }
+        std::memcpy(out, in, (size_t)n * sizeof(double));
 }
 
 inline void NPdsymm_triu(int n, double *mat, int hermi)
