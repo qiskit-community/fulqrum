@@ -17,7 +17,7 @@
 #include "constants.hpp"
 
 /**
- * Pack operator index and value into a single uint32
+ * Pack operator index and value into a single width_t
  *
  * @param ind The index on which the operator acts
  * @param val Operator value
@@ -28,7 +28,7 @@ inline width_t pack_data(const width_t ind, const unsigned char val)
 }
 
 /**
- * Extract operator index from a packed uint32
+ * Extract operator index from a packed  width_t
  *
  * @param packed_data Packed index and operator value
  */
@@ -38,7 +38,7 @@ inline width_t get_ind(const width_t packed_data)
 }
 
 /**
- * Extract operator value from a packed uint32
+ * Extract operator value from a packed width_t
  *
  * @param packed_data Packed index and operator value
  */
