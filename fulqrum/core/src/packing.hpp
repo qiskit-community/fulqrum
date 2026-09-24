@@ -16,16 +16,15 @@
 #include <cstdint>
 #include "constants.hpp"
 
-
 /**
  * Pack operator index and value into a single uint32
  *
  * @param ind The index on which the operator acts
  * @param val Operator value
  */
-inline std::uint32_t pack_data(const width_t ind, const unsigned char val)
+inline width_t pack_data(const width_t ind, const unsigned char val)
 {
-    return (static_cast<std::uint32_t>(ind) << 8) | val;
+    return (static_cast<width_t>(ind) << 3) | val;
 }
 
 /**
@@ -33,9 +32,9 @@ inline std::uint32_t pack_data(const width_t ind, const unsigned char val)
  *
  * @param packed_data Packed index and operator value
  */
-inline width_t get_ind(const std::uint32_t packed_data)
+inline width_t get_ind(const width_t packed_data)
 {
-    return static_cast<width_t>((packed_data & 0xFFFFFF00) >> 8);
+    return static_cast<width_t>(packed_data >> 3);
 }
 
 /**
@@ -43,7 +42,7 @@ inline width_t get_ind(const std::uint32_t packed_data)
  *
  * @param packed_data Packed index and operator value
  */
-inline unsigned char get_val(const std::uint32_t packed_data)
+inline unsigned char get_val(const width_t packed_data)
 {
-    return static_cast<unsigned char>(packed_data & 0x000000FF);
+    return static_cast<unsigned char>(packed_data & 7);
 }
