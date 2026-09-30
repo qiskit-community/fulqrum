@@ -129,50 +129,6 @@ inline std::size_t max_offdiag_ptr_size(std::vector<std::size_t>& vec)
 // Z, 0, 1, X, Y, -, +
 const int REV_EXT_MASK[7] = {1, 0, 0, 1, 1, 0, 0};
 
-/**
- * In-place set off-diagonal weight and real_phase
- *
- * @param term Hamiltonian term
- *
- */
-inline void set_offdiag_weight_phase_struct(OperatorTerm_t& term)
-{
-    if(!term.values.size())
-    {
-        return;
-    }
-    std::size_t kk;
-    width_t weight = 0;
-    unsigned int num_y = 0, st = 0;
-    unsigned char* values = &term.values[0];
-    char phase;
-    width_t* indices = &term.indices[0];
-    for(kk = 0; kk < term.values.size(); kk++)
-    {
-        weight += (values[kk] > 2);
-        num_y += (values[kk] == 4);
-        st += (indices[kk] + 1) * static_cast<unsigned int>(values[kk] > 2);
-    }
-    term.offdiag_weight = weight;
-    term.offdiag_structure = st;
-    // Do the real_phase for checking if operator itself can be cast as symmetric (real)
-    switch(num_y % 4)
-    {
-    case 0:
-        phase = 1;
-        break;
-    case 1:
-        phase = 0;
-        break;
-    case 2:
-        phase = -1;
-        break;
-    case 3:
-        phase = 0;
-        break;
-    }
-    term.real_phase = phase;
-}
 
 /**
  * Comparator for term grouping
