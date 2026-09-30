@@ -22,6 +22,10 @@
 #include "oper_utils.hpp"
 #include "term_utils.hpp"
 
+struct OperatorTerm;
+inline void set_offdiag_weight_phase_struct(OperatorTerm& term);
+
+
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
  *
  * @var indices the qubits (locations) where non-identity term operators are
@@ -63,7 +67,6 @@ typedef struct OperatorTerm
         }
         values.reserve(n);
         indices.reserve(n);
-        unsigned int num_y = 0;
         for(std::size_t i = 0; i < n; ++i)
         {
             if(static_cast<unsigned char>(vals[i]) == 73) // 'I' identity — skip
@@ -71,12 +74,10 @@ typedef struct OperatorTerm
             const unsigned char val = oper_map[static_cast<unsigned char>(vals[i])];
             values.push_back(val);
             indices.push_back(inds[i]);
-            offdiag_weight += static_cast<width_t>(val > 2);
             offdiag_structure += (inds[i] + 1) * static_cast<unsigned int>(val > 2);
-            num_y += (val == 4);
         }
-        real_phase = ((num_y % 4) % 2) - 1;
         sort_term_data(); // sort term data from low -> high indices
+        set_offdiag_weight_phase_struct(*this);
         set_proj_indices(); // set projection operator indices, if any
     }
     /**
@@ -168,3 +169,49 @@ typedef struct OperatorTerm
         return !(this->offdiag_weight);
     }
 } OperatorTerm_t;
+
+
+/**
+ * In-place set off-diagonal weight and real_phase
+ *
+ * @param term Hamiltonian term
+ *
+ */
+inline void set_offdiag_weight_phase_struct(OperatorTerm& term)
+{
+    if(!term.values.size())
+    {
+        return;
+    }
+    std::size_t kk;
+    width_t weight = 0;
+    unsigned int num_y = 0, st = 0;
+    unsigned char* values = &term.values[0];
+    char phase;
+    width_t* indices = &term.indices[0];
+    for(kk = 0; kk < term.values.size(); kk++)
+    {
+        weight += (values[kk] > 2);
+        num_y += (values[kk] == 4);
+        st += (indices[kk] + 1) * static_cast<unsigned int>(values[kk] > 2);
+    }
+    term.offdiag_weight = weight;
+    term.offdiag_structure = st;
+    // Do the real_phase for checking if operator itself can be cast as symmetric (real)
+    switch(num_y % 4)
+    {
+    case 0:
+        phase = 1;
+        break;
+    case 1:
+        phase = 0;
+        break;
+    case 2:
+        phase = -1;
+        break;
+    case 3:
+        phase = 0;
+        break;
+    }
+    term.real_phase = phase;
+}

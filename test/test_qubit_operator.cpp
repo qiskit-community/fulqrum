@@ -319,9 +319,21 @@ TEST_CASE("Test real phase 1")
     CHECK(op[0].real_phase == 1);
 }
 
+TEST_CASE("Test real phase 1b")
+{
+    QubitOperator op = QubitOperator(4, {{}});
+    CHECK(op[0].real_phase == 1);
+}
+
 TEST_CASE("Test real phase 2")
 {
     QubitOperator op = QubitOperator::from_label("IYII");
+    CHECK(op[0].real_phase == 0);
+}
+
+TEST_CASE("Test real phase 2b")
+{
+    QubitOperator op = QubitOperator(4, {{"Y", {2}, 1}});
     CHECK(op[0].real_phase == 0);
 }
 
@@ -331,9 +343,21 @@ TEST_CASE("Test real phase 3")
     CHECK(op[0].real_phase == 1);
 }
 
+TEST_CASE("Test real phase 3b")
+{
+    QubitOperator op = QubitOperator(4, {{"XZ01", {3, 2, 1, 0}, 1}});
+    CHECK(op[0].real_phase == 1);
+}
+
 TEST_CASE("Test real phase 4")
 {
     QubitOperator op = QubitOperator::from_label("IYIY");
+    CHECK(op[0].real_phase == -1);
+}
+
+TEST_CASE("Test real phase 4b")
+{
+    QubitOperator op = QubitOperator(4, {{"YY", {0, 2}, 1}});
     CHECK(op[0].real_phase == -1);
 }
 
@@ -343,15 +367,33 @@ TEST_CASE("Test real phase 5")
     CHECK(op[0].real_phase == 0);
 }
 
+TEST_CASE("Test real phase 5b")
+{
+    QubitOperator op = QubitOperator(4, {{"YYY", {0, 1, 2}, 1}});
+    CHECK(op[0].real_phase == 0);
+}
+
 TEST_CASE("Test real phase 6")
 {
     QubitOperator op = QubitOperator::from_label("YYYY");
     CHECK(op[0].real_phase == 1);
 }
 
+TEST_CASE("Test real phase 6b")
+{
+    QubitOperator op = QubitOperator(6, {{"YYYY", {2,3,4,5}, 1}});
+    CHECK(op[0].real_phase == 1);
+}
+
 TEST_CASE("Test real phase 7")
 {
     QubitOperator op = QubitOperator::from_label("YYYYYY");
+    CHECK(op[0].real_phase == -1);
+}
+
+TEST_CASE("Test real phase 7b")
+{
+    QubitOperator op = QubitOperator(6, {{"YYYYYY", {0,1,2,3,4,5}, 1}});
     CHECK(op[0].real_phase == -1);
 }
 
