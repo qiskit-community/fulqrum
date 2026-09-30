@@ -1,11 +1,13 @@
 include LICENSE.txt
 include README.md
 include requirements.txt
+include pytest.ini
 recursive-include fulqrum *.pxi
 recursive-include fulqrum *.pxd
 recursive-include fulqrum *.pyx
 recursive-include fulqrum/core/src *.hpp
 recursive-include fulqrum/test/data *.json
+recursive-include fulqrum/test/data *.json.xz
 recursive-include fulqrum/include *.hpp
 recursive-include fulqrum/core/src/external *.hpp
 recursive-include fulqrum/core/src/external *.h
