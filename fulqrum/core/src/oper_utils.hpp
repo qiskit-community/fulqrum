@@ -81,7 +81,7 @@ inline void combine_terms(std::vector<T>& __restrict terms,
                           std::vector<std::size_t>& __restrict sort_ptrs,
                           double atol)
 {
-    std::size_t kk, num_terms = terms.size();
+    std::size_t kk;
     const std::size_t num_blocks = sort_ptrs.size() - 1;
     // Do a double sorting here so that we can iterate once through the terms
     // in each block
