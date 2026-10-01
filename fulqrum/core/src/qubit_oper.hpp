@@ -129,7 +129,6 @@ inline std::size_t max_offdiag_ptr_size(std::vector<std::size_t>& vec)
 // Z, 0, 1, X, Y, -, +
 const int REV_EXT_MASK[7] = {1, 0, 0, 1, 1, 0, 0};
 
-
 /**
  * Comparator for term grouping
  *

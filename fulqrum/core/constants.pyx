@@ -12,6 +12,7 @@
 # cython: c_string_type=unicode, c_string_encoding=UTF-8
 import numpy as np
 
+
 if sizeof(width_t) == 4:
     np_width_t = np.uint32
 elif sizeof(width_t) == 2:
@@ -20,3 +21,5 @@ elif sizeof(width_t) == 8:
     np_width_t = np.uint64
 else:
     raise Exception("Unknown width_t type")
+
+MAX_QUBITS = MAX_WIDTH

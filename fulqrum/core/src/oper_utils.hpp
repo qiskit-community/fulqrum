@@ -13,6 +13,7 @@
  */
 #pragma once
 #include "constants.hpp"
+#include "packing.hpp"
 #include <boost/sort/pdqsort/pdqsort.hpp>
 #include <vector>
 
@@ -86,8 +87,8 @@ inline void combine_terms(std::vector<T>& __restrict terms,
     // Do a double sorting here so that we can iterate once through the terms
     // in each block
     auto term_data_sort = [](const T& a, const T& b) -> bool {
-        if(a.indices.size() != b.indices.size())
-            return a.indices.size() < b.indices.size();
+        if(a.size() != b.size())
+            return a.size() < b.size();
         if(a.indices != b.indices)
             return a.indices < b.indices;
         return a.values < b.values;
@@ -96,6 +97,74 @@ inline void combine_terms(std::vector<T>& __restrict terms,
     auto term_eq = [](const T& a, const T& b) -> bool {
         return a.indices == b.indices && a.values == b.values;
     };
+
+    std::vector<std::vector<T>> temp_results(num_blocks);
+
+// do sort over each collection of terms with same weight
+#pragma omp parallel for if(num_terms > 4096)
+    for(kk = 0; kk < num_blocks; kk++)
+    {
+        std::size_t start, stop;
+        start = sort_ptrs[kk];
+        stop = sort_ptrs[kk + 1];
+
+        std::vector<T>& temp_terms = temp_results[kk];
+        temp_terms.reserve(stop - start);
+
+        // Sort by proj_structure, if different, otherwise sort by data
+        boost::sort::pdqsort(
+            terms.begin() + start, terms.begin() + stop, [&](const T& a, const T& b) {
+                if(a.proj_structure != b.proj_structure)
+                    return a.proj_structure < b.proj_structure;
+                return term_data_sort(a, b);
+            });
+
+        for(std::size_t qq = start; qq < stop;)
+        {
+            T accum = terms[qq];
+            std::size_t next = qq + 1;
+            while(next < stop && term_eq(terms[next], accum))
+            {
+                accum.coeff += terms[next].coeff;
+                ++next;
+            }
+            if(std::abs(accum.coeff) > atol)
+            {
+                temp_terms.push_back(std::move(accum));
+            }
+            qq = next;
+        }
+    } //end kk-loop
+
+    // merge all block results together into ouput operator terms
+    std::size_t total = 0;
+    for(const auto& item : temp_results)
+        total += item.size();
+    out_terms.reserve(out_terms.size() + total);
+    for(auto& item : temp_results)
+        out_terms.insert(out_terms.end(),
+                         std::make_move_iterator(item.begin()),
+                         std::make_move_iterator(item.end()));
+
+} // end combine_terms
+
+// TEMPORARY
+template <typename T>
+inline void combine_terms_fermi(std::vector<T>& __restrict terms,
+                                std::vector<T>& __restrict out_terms,
+                                std::vector<std::size_t>& __restrict sort_ptrs,
+                                double atol)
+{
+    std::size_t kk, num_terms = terms.size();
+    const std::size_t num_blocks = sort_ptrs.size() - 1;
+
+    auto term_data_sort = [](const T& a, const T& b) -> bool {
+        if(a.size() != b.size())
+            return a.size() < b.size();
+        return a.data < b.data;
+    };
+    // term data equality check
+    auto term_eq = [](const T& a, const T& b) -> bool { return a.data == b.data; };
 
     std::vector<std::vector<T>> temp_results(num_blocks);
 

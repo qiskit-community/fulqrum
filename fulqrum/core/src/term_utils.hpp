@@ -12,6 +12,8 @@
  * that they have been altered from the originals.
  */
 #pragma once
+#include "constants.hpp"
+#include "packing.hpp"
 #include <vector>
 
 /**
@@ -21,17 +23,40 @@ template <typename T>
 inline T& set_term_proj_indices(T& term)
 {
     std::size_t kk;
-    width_t val;
+    unsigned char val;
     term.proj_indices.resize(0);
     term.proj_bits.resize(0);
     term.proj_structure = 0;
-    for(kk = 0; kk < term.values.size(); kk++)
+    for(kk = 0; kk < term.size(); kk++)
     {
         val = term.values[kk];
         if(val == 1 || val == 2)
         {
             term.proj_indices.push_back(term.indices[kk]);
             term.proj_structure += (term.indices[kk] + 1);
+            term.proj_bits.push_back(val - 1);
+        }
+    }
+    return term;
+}
+
+/**
+ * This is temporary while fermi terms are packed but qubit terms are not
+ */
+template <typename T>
+inline T& set_term_proj_indices_fermi(T& term)
+{
+    std::size_t kk;
+    term.proj_indices.resize(0);
+    term.proj_bits.resize(0);
+    term.proj_structure = 0;
+    for(kk = 0; kk < term.size(); kk++)
+    {
+        auto [ind, val] = unpack_indval(term.data[kk]);
+        if(val == 1 || val == 2)
+        {
+            term.proj_indices.push_back(ind);
+            term.proj_structure += (ind + 1);
             term.proj_bits.push_back(val - 1);
         }
     }

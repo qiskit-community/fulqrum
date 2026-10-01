@@ -13,8 +13,8 @@
  */
 
 #pragma once
-#include <cstdint>
 #include "constants.hpp"
+#include <cstdint>
 
 /**
  * Pack operator index and value into a single width_t
@@ -23,7 +23,7 @@
  * @param[in] val Operator value
  * @param[out] packed_data Ind and val packed into width_t
  */
-inline width_t pack_data(const width_t ind, const unsigned char val)
+inline width_t pack_indval(const width_t ind, const unsigned char val)
 {
     return static_cast<width_t>((ind << 3) | val);
 }
@@ -34,7 +34,7 @@ inline width_t pack_data(const width_t ind, const unsigned char val)
  * @param[in] packed_data Packed index and operator value
  * @param[out] ind Indice as a width_t
  */
-inline width_t get_ind(const width_t packed_data)
+inline width_t unpack_ind(const width_t packed_data)
 {
     return static_cast<width_t>(packed_data >> 3);
 }
@@ -45,7 +45,7 @@ inline width_t get_ind(const width_t packed_data)
  * @param[in] packed_data Packed index and operator value
  * @param[out] val Value as unsigned char
  */
-inline unsigned char get_val(const width_t packed_data)
+inline unsigned char unpack_val(const width_t packed_data)
 {
     return static_cast<unsigned char>(packed_data & 7);
 }
@@ -56,7 +56,7 @@ inline unsigned char get_val(const width_t packed_data)
  * @param[in] packed_data Packed index and operator value
  * @param[out] indval_pair Pair of indice and value
  */
-inline std::pair<width_t, unsigned char> get_indval_pair(const width_t packed_data)
+inline std::pair<width_t, unsigned char> unpack_indval(const width_t packed_data)
 {
     return {static_cast<width_t>(packed_data >> 3), static_cast<unsigned char>(packed_data & 7)};
 }

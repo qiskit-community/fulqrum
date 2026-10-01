@@ -19,12 +19,14 @@
 #include <string>
 #include <vector>
 
+// Define the maximum width (number of qubits) to allow, uint16 -> 8192 qubits max
+// after accounting for the 3 bits that are used to store the operator value
 typedef uint16_t width_t;
+const width_t MAX_WIDTH = (width_t(-1) >> 3) + static_cast<width_t>(1);
 
 const double ATOL = 1e-14;
 const std::size_t MAX_SIZE_T = (std::size_t)-1;
 const unsigned int MAX_UINT = (unsigned int)-1;
-const width_t MAX_WIDTH = (width_t)-1;
 const unsigned int BITS_PER_BLOCK = 8 * sizeof(std::size_t);
 const unsigned int DEFAULT_LADDER_WIDTH = 2;
 const unsigned int BLOCK_EXPONENT = __builtin_ctz(BITS_PER_BLOCK);
