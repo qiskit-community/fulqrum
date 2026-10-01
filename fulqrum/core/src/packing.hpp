@@ -25,7 +25,7 @@
  */
 inline width_t pack_data(const width_t ind, const unsigned char val)
 {
-    return (ind << 3) | val;
+    return static_cast<width_t>((ind << 3) | val);
 }
 
 /**
@@ -36,7 +36,7 @@ inline width_t pack_data(const width_t ind, const unsigned char val)
  */
 inline width_t get_ind(const width_t packed_data)
 {
-    return (packed_data >> 3);
+    return static_cast<width_t>(packed_data >> 3);
 }
 
 /**
@@ -47,7 +47,7 @@ inline width_t get_ind(const width_t packed_data)
  */
 inline unsigned char get_val(const width_t packed_data)
 {
-    return (packed_data & static_cast<width_t>(7));
+    return static_cast<unsigned char>(packed_data & 7);
 }
 
 /**
@@ -58,8 +58,5 @@ inline unsigned char get_val(const width_t packed_data)
  */
 inline std::pair<width_t, unsigned char> get_indval_pair(const width_t packed_data)
 {
-    width_t ind = (packed_data >> 3);
-    unsigned char val = (packed_data & static_cast<width_t>(7));
-    return std::make_pair(ind, val);
-
+    return {static_cast<width_t>(packed_data >> 3), static_cast<unsigned char>(packed_data & 7)};
 }
