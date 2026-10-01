@@ -366,3 +366,27 @@ def test_csr_nnz_LiH():
     Hsub = fq.SubspaceHamiltonian(op, S)
     A = Hsub.to_csr_linearoperator()
     assert A.nnz == 102400
+
+
+def test_csr_parallel_hermitian_fill(monkeypatch):
+    """Ensure parallel Hermitian inserts write to unique CSR positions."""
+    width = 13
+    dim = 1 << width
+    monkeypatch.setenv("FQ_BLK", "1")
+
+    op = fq.QubitOperator(width)
+    for qubit in range(width):
+        label = "I" * qubit + "X" + "I" * (width - qubit - 1)
+        op += fq.QubitOperator.from_label(label, qubit + 1.0)
+    op += fq.QubitOperator.from_label("Z" * width, 0.25)
+    op.set_type(1)
+
+    strings = [format(value, f"0{width}b") for value in range(dim)]
+    subspace = fq.Subspace([strings])
+    hsub = fq.SubspaceHamiltonian(op, subspace)
+    matrix = hsub.to_csr_linearoperator().matrix
+
+    vector = np.random.default_rng(7).standard_normal(dim)
+    assert np.all(np.diff(matrix.indptr) == width + 1)
+    assert np.allclose(matrix @ vector, hsub @ vector)
+    assert (matrix != matrix.T).nnz == 0

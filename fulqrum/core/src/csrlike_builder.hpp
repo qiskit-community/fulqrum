@@ -178,8 +178,7 @@ void csrlike_builder(const std::vector<OperatorTerm_t>& terms,
                     }
                     if(std::abs(val) > ATOL)
                     {
-                        // see fulqrum/core/src/csr.hpp for details
-                        // about these Mutex locks
+                        // Mutex locks to prevent symmetric write contention
                         {
                             std::lock_guard<std::mutex> lock_kk(mutex1[kk].m);
                             cols[kk].push_back(col_idx);

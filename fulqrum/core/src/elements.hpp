@@ -58,7 +58,7 @@ void accum_element(const boost::dynamic_bitset<std::size_t>& row,
                    const std::vector<width_t>& inds,
                    const std::vector<unsigned char>& val,
                    const std::complex<double>& coeff,
-                   const int real_phase,
+                   const char real_phase,
                    const unsigned int N,
                    T& out)
 {

@@ -15,6 +15,4 @@
 
 #include "../core/src/base.hpp"
 #include "../core/src/diag.hpp"
-
-
-
+#include "../core/src/type2_group_table.hpp"

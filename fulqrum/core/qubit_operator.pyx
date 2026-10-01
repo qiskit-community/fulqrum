@@ -99,14 +99,12 @@ cdef class QubitOperator():
                                 term.indices.push_back(inds[kk])
                                 ind = STR_TO_IND[op_str[kk]]
                                 term.values.push_back(ind)
-                                term.offdiag_structure += (inds[kk] + 1) * (ind > 2)
                         term.coeff = coeff
                 else:
                     term.coeff = 1
                 term.sort_term_data()
-                set_offdiag_weight_and_phase(term)
+                set_offdiag_weight_phase_struct(term)
                 term.set_proj_indices()
-                set_extended_flag(term)
                 self.oper.terms.push_back(term)
 
 
@@ -528,7 +526,7 @@ cdef class QubitOperator():
             out_strs += f' + {total_terms-100} more terms'
         add_str = ''
         if num_terms == 1:
-            add_str = f", extended={self.oper.terms[0].extended}, group={self.oper.terms[0].group}"
+            add_str = f", group={self.oper.terms[0].group}"
         return f"<QubitOperator[{out_strs}], width={self.oper.width}{add_str}>"
 
     @cython.boundscheck(False)
@@ -692,20 +690,6 @@ cdef class QubitOperator():
         cdef QubitOperator out = QubitOperator(self.width)
         out.oper = self.oper.terms_by_group(number)
         return out
-
-    @cython.boundscheck(False)
-    def extended(self):
-        """Extended element flag for each term
-
-        Returns:
-            ndarray: Array of ints indicating if terms are extended or not
-        """
-        cdef vector[int] exten = self.oper.extended_terms()
-        cdef int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.int32)
-        if self.oper.terms.size():
-            memcpy(&out[0], &exten[0], exten.size() * sizeof(int))
-        return np.asarray(out)
-
 
     def group_sort(self):
         """Inplace sorting of operator terms into groups that represent matrix-elements.

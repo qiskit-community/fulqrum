@@ -38,7 +38,6 @@ struct QubitOperator;
 struct OperatorTerm;
 struct FermionicOperator;
 
-inline void set_extended_flag(OperatorTerm& term);
 inline void set_offdiag_weight_and_phase(OperatorTerm& term);
 inline OperatorTerm& set_proj_indices(OperatorTerm& term);
 
