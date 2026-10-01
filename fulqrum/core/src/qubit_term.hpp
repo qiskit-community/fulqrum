@@ -25,7 +25,6 @@
 struct OperatorTerm;
 inline void set_offdiag_weight_phase_struct(OperatorTerm& term);
 
-
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
  *
  * @var indices the qubits (locations) where non-identity term operators are
@@ -169,7 +168,6 @@ typedef struct OperatorTerm
         return !(this->offdiag_weight);
     }
 } OperatorTerm_t;
-
 
 /**
  * In-place set off-diagonal weight and real_phase

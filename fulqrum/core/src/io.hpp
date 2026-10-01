@@ -150,14 +150,29 @@ inline void operator_to_json(const T& oper, const std::string& filename, bool ov
 
     JsonTerm json_term;
     std::vector<JsonTerm> terms;
+    std::vector<width_t> indices;
     for(auto term : oper.terms)
     {
         std::string s = "";
-        for(width_t kk = 0; kk < term.values.size(); kk++)
+        if constexpr(std::is_same_v<T, QubitOperator>)
         {
-            s += rev_oper_map[term.values[kk]];
+            for(width_t kk = 0; kk < term.size(); kk++)
+            {
+                s += rev_oper_map[term.values[kk]];
+            }
+            json_term = {s, term.indices, {term.coeff.real(), term.coeff.imag()}};
         }
-        json_term = {s, term.indices, {term.coeff.real(), term.coeff.imag()}};
+        else if constexpr(std::is_same_v<T, FermionicOperator>)
+        {
+            indices.clear();
+            for(width_t kk = 0; kk < term.size(); kk++)
+            {
+                auto [ind, val] = unpack_indval(term.data[kk]);
+                indices.push_back(ind);
+                s += rev_oper_map[val];
+            }
+            json_term = {s, indices, {term.coeff.real(), term.coeff.imag()}};
+        }
         terms.push_back(json_term);
     }
 

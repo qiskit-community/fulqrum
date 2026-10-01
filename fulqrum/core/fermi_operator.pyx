@@ -13,7 +13,7 @@
 
 cimport cython
 from libcpp.vector cimport vector
-from libcpp.string cimport string
+from libcpp.string cimport string, stoi
 from libcpp.pair cimport pair
 
 from collections.abc import Iterable
@@ -66,7 +66,7 @@ cdef class FermionicOperator():
         cdef double complex coeff
         cdef object inds
         cdef size_t kk
-        cdef char op, ind
+        cdef unsigned char op, val
         if operators is not None:
             for item in operators:
                 term = EmptyFermionicTerm
@@ -81,10 +81,9 @@ cdef class FermionicOperator():
                             if inds[kk] > (self.oper.width - 1):
                                 raise FulqrumError(f'Index {item[1]} is out of range for width={self.oper.width}')
                             if op_str[kk] != 73:
-                                term.indices.push_back(inds[kk])
-                                ind = STR_TO_IND[op_str[kk]]
-                                term.values.push_back(ind)
-                                term.offdiag_structure += (inds[kk] + 1) * (ind > 2)
+                                val = STR_TO_IND[op_str[kk]]
+                                term.data.push_back(pack_indval(inds[kk], val))
+                                term.offdiag_structure += (inds[kk] + 1) * (val > 2)
                         term.coeff = coeff
                 else:
                     term.coeff = 1
@@ -227,32 +226,6 @@ cdef class FermionicOperator():
             raise FulqrumError(f"Cannot get operator terms using {type(key)}")
         return out
 
-    @classmethod
-    def from_label(self, size_t width, str label="", double complex coeff = 1.0):
-        """Create FermionicOperator from a string label
-
-        Parameters:
-            width (int): Width of operator
-            label (str): Label of operator
-            coeff (complex): Complex coefficient, default=1.0
-
-        Returns:
-            FermionicOperator
-        """
-        cdef FermionicTerm_t term = EmptyFermionicTerm
-        cdef FermionicOperator out = FermionicOperator(width)
-        cdef list items = label.split(' ')
-        cdef list temp
-        if any(items):
-            for item in items:
-                temp = item.split(':')
-                term.indices.push_back(<unsigned int>int(temp[1]))
-                ind = STR_TO_IND[(<string>temp[0]).c_str()[0]]
-                term.values.push_back(ind)
-        term.coeff = coeff
-        term.insertion_sort()
-        out.oper.terms.push_back(term)
-        return out
 
     def size(self):
         """Return the number of terms in the operator
@@ -360,6 +333,7 @@ cdef class FermionicOperator():
     @cython.boundscheck(False)
     def __repr__(self):
         cdef size_t idx
+        cdef pair[width_t, unsigned char] indval
         cdef list out = []
         cdef str temp_str
         cdef FermionicTerm_t term
@@ -373,11 +347,12 @@ cdef class FermionicOperator():
         for idx in range(num_terms):
             temp_str = ''
             term = self.oper.terms[idx]
-            for kk in range(term.indices.size()):
+            for kk in range(term.data.size()):
                 if kk:
                     temp_str += ' '
-                temp_str += IND_TO_STR[term.values[kk]] + ':'
-                temp_str += str(term.indices[kk])
+                indval = unpack_indval(term.data[kk])
+                temp_str += IND_TO_STR[indval.second] + ':'
+                temp_str += str(indval.first)
             out.append((temp_str, term.coeff))
 
         out_strs = ', '.join(str(kk) for kk in out)
@@ -400,6 +375,7 @@ cdef class FermionicOperator():
         """
         cdef size_t kk, jj
         cdef FermionicTerm_t * term
+        cdef pair[width_t, unsigned char] indval
         cdef list out = []
         if self.size() > 1:
             raise FulqrumError('Can only grab operators from operators with < 2 terms')
@@ -408,8 +384,9 @@ cdef class FermionicOperator():
         else:
             for kk in range(self.oper.terms.size()):
                 term = &self.oper.terms[kk]
-                for jj in range(term.indices.size()):
-                    out.append((IND_TO_STR[term.values[jj]], term.indices[jj]))
+                for jj in range(term.data.size()):
+                    indval = unpack_indval(term.data[jj])
+                    out.append((IND_TO_STR[indval.second], indval.first))
             return out
 
     def weight_sort(self):
@@ -427,7 +404,7 @@ cdef class FermionicOperator():
         cdef unsigned int[::1] out = np.zeros(self.oper.terms.size(), dtype=np.uint32)
         cdef size_t kk
         for kk in range(self.oper.terms.size()):
-            out[kk] = self.oper.terms[kk].values.size()
+            out[kk] = self.oper.terms[kk].data.size()
         return np.asarray(out)
 
 
@@ -493,13 +470,15 @@ cdef class FermionicOperator():
         cdef list terms = []
         cdef list temp_inds
         cdef str temp_vals
+        cdef pair[width_t, unsigned char] indval
         for kk in range(self.oper.terms.size()):
             term = &self.oper.terms[kk]
             temp_inds = []
             temp_vals = ''
-            for jj in range(term.indices.size()):
-                temp_inds.append(term.indices[jj])
-                temp_vals += IND_TO_STR[term.values[jj]]
+            for jj in range(term.data.size()):
+                indval = unpack_indval(term.data[jj])
+                temp_inds.append(indval.first)
+                temp_vals += IND_TO_STR[indval.second]
             terms.append([temp_vals, temp_inds, (term.coeff.real, term.coeff.imag)])
         out['terms'] = terms
         return out

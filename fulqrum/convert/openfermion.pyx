@@ -124,18 +124,16 @@ def openfermion_fermi_op_to_fulqrum(object op):
     mapper = qubit_reorder_map(num_qubits)
 
     for terms, coeff in op.terms.items():
-        tmp = []
+        inds = []
+        vals_str = ""
         for qubit, symbol in terms:
             if symbol == 1:
                 symbol = "+"
             else:
                 symbol = "-"
+            vals_str += symbol
+            inds.append(mapper[qubit])
 
-            qubit_new = mapper[qubit]
-
-            tmp.append(f'{symbol}:{qubit_new}')
-
-        label = " ".join(tmp)
-        out += FermionicOperator.from_label(num_qubits, label, coeff)
+        out += FermionicOperator(num_qubits, [[vals_str, inds, coeff]])
 
     return out

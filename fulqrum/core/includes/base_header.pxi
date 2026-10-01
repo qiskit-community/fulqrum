@@ -20,6 +20,13 @@ from ..core.bitset_hashmap cimport BitsetHashMapWrapper
 from ..core.constants cimport width_t
 
 cdef extern from "../src/base.hpp":
+    # Packing functions
+    width_t pack_indval(width_t ind, unsigned char val)
+    width_t unpack_ind(width_t packed_data)
+    unsigned char unpack_val(width_t packed_data)
+    pair[width_t, unsigned char] unpack_indval(width_t packed_data)
+    
+    # structures
     ctypedef struct OperatorTerm_t:
         double complex coeff
         vector[width_t] indices
@@ -84,8 +91,7 @@ cdef extern from "../src/base.hpp":
 
     ctypedef struct FermionicTerm_t:
         double complex coeff
-        vector[width_t] indices
-        vector[unsigned char] values
+        vector[width_t] data
         vector[width_t] proj_indices
         vector[width_t] proj_bits
         width_t offdiag_weight

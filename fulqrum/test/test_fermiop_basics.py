@@ -112,13 +112,6 @@ def test_fermioperator_subtraction():
     assert fop1[1].coeff == fop2[1].coeff
 
 
-def test_fermioperator_from_label():
-    """Test Fermi from label construction"""
-    fop1 = FermionicOperator.from_label(5, "+:0 1:2 -:3", -5 + 3j)
-    fop2 = FermionicOperator(5, [("+1-", (0, 2, 3), -5 + 3j)])
-    assert fop1.operators == fop2.operators
-
-
 def test_fermionoperator_copy():
     """Test fermi operator copy"""
     N = 6
