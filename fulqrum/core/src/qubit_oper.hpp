@@ -716,9 +716,9 @@ typedef struct QubitOperator
     *
     * @return Vector of real-phases for terms
     */
-    std::vector<int> real_phases() const
+    std::vector<int8_t> real_phases() const
     {
-        std::vector<int> out;
+        std::vector<int8_t> out;
         out.reserve(this->size());
         for(const auto& t : terms)
             out.push_back(t.real_phase);

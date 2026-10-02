@@ -42,7 +42,7 @@ typedef struct OperatorTerm
     std::vector<width_t> proj_bits;
     unsigned int offdiag_structure{0};
     unsigned int proj_structure{0};
-    char real_phase{1}; // 'phase' of real part (+/- 1), 0 means operator is complex-valued
+    int8_t real_phase{1}; // 'phase' of real part (+/- 1), 0 means operator is complex-valued
     int group{-1}; // -1 means unset here
     width_t offdiag_weight{0};
 
@@ -187,7 +187,7 @@ inline void set_offdiag_weight_phase_struct(OperatorTerm& term)
     width_t weight = 0;
     unsigned int num_y = 0, st = 0;
     unsigned char* values = &term.values[0];
-    char phase;
+    int8_t phase;
     width_t* indices = &term.indices[0];
     for(kk = 0; kk < term.values.size(); kk++)
     {
