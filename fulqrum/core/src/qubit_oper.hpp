@@ -18,6 +18,7 @@
 #include <cmath>
 #include <complex>
 #include <cstdlib>
+#include <cstdint>
 #include <map>
 #include <numeric>
 #include <ostream>
