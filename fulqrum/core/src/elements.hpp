@@ -18,6 +18,7 @@
 #include "base.hpp"
 #include <boost/dynamic_bitset.hpp>
 #include <complex>
+#include <cstdint>
 #include <cstdlib>
 
 const std::complex<double> OPER_ELEMENTS[28] = {
@@ -58,7 +59,7 @@ void accum_element(const boost::dynamic_bitset<std::size_t>& row,
                    const std::vector<width_t>& inds,
                    const std::vector<unsigned char>& val,
                    const std::complex<double>& coeff,
-                   const char real_phase,
+                   const int8_t real_phase,
                    const unsigned int N,
                    T& out)
 {
