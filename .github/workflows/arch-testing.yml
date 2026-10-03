@@ -16,7 +16,7 @@ jobs:
       matrix:
         include:
           - arch: aarch64
-            distro: ""ubuntu-latest"
+            distro: "ubuntu-latest"
             python-version: "3.12"
 
     steps:
