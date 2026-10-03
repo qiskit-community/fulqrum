@@ -7,7 +7,7 @@ on:
 jobs:
   conda-test:
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
-    runs-on: fedora_latest
+    runs-on: ubuntu_latest
     defaults:
       run:
         shell: bash -el {0}
@@ -16,7 +16,7 @@ jobs:
       matrix:
         include:
           - arch: aarch64
-            distro: fedora_latest
+            distro: ubuntu_latest
             python-version: "3.14"
 
     steps:
