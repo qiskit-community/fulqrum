@@ -18,6 +18,9 @@ from libcpp cimport bool
 from ..core.bitset cimport bitset_t
 from ..core.bitset_hashmap cimport BitsetHashMapWrapper
 from ..core.constants cimport width_t
+import numpy as np
+cimport numpy as np 
+
 
 cdef extern from "../src/base.hpp":
     ctypedef struct OperatorTerm_t:
@@ -27,7 +30,7 @@ cdef extern from "../src/base.hpp":
         vector[width_t] proj_indices
         vector[width_t] proj_bits
         width_t offdiag_weight
-        char real_phase
+        np.int8_t real_phase
         int group
         unsigned int offdiag_structure
         unsigned int proj_structure
@@ -66,7 +69,7 @@ cdef extern from "../src/base.hpp":
         QubitOperator_t remove_constant_terms()
         pair[QubitOperator_t, QubitOperator_t] split_diagonal()
         QubitOperator_t terms_by_group(int)
-        vector[int] real_phases()
+        vector[np.int8_t] real_phases()
         vector[complex] coefficients()
         vector[int] extended_terms()
         vector[width_t] ladder_integers()
