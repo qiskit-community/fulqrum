@@ -3,6 +3,10 @@
 
 # Fulqrum
 
+![GitHub Release](https://img.shields.io/github/v/release/qiskit-community/fulqrum)
+![PyPI Downloads](https://img.shields.io/pypi/dm/fulqrum)
+![GitHub License](https://img.shields.io/github/license/qiskit-community/fulqrum)
+
 A generalized framework for quantum subspace eigensolving.
 
 Fulqrum is a set of tools for enabling the solution to large-scale Hamiltonian subspace eigenproblems over extended alphabets.  Fulqrum was designed specifically with the goals of: (1) Providing a unified code base for solving both spin and fermionic systems. (2) Working for arbitrary numbers of qubits. (3) Reducing memory consumption, as compared to existing methods. And finally, (4) Decoupling operator construction from eigensolving itself.  In addition to satisfying these goals, Fulqrum is performant, and beats other eigensolvers in terms of total runtime.
