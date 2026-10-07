@@ -13,12 +13,14 @@
 from libcpp.vector cimport vector
 from .subspace cimport Subspace
 from .constants cimport width_t
+from .qubit_operator cimport QubitOperator
 
 include "includes/base_header.pxi"
 include "includes/types.pxi"
 
 cdef class FulqrumSpMV:
-    cdef QubitOperator_t oper
+    cdef QubitOperator_t* oper
+    cdef QubitOperator hamiltonian
     cdef QubitOperator_t diag_oper
     cdef public double const_energy
     cdef public Subspace subspace

@@ -16,6 +16,7 @@ from cython.operator cimport dereference
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libcpp.pair cimport pair
+from libcpp.utility cimport move
 from libc.string cimport memcpy
 from libcpp cimport bool
 from libcpp.unordered_map cimport unordered_map
@@ -99,7 +100,6 @@ cdef class QubitOperator():
                                 term.indices.push_back(inds[kk])
                                 ind = STR_TO_IND[op_str[kk]]
                                 term.values.push_back(ind)
-                                term.offdiag_structure += (inds[kk] + 1) * (ind > 2)
                         term.coeff = coeff
                 else:
                     term.coeff = 1
@@ -319,8 +319,8 @@ cdef class QubitOperator():
         cdef QubitOperator diag = QubitOperator(self.oper.width)
         cdef QubitOperator offdiag = QubitOperator(self.oper.width)
         cdef pair[QubitOperator_t, QubitOperator_t] out = self.oper.split_diagonal()
-        diag.oper = out.first
-        offdiag.oper = out.second
+        diag.oper = move(out.first)
+        offdiag.oper = move(out.second)
         return diag, offdiag
 
     @cython.boundscheck(False)
@@ -615,7 +615,7 @@ cdef class QubitOperator():
             val = self.oper.constant_energy()
         cdef QubitOperator_t temp = self.oper.remove_constant_terms()
         cdef QubitOperator out = QubitOperator(self.width)
-        out.oper.terms = temp.terms
+        out.oper.terms = move(temp.terms)
         out.oper.type = temp.type
         if return_value:
             return out, val

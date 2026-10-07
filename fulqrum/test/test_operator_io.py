@@ -87,3 +87,24 @@ def test_fermionic_to_qubit_method_in_json():
         os.remove("lih_jw.json")
     except FileNotFoundError:
         pass
+
+
+def test_qubit_json_preserves_real_phase(tmp_path):
+    """Test round-trip of qubitoperator to json keeps real phases"""
+    op = fq.QubitOperator(
+        4,
+        [
+            ("YY", [0, 1], 1.0),
+            ("XY", [0, 1], 1.0),
+            ("XX", [0, 1], 1.0),
+            ("YYY", [0, 1, 2], 1.0),
+            ("YYYY", [0, 1, 2, 3], 1.0),
+        ],
+    )
+    filename = tmp_path / "phase_op.json"
+    op.to_json(str(filename), overwrite=True)
+    new_op = fq.QubitOperator.from_json(str(filename))
+    assert list(new_op.real_phases()) == [-1, 0, 1, 0, 1]
+    assert list(new_op.real_phases()) == list(op.real_phases())
+    assert new_op.is_real() == op.is_real()
+    assert list(new_op.offdiag_structures()) == list(op.offdiag_structures())

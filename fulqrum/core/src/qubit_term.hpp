@@ -25,6 +25,16 @@
 #include "oper_utils.hpp"
 #include "term_utils.hpp"
 
+inline int real_phase_from_num_y(unsigned int num_y)
+{
+    const unsigned int num_y_mod_4 = num_y % 4;
+    if(num_y_mod_4 % 2)
+    {
+        return 0;
+    }
+    return num_y_mod_4 ? -1 : 1;
+}
+
 /** @brief Data structure for each operator term, i.e. 'word' in the operator
  *
  * @var indices the qubits (locations) where non-identity term operators are
@@ -46,7 +56,13 @@ typedef struct OperatorTerm
     int group{-1}; // -1 means unset here
     width_t offdiag_weight{0};
 
-    OperatorTerm() {}
+    OperatorTerm() = default;
+    OperatorTerm(const OperatorTerm&) = default;
+    OperatorTerm(OperatorTerm&&) = default;
+    OperatorTerm& operator=(const OperatorTerm&) = default;
+    OperatorTerm& operator=(OperatorTerm&&) = default;
+    ~OperatorTerm() = default;
+
     OperatorTerm(std::complex<double> c)
         : coeff(c)
     {} // Init empty term with given coefficient
@@ -60,7 +76,7 @@ typedef struct OperatorTerm
         }
         unsigned char val;
         width_t ind;
-        unsigned int counter = 0;
+        unsigned int counter = 0, num_y = 0;
         // Iterate over string of values, mapping to new values and adding to term
         for(std::string::iterator it = vals.begin(); it != vals.end(); it++)
         {
@@ -77,8 +93,10 @@ typedef struct OperatorTerm
                 indices.push_back(ind);
                 offdiag_weight += static_cast<width_t>(val > 2);
                 offdiag_structure += (ind + 1) * (val > 2);
+                num_y += (val == 4);
             }
         }
+        real_phase = real_phase_from_num_y(num_y);
         //check that length of values == length of indices
         if(values.size() != indices.size())
         {
@@ -86,14 +104,6 @@ typedef struct OperatorTerm
         }
         sort_term_data(); // sort term data from low -> high indices
         set_proj_indices(); // set projection operator indices, if any
-    }
-    // destructor
-    ~OperatorTerm()
-    {
-        std::vector<unsigned char>().swap(values);
-        std::vector<width_t>().swap(indices);
-        std::vector<width_t>().swap(proj_indices);
-        std::vector<width_t>().swap(proj_bits);
     }
     /**
      * Inplace multiplication by a complex value

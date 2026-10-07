@@ -46,7 +46,7 @@ def ramps_open(object Hsub, Subspace target_subspace, double target_energy,
         raise FulqrumError("Input Hamiltonian must be a SubspaceHamiltonian object")
     cdef Subspace out = target_subspace.copy()
     cdef FulqrumSpMV spmv = Hsub.spmv
-    cdef double energy = open_ramps(spmv.oper,
+    cdef double energy = open_ramps(spmv.oper[0],
                                     out.subspace.bitstrings,
                                     spmv.diag_oper,
                                     spmv.width,

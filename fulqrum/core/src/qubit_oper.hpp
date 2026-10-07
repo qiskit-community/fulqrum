@@ -23,6 +23,7 @@
 #include <ostream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "constants.hpp"
@@ -160,20 +161,19 @@ inline void set_offdiag_weight_and_phase(OperatorTerm_t& term)
     }
     std::size_t kk;
     width_t weight = 0;
-    unsigned int temp, num_y = 0;
+    unsigned int num_y = 0, structure = 0;
     unsigned char* values = &term.values[0];
+    width_t* indices = &term.indices[0];
     for(kk = 0; kk < term.values.size(); kk++)
     {
         weight += (values[kk] > 2);
         num_y += (values[kk] == 4);
+        structure += (indices[kk] + 1) * static_cast<unsigned int>(values[kk] > 2);
     }
     term.offdiag_weight = weight;
+    term.offdiag_structure = structure;
     // Do the real_phase for checking if operator itself can be cast as symmetric (real)
-    temp = num_y % 4;
-    if(temp)
-    {
-        term.real_phase = (temp % 2) - 1;
-    }
+    term.real_phase = real_phase_from_num_y(num_y);
 }
 
 /**
@@ -442,7 +442,12 @@ typedef struct QubitOperator
     int structure_sorted{
         0}; // Are the operator terms sorted by (non-unique) off-diagonal structure?
 
-    QubitOperator() {}
+    QubitOperator() = default;
+    QubitOperator(const QubitOperator&) = default;
+    QubitOperator(QubitOperator&&) = default;
+    QubitOperator& operator=(const QubitOperator&) = default;
+    QubitOperator& operator=(QubitOperator&&) = default;
+    ~QubitOperator() = default;
     /**
      * Constructor building an empty operator with a given width
      *
@@ -482,11 +487,6 @@ typedef struct QubitOperator
             terms.push_back(term);
         }
     }
-    // destructor
-    ~QubitOperator()
-    {
-        std::vector<OperatorTerm_t>().swap(terms);
-    }
     /**
      * QubitOperator from string label
      */
@@ -504,7 +504,6 @@ typedef struct QubitOperator
                 val = oper_map[*it];
                 term.values.push_back(val);
                 term.indices.push_back(counter);
-                term.offdiag_structure += (counter + 1) * (val > 2);
             }
             counter += 1;
         }
@@ -843,7 +842,14 @@ typedef struct QubitOperator
     {
         QubitOperator diag = QubitOperator(this->width);
         QubitOperator off = QubitOperator(this->width);
-        for(auto term : this->terms)
+        std::size_t num_diag = 0;
+        for(const auto& term : this->terms)
+        {
+            num_diag += !term.offdiag_weight;
+        }
+        diag.terms.reserve(num_diag);
+        off.terms.reserve(this->terms.size() - num_diag);
+        for(const auto& term : this->terms)
         {
             if(!term.offdiag_weight)
             {
@@ -856,7 +862,7 @@ typedef struct QubitOperator
         }
         off.type = this->type;
         diag.type = this->type;
-        return {diag, off};
+        return {std::move(diag), std::move(off)};
     }
     /**Constant energy of operator
     * 
@@ -880,6 +886,7 @@ typedef struct QubitOperator
     QubitOperator remove_constant_terms()
     {
         QubitOperator out = QubitOperator(this->width);
+        out.terms.reserve(this->size());
         for(std::size_t kk = 0; kk < this->size(); kk++)
         {
             if(terms[kk].indices.size())

@@ -45,7 +45,7 @@ def ramps_restricted_simple(object Hsub, Subspace target_subspace, double target
         raise FulqrumError("Input Hamiltonian must be a SubspaceHamiltonian object")
     cdef Subspace out = target_subspace.copy()
     cdef FulqrumSpMV spmv = Hsub.spmv
-    cdef double energy = simple_restricted(spmv.oper,
+    cdef double energy = simple_restricted(spmv.oper[0],
                                            restricted_subspace.subspace.bitstrings,
                                            out.subspace.bitstrings,
                                            spmv.diag_oper,

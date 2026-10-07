@@ -71,7 +71,8 @@ cdef class FulqrumSpMV():
         cdef size_t kk
         self.diag_oper = diag_hamiltonian.oper
         self.const_energy = const_energy
-        self.oper = hamiltonian.oper
+        self.hamiltonian = hamiltonian
+        self.oper = &hamiltonian.oper
         self.is_real = diag_hamiltonian.is_real() * hamiltonian.is_real()
         self.subspace = subspace
         self.width = self.oper.width
