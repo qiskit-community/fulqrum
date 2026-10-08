@@ -105,10 +105,11 @@ typedef struct FermionicOperator
         {
             term = self.terms[kk];
             os << "{";
-            for(jj = 0; jj < term.indices.size(); jj++)
+            for(jj = 0; jj < term.size(); jj++)
             {
-                os << rev_oper_map[term.values[jj]] << ":" << term.indices[jj];
-                if(jj != term.indices.size() - 1)
+                auto [ind, val] = unpack_indval(term.data[jj]);
+                os << rev_oper_map[val] << ":" << ind;
+                if(jj != term.size() - 1)
                 {
                     os << " ";
                 }
@@ -293,13 +294,13 @@ typedef struct FermionicOperator
             tbb::parallel_sort(terms.begin(),
                                terms.end(),
                                [](const FermionicTerm& term1, const FermionicTerm& term2) {
-                                   return term1.indices.size() < term2.indices.size();
+                                   return term1.size() < term2.size();
                                });
 #else
             boost::sort::pdqsort(terms.begin(),
                                  terms.end(),
                                  [](const FermionicTerm& term1, const FermionicTerm& term2) {
-                                     return term1.indices.size() < term2.indices.size();
+                                     return term1.size() < term2.size();
                                  });
 #endif
             set_fermi_sorting_flags(*this, "weight");
@@ -371,7 +372,7 @@ typedef struct FermionicOperator
         }
         std::vector<std::size_t> ptrs;
         set_offdiag_structure_ptrs(terms, ptrs);
-        combine_terms(this->terms, out.terms, ptrs, atol);
+        combine_terms_fermi(this->terms, out.terms, ptrs, atol);
         this->unique_terms = 1;
         return out;
     }

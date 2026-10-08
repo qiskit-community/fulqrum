@@ -23,6 +23,7 @@
 
 #include "constants.hpp"
 #include "oper_utils.hpp"
+#include "packing.hpp"
 #include "qubit_term.hpp"
 
 // Fermionic components ---------------------------------------------------------------------------
@@ -35,9 +36,8 @@
  */
 typedef struct FermionicTerm
 {
-    std::vector<unsigned char> values;
-    std::vector<width_t> indices;
     std::complex<double> coeff{0};
+    std::vector<width_t> data;
     std::vector<width_t> proj_indices;
     std::vector<width_t> proj_bits;
     unsigned int offdiag_structure{0};
@@ -56,15 +56,14 @@ typedef struct FermionicTerm
     {} // Init empty term with given coefficient
 
     FermionicTerm(std::string vals, std::vector<width_t> inds, std::complex<double> c)
-        : indices(std::move(inds))
-        , coeff(c)
+        : coeff(c)
     {
         const std::size_t num_vals = vals.size();
-        if(num_vals != indices.size())
+        if(num_vals != inds.size())
         {
             throw std::runtime_error("Size of values vector does not equal that of indices.");
         }
-        values.reserve(num_vals);
+        data.reserve(num_vals);
         if(!num_vals &&
            c ==
                0.0) //if empty data is passed in then we assume this is an identity and set coeff properly
@@ -80,13 +79,13 @@ typedef struct FermionicTerm
                 throw std::runtime_error("Cannot use identity operators in sparse format.");
             }
             const unsigned char val = oper_map[ch];
-            values.push_back(val);
+            data.push_back(pack_indval(inds[i], val));
             const bool is_offdiag = (val > 2);
             offdiag_weight += static_cast<width_t>(is_offdiag);
-            offdiag_structure += (indices[i] + 1) * static_cast<unsigned int>(is_offdiag);
+            offdiag_structure += (inds[i] + 1) * static_cast<unsigned int>(is_offdiag);
         }
         insertion_sort();
-        set_term_proj_indices(*this);
+        set_term_proj_indices_fermi(*this);
     }
 
     FermionicTerm copy() const
@@ -125,7 +124,7 @@ typedef struct FermionicTerm
      */
     std::size_t size() const
     {
-        return indices.size();
+        return data.size();
     }
     /**
      * Return vector of operator and index pairs
@@ -133,9 +132,10 @@ typedef struct FermionicTerm
     std::vector<OpData> operators() const
     {
         std::vector<OpData> out;
-        for(std::size_t kk = 0; kk < indices.size(); kk++)
+        for(std::size_t kk = 0; kk < data.size(); kk++)
         {
-            OpData item{std::string(1, static_cast<char>(rev_oper_map[values[kk]])), indices[kk]};
+            auto [ind, val] = unpack_indval(data[kk]);
+            OpData item{std::string(1, static_cast<char>(rev_oper_map[val])), ind};
             out.push_back(item);
         }
         return out;
@@ -146,26 +146,23 @@ typedef struct FermionicTerm
      */
     void insertion_sort()
     {
-        const int num_elems = static_cast<int>(indices.size());
+        const int num_elems = static_cast<int>(data.size());
         int prefactor = 1;
         for(int kk = 1; kk < num_elems; kk++)
         {
-            const width_t temp_index = indices[kk];
-            const unsigned char temp_value = values[kk];
+            const auto [temp_index, temp_value] = unpack_indval(data[kk]);
             int ll = kk - 1;
             // Swapping two ladder operators (val > 4) over different indices costs a sign.
-            while(ll >= 0 && temp_index < indices[ll])
+            while(ll >= 0 && temp_index < unpack_ind(data[ll]))
             {
-                indices[ll + 1] = indices[ll];
-                values[ll + 1] = values[ll];
-                if(temp_value > 4 && values[ll] > 4)
+                data[ll + 1] = data[ll];
+                if(temp_value > 4 && unpack_val(data[ll]) > 4)
                 {
                     prefactor = -prefactor;
                 }
                 --ll;
             }
-            indices[ll + 1] = temp_index;
-            values[ll + 1] = temp_value;
+            data[ll + 1] = pack_indval(temp_index, temp_value);
         }
         coeff *= prefactor;
     }
@@ -191,23 +188,22 @@ inline int jw_phase(const unsigned char op)
  */
 inline void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_term)
 {
-    const int num_elems = static_cast<int>(fermi_term.indices.size());
+    const int num_elems = static_cast<int>(fermi_term.data.size());
     int phase = 1;
     qubit_term.coeff = fermi_term.coeff;
 
     // Reserve for case where all elements plus Z-fill between them
     if(num_elems > 0)
     {
-        qubit_term.indices.reserve(fermi_term.indices[0] + 1);
-        qubit_term.values.reserve(fermi_term.indices[0] + 1);
+        qubit_term.indices.reserve(unpack_ind(fermi_term.data[0]) + 1);
+        qubit_term.values.reserve(unpack_ind(fermi_term.data[0]) + 1);
     }
 
     // Start with do_z = 0 since nothing has been done yet
     int do_z = 0;
     for(int kk = num_elems - 1; kk > -1; kk--)
     {
-        const width_t current_ind = fermi_term.indices[kk];
-        const unsigned char current_val = fermi_term.values[kk];
+        const auto [current_ind, current_val] = unpack_indval(fermi_term.data[kk]);
         // Add start element to qubit operator
         qubit_term.indices.push_back(current_ind);
         qubit_term.values.push_back(current_val);
@@ -222,7 +218,7 @@ inline void jw_term(const FermionicTerm_t& fermi_term, OperatorTerm_t& qubit_ter
         // make every identity site between this and the next element a Z operator
         if(kk && do_z)
         {
-            for(width_t jj = current_ind - 1; jj > fermi_term.indices[kk - 1]; jj--)
+            for(width_t jj = current_ind - 1; jj > unpack_ind(fermi_term.data[kk - 1]); jj--)
             {
                 qubit_term.indices.push_back(jj);
                 qubit_term.values.push_back(0);
@@ -254,23 +250,21 @@ inline void deflate_term_indices(const FermionicTerm& term,
                                  FermionicTerm& out_term,
                                  const std::vector<int>& collapsed_values)
 {
-    const std::size_t num_elems = term.indices.size();
-    out_term.indices.reserve(num_elems);
-    out_term.values.reserve(num_elems);
+    const std::size_t num_elems = term.data.size();
+    out_term.data.reserve(num_elems);
 
     std::size_t num_touched = 0;
     while(num_touched < num_elems)
     {
-        width_t current_index = term.indices[num_touched];
-        unsigned char current_value = term.values[num_touched];
+        auto [current_index, current_value] = unpack_indval(term.data[num_touched]);
         ++num_touched;
         for(std::size_t kk = num_touched; kk < num_elems; kk++)
         {
             // next term has a matching index with the current one
-            if(term.indices[kk] == current_index)
+            if(unpack_ind(term.data[kk]) == current_index)
             {
                 const int temp_int = collapsed_values[4 * collapse_value(current_value) +
-                                                      collapse_value(term.values[kk])];
+                                                      collapse_value(unpack_val(term.data[kk]))];
                 // This operator becomes a null operator so get rid of whole term
                 if(temp_int < 0)
                 {
@@ -284,12 +278,11 @@ inline void deflate_term_indices(const FermionicTerm& term,
                 break;
             }
         }
-        out_term.indices.push_back(current_index);
-        out_term.values.push_back(current_value);
+        out_term.data.push_back(pack_indval(current_index, current_value));
         out_term.offdiag_weight += static_cast<width_t>(current_value > 2);
         out_term.offdiag_structure +=
             (current_index + 1) * static_cast<unsigned int>(current_value > 2);
     }
     out_term.coeff = term.coeff;
-    set_term_proj_indices(out_term);
+    set_term_proj_indices_fermi(out_term);
 }

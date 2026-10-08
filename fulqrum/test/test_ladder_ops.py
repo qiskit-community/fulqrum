@@ -14,7 +14,7 @@
 
 import numpy as np
 import fulqrum as fq
-from fulqrum.core.constants import np_width_t
+from fulqrum.core.constants import np_width_t, MAX_QUBITS
 
 
 def test_bitset_int1():
@@ -83,7 +83,7 @@ def test_operator_ladder_int2():
     )
     op.set_type(2)
     op.group_term_sort_by_ladder_int()
-    assert np.allclose(op.ladder_ints(), [np.iinfo(np_width_t).max, 5])
+    assert np.allclose(op.ladder_ints(), [MAX_QUBITS, 5])
 
 
 def test_operator_ladder_int3():
@@ -93,4 +93,4 @@ def test_operator_ladder_int3():
     )
     op.set_type(2)
     op.group_term_sort_by_ladder_int()
-    assert np.allclose(op.ladder_ints(), [np.iinfo(np_width_t).max, 5])
+    assert np.allclose(op.ladder_ints(), [MAX_QUBITS, 5])

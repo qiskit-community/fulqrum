@@ -17,4 +17,5 @@ cdef extern from "src/constants.hpp":
     cdef const double ATOL
     cdef const double RTOL
     ctypedef unsigned int width_t # The actual type here does not matter as the compiler will just figure it out
+    cdef const unsigned int MAX_WIDTH # Max. number of supported qubits
 

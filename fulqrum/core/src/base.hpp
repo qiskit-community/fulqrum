@@ -16,6 +16,7 @@
 #include "constants.hpp"
 #include "fermi_oper.hpp"
 #include "fermi_term.hpp"
+#include "packing.hpp"
 #include "qubit_oper.hpp"
 #include "qubit_term.hpp"
 #include "subspace.hpp"
